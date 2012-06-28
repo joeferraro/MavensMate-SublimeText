@@ -16,7 +16,7 @@ module MavensMate
             search_path = File.dirname(search_path)
             next
           else
-            ENV["TM_PROJECT_DIRECTORY"] = search_path
+            ENV["MM_CURRENT_PROJECT_DIRECTORY"] = search_path
             found = true
           end
         end
