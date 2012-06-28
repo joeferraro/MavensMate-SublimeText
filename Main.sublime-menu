@@ -1,0 +1,70 @@
+[  
+	{  
+	    "id": "MavensMate",
+	    "caption": "MavensMate",  
+	    "children":  
+	    [  
+	        {
+	        	"id": "projects", 
+	    		"caption": "Project",  
+	         	"children":
+	         	[
+	         		{
+	         			"caption": "New Project",
+	         			"command": "new_project"
+	         		},
+	         		{
+	         			"caption": "Checkout Project",
+	         			"command": "checkout_project"
+	         		},
+	         		{
+	         			"caption": "Edit Project",
+	         			"command": "edit_project"
+	         		},
+	         		{
+	         			"caption": "Clean Project",
+	         			"command": "clean_project"
+	         		}
+	         	]
+	     	},
+			{
+	        	"id": "metadata", 
+	    		"caption": "Metadata",  
+	         	"children":
+	         	[
+	         		{
+	         			"caption": "New Apex Class",
+	         			"command": "new_apex_class"
+	         		},
+	         		{
+	         			"caption": "New Apex Trigger",
+	         			"command": "new_apex_trigger"
+	         		},
+	         		{
+	         			"caption": "New Visualforce Page",
+	         			"command": "new_apex_page"
+	         		},
+	         		{
+	         			"caption": "New Visualforce Component",
+	         			"command": "new_apex_component"
+	         		}
+	         	]
+	     	},
+	     	{
+	        	"id": "run_tests", 
+	    		"caption": "Run Apex Tests",  
+	         	"command": "mavens_mate"
+	     	},
+	     	{
+	        	"id": "compile_active", 
+	    		"caption": "Compile Active File",  
+	         	"command": "compile_active_file"
+	     	},
+	     	{
+	        	"id": "delete_active", 
+	    		"caption": "Delete Active File",  
+	         	"command": "mavens_mate"
+	     	}
+	    ]  
+	}  
+]  

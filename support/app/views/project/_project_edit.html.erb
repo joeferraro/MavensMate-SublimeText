@@ -1,0 +1,150 @@
+<div id="result_output">
+	
+</div>
+
+<div class="content">
+	
+	<ul class="tabs">
+		<li><a id="project_details_tab" href="#form">Project Details</a></li>
+		<li class="active"><a href="#metadata">Project Metadata</a></li>
+	</ul>
+	
+	<div class="pill-content">  
+		<div id="form">
+			<form class="form-stacked">
+				<fieldset>
+					<div class="clearfix">
+						<label for="pn">Project Name</label> 
+						<input class="xlarge" size="100" type="text" id="pn">
+					</div>
+					<div class="clearfix">
+						<label for="un">Salesforce Username</label> 
+						<input class="xlarge" size="100" type="text" id="un">
+					</div>
+					<div class="clearfix">
+						<label for="pw">Salesforce Password</label> 
+						<input class="xlarge" size="100" type="password" id="pw">
+					</div>
+					<div class="clearfix">
+						<label for="server_url">Server URL</label> 
+						<select id="server_url">
+							<option>https://www.salesforce.com</option>
+							<option>https://test.salesforce.com</option>
+						</select>
+					</div>
+					<div class="clearfix" style="margin-top:20px;">
+						<input type="button" class="btn primary" value="Update Credentials" onclick="updateProjectCreds();">
+					</div> 												
+				</fieldset>
+			</form>
+		</div>
+		<div id="metadata" class="active">
+			<div id="project_wrapper">
+		<div id="treewrapper" style="height:100%">
+			<div id="tree">
+				<ul>
+				<% project_array.each do |hash| %>
+					<% 
+						next if !hash[:children]
+						#next if hash[:children].size == 0
+						class_name = (hash[:children] && hash[:children].size > 0) ? "folder" : "" 
+					%>
+					<li data="level: 1, hasChildTypes: <%=hash[:hasChildTypes]%>, inFolder: <%=hash[:inFolder]%>" id="<%= hash[:key] %>" class="<%= hash[:selected] %> folder level1"><%= hash[:title] %>					
+						<% if hash[:children] %>
+						<ul>
+							<% hash[:children].each do |child| %>
+								<% child_class_name = (child[:children] && child[:children].size > 0) ? "folder" : "" %>
+								<li data="level: 2" id="<%= child[:key] %>" class="<%= child[:selected] %> <%= child_class_name %> level2"><%= child[:title] %>
+								<% if child[:children] && child[:children].size > 0 %>
+									<ul>
+										<% child[:children].each do |gchild| %>
+											<li data="level: 3" class="<%= gchild[:selected] %> level3"><%= gchild[:title] %>
+												<% if gchild[:children] && gchild[:children].size > 0 %>
+													<ul>
+														<% gchild[:children].each do |ggchild| %>
+															<li data="level: 4" class="<%= ggchild[:selected] %> level4"><%= ggchild[:title] %></li>
+														<% end %>
+													</ul>
+												<% end %>
+											</li>
+										<% end %>
+									</ul>
+								<% end %>
+								</li>
+							<% end %>
+						</ul>
+						<% end %>
+					</li>
+				<% end %>
+				</ul>
+			</div>
+			<div id="info"></div>
+		</div>
+	</div>				
+    	</div>
+	</div>
+</div>  
+	
+<form class="form-stacked" id="action_buttons">
+	<fieldset style="padding-top:0px;">
+		<div class="actions">					
+			<input type="button" id="btnSubmit" class="btn primary" value="Update Project Metadata"  onclick="updateProject();">
+			&nbsp;
+			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
+		</div>
+	</fieldset>
+</form>   
+	
+	<script type="text/javascript">
+		var child_def = {}
+        <% child_metadata_definition.each do |child| %>
+        	child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
+	   	<% end %>  
+		
+		function updateProjectCreds() {
+			dispatch({
+			    controller: "project",
+			    action: "update_creds",
+			    un: $("#un").val(),
+			    pw: $("#pw").val(),
+			    server_url: $("#server_url").val() 
+			}) 
+		}
+			
+		$(function() {		   
+			//instantiate tabs
+			$('.tabs').tabs();
+			
+			var resizeHeight = $("#project_wrapper").height(); 
+		    resizeAndCenterWindowByHeight(resizeHeight);
+
+			$(window).resize(function() {
+				$("#project_wrapper").height($(window).height() - 175)
+			});  
+			
+			var server_url = ("<%= pserver %>" == "production") ? "https://www.salesforce.com" : "https://test.salesforce.com"
+			$("#pn").val("<%= pname %>");  
+			$("#un").val("<%= pun %>");
+			$("#pw").val("<%= ppw %>");
+			$("#server_url").val(server_url);
+			
+			$("#pn").prop('disabled', true);  
+			//$("#un").prop('disabled', true);  
+			//$("#pw").prop('disabled', true);  
+			//$("#server_url").prop('disabled', true);  
+							
+			//resize elements
+			$("#project_wrapper").height($(window).height() - 175)
+			
+			//instantiate and populate metadata tree
+			$("#tree").dynatree({
+				persist: false,
+				checkbox: true,
+				selectMode: 3
+			}); 
+			
+			$(window).resize(function() {
+				$("#project_wrapper").height($(window).height() - 175)
+			});
+		});		
+	</script>

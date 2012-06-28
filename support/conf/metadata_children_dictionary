@@ -1,0 +1,20 @@
+[ 
+  {:xml_name => "CustomField", :tag_name => "fields", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "BusinessProcess", :tag_name => "businessProcesses", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "RecordType", :tag_name => "recordTypes", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "WebLink", :tag_name => "webLinks", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "ValidationRule", :tag_name => "validationRules", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "NamedFilter", :tag_name => "namedFilters", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "SharingReason", :tag_name => "sharingReasons", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "ListView", :tag_name => "listViews", :parent_xml_name => "CustomObject" }, 
+  {:xml_name => "FieldSet", :tag_name => "fieldSets", :parent_xml_name => "CustomObject" },
+  {:xml_name => "CustomLabel", :tag_name => "customLabels", :parent_xml_name => "CustomLabels" },
+  {:xml_name => "WorkflowAlert", :tag_name => "alerts", :parent_xml_name => "Workflow" },
+  {:xml_name => "WorkflowTask", :tag_name => "tasks", :parent_xml_name => "Workflow" },
+  {:xml_name => "WorkflowOutboundMessage", :tag_name => "outboundMessages", :parent_xml_name => "Workflow" },
+  {:xml_name => "WorkflowFieldUpdate", :tag_name => "fieldUpdates", :parent_xml_name => "Workflow" },
+  {:xml_name => "WorkflowRule", :tag_name => "rules", :parent_xml_name => "WorkFlow", :parent_xml_name => "Workflow" }, 
+  {:xml_name => "WorkflowEmailRecipient", :tag_name => "emailRecipients", :parent_xml_name => "Workflow" },
+  {:xml_name => "WorkflowTimeTrigger", :tag_name => "timeTriggers", :parent_xml_name => "Workflow" },
+  {:xml_name => "WorkflowActionReference", :tag_name => "actionReferences", :parent_xml_name => "Workflow" }
+]

@@ -1,0 +1,22 @@
+static_methods:
+    - "daysInMonth(Integer_year, Integer_month)"
+    - isLeapYear(Integer year)
+    - "newInstance(Integer_year, Integer_month, Integer_date)"
+    - parse(String_date)
+    - today()
+    - valueOf(String_s)
+    - valueOf(anyType_x)
+instance_methods:
+    - addDays(Integer_addlDays)
+    - addMonths(Integer_addlMonths)
+    - addYears(Integer_addlYears)
+    - day()
+    - dayOfYear()
+    - daysBetween(Date_compDate)
+    - format()
+    - isSameDay(Date_compDate)
+    - month()
+    - monthsBetween(Date_compDate)
+    - toStartOfMonth()
+    - toStartOfWeek()
+    - year()

@@ -1,0 +1,34 @@
+static_methods:
+    - escapeSingleQuotes(String_s)
+    - "format(String_s, List<String> arguments)"
+    - fromCharArray(List<Integer> charArray)
+    - valueOf(Date_d)
+    - valueOf(DateTime_d)
+    - valueOf(Decimal_d)
+    - valueOf(Double_d)
+    - valueOf(Integer_i)
+    - valueOf(Long_l)
+    - valueOf(anyType_x)
+    - valueOfGmt(DateTime_dt)
+instance_methods:
+    - compareTo(String_compString) 
+    - contains(String_compString)
+    - endsWith(String_suffix)
+    - equals(String_compString)
+    - equalsIgnoreCase(String_compString)
+    - indexOf(String_subString)
+    - "indexOf(String_subString, Integer_i)"
+    - lastIndexOf(String_subString)
+    - length()
+    - "replace(String_target, String_replacement)"
+    - "replaceAll(String_regExp, String_replacement)"
+    - "replaceFirst(String_regExp, String_replacement)"
+    - "split(String_regExp, Integer_limit)"
+    - startsWith(String_prefix)
+    - substring(Integer_startIndex)
+    - "substring(Integer_startIndex, Integer_endIndex)"
+    - toLowerCase()
+    - toLowerCase(String_locale)
+    - toUpperCase()
+    - toUpperCase(String_locale)
+    - trim()

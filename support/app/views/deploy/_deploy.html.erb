@@ -1,0 +1,512 @@
+<style>
+	.bordered-table, .bordered-table td {
+		-webkit-border-radius: 0px !important;
+		border-radius: 0px !important;
+	}
+	
+	.bordered-table {
+		border-bottom:2px solid #ccc !important;
+	}
+   
+</style>
+<div id="result_output">
+	
+</div>
+
+<div class="content">
+	
+	<div class="alert-message error" style="display:none;" data-alert="alert" id="cred_alert">
+		<a class="close" href="#">×</a>
+		<p><strong>Error!</strong> You need to provide valid Salesforce.com credentials in Project Details.</p>
+	</div>
+	
+	<ul class="tabs">
+		<li class="active"><a href="#form">Deploy Options</a></li>
+		<li><a href="#metadata">Metadata</a></li>
+		<li><a href="#result" id="result_tab">Result</a></li>
+	</ul>
+	
+	<div class="pill-content">
+		<div id="form" class="active">
+			<form class="form-stacked">
+				<fieldset>
+					<div class="clearfix">
+						<label for="un">Salesforce Username</label> 
+						<% 
+							display = connections.size == 0 ? "block" : "none"
+						%>
+						
+						<% if connections.size > 0 %>
+							<select id="un_list">
+								<% connections.each do |c| %>
+									<option><%=c[:un]%></option>
+								<% end %> 
+								<option value="new">-- Custom Connection --</option>
+							</select>	
+						<% end %>
+						<input style="margin-top:5px;display:<%= display %>" class="xlarge" size="100" type="text" id="un">
+					</div>
+					<div class="clearfix">
+						<label for="pw">Salesforce Password</label> 
+						<input class="xlarge" size="100" type="password" id="pw">
+					</div>
+					<div class="clearfix">
+						<label for="server_url">Server URL</label> 
+						<select id="server_url">
+							<option>https://www.salesforce.com</option>
+							<option>https://test.salesforce.com</option>
+						</select>
+					</div>				
+				</fieldset>
+			</form>
+			<style>
+				.deploy_options .clearfix {
+					margin-left: 20px;
+					margin-bottom:0px;
+				}
+				.deploy_options input[type="checkbox"] {
+					margin: 0px;
+					width: 32px;
+					float: left;
+				}
+				.deploy_options .clearfix label {
+					width:auto;
+				}
+				.deploy_options .clearfix label > div {
+					float: left;
+					width: auto;
+					font-weight: bold;
+					height: 30px;
+					padding-top: 5px;
+					cursor: pointer;
+				}
+				
+			</style>
+			<form>
+				<fieldset class="deploy_options" style="margin:0;padding-top:0px;">
+					<div class="clearfix">
+						<label>
+							<input type="checkbox" id="check_only" style="margin:0px;width:32px;"/>						
+							<div id="check_only_label">Validate Only</div>
+						</label> 
+					</div>
+					<!-- <div class="clearfix">
+						<label>
+							<input type="checkbox" id="save_changeset" style="margin:0px;width:32px;"/>						
+							<div>Save as Changeset</div>
+						</label>						
+					</div>
+					<div class="clearfix" id="changeset_name_wrapper" style="display:none;margin-bottom:10px;">
+						<label for="cname" style="font-weight:bold;">Changeset Name</label> 
+						<input class="xlarge" size="100" type="text" id="cname">
+					</div>     -->
+					<div class="clearfix">
+						<label>
+							<input type="checkbox" id="set_and_forget" style="margin:0px;width:32px;"/>						
+							<div>Set and Forget</div>
+						</label>   					
+					</div>
+					<div id="deploy_info" style="display:none;" class="alert-message block-message info">
+			        	<p><strong>This deployment will run in async mode.</strong></p>
+			      	</div>
+					
+				</fieldset>
+			</form>
+		</div>
+		
+		
+		<style>
+			#filter {
+				background-color:#f7f7f7;
+				padding:5px;
+				border-bottom:1px solid #ccc;
+				margin-bottom:10px;
+				position:relative;
+			}
+		</style>
+				
+		<div id="metadata">
+			
+			<form class="form-stacked" style="padding-left:15px;margin-bottom:5px;">
+			 	<fieldset>
+			   		<div class="clearfix">
+						<label for="ptype">Package Type</label> 
+						<select id="ptype">
+							<option>Custom</option>
+							<option>Changeset</option>
+						</select>
+					</div> 
+					<div class="clearfix" id="changesetwrapper" style="display:none">
+						<label for="cset">Changeset</label> 
+						<select id="cset">
+							<% changesets.each do |c| %>
+								<option><%= c %></option>
+							<% end %>
+						</select>
+					</div>   			
+				</fieldset>	
+			</form>
+			
+			<script>
+				$("#ptype").change(function() {
+					if (this.value == "Custom") {
+						$("#project_wrapper").show();
+						$("#changesetwrapper").hide();
+					} else {
+						$("#project_wrapper").hide();
+						$("#changesetwrapper").show();
+					}
+				})
+			</script>
+			
+			<div id="project_wrapper">
+				
+				<div id="filter">
+					<input type="text" id="txtFilter" style="width:200px" />
+					<a href="#" id="btnClearFilter" onclick="clearFilter();" class="btn small error" style="visibility:invisible;opacity:0;font-weight:bold;position:relative;top:1px;right:30px;padding:4px 7px 4px;">X</a>
+					<a href="#" id="btnSelectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">all</a>
+                    <a href="#" id="btnDeselectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">none</a>
+				</div>
+				
+				<div id="treewrapper">
+					<div id="tree">
+						<ul>
+						<% meta_array.each do |hash| %>
+							<% 
+								next if !hash[:children]
+								next if hash[:children].size == 0
+								class_name = (hash[:children] && hash[:children].size > 0) ? "folder" : "" 
+							%>
+							<li data="level: 1, hasChildTypes: <%=hash[:hasChildTypes]%>, inFolder: <%=hash[:inFolder]%>" id="<%= hash[:key] %>" class="folder level1"><%= hash[:title] %>					
+								<% if hash[:children] %>
+								<ul>
+									<% hash[:children].each do |child| %>
+										<% child_class_name = (child[:children] && child[:children].size > 0) ? "folder" : "" %>
+										<li data="level: 2" id="<%= child[:key] %>" class="<%= child_class_name %> level2"><%= child[:title] %>
+										<% if child[:children] && child[:children].size > 0 %>
+											<ul>
+												<% child[:children].each do |gchild| %>
+													<li data="level: 3" class="level3"><%= gchild[:title] %>
+														<% if gchild[:children] && gchild[:children].size > 0 %>
+															<ul>
+																<% gchild[:children].each do |ggchild| %>
+																	<li data="level: 4" class="level4"><%= ggchild[:title] %></li>
+																<% end %>
+															</ul>
+														<% end %>
+													</li>
+												<% end %>
+											</ul>
+										<% end %>
+										</li>
+									<% end %>
+								</ul>
+								<% end %>
+							</li>
+						<% end %>
+						</ul>												
+					</div>
+					<div id="info"></div>
+				</div> 
+			</div>
+		</div>
+		
+		<div id="result">
+			
+		</div>		
+	</div>
+</div> 
+
+
+<form class="form-stacked" id="action_buttons">
+	<fieldset style="padding-top:0px;">
+		<div class="actions">					
+			<input id="btnDeploy" type="button" class="btn primary" value="Deploy to Server"  onclick='deploy()'>
+			&nbsp;
+			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
+		</div>
+	</fieldset>
+</form> 
+
+<div class="twipsy deploy_loading">
+	<div class="loading_indicator"></div>                                        	
+</div>
+<div class="deploy_wait_description">
+	Deploying to <span id="where"></span>.<br/><br/>
+	Do not close or minimize this window. 
+</div>
+
+
+<script type="text/javascript">
+	document.title = "Deploy To Server";
+	
+	var child_def = {}
+    <%- child_metadata_definition.each do |child| -%>
+    child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
+   	<%- end -%>
+
+	var pw_def = {}
+    <%- connections.each do |c| -%>
+    pw_def['<%= c[:un] %>'] = '<%= c[:pw] %>';
+   	<%- end -%>
+	
+	var surl_def = {}
+    <%- connections.each do |c| -%>
+    surl_def['<%= c[:un] %>'] = '<%= c[:server_url] %>';
+   	<%- end -%>
+		
+	function isValidateOnly() {
+	    if ($("#check_only").is(":checked")) {
+	        return "1";
+	    } else {
+	        return "0";
+	    }
+	}
+	
+	function deployMode() {
+		if ($("#set_and_forget").is(":checked")) {
+	        return "async";
+	    } else {
+	        return "";
+	    }
+	}
+	
+	$("#set_and_forget").click(function() {
+		if (this.checked) {
+			$("#deploy_info").show();			
+		} else {
+			$("#deploy_info").hide();
+		}
+	}); 
+	
+	$("#save_changeset").click(function() {
+		if (this.checked) {
+			$("#changeset_name_wrapper").show();			
+		} else {
+			$("#changeset_name_wrapper").hide();
+		}
+	});
+	
+	
+	function deploy() {		
+		deploy_mode = deployMode();
+		if (deploy_mode == "async") {
+			$("#where").html($("#un").val());
+			$(".deploy_loading").fadeIn();
+			$(".deploy_wait_description").fadeIn();
+		}
+		 
+		$("#result").html(
+			dispatch({
+			    controller: "deploy",
+			    action: "deploy_metadata",
+			    un: $("#un").val(),
+			    pw: $("#pw").val(),
+			    server_url: $("#server_url").val(),
+			    check_only: isValidateOnly(),
+				mode: deploy_mode,
+			    tree: get_tree(),
+				package_type: $("#ptype").val(),
+			  	changeset: $("#cset").val()
+			})
+		);  
+	} 
+	
+	function resizeWindowAfterResult() {
+		window.resizeTo(800, window.innerHeight);
+		window.moveTo(
+			(screen.width-800)/2,
+			(screen.height-document.getElementById('wrapper').offsetHeight-400)/2
+	    );
+	}
+
+	$(function() {
+	    //if dom elements is removed, we need to resize the window
+		$( "body" ).bind(
+			"DOMNodeInserted",
+			function( event ) {
+				if (event.target.id == "result") {
+					$("#result_tab").click(); 
+				    $("#result_table_wrapper").height($(window).height() - 240)
+					$(window).resize(function() {
+				        $("#result_table_wrapper").height($(window).height() - 240)
+				    });
+				    resizeWindowAfterResult();
+				}
+			}
+		); 
+		
+		// $("#un").val($("#un_list").val());
+		// $("#pw").val(pw_def[this.value]);
+		// $("#server_url").val(surl_def[this.value]);  
+		
+		$("#check_only").change(function() {
+			if (!this.checked) {
+				$("#btnDeploy").val('Deploy to Server');
+			} else {
+				$("#btnDeploy").val('Validate Deployment');
+			}
+		});
+		
+		$("#un_list").change(function() {
+			if (this.value == 'new') {
+				$("#un").val("");
+				$("#un").show();
+				$("#pw").val(""); 
+				$("#server_url").val("https://www.salesforce.com");
+			} else {
+				$("#un").hide();
+				$("#un").val(this.value);
+				$("#pw").val(pw_def[this.value]);
+				$("#server_url").val(surl_def[this.value]);
+			}
+		});
+		
+		if ($("#un_list").val() != 'new') {
+			$("#un").val($("#un_list").val());
+			$("#pw").val(pw_def[$("#un_list").val()]);
+		}  
+	
+		$('.tabs').tabs();
+
+	    $("#project_wrapper").height($(window).height() - 175)
+
+	    var resizeHeight = $("#form").height();
+	    resizeAndCenterWindowByHeight(resizeHeight + 150);
+
+	    $(window).resize(function() {
+	        $("#project_wrapper").height($(window).height() - 175)
+	    });
+
+	    //instantiate and populate metadata tree
+		$("#tree").dynatree({
+			persist: false,
+			checkbox: true,
+			selectMode: 3
+		});
+
+	    $.expr[':'].Contains = function(a, i, m) {
+	        return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+	    };
+
+	    $("#txtFilter")
+	    .change(function() {
+	        var filter = $(this).val(); 
+			//if (filter.length < 3) return false;
+	        // if (filter) {
+	        //     // this finds all links in a list that contain the input,
+	        //     // and hide the ones not containing the input while showing the ones that do
+	        //     $(".dynatree-node").find("a:not(:Contains(" + filter + "))").parent().parent().hide();
+	        //     $(".dynatree-node").find("a:Contains(" + filter + ")").parent().parent().show();
+	        //     $(".dynatree-node").parent().parent().prev().each(function() {
+	        //         var node = $.ui.dynatree.getNode(this);
+	        //         console.log(node);
+	        //     });
+	        // } else {
+	        //     $(".dynatree-node").parent().show();
+	        // }
+    		if (filter) {
+				$("#btnClearFilter").css({opacity: 1.0, visibility: "visible"})
+				expandAll();        	
+				filter_tree(filter);				
+			} else {
+		    	$("#btnClearFilter").css({opacity: 0.0, visibility: "invisible"})
+				clearFilter();
+			}
+	        return false;
+	    })
+	    .keyup(function() {
+	        // fire the above change event after every letter	
+			$(this).change();
+	    });
+	
+	    $("#tree").dynatree("getRoot").visit(function(node) {
+	        node.expand(false);
+	    });  
+		
+		var rootNode = $("#tree").dynatree("getRoot");
+		
+		function filter_tree(searchTerm) {
+			var regex = new RegExp(searchTerm,"i");
+			rootNode.visit(function(node) {          
+			    if (node.isVisible() && node.data.title) {              
+					// Filter currently visible non-root nodes.              
+					nodeTitle = node.data.title;
+
+					if ( nodeTitle.match(regex) ) {
+	              		// Make sure we and all our parents are visible                  
+						node.visitParents(function(node) {                      
+							$(node.li).show();                      
+							return (node.parent != null);                  
+						}, true); 
+			            // Terminate the traversal of this branch since the node matches
+						return 'skip';  
+		            } else {
+		                $(node.li).hide();
+		            }   
+					
+					
+			// 		if (nodeTitle.indexOf(searchTerm) >= 0 || nodeTitleLower.indexOf(searchTerm) >= 0) {                 
+			// 			 // Make sure we and all our parents are visible                  
+			// 			node.visitParents(function(node) {                      
+			// 				$(node.li).show();                      
+			// 				return (node.parent != null);                  
+			// 			}, true); 
+			//             // Terminate the traversal of this branch since the node matches
+			// 			return 'skip';              
+			// 		} else {                  
+			// 			// Hide the node.                  
+			// 			$(node.li).hide();              
+			// 		}     
+				}
+			});
+		}
+	});
+	
+	function expandAll() {
+		$("#tree").dynatree("getRoot").visit(function(node){
+		    node.expand(true);
+		});
+	}
+	
+	function collapseAll() {
+		$("#tree").dynatree("getRoot").visit(function(node){
+		    node.expand(false);
+		});
+	}
+	
+	function clearFilter() {
+		$('#txtFilter').val('');
+		$("#btnClearFilter").css({opacity: 0.0, visibility: "visible"});
+		collapseAll();
+		$(".dynatree-container li").show(); 
+		$('#txtFilter').focus();
+	}
+	
+	$("#btnDeselectAll").click(function(){
+		$("#tree").dynatree("getRoot").visit(function(node){   		
+			if ($(node.li).css('display') != 'none') { 
+				try {
+					if (node.data.level > 1)
+						node.select(false);
+				} catch(e) {
+					node.select(false);   				
+				}
+			}
+		});
+		return false;
+	});
+	$("#btnSelectAll").click(function(){
+		$("#tree").dynatree("getRoot").visit(function(node){		   			
+			if ($(node.li).css('display') != 'none') {
+				try {
+					if (node.data.level > 1)
+						node.select(true);
+				} catch(e) {
+					node.select(true);   				
+				}
+			}   		
+		});
+		return false;
+	});   		 						
+</script>
