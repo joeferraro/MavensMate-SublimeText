@@ -19,7 +19,7 @@ Open Sublime Text, go to Preferences (command + ,) and add a declaration for whe
 
 	"mm_workspace": "/Users/your_username/Projects"
 
-So, you're Preferences.sublime-settings file may look something like this:
+So, your Preferences.sublime-settings file may look something like this:
 
 	{
 		"color_scheme": "Packages/User/Espresso Soda.tmTheme",
