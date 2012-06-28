@@ -40,6 +40,26 @@ module MavensMate
       Savon.configure do |config|
         config.log = false
       end      
+      
+      begin
+        if ENV["MM_CURRENT_PROJECT_DIRECTORY"] != ''
+          yml = YAML::load(File.open(ENV['MM_CURRENT_PROJECT_DIRECTORY'] + "/config/.session"))
+          self.user_id = yml['user_id']
+          self.sid = yml['sid']
+          self.metadata_server_url = yml['metadata_server_url']
+          self.endpoint = yml['endpoint']
+          self.pclient = get_partner_client
+        end
+
+        response = self.pclient.request :get_user_info do
+          soap.header = get_soap_header
+        end
+        #raise Exception.new(response.to_hash.inspect)
+        return
+      rescue Exception => e
+        #raise Exception.new(e.message)
+      end
+
       if creds[:sid].nil? && creds[:metadata_server_url].nil?        
         creds = (creds[:username].nil? || creds[:password].nil? || creds[:endpoint].nil?) ? get_creds : creds
         self.username = creds[:username]
@@ -54,35 +74,31 @@ module MavensMate
         self.sid = creds[:sid]
         self.metadata_server_url = creds[:metadata_server_url]
       end
+      
+      begin
+        if ENV["MM_CURRENT_PROJECT_DIRECTORY"] != ''
+          src = File.new(ENV["MM_CURRENT_PROJECT_DIRECTORY"]+"/config/.session", "w")
+          src.puts("user_id: " + self.user_id)
+          src.puts("sid: " + self.sid)
+          src.puts("metadata_server_url: " + self.metadata_server_url)
+          src.puts("endpoint: " + self.pclient.wsdl.endpoint)
+          src.close
+        end
+      rescue
+
+      end
+
     end
     
     #logs into SFDC, sets metadata server url & sessionid
     def login
-      #puts "logging in with: "+self.password
       begin
         response = self.pclient.request :login do
           soap.body = { :username => self.username, :password => self.password }
         end
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
-        # TODO: handle incorrect password gracefully
-        # if fault.to_s.include? "INVALID_LOGIN"
-        #   self.password = TextMate::UI.request_secure_string(
-        #     :title => "MavensMate", 
-        #     :prompt => 'Your login attempt failed. Please re-enter your password',
-        #     :button2 => 'Cancel'
-        #   )
-        #   TextMate.exit_discard if self.password == nil
-        #   is_retry = true
-        #   login
-        # else
-        #   raise Exception.new(fault.to_s)
-        # end 
       end
-      
-      # if is_retry == true
-      #   MavensMate.add_to_keychain(MavensMate.get_project_name, self.password)
-      # end 
       
       begin
         res = response.to_hash
