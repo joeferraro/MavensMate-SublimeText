@@ -265,10 +265,11 @@ module MavensMate
                   
       zip_file = MavensMate::FileFactory.put_tmp_metadata(files_to_save)     
       result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})            
-      puts result.inspect
+      puts result.to_json
       #puts "</div>"    
     rescue Exception => e
-      puts e.message + "\n" + e.backtrace.join("\n")
+      res = { :success => false, :message => e.message }
+      puts res.to_json
       #alert e.message
     end
     # if ! result[:check_deploy_status_response][:result][:success]       
