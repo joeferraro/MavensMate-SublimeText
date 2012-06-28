@@ -1,0 +1,53 @@
+[
+{:child_xml_names=>[
+  {:xml_name => "CustomLabel", :tag_name => "customLabels"}
+], :directory_name=>"labels", :in_folder=>false, :meta_file=>false, :suffix=>"labels", :xml_name=>"CustomLabels"}, 
+{:directory_name=>"staticresources", :in_folder=>false, :meta_file=>true, :suffix=>"resource", :xml_name=>"StaticResource"}, 
+{:directory_name=>"scontrols", :in_folder=>false, :meta_file=>true, :suffix=>"scf", :xml_name=>"Scontrol"}, 
+{:directory_name=>"components", :in_folder=>false, :meta_file=>true, :suffix=>"component", :xml_name=>"ApexComponent"}, 
+{:directory_name=>"pages", :in_folder=>false, :meta_file=>true, :suffix=>"page", :xml_name=>"ApexPage"}, 
+{:child_xml_names=>[ 
+  {:xml_name => "CustomField", :tag_name => "fields"}, 
+  {:xml_name => "BusinessProcess", :tag_name => "businessProcesses"}, 
+  {:xml_name => "RecordType", :tag_name => "recordTypes"}, 
+  {:xml_name => "WebLink", :tag_name => "webLinks"}, 
+  {:xml_name => "ValidationRule", :tag_name => "validationRules"}, 
+  {:xml_name => "NamedFilter", :tag_name => "namedFilters"}, 
+  {:xml_name => "SharingReason", :tag_name => "sharingReasons"}, 
+  {:xml_name => "ListView", :tag_name => "listViews"}, 
+  {:xml_name => "FieldSet", :tag_name => "fieldSets"},
+  {:xml_name => "ActionOverrideType", :tag_name => "actionOverrides"},
+  {:xml_name => "SearchLayouts", :tag_name => "searchLayouts"}
+], :directory_name=>"objects", :in_folder=>false, :meta_file=>false, :suffix=>"object", :xml_name=>"CustomObject"},
+{:directory_name=>"reportTypes", :in_folder=>false, :meta_file=>false, :suffix=>"reportType", :xml_name=>"ReportType"}, {:directory_name=>"reports", :in_folder=>true, :meta_file=>false, :suffix=>"report", :xml_name=>"Report"},
+{:directory_name=>"dashboards", :in_folder=>true, :meta_file=>false, :suffix=>"dashboard", :xml_name=>"Dashboard"}, 
+{:directory_name=>"layouts", :in_folder=>false, :meta_file=>false, :suffix=>"layout", :xml_name=>"Layout"}, 
+{:directory_name=>"documents", :in_folder=>true, :meta_file=>true, :xml_name=>"Document"},
+{:directory_name=>"weblinks", :in_folder=>false, :meta_file=>false, :suffix=>"weblink", :xml_name=>"CustomPageWebLink"}, 
+{:directory_name=>"tabs", :in_folder=>false, :meta_file=>false, :suffix=>"tab", :xml_name=>"CustomTab"}, 
+{:directory_name=>"applications", :in_folder=>false, :meta_file=>false, :suffix=>"app", :xml_name=>"CustomApplication"},
+{:directory_name=>"letterhead", :in_folder=>false, :meta_file=>false, :suffix=>"letter", :xml_name=>"Letterhead"}, 
+{:directory_name=>"email", :in_folder=>true, :meta_file=>true, :suffix=>"email", :xml_name=>"EmailTemplate"},
+{:child_xml_names=>[
+  {:xml_name => "WorkflowAlert", :tag_name => "alerts"}, 
+  {:xml_name => "WorkflowTask", :tag_name => "tasks"}, 
+  {:xml_name => "WorkflowOutboundMessage", :tag_name => "outboundMessages"}, 
+  {:xml_name => "WorkflowFieldUpdate", :tag_name => "fieldUpdates"}, 
+  {:xml_name => "WorkflowRule", :tag_name => "rules"},
+  {:xml_name => "WorkflowEmailRecipient", :tag_name => "emailRecipients"},
+  {:xml_name => "WorkflowTimeTrigger", :tag_name => "timeTriggers"},
+  {:xml_name => "WorkflowActionReference", :tag_name => "actionReferences"}                                                                                
+], :directory_name=>"workflows", :in_folder=>false, :meta_file=>false, :suffix=>"workflow", :xml_name=>"Workflow"},
+{:directory_name=>"homePageComponents", :in_folder=>false, :meta_file=>false, :suffix=>"homePageComponent", :xml_name=>"HomePageComponent"}, 
+{:directory_name=>"homePageLayouts", :in_folder=>false, :meta_file=>false, :suffix=>"homePageLayout", :xml_name=>"HomePageLayout"}, {:directory_name=>"objectTranslations", :in_folder=>false, :meta_file=>false, :suffix=>"objectTranslation", :xml_name=>"CustomObjectTranslation"},
+{:directory_name=>"classes", :in_folder=>false, :meta_file=>true, :suffix=>"cls", :xml_name=>"ApexClass"}, 
+{:directory_name=>"triggers", :in_folder=>false, :meta_file=>true, :suffix=>"trigger", :xml_name=>"ApexTrigger"}, 
+{:directory_name=>"profiles", :in_folder=>false, :meta_file=>false, :suffix=>"profile", :xml_name=>"Profile"}, 
+{:directory_name=>"permissionsets", :in_folder=>false, :meta_file=>false, :suffix=>"permissionset", :xml_name=>"PermissionSet"}, 
+{:directory_name=>"datacategorygroups", :in_folder=>false, :meta_file=>false, :suffix=>"datacategorygroup", :xml_name=>"DataCategoryGroup"}, 
+{:directory_name=>"analyticSnapshots", :in_folder=>false, :meta_file=>false, :suffix=>"snapshot", :xml_name=>"AnalyticSnapshot"}, 
+{:directory_name=>"remoteSiteSettings", :in_folder=>false, :meta_file=>false, :suffix=>"remoteSite", :xml_name=>"RemoteSiteSetting"},
+{:directory_name=>"portals", :in_folder=>false, :meta_file=>false, :suffix=>"portal", :xml_name=>"Portal"},
+{:directory_name=>"sites", :in_folder=>false, :meta_file=>false, :suffix=>"site", :xml_name=>"CustomSite"}
+]
+

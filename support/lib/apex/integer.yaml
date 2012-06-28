@@ -1,0 +1,5 @@
+static_methods:
+    - valueOf(anyType_x)
+    - valueOf(String_s)
+instance_methods:
+    - format()

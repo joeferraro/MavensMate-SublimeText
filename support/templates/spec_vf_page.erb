@@ -1,0 +1,21 @@
+require File.dirname(__FILE__) + "/spec_helper.rb"
+
+describe "<%= page_name %>" do
+  puts "***Starting Visualforce Page Test: <%= page_name %>***"
+  
+  login_to_salesforce
+  go_to_page("<%= page_name %>")	
+  
+	it "should do something", :js => true do	
+	  #fill_in "my_text_field", :with => "some text"
+	  #click_button 'Submit'
+	  #page.should have_content("you submitted!")
+  end
+  
+  it "should do this too", :js => true do	
+	  #fill_in "my_object_name", :with => "An Object Name"
+	  #click_button 'Save'
+	  #page.should have_content("You saved successfully!")
+  end
+  
+end

@@ -1,0 +1,6 @@
+static_methods:
+    - toPdf(String_s)
+    - valueOf(String_s)
+instance_methods:
+    - size()
+    - toString() 

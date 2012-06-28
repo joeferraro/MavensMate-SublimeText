@@ -1,0 +1,33 @@
+[
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"analyticSnapshots","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"AnalyticSnapshot","title":"AnalyticSnapshot"},
+  {"hasChildTypes":false,"child_metadata":null,"select":true,"directory_name":"classes","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"ApexClass","title":"ApexClass"},
+  {"hasChildTypes":false,"child_metadata":null,"select":true,"directory_name":"components","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"ApexComponent","title":"ApexComponent"}, 
+  {"hasChildTypes":false,"child_metadata":null,"select":true,"directory_name":"pages","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"ApexPage","title":"ApexPage"},
+  {"hasChildTypes":false,"child_metadata":null,"select":true,"directory_name":"triggers","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"ApexTrigger","title":"ApexTrigger"}, 
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"applications","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"CustomApplication","title":"CustomApplication"}, 
+  {"hasChildTypes":true,"child_metadata":["CustomLabel"],"select":false,"directory_name":"labels","has_child_metadata":true,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"CustomLabels","title":"CustomLabels"},
+  {"hasChildTypes":true,"child_metadata":
+      ["CustomField","BusinessProcess","RecordType","WebLink","ValidationRule","NamedFilter","SharingReason","ListView","FieldSet"],
+      "select":false,"directory_name":"objects","has_child_metadata":true,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"CustomObject","title":"CustomObject"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"objectTranslations","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"CustomObjectTranslation","title":"CustomObjectTranslation"},    
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"weblinks","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"CustomPageWebLink","title":"CustomPageWebLink"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"tabs","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"CustomTab","title":"CustomTab"},    
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"dashboards","has_child_metadata":false,"isLazy":true,"in_folder":true,"isFolder":true,"meta_type":"Dashboard","title":"Dashboard"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"datacategorygroups","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"DataCategoryGroup","title":"DataCategoryGroup"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"documents","has_child_metadata":false,"isLazy":true,"in_folder":true,"isFolder":true,"meta_type":"Document","title":"Document"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"email","has_child_metadata":false,"isLazy":true,"in_folder":true,"isFolder":true,"meta_type":"EmailTemplate","title":"EmailTemplate"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"homePageComponents","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"HomePageComponent","title":"HomePageComponent"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"homePageLayouts","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"HomePageLayout","title":"HomePageLayout"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"layouts","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"Layout","title":"Layout"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"letterhead","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"Letterhead","title":"Letterhead"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"permissionsets","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"PermissionSet","title":"PermissionSet"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"profiles","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"Profile","title":"Profile"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"remoteSiteSettings","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"RemoteSiteSetting","title":"RemoteSiteSetting"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"reports","has_child_metadata":false,"isLazy":true,"in_folder":true,"isFolder":true,"meta_type":"Report","title":"Report"},
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"reportTypes","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"ReportType","title":"ReportType"},  
+  {"hasChildTypes":false,"child_metadata":null,"select":false,"directory_name":"scontrols","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"Scontrol","title":"Scontrol"},
+  {"hasChildTypes":false,"child_metadata":null,"select":true,"directory_name":"staticresources","has_child_metadata":false,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"StaticResource","title":"StaticResource"},
+  {"hasChildTypes":true,"child_metadata":
+      ["WorkflowAlert","WorkflowTask","WorkflowOutboundMessage","WorkflowFieldUpdate","WorkflowRule"],
+      "select":false,"directory_name":"workflows","has_child_metadata":true,"isLazy":true,"in_folder":false,"isFolder":true,"meta_type":"Workflow","title":"Workflow"}
+]

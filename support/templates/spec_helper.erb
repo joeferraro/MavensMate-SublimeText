@@ -1,0 +1,33 @@
+require 'rubygems'
+require 'capybara/dsl'
+require File.dirname(__FILE__) + "/spec_helper.rb"
+
+Capybara.run_server = false
+Capybara.current_driver = :selenium
+Capybara.app_host = 'https://<%= subdomain %>.salesforce.com'
+include Capybara::DSL 
+
+def login_to_salesforce
+	visit("<%= login_url %>")
+	creds = get_creds
+	fill_in "username", :with => creds[:username]
+	fill_in "password", :with => creds[:password]
+	click_button "Login"	
+end
+
+def go_to_page(page_name)
+	visit("/apex/#{page_name}")	
+end
+
+def get_creds 
+  require 'yaml'
+  yml = YAML::load(File.open("<%= project_directory %>/config/settings.yaml"))
+  username = yml['username']
+  password = get_password("<%= project_name %>-mm")
+  return { :username => username, :password => password }
+end
+
+def get_password(aname)
+  result = %x{security find-generic-password -ga "#{aname}" 2>&1 >/dev/null}
+  result =~ /^password: "(.*)"$/ ? $1 : nil
+end

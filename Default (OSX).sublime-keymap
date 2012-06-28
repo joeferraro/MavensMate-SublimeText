@@ -1,0 +1,5 @@
+[  
+    {  "keys": ["ctrl+shift+m"], "command": "new_project" },
+    {  "keys": ["ctrl+shift+s"], "command": "compile_active_file" },
+    {  "keys": ["ctrl+shift+n"], "command": "new_metadata" }
+]  
