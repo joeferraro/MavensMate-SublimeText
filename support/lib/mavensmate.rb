@@ -50,7 +50,7 @@ module MavensMate
       add_to_keychain(project_name, pw)
 
       client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
-      #threads << Thread.new {          
+      threads << Thread.new {          
         thread_client = MavensMate::Client.new({ 
           :sid => client.sid, 
           :metadata_server_url => client.metadata_server_url 
@@ -60,12 +60,9 @@ module MavensMate
         MavensMate::FileFactory.put_package("#{tmp_dir}/mmpackage", binding, false)
         project_zip = thread_client.retrieve({ :package => "#{tmp_dir}/mmpackage/package.xml" })            
         MavensMate::FileFactory.put_project_metadata(project_name, project_zip) #put the metadata in the project directory    
-        #add_to_keychain(project_name, pw)
-        #MavensMate::FileFactory.put_project_config(un, project_name, server_url)
-        #MavensMate::FileFactory.put_sublime_text_project_file(project_name)
         FileUtils.rm_rf "#{tmp_dir}/mmpackage"
-      #}
-      #threads << Thread.new {
+      }
+      threads << Thread.new {
         #put object metadata 
         thread_client = MavensMate::Client.new({ 
          :sid => client.sid, 
@@ -81,8 +78,8 @@ module MavensMate
         object_zip = thread_client.retrieve(options) #get selected metadata
         Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
         MavensMate::FileFactory.put_object_metadata(project_name, object_zip)
-      #} 
-      #threads.each { |t|  t.join }
+      } 
+      threads.each { |t|  t.join }
       
       if is_vc
         require SUPPORT + '/lib/tm/process'
