@@ -224,7 +224,6 @@ def write_to_panel(panel, message):
     panel.set_viewport_position((0,panel.size()))
 
 def print_result_message(res, panel):
-    #print res
     if 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
         res = res['check_deploy_status_response']['result']
         line_col = ""
@@ -245,7 +244,6 @@ def print_result_message(res, panel):
         write_to_panel(panel, '\n[Operation Completed Successfully]' + '\n')    
 
 def handle_result(panel, result):
-    #print "result: " + result
     print_result_message(result, panel) 
     if 'check_deploy_status_response' in result: 
         res = result['check_deploy_status_response']['result']
