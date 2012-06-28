@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby -W0
 require File.dirname(File.dirname(__FILE__)) + "/constants.rb"
 include Constants
 require LIB_ROOT + "/mavensmate.rb"
