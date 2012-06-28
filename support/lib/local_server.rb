@@ -63,7 +63,8 @@ module MavensMate
               result = MavensMate.new_project(params)
               if result[:success]
                 `killAll MavensMate` 
-                `~/bin/subl --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/.sublime-project'` if result[:success]
+                #`~/bin/subl --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/.sublime-project'` if result[:success]
+                `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/.sublime-project'` if result[:success]
               else
                 resp.body = result.to_json
               end
@@ -84,7 +85,8 @@ module MavensMate
               }) 
               puts result.inspect
               `killAll MavensMate` if result[:success] #=> result[:message] 
-              `~/bin/subl --command '#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/#{params[:pn]}/.sublime-project'` if result[:success]
+              #`~/bin/subl --command '#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/#{params[:pn]}/.sublime-project'` if result[:success]
+              `/Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl --command '#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/#{params[:pn]}/.sublime-project'` if result[:success]
               #windows it's sublime_text --command
             rescue Exception => e
               puts e.message
