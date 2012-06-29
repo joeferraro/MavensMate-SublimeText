@@ -94,7 +94,8 @@ module MavensMate
     def login
       begin
         response = self.pclient.request :login do
-          soap.body = { :username => self.username, :password => self.password }
+          #soap.body = { :username => self.username, :password => self.password }
+          soap.body = '<ins0:username>'+self.username+'</ins0:username><ins0:password>'+self.password+'</ins0:password>'
         end
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
