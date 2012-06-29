@@ -72,8 +72,9 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
             self.status_panel = show_mm_panel(self)
             write_to_panel(self.status_panel, 'Cleaning Project\n')
+            print "------CLEANING PROJECT------"
             threads = []
-            thread = MetadataAPICall("clean_project", "'"+mm_project_directory()+"'")
+            thread = MetadataAPICall("clean_project", "'"+mm_project_directory()+"' '"+mm_workspace()+"'")
             threads.append(thread)
             thread.start()
             handle_threads(threads, self.status_panel, handle_result, 0)  
