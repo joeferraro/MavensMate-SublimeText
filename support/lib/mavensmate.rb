@@ -109,7 +109,8 @@ module MavensMate
       
     rescue Exception => e
       FileUtils.rm_rf("#{project_folder}#{project_name}")
-      return { :success => false, :message => e.message + "\n\n" + e.backtrace.join("\n"), :project_name => project_name }
+      #return { :success => false, :message => e.message + "\n\n" + e.backtrace.join("\n"), :project_name => project_name }
+      return { :success => false, :message => e.message, :project_name => project_name }
     end
     return { :success => true, :message => "", :project_name => project_name }
   end
