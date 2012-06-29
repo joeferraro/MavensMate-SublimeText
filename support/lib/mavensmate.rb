@@ -82,28 +82,19 @@ module MavensMate
       threads.each { |t|  t.join }
       
       if is_vc
-        require SUPPORT + '/lib/tm/process'
       	if vc_type == "SVN"
-        	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Importing to SVN Repository' ) do
-        		Dir.chdir("#{project_folder}#{project_name}")	
-        		TextMate::Process.run("svn import #{vc_url} --username #{vc_un} --password #{vc_pw} -m \"initial import\"", :interactive_input => false) do |str|
-          			#STDOUT << htmlize(str, :no_newline_after_br => true)
-        		end
-        	end 
-        	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Checking out from SVN Repository...' ) do
-        		Dir.chdir("#{project_folder}")	
-        		`svn checkout --force #{vc_url} '#{project_name}'`       
-        	end
+      		Dir.chdir("#{project_folder}#{project_name}")	
+      		%x{svn import '#{vc_url}' --trust-server-cert --non-interactive --username #{vc_un} --password #{vc_pw} -m "initial import"}
+      		Dir.chdir("#{project_folder}")	
+      		%x{svn checkout --force --trust-server-cert --non-interactive #{vc_url} '#{project_name}'}      
     	  elsif vc_type == "Git"
-        	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Doing the Git dance...' ) do
-      	    Dir.chdir("#{project_folder}#{project_name}")
-      	    `git init`
-      	    `git remote add '#{vc_alias}' '#{vc_url}'`
-      	    `git add .`
-        		`git commit -m 'First import'`                                     
-        		vc_branch = "HEAD:#{vc_branch}" if vc_branch != "master" 
-      	    `git push '#{vc_alias}' '#{vc_branch}'`
-    		  end
+          Dir.chdir("#{project_folder}#{project_name}")
+          %x{git init}
+          %x{git remote add '#{vc_alias}' '#{vc_url}'}
+          %x{git add .}
+          %x{git commit -m 'First import'}                                     
+          vc_branch = "HEAD:#{vc_branch}" if vc_branch != "master" 
+          %x{git push '#{vc_alias}' '#{vc_branch}'}
     	  end
       end
       
@@ -117,19 +108,19 @@ module MavensMate
   
   #checks out salesforce.com project from svn, applies MavensMate nature
   def self.checkout_project(params)        
-    validate [:internet, :mm_project_folder]
+    # validate [:internet, :mm_project_folder]
     
-    if params[:vc_type] == "SVN"    
-      if (params[:pn].nil? || params[:un].nil? || params[:pw].nil? || params[:vc_url].nil? || params[:vc_un].nil? || params[:vc_pw].nil?)
-        alert "All fields are required to check out a project from SVN"
-        abort
-      end
-    elsif params[:vc_type] == "Git"
-      if params[:vc_url].nil?
-        alert "Please specify the Git repository URL"
-        abort
-      end 
-    end
+    # if params[:vc_type] == "SVN"    
+    #   if (params[:pn].nil? || params[:un].nil? || params[:pw].nil? || params[:vc_url].nil? || params[:vc_un].nil? || params[:vc_pw].nil?)
+    #     alert "All fields are required to check out a project from SVN"
+    #     abort
+    #   end
+    # elsif params[:vc_type] == "Git"
+    #   if params[:vc_url].nil?
+    #     alert "Please specify the Git repository URL"
+    #     abort
+    #   end 
+    # end
     
     project_folder = get_project_folder
     project_name = params[:pn]
@@ -139,7 +130,6 @@ module MavensMate
   	end
     
     begin
-      puts '<div id="mm_logger">'
       #puts params.inspect + "<br/>"
       un          = params[:un]
       pw          = params[:pw]
@@ -151,7 +141,6 @@ module MavensMate
       vc_branch   = params[:vc_branch] || "master"
       endpoint    = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
       
-      require SUPPORT + '/lib/tm/process'    
       Thread.abort_on_exception = true
       threads = []
     	object_zip = nil
@@ -159,15 +148,11 @@ module MavensMate
     	  threads << Thread.new {      
           Dir.mkdir(project_folder) unless File.exists?(project_folder)
       		if vc_type == "Git"
-      		  TextMate::Process.run("git clone '#{vc_url}' -b '#{vc_branch}' '#{project_folder}#{project_name}'", :interactive_input => false) do |str|
-          	  STDOUT << htmlize(str, :no_newline_after_br => true)
-        		end
+      		  %x{git clone '#{vc_url}' -b '#{vc_branch}' '#{project_folder}#{project_name}'}
       		elsif vc_type == "SVN"
         		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
         		Dir.chdir("#{project_folder}")
-        		TextMate::Process.run("svn checkout '#{vc_url}' '#{project_name}' --username #{vc_un} --password #{vc_pw}", :interactive_input => false) do |str|
-          	  STDOUT << htmlize(str, :no_newline_after_br => true)
-        		end
+        		%x{svn checkout '#{vc_url}' '#{project_name}' --trust-server-cert --non-interactive --username #{vc_un} --password #{vc_pw}}
       		end   
     		}
     		threads << Thread.new {
@@ -187,15 +172,12 @@ module MavensMate
     		add_to_keychain(project_name, pw)      		        
         Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
         MavensMate::FileFactory.put_object_metadata(project_name, object_zip)              
-    		open_project(project_name)
     	end
     
     rescue Exception => e
-      puts "</div>"
       FileUtils.rm_rf("#{project_folder}#{project_name}")
       return { :success => false, :message => e.message, :project_name => project_name } 
     end
-    puts "</div>"
     return { :success => true, :message => "", :project_name => project_name }
   end
     
