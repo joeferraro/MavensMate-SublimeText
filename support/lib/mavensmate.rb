@@ -308,7 +308,7 @@ module MavensMate
         puts result.to_json 
       end
     rescue Exception => e
-      res = { :success => false, :message => e.message + "\n" + e.backtrace.join("\n") }
+      res = { :success => false, :message => e.message }
       puts res.to_json 
     end
   end
