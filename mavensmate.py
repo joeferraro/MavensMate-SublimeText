@@ -227,13 +227,18 @@ def print_result_message(res, panel):
     if 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
         res = res['check_deploy_status_response']['result']
         line_col = ""
-        if 'line_number' in res['messages'][0]:
-            line_col = ' (Line: '+res['messages'][0]['line_number']
-        if 'column_number' in res['messages'][0]:
-            line_col += ', Column: '+res['messages'][0]['column_number']
+        msg = []
+        if type( res['messages'] ) == list:
+            msg = res['messages'][0]
+        else:
+            msg = res['messages']
+        if 'line_number' in msg:
+            line_col = ' (Line: '+msg['line_number']
+        if 'column_number' in msg:
+            line_col += ', Column: '+msg['column_number']
         if len(line_col) > 0:
             line_col += ')'
-        write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + res['messages'][0]['problem'] + line_col + '\n')
+        write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + msg['problem'] + line_col + '\n')
     elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == True:     
         write_to_panel(panel, '\n[Deployed Successfully]' + '\n')
     elif res['success'] == False and 'message' in res:
