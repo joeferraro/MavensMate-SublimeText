@@ -203,7 +203,7 @@ def handle_threads(threads, p, handle_result, i=0):
     threads = next_threads
 
     if len(threads):
-        sublime.set_timeout(lambda: handle_threads(threads, p, handle_result, i), 300)
+        sublime.set_timeout(lambda: handle_threads(threads, p, handle_result, i), 600)
         return
 
     handle_result(p, compile_result)
