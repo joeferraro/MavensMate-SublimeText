@@ -8,6 +8,8 @@ require SUPPORT + '/lib/exceptions'
 require SUPPORT + '/lib/metadata_helper'
 require SUPPORT + '/lib/util'
 
+STDOUT.sync = true
+
 module MavensMate
   
   include MetadataHelper
@@ -110,23 +112,20 @@ module MavensMate
   def self.checkout_project(params)        
     # validate [:internet, :mm_project_folder]
     
-    # if params[:vc_type] == "SVN"    
-    #   if (params[:pn].nil? || params[:un].nil? || params[:pw].nil? || params[:vc_url].nil? || params[:vc_un].nil? || params[:vc_pw].nil?)
-    #     alert "All fields are required to check out a project from SVN"
-    #     abort
-    #   end
-    # elsif params[:vc_type] == "Git"
-    #   if params[:vc_url].nil?
-    #     alert "Please specify the Git repository URL"
-    #     abort
-    #   end 
-    # end
+    if params[:vc_type] == "SVN"    
+      if (params[:pn].nil? || params[:un].nil? || params[:pw].nil? || params[:vc_url].nil? || params[:vc_un].nil? || params[:vc_pw].nil?)
+        return alert "All fields are required to check out a project from SVN"
+      end
+    elsif params[:vc_type] == "Git"
+      if params[:vc_url].nil?
+        return alert "Please specify the Git repository URL"
+      end 
+    end
     
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
-  	  alert "Hm, it looks like this project already exists in your project folder"
-      abort
+  	  return alert "Hm, it looks like this project already exists in your project folder"
   	end
     
     begin
@@ -144,35 +143,34 @@ module MavensMate
       Thread.abort_on_exception = true
       threads = []
     	object_zip = nil
-    	TextMate.call_with_progress( :title => 'MavensMate', :message => 'Checking out from Repository' ) do
-    	  threads << Thread.new {      
-          Dir.mkdir(project_folder) unless File.exists?(project_folder)
-      		if vc_type == "Git"
-      		  %x{git clone '#{vc_url}' -b '#{vc_branch}' '#{project_folder}#{project_name}'}
-      		elsif vc_type == "SVN"
-        		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
-        		Dir.chdir("#{project_folder}")
-        		%x{svn checkout '#{vc_url}' '#{project_name}' --trust-server-cert --non-interactive --username #{vc_un} --password #{vc_pw}}
-      		end   
-    		}
-    		threads << Thread.new {
-    		  client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
-          object_response = client.list("CustomObject", true)
-          object_list = []
-          object_response[:list_metadata_response][:result].each do |obj|
-            object_list.push(obj[:full_name])
-          end 
-          object_hash = { "CustomObject" => object_list }               
-          options = { :meta_types => object_hash }
-          object_zip = client.retrieve(options) #get selected metadata
-    		}
-    		threads.each { |aThread|  aThread.join }
-                                                    
-        MavensMate::FileFactory.put_project_config(un, project_name, server_url)
-    		add_to_keychain(project_name, pw)      		        
-        Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
-        MavensMate::FileFactory.put_object_metadata(project_name, object_zip)              
-    	end
+  	  threads << Thread.new {      
+        Dir.mkdir(project_folder) unless File.exists?(project_folder)
+    		if vc_type == "Git"
+    		  %x{git clone '#{vc_url}' -b '#{vc_branch}' '#{project_folder}#{project_name}'}
+    		elsif vc_type == "SVN"
+      		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
+      		Dir.chdir("#{project_folder}")
+      		%x{svn checkout '#{vc_url}' '#{project_name}' --trust-server-cert --non-interactive --username #{vc_un} --password #{vc_pw}}
+    		end   
+  		}
+  		threads << Thread.new {
+  		  client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
+        object_response = client.list("CustomObject", true)
+        object_list = []
+        object_response[:list_metadata_response][:result].each do |obj|
+          object_list.push(obj[:full_name])
+        end 
+        object_hash = { "CustomObject" => object_list }               
+        options = { :meta_types => object_hash }
+        object_zip = client.retrieve(options) #get selected metadata
+  		}
+  		threads.each { |aThread|  aThread.join }
+                                                  
+      MavensMate::FileFactory.put_project_config(un, project_name, server_url)
+      MavensMate::FileFactory.put_sublime_text_project_file(project_name)
+      add_to_keychain(project_name, pw)      		        
+      Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
+      MavensMate::FileFactory.put_object_metadata(project_name, object_zip)              
     
     rescue Exception => e
       FileUtils.rm_rf("#{project_folder}#{project_name}")
