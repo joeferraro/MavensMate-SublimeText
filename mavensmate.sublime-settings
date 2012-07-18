@@ -1,0 +1,12 @@
+/* MavensMate settings */
+{
+	//***if you wish to utilize rvm, set to "~/.rvm/bin/rvm-auto-ruby"
+	"mm_ruby" : "ruby",
+	
+	//set to location where you wish your MavensMate project to reside (must be an existing directory)
+	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
+	"mm_workspace" : "",
+
+	//set to desired Salesforce.com API version (currently hardcoded to 25.0)
+	"mm_api_version" : "25.0"
+}
