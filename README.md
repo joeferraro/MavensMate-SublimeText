@@ -29,6 +29,22 @@ So, your Preferences.sublime-settings file may look something like this:
 		"mm_api_version": "25.0"
 	}
 
+
+###RVM
+If you're using RVM and you want Sublime Text to use your RVM ruby, you will likely need to modify Sublime Text's ruby settings file:
+````
+~/Library/Application\ Support/Sublime\ Text\ 2/Packages/Ruby/Ruby.sublime-build
+````
+
+Modify it to look like this:
+	
+	{
+		"cmd": ["/Users/your_username_here/.rvm/bin/rvm-auto-ruby", "$file"],
+		"file_regex": "^(...*?):([0-9]*):?([0-9]*)",
+		"selector": "source.ruby"
+	}
+
+
 ##Update
 
 ```
