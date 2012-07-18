@@ -6,6 +6,7 @@ MavensMate is a SublimeText plugin that aims to replicate the functionality of t
 * SVN & Git support
 * Create & compile Apex Classes, Apex Trigger, Visualforce Pages, and Visualforce Components
 * Compile and retrieve other Salesforce.com metadata
+* Run Apex test methods and visualize test successes/failures & coverage
 
 *Currently, MavensMate only officially supports OS X. It's on the roadmap to fully support Windows/Linux.
  
@@ -38,3 +39,5 @@ $ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/mast
 
 ###Project Wizard
 <img src="http://wearemavens.com/images/mm/project_wizard.png"/>
+###Apex Test Runner
+<img src="http://wearemavens.com/images/mm/test2.png"/>
