@@ -161,14 +161,45 @@ h4 {
 <form class="form-stacked" id="action_buttons" style="padding-left:12px;">
 	<fieldset style="padding-top:0px;">
 		<div class="actions">					
-				<input type="button" class="btn primary" value="Run Tests" onclick="$('#result_wrapper').html(dispatch({controller: 'unit_test', action: 'run_tests', selected_tests: $('#tests').val() }));"> 
+			<input type="button" class="btn primary" value="Run Tests" onclick="run_tests()"> 
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 		</div>
 	</fieldset>
 </form>
 
+<div class="twipsy deploy_loading">
+	<div class="loading_indicator"></div>                                        	
+</div>
+<div class="deploy_wait_description">
+	Creating Project...
+</div>
+
 <script>
+
+function showBlanket() { $('.deploy_loading').fadeIn(); }
+
+function hideBlanket() { $('.deploy_loading').hide(); }
+
+function run_tests() {
+	$.ajax({
+		type: "POST",
+		url: "http://127.0.0.1:7777/test", 
+		dataType: "html",
+		data: {
+			 selected_tests: $('#tests').val().join(),
+			 mm_current_project_directory: '<%= ENV['MM_CURRENT_PROJECT_DIRECTORY'] %>'
+		},
+		beforeSend: function() { showBlanket(); },
+		complete: function(data){
+			console.log(data)
+			//i believe data.responseText will be raw html
+			$("#result_wrapper").html(data.responseText)
+			hideBlanket();				
+		} 
+	});
+}
+
 function resize() {
 	window.resizeTo(675, document.getElementById('content1').offsetHeight+155);
 }

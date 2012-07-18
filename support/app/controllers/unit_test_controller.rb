@@ -1,5 +1,5 @@
 # encoding: utf-8
-require ENV['TM_BUNDLE_SUPPORT'] + '/lib/mavensmate.rb'
+require SUPPORT + '/lib/mavensmate.rb'
 
 class UnitTestController < ApplicationController
     
@@ -9,25 +9,23 @@ class UnitTestController < ApplicationController
     render "_index", :locals => { :classes => class_list }
   end
   
-  def run_tests
-    if ! params[:selected_tests]
-      TextMate::UI.alert(:warning, "MavensMate", "Please select at least 1 Apex unit test to run")
-      abort
-    end
-    selected_tests = params[:selected_tests].split(",")
-    begin
-      result = MavensMate.run_tests(selected_tests)
-      render "_test_result", :locals => { :result => result }
-    rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message + e.backtrace.join("\n"))
-    end
+  def run_tests(tests)
+    result = MavensMate.run_tests(tests)
+    #return result
+    #puts "run test result: " + result.inspect
+    #return render "_test_result", :locals => { :result => result }
+  end
+
+  def show_test_result
+    #render "_test_result", :locals => { :result => params[:result] }
+    return render_to_string "_foo_bar"
   end
   
   private
     
     def class_list
       classes = []
-      pd = ENV['TM_PROJECT_DIRECTORY']
+      pd = ENV['MM_CURRENT_PROJECT_DIRECTORY']
       Dir.foreach("#{pd}/src/classes") do |cls| 
         next if cls == "." or cls == ".." or cls.include? "-meta.xml" or cls == ".svn"
         begin

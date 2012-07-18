@@ -66,6 +66,13 @@ class CheckoutProjectCommand(sublime_plugin.ApplicationCommand):
         temp_file_name = generate_ui("checkout_project", mm_workspace())
         launch_mavens_mate_window(temp_file_name)   
 
+#displays unit test dialog
+class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        start_local_server()
+        temp_file_name = generate_ui("run_apex_tests", mm_project_directory())
+        launch_mavens_mate_window(temp_file_name) 
+
 #deletes selected metadata
 class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):

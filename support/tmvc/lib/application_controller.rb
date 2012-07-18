@@ -128,10 +128,29 @@ class ApplicationController
     
     __erb__ = ERBStdout.new(___template___, nil, "-", "@output_buffer")
     __erb__.filename = __template_path__
-    __erb__.run(__binding__)    
-    
-    
+    __erb__.run(__binding__)         
   end
+
+  def render_to_string(__name__, __options__ = {}, &block)
+    __name__ = "#{__name__}.html.erb" unless __name__.include?(".")
+    __sub_dir__ = __name__.include?("/") ? "" : self.class.template_root
+    __template_path__ = File.join( VIEWS_ROOT, __sub_dir__, __name__)
+    ___template___ = ERB.new File.read( __template_path__), nil, "-"
+
+    __binding__ = binding
+    if __options__[:locals]
+      __v__ = __options__[:locals].values
+      __binding__.send(:eval, __options__[:locals].keys * ", " + ", = *__v__")
+    end
+
+    __erb__ = ___template___.result(__binding__)        
+    #puts "erb is: " + __erb__
+    #__erb__ = ERBStdout.new(___template___, nil, "-", "@output_buffer")
+    #__erb__.filename = __template_path__
+    #__erb__.run(__binding__)  
+    return __erb__       
+  end
+
   
   def render_component(_params = {})
     flush
