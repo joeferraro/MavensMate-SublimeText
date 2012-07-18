@@ -152,7 +152,8 @@
 					 vc_alias: $("#vc_alias").val(), 
 					 vc_branch: $("#vc_branch").val(), 
 					 tree: get_tree(),
-					 where: "<%= ENV['MM_WORKSPACE'] %>"
+					 where: "<%= ENV['MM_WORKSPACE'] %>",
+					 action: "new"
 				},
 				beforeSend: function() { showBlanket(); },
 				complete: function(data){
@@ -170,7 +171,7 @@
 		function checkout_project() {
 			$.ajax({
 				type: "POST",
-				url: "http://127.0.0.1:7777/project/checkout", 
+				url: "http://127.0.0.1:7777/project", 
 				data: {
 					 pn: $("#pn").val(), 
 					 un: $("#un").val(), 
@@ -182,11 +183,12 @@
 					 vc_type: $("#vc_type").val(), 
 					 vc_alias: $("#vc_alias").val(), 
 					 vc_branch: get_selected_git_branch(), 
-					 where: "<%= ENV['MM_WORKSPACE'] %>"
+					 where: "<%= ENV['MM_WORKSPACE'] %>",
+					 action: "checkout"
 				},
 				beforeSend: function() { showBlanket(); },
 				complete: function(data){
-					//console.log(data)
+					console.log(data)
 					var response = JSON.parse(data.responseText)
 					if (response["success"] == false) {
 						$("#error_message").html(response["message"])

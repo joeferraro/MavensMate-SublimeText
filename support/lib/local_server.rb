@@ -47,6 +47,7 @@ module MavensMate
           def do_POST(req, resp)            
             begin
               params = {}
+              params[:action]     = req.query["action"]
               params[:pn]         = req.query["pn"]
               params[:un]         = req.query["un"]
               params[:pw]         = req.query["pw"]
@@ -57,10 +58,14 @@ module MavensMate
               params[:vc_type]    = req.query["vc_type"]
               params[:vc_alias]   = req.query["vc_alias"]
               params[:vc_branch]  = req.query["vc_branch"]
-              params[:package]    = eval(req.query["tree"])
-              params[:where]      = req.query["where"]  
-              ENV["MM_WORKSPACE"] = req.query["where"]           
-              result = MavensMate.new_project(params)
+              params[:package]    = eval(req.query["tree"]) if params[:action] == "new"
+              params[:where]      = req.query["where"] 
+              ENV["MM_WORKSPACE"] = req.query["where"]
+              if params[:action] == "checkout"
+                result = MavensMate.checkout_project(params)
+              else
+                result = MavensMate.new_project(params)
+              end           
               if result[:success]
                 `killAll MavensMate` 
                 #`~/bin/subl --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/.sublime-project'` if result[:success]
@@ -70,6 +75,7 @@ module MavensMate
               end
             rescue Exception => e
               puts e.message
+              resp.body = e.message.to_json
             end
           end
         end
