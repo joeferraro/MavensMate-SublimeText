@@ -32,9 +32,9 @@ end
 
 def install
 	if OS.windows?
-		#future functionality
+    #future functionality
 	elsif OS.mac?
-		install_package
+    install_package
     install_user_settings
   elsif OS.linux?
 		#future functionality
