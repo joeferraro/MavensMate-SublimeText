@@ -1,4 +1,8 @@
 <%
+	def htmlize(str)
+      str.to_s.gsub(/&/, "&amp;").gsub(/"/, "&quot;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+    end
+
 	warnings = []
 	general_warnings = []
 	if result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings]
@@ -246,11 +250,11 @@
 		</div>
 	</div>
 
-		<% if File.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}" %>
+		<% if File.exist? "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}" %>
 			<table class='code' id="class_code_result_<%= i + 1 %>">
 				<tbody>
 					<% 
-						File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}").each_with_index do |line, index| 
+						File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}").each_with_index do |line, index| 
 							td_class = locations_not_covered_result.detect {|loc| loc[:line].to_i == index + 1 } ? "not_covered" : "covered" 
 					%>
 					<tr>
@@ -322,13 +326,14 @@
 		</div>
 	</div>
 
-		<% if File.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}" %>
+		<% if File.exist? "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}" %>
 			<table class='code' id="trigger_code_result_<%= i + 1 %>">
 				<tbody>
 					<% 
-						File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}").each_with_index do |line, index| 
+						File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/#{directory}/#{r[:name]}.#{extension}").each_with_index do |line, index| 
 							td_class = locations_not_covered_result.detect {|loc| loc[:line].to_i == index + 1 } ? "not_covered" : "covered" 
 					%>
+					<% puts "line: " + line.to_s %>
 					<tr>
 				    <td class="line_numbers"><%= index + 1 %></td>
 				    <td class="code <%= td_class %>"><%= htmlize(line) %></td>

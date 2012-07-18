@@ -11,7 +11,21 @@ module MavensMate
   module LocalServer
             
       class << self
-                        
+        
+        def start_test
+          server = WEBrick::HTTPServer.new(:Port => 7777)
+          ['INT', 'TERM'].each { |signal|
+             trap(signal) { server.shutdown } 
+          }
+          
+          server.mount('/project', ProjectServlet)
+          server.mount('/metadata/list', MetadataListServlet) 
+          server.mount('/vc', VersionControlServlet) 
+          server.mount('/auth', AuthenticationServlet)
+          server.mount('/test', ApexUnitTestServlet)
+          server.start  
+        end
+
         def start
           stop
           exit if fork            # Parent exits, child continues.
@@ -28,7 +42,8 @@ module MavensMate
             server.mount('/project', ProjectServlet)
             server.mount('/metadata/list', MetadataListServlet) 
             server.mount('/vc', VersionControlServlet) 
-            server.mount('/auth', AuthenticationServlet) 
+            server.mount('/auth', AuthenticationServlet)
+            server.mount('/test', ApexUnitTestServlet)
             server.start  
           end   
           Process.detach(pid)
@@ -41,6 +56,25 @@ module MavensMate
           if Lsof.running?(7777)
             Lsof.kill(7777)
           end          
+        end
+
+        class ApexUnitTestServlet < WEBrick::HTTPServlet::AbstractServlet
+          def do_POST(req, resp)
+            ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
+            require SUPPORT + "/environment.rb"
+            require File.dirname(File.dirname(File.dirname(__FILE__))) + "/support/tmvc/lib/application_controller.rb"
+            resp['Content-Type'] = 'html'
+            test_result = {}
+            begin
+              result = MavensMate.run_tests(req.query["selected_tests"].split(","))
+              ac = ApplicationController.new
+              html = ac.render_to_string "unit_test/_test_result", :locals => { :result => result }
+              resp.body = html
+            rescue Exception => e
+              puts e.message + "\n\n" + e.backtrace.join("\n")
+              resp.body = "TEST RESULT: " + test_result.inspect + "\n\n" + "Request: " + req.inspect + "\n\n" + e.message + "\n\n" + e.backtrace.join("\n")
+            end
+          end
         end
         
         class ProjectServlet < WEBrick::HTTPServlet::AbstractServlet

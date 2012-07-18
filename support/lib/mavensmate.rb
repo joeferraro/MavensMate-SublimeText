@@ -546,27 +546,21 @@ module MavensMate
   
   #runs apex tests in selected class
   def self.run_tests(tests)
-    validate [:internet, :mm_project, :run_test]
-    
+    #validate [:internet, :mm_project, :run_test]
     run_test_body = ""
     tests.each do |t|
       run_test_body << "<runTests>#{t}</runTests>"
-    end
-    
+    end    
     run_test_body << "<rollbackOnError>true</rollbackOnError>"
     
     begin
-      TextMate.call_with_progress( :title => "MavensMate", :message => "Running Apex unit tests" ) do
-        zip_file = MavensMate::FileFactory.put_empty_metadata    
-        client = MavensMate::Client.new
-        puts '<div id="mm_logger">'
-        result = client.deploy({:zip_file => zip_file, :deploy_options => run_test_body })
-        puts '</div>'
-        return result      
-      end
+      zip_file = MavensMate::FileFactory.put_empty_metadata    
+      client = MavensMate::Client.new
+      result = client.deploy({:zip_file => zip_file, :deploy_options => run_test_body })
+      return result      
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
-      alert e.message
+      return e.message + "\n" + e.backtrace.join("\n")
     end
     
   end
