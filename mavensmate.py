@@ -11,16 +11,25 @@ import ast
 import copy
 
 mm_dir = os.getcwdu()
+settings = sublime.load_settings('mavensmate.sublime-settings')
+
+def get_ruby():
+    ruby = "ruby"    
+    if settings.get('mm_ruby') != None: 
+        ruby = settings.get('mm_ruby')
+    return ruby
+
+ruby = get_ruby()
 
 def start_local_server():
-    cmd = "ruby -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.start'"
+    cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.start'"
     os.system(cmd)
 
 def stop_local_server():
-    cmd_b = "ruby -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.stop'"
+    cmd_b = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.stop'"
 
 def generate_ui(ruby_script, arg0):
-    cmd = "ruby '"+mm_dir+"/commands/"+ruby_script+".rb' '"+arg0+"'"
+    cmd = ruby+" '"+mm_dir+"/commands/"+ruby_script+".rb' '"+arg0+"'"
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     if p.stdout is not None : 
         msg = p.stdout.readlines()
@@ -50,7 +59,20 @@ def mm_project_directory():
     return sublime.active_window().folders()[0]
 
 def mm_workspace():
-    return sublime.active_window().active_view().settings().get('mm_workspace')
+    workspace = ""
+    if settings.get('mm_workspace') != None:
+        workspace = settings.get('mm_workspace')
+    else:
+        workspace = sublime.active_window().active_view().settings().get('mm_workspace')
+    return workspace
+
+# class UpdatePackageCommand(sublime_plugin.ApplicationCommand):
+#     def run(command):
+#         msg = ""
+#         p = subprocess.Popen(ruby+" < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.rb)", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+#         if p.stdout is not None : 
+#            msg = p.stdout.readlines()
+#         print msg
 
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
@@ -185,7 +207,7 @@ class MetadataAPICall(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        p = subprocess.Popen("ruby '"+mm_dir+"/commands/"+self.command_name+".rb' "+self.params+"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        p = subprocess.Popen(ruby+" '"+mm_dir+"/commands/"+self.command_name+".rb' "+self.params+"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         if p.stdout is not None : 
            msg = p.stdout.readlines()
         msg_string  = '\n'.join(msg)
