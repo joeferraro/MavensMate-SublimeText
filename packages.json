@@ -1,0 +1,20 @@
+{//for future sublime package control functionality
+	"schema_version": "1.0",
+	"packages": [
+		{
+			"name": "MavensMate",
+			"description": "MavensMate is a SublimeText plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.",
+			"author": "joeferraro",
+			"homepage": "https://github.com/joeferraro/MavensMate-SublimeText",
+			"last_modified": "2012-08-02 11:25:31",
+			"platforms": {
+				"osx": [
+					{
+						"version": "1.1.0",
+						"url": "https://nodeload.github.com/your_github_username/your_repository_name/zipball/your_tag_name_here"
+					}
+				]
+			}
+		}
+	]
+}
