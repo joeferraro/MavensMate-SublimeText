@@ -54,7 +54,19 @@ def get_active_file():
     return sublime.active_window().active_view().file_name()
 
 def is_mm_project():
-    return sublime.active_window().active_view().settings().get('mm_project_directory') != None
+    import json
+    #return sublime.active_window().active_view().settings().get('mm_project_directory') != None #<= bug
+    is_mm_project = None
+    try:
+        project_directory = sublime.active_window().folders()[0]
+        json_data = open(project_directory+"/.sublime-project")
+        data = json.load(json_data)
+        pd = data["settings"]["mm_project_directory"]
+        is_mm_project = True
+    except:
+        is_mm_project = False
+    return is_mm_project
+
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
@@ -201,6 +213,21 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, self.status_panel, handle_result, 0)
 
+#handles compiling to server on save
+class RemoteEdit(sublime_plugin.EventListener):
+    def on_post_save(self, view):
+        active_file = get_active_file()
+        fileName, ext = os.path.splitext(active_file)
+        valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger']
+        if settings.get('mm_compile_on_save') == True and is_mm_project() == True and ext in valid_file_extensions:
+            self.status_panel = show_mm_panel(self) 
+            write_to_panel(self.status_panel, 'Compiling => ' + active_file + '\n')        
+            threads = []
+            thread = MetadataAPICall("compile_file", "'"+active_file+"'")
+            threads.append(thread)
+            thread.start()
+            handle_threads(threads, self.status_panel, handle_result, 0)            
+
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
     def run(self): 
@@ -227,15 +254,20 @@ class MetadataAPICall(threading.Thread):
         msg_string  = '\n'.join(msg)
         msg_string = msg_string.replace(":true", ":True")
         msg_string = msg_string.replace(":false", ":False")
+        msg_string = msg_string.replace(":null", "None")
         print "result is: " + msg_string
-        res = ast.literal_eval(msg_string)
+        res = None
+        try:
+            res = ast.literal_eval(msg_string)
+        except:
+            res = eval(msg_string)
         self.result = res
 
 def handle_threads(threads, p, handle_result, i=0):
     compile_result = ""
     next_threads = []
     for thread in threads:
-        write_to_panel(p, '>')
+        write_to_panel(p, '.')
         if thread.is_alive():
             next_threads.append(thread)
             continue
@@ -257,6 +289,8 @@ def show_mm_panel(el):
     if not hasattr(el, 'panel'):
         el.panel = sublime.active_window().get_output_panel(panel_name)
     el.panel.set_syntax_file(custom_syntax)
+    #el.panel.set_read_only(True)
+    el.panel.settings().set('word_wrap', True)
     sublime.active_window().run_command("show_panel", {"panel": "output." + panel_name})
     el.panel.set_viewport_position((0,el.panel.size()))
     return el.panel
@@ -268,7 +302,7 @@ def write_to_panel(panel, message):
     edit = panel.begin_edit() 
     panel.insert(edit, panel.size(), message)
     panel.end_edit(edit)
-    panel.set_viewport_position((0,panel.size()))
+    sublime.set_timeout(lambda : panel.set_viewport_position((0,panel.size())), 2)
 
 def print_result_message(res, panel):
     if 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
@@ -301,6 +335,8 @@ def handle_result(panel, result):
         res = result['check_deploy_status_response']['result']
         if res['success'] == True and 'location' in res :
             sublime.active_window().open_file(res['location'])
+        if res['success'] == True and hide_panel:
+            hide_mm_panel(panel)
 
 def parse_new_metadata_input(input):
     input = input.replace(" ", "")
