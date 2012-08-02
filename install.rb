@@ -27,8 +27,29 @@ def install_package
 end
 
 def install_user_settings
+  #update_user_config if File.exist?("#{@user_settings_path}/mavensmate.sublime-settings"
   `cp '#{@install_path}/mavensmate.sublime-settings' '#{@user_settings_path}'` unless File.exist?("#{@user_settings_path}/mavensmate.sublime-settings")
 end
+
+# def update_user_config
+#   begin
+#     require 'json'
+#     json = File.read("#{@user_settings_path}/mavensmate.sublime-settings")
+#     existing_config = JSON.parse(json)
+#     json = File.read("#{@install_path}/mavensmate.sublime-settings")
+#     new_config = JSON.parse(json)
+#     new_config.each_pair do |k,v|
+#       next if existing_config.has_key?(k)
+#       existing_config[k] = v
+#     end
+#     updated_config = JSON.pretty_generate(existing_config)
+#     f = File.open("#{@user_settings_path}/mavensmate.sublime-settings","w")
+#     f.write(updated_config)
+#     f.close
+#   rescue Exception => e
+#     puts "error updating user config: " + e.message
+#   end
+# end
 
 def install
 	if OS.windows?
