@@ -65,11 +65,27 @@
 	    		"caption": "Delete Active File",  
 	         	"command": "mavens_mate"
 	     	},
-			{ 
-				"command": "open_file", 
-				"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
-				"caption": "Settings" 
-			}
+	     	{
+	        	"id": "metadata", 
+	    		"caption": "Open",  
+	         	"children":
+	         	[
+					{ 
+						"command": "open_file", 
+						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
+						"caption": "Settings - User" 
+					},
+					{ 
+						"command": "open_file", 
+						"args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"}, 
+						"caption": "Settings - Default" 
+					},
+					{ 
+	    				"caption": "Debug Panel",  
+	         			"command": "show_debug_panel"
+					}	
+	         	]
+	     	}
 	    ]  
 	}  
 ]  

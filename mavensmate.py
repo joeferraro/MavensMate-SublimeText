@@ -12,6 +12,8 @@ import copy
 
 mm_dir = os.getcwdu()
 settings = sublime.load_settings('mavensmate.sublime-settings')
+hide_panel = settings.get('mm_hide_panel_on_success', 1)
+hide_time = settings.get('mm_hide_panel_time', 1)
 
 def get_ruby():
     ruby = "ruby"    
@@ -199,6 +201,18 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, self.status_panel, handle_result, 0)
 
+#displays mavensmate panel
+class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
+    def run(self): 
+        if is_mm_project() == True:
+            show_mm_panel(self) 
+
+#hides mavensmate panel
+class HideDebugPanelCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        if is_mm_project() == True:
+            hide_mm_panel(self)
+
 class MetadataAPICall(threading.Thread):
     def __init__(self, command_name, params):
         self.result = None
@@ -246,6 +260,9 @@ def show_mm_panel(el):
     sublime.active_window().run_command("show_panel", {"panel": "output." + panel_name})
     el.panel.set_viewport_position((0,el.panel.size()))
     return el.panel
+
+def hide_mm_panel(panel):    
+    sublime.set_timeout(lambda : sublime.active_window().run_command('hide_panel'), int(hide_time * 1000))
 
 def write_to_panel(panel, message):
     edit = panel.begin_edit() 

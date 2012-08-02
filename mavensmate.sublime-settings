@@ -1,4 +1,11 @@
-/* MavensMate settings */
+/* 
+
+MavensMate settings
+NOTE: MavensMate user settings will override MavensMate default settings
+To override default MavensMate settings, modify user-specific settings (MavensMate --> Open --> Settings - User) 
+
+*/
+
 {
 	//***if you wish to utilize rvm, set to "~/.rvm/bin/rvm-auto-ruby"
 	"mm_ruby" : "ruby",
@@ -8,5 +15,14 @@
 	"mm_workspace" : "",
 
 	//set to desired Salesforce.com API version (currently hardcoded to 25.0)
-	"mm_api_version" : "25.0"
+	"mm_api_version" : "25.0",
+
+	//if true, MavensMate will automatically hide the debug panel upon a successful operation
+	"mm_hide_panel_on_success" : true,
+
+	//the amount of time (in seconds) before MavensMate hides the debug panel upon a successful operation
+	"mm_hide_panel_time" : 0,
+
+	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
+	"mm_compile_on_save" : true		
 }
