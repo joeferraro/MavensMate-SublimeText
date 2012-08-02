@@ -3,11 +3,11 @@
 MavensMate settings
 NOTE: MavensMate user settings will override MavensMate default settings
 To override default MavensMate settings, modify user-specific settings (MavensMate --> Open --> Settings - User) 
-
+** Most changes require a SublimeText restart **
 */
 
 {
-	//***if you wish to utilize rvm, set to "~/.rvm/bin/rvm-auto-ruby"
+	//** if you wish to utilize rvm, set to "~/.rvm/bin/rvm-auto-ruby"
 	"mm_ruby" : "ruby",
 	
 	//set to location where you wish your MavensMate project to reside (must be an existing directory)
