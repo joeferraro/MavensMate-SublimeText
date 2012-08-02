@@ -16,7 +16,7 @@ $ gem install mavensmate
 $ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.rb)
 ```
 
-<img src="http://wearemavens.com/images/mm/menu2.png"/>
+<img src="http://wearemavens.com/images/mm/menu3.png"/>
 
 Go to "MavensMate --> Open --> Settings - User" and modify "mm_workspace" with the location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
 
