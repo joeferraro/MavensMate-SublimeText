@@ -335,7 +335,7 @@ def handle_result(panel, result):
         res = result['check_deploy_status_response']['result']
         if res['success'] == True and 'location' in res :
             sublime.active_window().open_file(res['location'])
-        if res['success'] == True and hide_panel:
+        if res['success'] == True and hide_panel == True:
             hide_mm_panel(panel)
 
 def parse_new_metadata_input(input):
