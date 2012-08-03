@@ -296,22 +296,16 @@ module MavensMate
   
   #compiles entire project
   def self.compile_project
-    validate [:internet, :mm_project]
     result = nil
     begin
-      puts '<div id="mm_logger">'
-      TextMate.call_with_progress( :title => 'MavensMate', :message => 'Compiling Project' ) do            
-        zip_file = MavensMate::FileFactory.copy_project_to_tmp     
-        client = MavensMate::Client.new  
-        result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"}) 
-      end
-      puts "</div>"
+      zip_file = MavensMate::FileFactory.copy_project_to_tmp     
+      client = MavensMate::Client.new  
+      result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"}) 
+      puts result.to_json
     rescue Exception => e
-      alert e.message
-    end
-    if result[:check_deploy_status_response][:result][:success] == false       
-      TextMate.exit_show_html(dispatch :controller => "deploy", :action => "show_compile_result", :result => result)        
-    end    
+      res = { :success => false, :message => e.message }
+      puts res.to_json
+    end  
   end
         
   #wipes local project and rewrites with server copies based on current project's package.xml, preserves svn/git      
