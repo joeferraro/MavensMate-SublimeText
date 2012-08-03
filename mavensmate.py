@@ -109,7 +109,7 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
         temp_file_name = generate_ui("run_apex_tests", mm_project_directory())
         launch_mavens_mate_window(temp_file_name) 
 
-#deletes selected metadata
+#replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
@@ -121,6 +121,19 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
             threads.append(thread)
             thread.start()
             handle_threads(threads, self.status_panel, handle_result, 0)  
+
+#attempts to compile the entire project
+class CompileProjectCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        if sublime.ok_cancel_dialog("Are you sure you want to compile the entire project?", "Compile Project"):
+            self.status_panel = show_mm_panel(self)
+            write_to_panel(self.status_panel, 'Compiling Project\n')
+            print "------COMPILING PROJECT------"
+            threads = []
+            thread = MetadataAPICall("compile_project", "'"+mm_project_directory()+"'")
+            threads.append(thread)
+            thread.start()
+            handle_threads(threads, self.status_panel, handle_result, 0)
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
@@ -213,12 +226,27 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, self.status_panel, handle_result, 0)
 
+#deploys the currently open tabs
+class CompileTabsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        #self.status_panel = show_mm_panel(self)
+        files = get_tab_file_names()
+        files_list = ', '.join(files)
+        print files_list
+        # write_to_panel(self.status_panel, 'Compiling Active Tabs\n')        
+        # threads = []
+        # thread = MetadataAPICall("compile_file", "'"+active_file+"'")
+        # threads.append(thread)
+        # thread.start()
+        # handle_threads(threads, self.status_panel, handle_result, 0)
+        foo = 'bar'
+
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
     def on_post_save(self, view):
         active_file = get_active_file()
         fileName, ext = os.path.splitext(active_file)
-        valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger']
+        valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger', '.tab', '.layout', '.resource', '.remoteSite']
         if settings.get('mm_compile_on_save') == True and is_mm_project() == True and ext in valid_file_extensions:
             self.status_panel = show_mm_panel(self) 
             write_to_panel(self.status_panel, 'Compiling => ' + active_file + '\n')        
@@ -310,7 +338,10 @@ def print_result_message(res, panel):
         line_col = ""
         msg = []
         if type( res['messages'] ) == list:
-            msg = res['messages'][0]
+            for m in res['messages']:
+                if 'problem' in m:
+                    msg = m
+                    break
         else:
             msg = res['messages']
         if 'line_number' in msg:
@@ -319,7 +350,7 @@ def print_result_message(res, panel):
             line_col += ', Column: '+msg['column_number']
         if len(line_col) > 0:
             line_col += ')'
-        write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + msg['problem'] + line_col + '\n')
+        write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + msg['file_name'] + ': ' + msg['problem'] + line_col + '\n')
     elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == True:     
         write_to_panel(panel, '\n[Deployed Successfully]' + '\n')
     elif res['success'] == False and 'message' in res:
@@ -348,6 +379,39 @@ def parse_new_metadata_input(input):
     else:
         return input
 
+def get_tab_file_names():
+    from os import path
+    from operator import itemgetter
+    from datetime import datetime
+    tabs = []
+    win = sublime.active_window()
+    for vw in win.views():
+       if vw.file_name() is not None:
+          #_, tail = path.split(vw.file_name())
+          #modified = path.getmtime(vw.file_name())
+          #tabs.append((tail, vw, modified))
+          tabs.append('"'+vw.file_name()+'"')
+       else:
+          pass      # leave new/untitled files (for the moment)
+    return tabs   
+
+
+class GetTabsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        from os import path
+        from operator import itemgetter
+        from datetime import datetime
+        tabs = []
+        win = sublime.active_window()
+        for vw in win.views():
+           if vw.file_name() is not None:
+              _, tail = path.split(vw.file_name())
+              modified = path.getmtime(vw.file_name())
+              #tabs.append((tail, vw, modified))
+              tabs.append((tail, vw.file_name()))
+           else:
+              pass      # leave new/untitled files (for the moment)
+        print tabs
 
 
 

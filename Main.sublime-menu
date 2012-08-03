@@ -24,6 +24,10 @@
 	         		{
 	         			"caption": "Clean Project",
 	         			"command": "clean_project"
+	         		},
+	         		{
+	         			"caption": "Compile Project",
+	         			"command": "compile_project"
 	         		}
 	         	]
 	     	},
