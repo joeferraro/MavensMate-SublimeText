@@ -283,6 +283,9 @@ class MetadataAPICall(threading.Thread):
         msg_string = msg_string.replace(":true", ":True")
         msg_string = msg_string.replace(":false", ":False")
         msg_string = msg_string.replace(":null", "None")
+        msg_string = msg_string.replace("namespace\"None", "namespace\":None")
+        msg_string = msg_string.replace("\\n", "\\\n")
+        #msg_string = msg_string.replace("\\n", "")
         print "result is: " + msg_string
         res = None
         try:
@@ -336,21 +339,33 @@ def print_result_message(res, panel):
     if 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
         res = res['check_deploy_status_response']['result']
         line_col = ""
-        msg = []
+        msg = None
+        failures = None
         if type( res['messages'] ) == list:
             for m in res['messages']:
                 if 'problem' in m:
                     msg = m
                     break
+            if msg == None: #must not have been a compile error, must be a test run error
+                if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
+                    failures = res['run_test_result']['failures']
+                elif 'failures' in res['run_test_result']:
+                    failures = [res['run_test_result']['failures']]
+            print failures
         else:
             msg = res['messages']
-        if 'line_number' in msg:
-            line_col = ' (Line: '+msg['line_number']
-        if 'column_number' in msg:
-            line_col += ', Column: '+msg['column_number']
-        if len(line_col) > 0:
-            line_col += ')'
-        write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + msg['file_name'] + ': ' + msg['problem'] + line_col + '\n')
+        if msg != None:
+            if 'line_number' in msg:
+                line_col = ' (Line: '+msg['line_number']
+            if 'column_number' in msg:
+                line_col += ', Column: '+msg['column_number']
+            if len(line_col) > 0:
+                line_col += ')'
+            write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + msg['file_name'] + ': ' + msg['problem'] + line_col + '\n')
+        elif failures != None:
+            for f in failures: 
+                write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['method_name'] + ': ' + f['message'] + '\n')
+
     elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == True:     
         write_to_panel(panel, '\n[Deployed Successfully]' + '\n')
     elif res['success'] == False and 'message' in res:
