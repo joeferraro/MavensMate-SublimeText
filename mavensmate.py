@@ -226,7 +226,19 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, self.status_panel, handle_result, 0)
 
-#deploys the currently open tabs
+#deploys the currently active file
+class RefreshActiveFile(sublime_plugin.WindowCommand):
+    def run(self):
+        self.status_panel = show_mm_panel(self)
+        active_file = get_active_file()
+        write_to_panel(self.status_panel, 'Refreshing From Server => ' + active_file + '\n')        
+        threads = []
+        thread = MetadataAPICall("refresh_from_server", "'"+active_file+"'")
+        threads.append(thread)
+        thread.start()
+        handle_threads(threads, self.status_panel, handle_result, 0)
+
+#TODO: deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
     def run(self):
         #self.status_panel = show_mm_panel(self)
@@ -383,6 +395,9 @@ def handle_result(panel, result):
             sublime.active_window().open_file(res['location'])
         if res['success'] == True and hide_panel == True:
             hide_mm_panel(panel)
+    elif 'success' in result:
+        if result['success'] == True and hide_panel == True:
+            hide_mm_panel(panel) 
 
 def parse_new_metadata_input(input):
     input = input.replace(" ", "")
