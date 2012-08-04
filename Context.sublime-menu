@@ -1,0 +1,10 @@
+[
+	{ "caption": "-" },
+	{
+		"caption": "MavensMate",
+		"children":
+		[
+			{ "caption": "Refresh File From Server", "command": "refresh_active_file" }
+		]
+	}
+]

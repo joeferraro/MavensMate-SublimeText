@@ -257,17 +257,15 @@ module MavensMate
     
   #refreshes the selected file from the server // TODO:selected *files*
   def self.refresh_selected_file     
-    validate [:internet, :mm_project, :file_selected]
-
     begin
-      TextMate.call_with_progress( :title => 'MavensMate', :message => 'Refreshing '+File.basename(ENV['TM_FILEPATH']+' from the server') ) do
-        client = MavensMate::Client.new
-        result_zip = client.retrieve({ :path => ENV['TM_FILEPATH'] }) 
-        MavensMate::FileFactory.replace_file(ENV['TM_FILEPATH'], result_zip)
-        TextMate.rescan_project
-      end
+      client = MavensMate::Client.new
+      result_zip = client.retrieve({ :path => ENV['TM_FILEPATH'] }) 
+      MavensMate::FileFactory.replace_file(ENV['TM_FILEPATH'], result_zip)
+      res = { :success => true, :message => "Refreshed successfully" }
+      puts res.to_json
     rescue Exception => e
-      alert e.message + "\n" + e.backtrace.join("\n")
+      res = { :success => false, :message => e.message }
+      puts res.to_json
     end
   end
     
