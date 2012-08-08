@@ -4,3 +4,5 @@ mavensmate.pyc
 .DS_Store
 
 support/.DS_Store
+
+*.cache
