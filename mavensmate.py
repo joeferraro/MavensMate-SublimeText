@@ -6,10 +6,12 @@ import sys
 import subprocess
 import threading  
 import time
-import tempfile
+import tempfile 
 import ast
 import copy
-
+if os.name != 'nt':
+    import unicodedata
+ 
 mm_dir = os.getcwdu()
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
@@ -67,7 +69,6 @@ def is_mm_project():
         is_mm_project = False
     return is_mm_project
 
-
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
     return sublime.active_window().folders()[0]
@@ -79,14 +80,6 @@ def mm_workspace():
     else:
         workspace = sublime.active_window().active_view().settings().get('mm_workspace')
     return workspace
-
-# class UpdatePackageCommand(sublime_plugin.ApplicationCommand):
-#     def run(command):
-#         msg = ""
-#         p = subprocess.Popen(ruby+" < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.rb)", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-#         if p.stdout is not None : 
-#            msg = p.stdout.readlines()
-#         print msg
 
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
@@ -113,35 +106,35 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
 class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
-            self.status_panel = show_mm_panel(self)
-            write_to_panel(self.status_panel, 'Cleaning Project\n')
-            print "------CLEANING PROJECT------"
+            printer = PanelPrinter.get(self.window.id())
+            printer.show()
+            printer.write('\nCleaning Project\n')
             threads = []
             thread = MetadataAPICall("clean_project", "'"+mm_project_directory()+"' '"+mm_workspace()+"'")
             threads.append(thread)
             thread.start()
-            handle_threads(threads, self.status_panel, handle_result, 0)  
+            handle_threads(threads, printer, handle_result, 0)  
 
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to compile the entire project?", "Compile Project"):
-            self.status_panel = show_mm_panel(self)
-            write_to_panel(self.status_panel, 'Compiling Project\n')
-            print "------COMPILING PROJECT------"
+            printer = PanelPrinter.get(self.window.id())
+            printer.show()
+            printer.write('\nCompiling Project\n')
             threads = []
             thread = MetadataAPICall("compile_project", "'"+mm_project_directory()+"'")
             threads.append(thread)
             thread.start()
-            handle_threads(threads, self.status_panel, handle_result, 0)
+            handle_threads(threads, printer, handle_result, 0)
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
     def run(self, files):
         if sublime.ok_cancel_dialog("Are you sure you want to delete the selected files from Salesforce?", "Delete"):
-            self.status_panel = show_mm_panel(self)
-            write_to_panel(self.status_panel, 'Deleting Selected Metadata\n')
-            #print files
+            printer = PanelPrinter.get(self.window.id())
+            printer.show()
+            printer.write('Deleting Selected Metadata\n')
             file_string = ','.join(files)
             temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
             try:
@@ -152,7 +145,7 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             thread = MetadataAPICall("delete_metadata", "'"+temp.name+"' '"+mm_project_directory()+"'")
             threads.append(thread)
             thread.start()
-            handle_threads(threads, self.status_panel, handle_result, 0)  
+            handle_threads(threads, printer, handle_result, 0)  
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
@@ -160,14 +153,15 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Apex Class Name, Template (base, test, batch, sched, email, empty)", "MyClass, base", self.on_input, None, None)
     
     def on_input(self, input): 
-        self.status_panel = show_mm_panel(self)
+        printer = PanelPrinter.get(self.view.window().id())
+        printer.show()
         api_name, class_type = parse_new_metadata_input(input)
-        write_to_panel(self.status_panel, 'Creating New Apex Class => ' + api_name + '\n')
+        printer.write('\nCreating New Apex Class => ' + api_name + '\n')
         threads = []
         thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexClass\", :api_name=>\""+api_name+"\"}' '"+mm_project_directory()+"'")
         threads.append(thread)
         thread.start()
-        handle_threads(threads, self.status_panel, handle_result, 0)  
+        handle_threads(threads, printer, handle_result, 0)  
 
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
@@ -175,14 +169,15 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name", "MyAccountTrigger, Account", self.on_input, None, None)
     
     def on_input(self, input): 
-        self.status_panel = show_mm_panel(self)
+        printer = PanelPrinter.get(self.view.window().id())
+        printer.show()
         api_name, sobject_name = parse_new_metadata_input(input)
-        write_to_panel(self.status_panel, 'Creating New Apex Trigger => ' + api_name + '\n')
+        printer.write('\nCreating New Apex Trigger => ' + api_name + '\n')
         threads = []
         thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexTrigger\", :api_name=>\""+api_name+"\", :object_api_name=>\""+sobject_name+"\"}' '"+mm_project_directory()+"'")
         threads.append(thread)
         thread.start()
-        handle_threads(threads, self.status_panel, handle_result, 0)  
+        handle_threads(threads, printer, handle_result, 0)  
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
@@ -190,14 +185,15 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Visualforce Page Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        self.status_panel = show_mm_panel(self)
+        printer = PanelPrinter.get(self.view.window().id())
+        printer.show()
         api_name = parse_new_metadata_input(input)
-        write_to_panel(self.status_panel, 'Creating New Visualforce Page => ' + api_name + '\n')
+        printer.write('\nCreating New Visualforce Page => ' + api_name + '\n')
         threads = []
         thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexPage\", :api_name=>\""+api_name+"\"}' '"+mm_project_directory()+"'")
         threads.append(thread)
         thread.start()
-        handle_threads(threads, self.status_panel, handle_result, 0)  
+        handle_threads(threads, printer, handle_result, 0)  
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
@@ -205,53 +201,41 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        self.status_panel = show_mm_panel(self)
+        printer = PanelPrinter.get(self.view.window().id())
+        printer.show()
         api_name = parse_new_metadata_input(input)
-        write_to_panel(self.status_panel, 'Creating New Visualforce Component => ' + api_name + '\n')
+        printer.write('\nCreating New Visualforce Component => ' + api_name + '\n')
         threads = []
         thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexComponent\", :api_name=>\""+api_name+"\"}' '"+mm_project_directory()+"'")
         threads.append(thread)
         thread.start()
-        handle_threads(threads, self.status_panel, handle_result, 0)  
+        handle_threads(threads, printer, handle_result, 0)  
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):
-        self.status_panel = show_mm_panel(self)
+        printer = PanelPrinter.get(self.window.id())
+        printer.show()
         active_file = get_active_file()
-        write_to_panel(self.status_panel, 'Compiling => ' + active_file + '\n')        
+        printer.write('\nCompiling => ' + active_file + '\n')        
         threads = []
         thread = MetadataAPICall("compile_file", "'"+active_file+"'")
         threads.append(thread)
         thread.start()
-        handle_threads(threads, self.status_panel, handle_result, 0)
+        handle_threads(threads, printer, handle_result, 0)
 
 #deploys the currently active file
 class RefreshActiveFile(sublime_plugin.WindowCommand):
     def run(self):
-        self.status_panel = show_mm_panel(self)
+        printer = PanelPrinter.get(self.window.id())
+        printer.show()
         active_file = get_active_file()
-        write_to_panel(self.status_panel, 'Refreshing From Server => ' + active_file + '\n')        
+        printer.write('\nRefreshing From Server => ' + active_file + '\n')        
         threads = []
         thread = MetadataAPICall("refresh_from_server", "'"+active_file+"'")
         threads.append(thread)
         thread.start()
-        handle_threads(threads, self.status_panel, handle_result, 0)
-
-#TODO: deploys the currently open tabs
-class CompileTabsCommand(sublime_plugin.WindowCommand):
-    def run(self):
-        #self.status_panel = show_mm_panel(self)
-        files = get_tab_file_names()
-        files_list = ', '.join(files)
-        print files_list
-        # write_to_panel(self.status_panel, 'Compiling Active Tabs\n')        
-        # threads = []
-        # thread = MetadataAPICall("compile_file", "'"+active_file+"'")
-        # threads.append(thread)
-        # thread.start()
-        # handle_threads(threads, self.status_panel, handle_result, 0)
-        foo = 'bar'
+        handle_threads(threads, printer, handle_result, 0)
 
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
@@ -260,25 +244,26 @@ class RemoteEdit(sublime_plugin.EventListener):
         fileName, ext = os.path.splitext(active_file)
         valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger', '.tab', '.layout', '.resource', '.remoteSite']
         if settings.get('mm_compile_on_save') == True and is_mm_project() == True and ext in valid_file_extensions:
-            self.status_panel = show_mm_panel(self) 
-            write_to_panel(self.status_panel, 'Compiling => ' + active_file + '\n')        
+            printer = PanelPrinter.get(view.window().id())
+            printer.show() 
+            printer.write('\nCompiling => ' + active_file + '\n')        
             threads = []
             thread = MetadataAPICall("compile_file", "'"+active_file+"'")
             threads.append(thread)
             thread.start()
-            handle_threads(threads, self.status_panel, handle_result, 0)            
+            handle_threads(threads, printer, handle_result, 0)            
 
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
     def run(self): 
         if is_mm_project() == True:
-            show_mm_panel(self) 
+            PanelPrinter.get(self.window.id()).show(True)
 
 #hides mavensmate panel
 class HideDebugPanelCommand(sublime_plugin.WindowCommand):
     def run(self):
         if is_mm_project() == True:
-            hide_mm_panel(self)
+            PanelPrinter.get(self.window.id()).show(False)
 
 class MetadataAPICall(threading.Thread):
     def __init__(self, command_name, params):
@@ -297,8 +282,7 @@ class MetadataAPICall(threading.Thread):
         msg_string = msg_string.replace(":null", "None")
         msg_string = msg_string.replace("namespace\"None", "namespace\":None")
         msg_string = msg_string.replace("\\n", "\\\n")
-        #msg_string = msg_string.replace("\\n", "")
-        print "result is: " + msg_string
+        #print "result is: " + msg_string
         res = None
         try:
             res = ast.literal_eval(msg_string)
@@ -306,11 +290,11 @@ class MetadataAPICall(threading.Thread):
             res = eval(msg_string)
         self.result = res
 
-def handle_threads(threads, p, handle_result, i=0):
+def handle_threads(threads, printer, handle_result, i=0):
     compile_result = ""
     next_threads = []
     for thread in threads:
-        write_to_panel(p, '.')
+        printer.write('.')
         if thread.is_alive():
             next_threads.append(thread)
             continue
@@ -321,33 +305,12 @@ def handle_threads(threads, p, handle_result, i=0):
     threads = next_threads
 
     if len(threads):
-        sublime.set_timeout(lambda: handle_threads(threads, p, handle_result, i), 600)
+        sublime.set_timeout(lambda: handle_threads(threads, printer, handle_result, i), 600)
         return
 
-    handle_result(p, compile_result)
+    handle_result(printer, compile_result)
 
-def show_mm_panel(el):
-    panel_name = 'MavensMate-OutputPanel'
-    custom_syntax = 'Packages/MavensMate/MavensMate.tmLanguage'    
-    if not hasattr(el, 'panel'):
-        el.panel = sublime.active_window().get_output_panel(panel_name)
-    el.panel.set_syntax_file(custom_syntax)
-    #el.panel.set_read_only(True)
-    el.panel.settings().set('word_wrap', True)
-    sublime.active_window().run_command("show_panel", {"panel": "output." + panel_name})
-    el.panel.set_viewport_position((0,el.panel.size()))
-    return el.panel
-
-def hide_mm_panel(panel):    
-    sublime.set_timeout(lambda : sublime.active_window().run_command('hide_panel'), int(hide_time * 1000))
-
-def write_to_panel(panel, message):
-    edit = panel.begin_edit() 
-    panel.insert(edit, panel.size(), message)
-    panel.end_edit(edit)
-    sublime.set_timeout(lambda : panel.set_viewport_position((0,panel.size())), 2)
-
-def print_result_message(res, panel):
+def print_result_message(res, printer):
     if 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
         res = res['check_deploy_status_response']['result']
         line_col = ""
@@ -373,31 +336,31 @@ def print_result_message(res, panel):
                 line_col += ', Column: '+msg['column_number']
             if len(line_col) > 0:
                 line_col += ')'
-            write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + msg['file_name'] + ': ' + msg['problem'] + line_col + '\n')
+            printer.write('\n[DEPLOYMENT FAILED]: ' + msg['file_name'] + ': ' + msg['problem'] + line_col + '\n')
         elif failures != None:
             for f in failures: 
-                write_to_panel(panel, '\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['method_name'] + ': ' + f['message'] + '\n')
+                printer.write('\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['method_name'] + ': ' + f['message'] + '\n')
 
     elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == True:     
-        write_to_panel(panel, '\n[Deployed Successfully]' + '\n')
+        printer.write('\n[Deployed Successfully]' + '\n')
     elif res['success'] == False and 'message' in res:
-        write_to_panel(panel, '\n[OPERATION FAILED]:' + res['message'] + '\n')
+        printer.write('\n[OPERATION FAILED]:' + res['message'] + '\n')
     elif res['success'] == False:
-        write_to_panel(panel, '\n[OPERATION FAILED]' + '\n')
+        printer.write('\n[OPERATION FAILED]' + '\n')
     else:
-        write_to_panel(panel, '\n[Operation Completed Successfully]' + '\n')    
+        printer.write('\n[Operation Completed Successfully]' + '\n')    
 
-def handle_result(panel, result):
-    print_result_message(result, panel) 
+def handle_result(printer, result):
+    print_result_message(result, printer) 
     if 'check_deploy_status_response' in result: 
         res = result['check_deploy_status_response']['result']
         if res['success'] == True and 'location' in res :
             sublime.active_window().open_file(res['location'])
         if res['success'] == True and hide_panel == True:
-            hide_mm_panel(panel)
+            printer.hide() 
     elif 'success' in result:
         if result['success'] == True and hide_panel == True:
-            hide_mm_panel(panel) 
+            printer.hide() 
 
 def parse_new_metadata_input(input):
     input = input.replace(" ", "")
@@ -409,39 +372,195 @@ def parse_new_metadata_input(input):
     else:
         return input
 
-def get_tab_file_names():
-    from os import path
-    from operator import itemgetter
-    from datetime import datetime
-    tabs = []
-    win = sublime.active_window()
-    for vw in win.views():
-       if vw.file_name() is not None:
-          #_, tail = path.split(vw.file_name())
-          #modified = path.getmtime(vw.file_name())
-          #tabs.append((tail, vw, modified))
-          tabs.append('"'+vw.file_name()+'"')
-       else:
-          pass      # leave new/untitled files (for the moment)
-    return tabs   
 
+# future functionality
 
-class GetTabsCommand(sublime_plugin.WindowCommand):
-    def run(self):
-        from os import path
-        from operator import itemgetter
-        from datetime import datetime
-        tabs = []
-        win = sublime.active_window()
-        for vw in win.views():
-           if vw.file_name() is not None:
-              _, tail = path.split(vw.file_name())
-              modified = path.getmtime(vw.file_name())
-              #tabs.append((tail, vw, modified))
-              tabs.append((tail, vw.file_name()))
-           else:
-              pass      # leave new/untitled files (for the moment)
-        print tabs
+#TODO: deploys the currently open tabs
+# class CompileTabsCommand(sublime_plugin.WindowCommand):
+#     def run(self):
+#         #printer = PanelPrinter.get(self.window.id())
+#         files = get_tab_file_names()
+#         files_list = ', '.join(files)
+#         print files_list
+#         # printer.write('Compiling Active Tabs\n')        
+#         # threads = []
+#         # thread = MetadataAPICall("compile_file", "'"+active_file+"'")
+#         # threads.append(thread)
+#         # thread.start()
+#         # handle_threads(threads, printer, handle_result, 0)
+#         foo = 'bar'
 
+# def get_tab_file_names():
+#     from os import path
+#     from operator import itemgetter
+#     from datetime import datetime
+#     tabs = []
+#     win = sublime.active_window()
+#     for vw in win.views():
+#        if vw.file_name() is not None:
+#           #_, tail = path.split(vw.file_name())
+#           #modified = path.getmtime(vw.file_name())
+#           #tabs.append((tail, vw, modified))
+#           tabs.append('"'+vw.file_name()+'"')
+#        else:
+#           pass      # leave new/untitled files (for the moment)
+#     return tabs 
 
+# class GetTabsCommand(sublime_plugin.WindowCommand):
+#     def run(self):
+#         from os import path
+#         from operator import itemgetter
+#         from datetime import datetime
+#         tabs = []
+#         win = sublime.active_window()
+#         for vw in win.views():
+#            if vw.file_name() is not None:
+#               _, tail = path.split(vw.file_name())
+#               modified = path.getmtime(vw.file_name())
+#               #tabs.append((tail, vw, modified))
+#               tabs.append((tail, vw.file_name()))
+#            else:
+#               pass      # leave new/untitled files (for the moment)
+#         print tabs
 
+class PanelPrinter(object):
+    printers = {}
+
+    def __init__(self):
+        self.name = 'MavensMate-OutputPanel'
+        self.visible = False
+        self.hide_time = hide_time
+        self.queue = []
+        self.strings = {}
+        self.just_error = False
+        self.capture = False
+        self.input = None
+        self.input_start = None
+        self.on_input_complete = None
+        self.original_view = None
+
+    @classmethod
+    def get(cls, window_id):
+        printer = cls.printers.get(window_id)
+        if not printer:
+            printer = PanelPrinter()
+            printer.window_id = window_id
+            printer.init()
+            cls.printers[window_id] = printer
+        return printer
+
+    def error(self, string):
+        callback = lambda : self.error_callback(string)
+        sublime.set_timeout(callback, 1)
+
+    def error_callback(self, string):
+        string = str(string)
+        self.reset_hide()
+        self.just_error = True
+        sublime.error_message('MavensMate: ' + string)
+
+    def hide(self, thread = None):
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        hide = settings.get('mm_hide_panel_on_success', True)
+        if hide == True:
+            hide_time = time.time() + float(hide)
+            self.hide_time = hide_time
+            sublime.set_timeout(lambda : self.hide_callback(hide_time, thread), int(hide * 300))
+
+    def hide_callback(self, hide_time, thread):
+        if thread:
+            last_added = ThreadTracker.get_last_added(self.window_id)
+            if thread != last_added:
+                return
+        if self.visible and self.hide_time and hide_time == self.hide_time:
+            if not self.just_error:
+                self.window.run_command('hide_panel')
+            self.just_error = False
+
+    def init(self):
+        if not hasattr(self, 'panel'):
+            self.window = sublime.active_window()
+            self.panel = self.window.get_output_panel(self.name)
+            self.panel.set_read_only(True)
+            self.panel.settings().set('syntax', 'Packages/MavensMate/themes/MavensMate.hidden-tmLanguage')
+            self.panel.settings().set('color_scheme', 'Packages/MavensMate/themes/MavensMate.hidden-tmTheme')
+            self.panel.settings().set('word_wrap', True)
+
+    def reset_hide(self):
+        self.hide_time = None
+
+    def show(self, force = False):
+        self.init()
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        hide = settings.get('hide_output_panel', 1)
+        if force or hide != True or not isinstance(hide, bool):
+            self.visible = True
+            self.window.run_command('show_panel', {'panel': 'output.' + self.name})
+
+    def write(self, string, key = 'sublime_mm', finish = False):
+        if not len(string) and not finish:
+            return
+        if key not in self.strings:
+            self.strings[key] = []
+            self.queue.append(key)
+        if len(string):
+            if not isinstance(string, unicode):
+                string = unicode(string, 'UTF-8', errors='strict')
+            if os.name != 'nt':
+                string = unicodedata.normalize('NFC', string)
+            self.strings[key].append(string)
+        if finish:
+            self.strings[key].append(None)
+        sublime.set_timeout(self.write_callback, 0)
+        return key
+
+    def write_callback(self):
+        found = False
+        for key in self.strings.keys():
+            if len(self.strings[key]):
+                found = True
+
+        if not found:
+            return
+        read_only = self.panel.is_read_only()
+        if read_only:
+            self.panel.set_read_only(False)
+        edit = self.panel.begin_edit()
+        keys_to_erase = []
+        for key in list(self.queue):
+            while len(self.strings[key]):
+                string = self.strings[key].pop(0)
+                if string == None:
+                    self.panel.erase_regions(key)
+                    keys_to_erase.append(key)
+                    continue
+                if key == 'sublime_mm':
+                    point = self.panel.size()
+                else:
+                    regions = self.panel.get_regions(key)
+                    if not len(regions):
+                        point = self.panel.size()
+                    else:
+                        region = regions[0]
+                        point = region.b + 1
+                if point == 0 and string[0] == '\n':
+                    string = string[1:]
+                self.panel.insert(edit, point, string)
+                if key != 'sublime_mm':
+                    point = point + len(string) - 1
+                    region = sublime.Region(point, point)
+                    self.panel.add_regions(key, [region], '')
+
+        for key in keys_to_erase:
+            if key in self.strings:
+                del self.strings[key]
+            try:
+                self.queue.remove(key)
+            except ValueError:
+                pass
+
+        self.panel.end_edit(edit)
+        if read_only:
+            self.panel.set_read_only(True)
+        size = self.panel.size()
+        sublime.set_timeout(lambda : self.panel.show(size, True), 2)
