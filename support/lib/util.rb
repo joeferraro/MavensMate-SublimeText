@@ -2,7 +2,7 @@ module MavensMate
   module Util
     class << self
       
-      #include MetadataHelper
+      include MetadataHelper
       
       def get_random_string(len=8)
         o =  [('a'..'z'),('A'..'Z')].map{|i| i.to_a}.flatten;  

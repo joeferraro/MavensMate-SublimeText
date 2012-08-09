@@ -88,6 +88,13 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
         temp_file_name = generate_ui("new_project", mm_workspace())
         launch_mavens_mate_window(temp_file_name)
 
+#displays deploy dialog
+class DeployToServerCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        start_local_server()
+        temp_file_name = generate_ui("deploy_to_server", mm_project_directory())
+        launch_mavens_mate_window(temp_file_name)
+
 #displays new project dialog
 class CheckoutProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
@@ -282,7 +289,7 @@ class MetadataAPICall(threading.Thread):
         msg_string = msg_string.replace(":null", "None")
         msg_string = msg_string.replace("namespace\"None", "namespace\":None")
         msg_string = msg_string.replace("\\n", "\\\n")
-        #print "result is: " + msg_string
+        print "result is: " + msg_string
         res = None
         try:
             res = ast.literal_eval(msg_string)
