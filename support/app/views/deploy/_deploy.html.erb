@@ -100,15 +100,9 @@
 						<label for="cname" style="font-weight:bold;">Changeset Name</label> 
 						<input class="xlarge" size="100" type="text" id="cname">
 					</div>     -->
-					<div class="clearfix">
-						<label>
-							<input type="checkbox" id="set_and_forget" style="margin:0px;width:32px;"/>						
-							<div>Set and Forget</div>
-						</label>   					
-					</div>
-					<div id="deploy_info" style="display:none;" class="alert-message block-message info">
+<!-- 					<div id="deploy_info" style="display:none;" class="alert-message block-message info">
 			        	<p><strong>This deployment will run in async mode.</strong></p>
-			      	</div>
+			      	</div> -->
 					
 				</fieldset>
 			</form>
@@ -127,15 +121,16 @@
 				
 		<div id="metadata">
 			
-			<form class="form-stacked" style="padding-left:15px;margin-bottom:5px;">
+			<form class="form-stacked" style="padding-left:5px;margin-bottom:2px;">
 			 	<fieldset>
-			   		<div class="clearfix">
+<!-- 			   		<div class="clearfix">
 						<label for="ptype">Package Type</label> 
 						<select id="ptype">
 							<option>Custom</option>
 							<option>Changeset</option>
 						</select>
-					</div> 
+					</div>  -->
+					<a href="javascript:void(0)" class="btn success" onclick="refresh_index()">Refresh Metadata From Server</a>
 					<div class="clearfix" id="changesetwrapper" style="display:none">
 						<label for="cset">Changeset</label> 
 						<select id="cset">
@@ -162,7 +157,7 @@
 			<div id="project_wrapper">
 				
 				<div id="filter">
-					<input type="text" id="txtFilter" style="width:200px" />
+					<input type="text" id="txtFilter" style="width:165px" />
 					<a href="#" id="btnClearFilter" onclick="clearFilter();" class="btn small error" style="visibility:invisible;opacity:0;font-weight:bold;position:relative;top:1px;right:30px;padding:4px 7px 4px;">X</a>
 					<a href="#" id="btnSelectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">all</a>
                     <a href="#" id="btnDeselectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">none</a>
@@ -171,39 +166,7 @@
 				<div id="treewrapper">
 					<div id="tree">
 						<ul>
-						<% meta_array.each do |hash| %>
-							<% 
-								next if !hash[:children]
-								next if hash[:children].size == 0
-								class_name = (hash[:children] && hash[:children].size > 0) ? "folder" : "" 
-							%>
-							<li data="level: 1, hasChildTypes: <%=hash[:hasChildTypes]%>, inFolder: <%=hash[:inFolder]%>" id="<%= hash[:key] %>" class="folder level1"><%= hash[:title] %>					
-								<% if hash[:children] %>
-								<ul>
-									<% hash[:children].each do |child| %>
-										<% child_class_name = (child[:children] && child[:children].size > 0) ? "folder" : "" %>
-										<li data="level: 2" id="<%= child[:key] %>" class="<%= child_class_name %> level2"><%= child[:title] %>
-										<% if child[:children] && child[:children].size > 0 %>
-											<ul>
-												<% child[:children].each do |gchild| %>
-													<li data="level: 3" class="level3"><%= gchild[:title] %>
-														<% if gchild[:children] && gchild[:children].size > 0 %>
-															<ul>
-																<% gchild[:children].each do |ggchild| %>
-																	<li data="level: 4" class="level4"><%= ggchild[:title] %></li>
-																<% end %>
-															</ul>
-														<% end %>
-													</li>
-												<% end %>
-											</ul>
-										<% end %>
-										</li>
-									<% end %>
-								</ul>
-								<% end %>
-							</li>
-						<% end %>
+						
 						</ul>												
 					</div>
 					<div id="info"></div>
@@ -232,12 +195,14 @@
 	<div class="loading_indicator"></div>                                        	
 </div>
 <div class="deploy_wait_description">
-	Deploying to <span id="where"></span>.<br/><br/>
-	Do not close or minimize this window. 
+	Indexing metadata...
 </div>
 
 
 <script type="text/javascript">
+	var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
+	var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
+
 	document.title = "Deploy To Server";
 	
 	var child_def = {}
@@ -270,15 +235,7 @@
 	        return "";
 	    }
 	}
-	
-	$("#set_and_forget").click(function() {
-		if (this.checked) {
-			$("#deploy_info").show();			
-		} else {
-			$("#deploy_info").hide();
-		}
-	}); 
-	
+		
 	$("#save_changeset").click(function() {
 		if (this.checked) {
 			$("#changeset_name_wrapper").show();			
@@ -286,32 +243,7 @@
 			$("#changeset_name_wrapper").hide();
 		}
 	});
-	
-	
-	function deploy() {		
-		deploy_mode = deployMode();
-		if (deploy_mode == "async") {
-			$("#where").html($("#un").val());
-			$(".deploy_loading").fadeIn();
-			$(".deploy_wait_description").fadeIn();
-		}
-		 
-		$("#result").html(
-			dispatch({
-			    controller: "deploy",
-			    action: "deploy_metadata",
-			    un: $("#un").val(),
-			    pw: $("#pw").val(),
-			    server_url: $("#server_url").val(),
-			    check_only: isValidateOnly(),
-				mode: deploy_mode,
-			    tree: get_tree(),
-				package_type: $("#ptype").val(),
-			  	changeset: $("#cset").val()
-			})
-		);  
-	} 
-	
+		
 	function resizeWindowAfterResult() {
 		window.resizeTo(800, window.innerHeight);
 		window.moveTo(
@@ -321,6 +253,7 @@
 	}
 
 	$(function() {
+
 	    //if dom elements is removed, we need to resize the window
 		$( "body" ).bind(
 			"DOMNodeInserted",
@@ -369,21 +302,15 @@
 	
 		$('.tabs').tabs();
 
-	    $("#project_wrapper").height($(window).height() - 175)
+	    $("#project_wrapper").height($(window).height() - 225)
 
 	    var resizeHeight = $("#form").height();
-	    resizeAndCenterWindowByHeight(resizeHeight + 150);
+	    resizeAndCenterWindowByHeight(resizeHeight + 250);
 
 	    $(window).resize(function() {
-	        $("#project_wrapper").height($(window).height() - 175)
+	        $("#project_wrapper").height($(window).height() - 225)
 	    });
 
-	    //instantiate and populate metadata tree
-		$("#tree").dynatree({
-			persist: false,
-			checkbox: true,
-			selectMode: 3
-		});
 
 	    $.expr[':'].Contains = function(a, i, m) {
 	        return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
@@ -419,49 +346,27 @@
 	        // fire the above change event after every letter	
 			$(this).change();
 	    });
-	
-	    $("#tree").dynatree("getRoot").visit(function(node) {
-	        node.expand(false);
-	    });  
 		
-		var rootNode = $("#tree").dynatree("getRoot");
-		
-		function filter_tree(searchTerm) {
-			var regex = new RegExp(searchTerm,"i");
-			rootNode.visit(function(node) {          
-			    if (node.isVisible() && node.data.title) {              
-					// Filter currently visible non-root nodes.              
-					nodeTitle = node.data.title;
-
-					if ( nodeTitle.match(regex) ) {
-	              		// Make sure we and all our parents are visible                  
-						node.visitParents(function(node) {                      
-							$(node.li).show();                      
-							return (node.parent != null);                  
-						}, true); 
-			            // Terminate the traversal of this branch since the node matches
-						return 'skip';  
-		            } else {
-		                $(node.li).hide();
-		            }   
-					
-					
-			// 		if (nodeTitle.indexOf(searchTerm) >= 0 || nodeTitleLower.indexOf(searchTerm) >= 0) {                 
-			// 			 // Make sure we and all our parents are visible                  
-			// 			node.visitParents(function(node) {                      
-			// 				$(node.li).show();                      
-			// 				return (node.parent != null);                  
-			// 			}, true); 
-			//             // Terminate the traversal of this branch since the node matches
-			// 			return 'skip';              
-			// 		} else {                  
-			// 			// Hide the node.                  
-			// 			$(node.li).hide();              
-			// 		}     
-				}
-			});
-		}
+		index_org(!has_indexed_metadata);
 	});
+
+	function filter_tree(searchTerm) {
+		var regex = new RegExp(searchTerm,"i");
+		rootNode.visit(function(node) {
+		    if (node.isVisible() && node.data.title) {
+				nodeTitle = node.data.title;
+				if ( nodeTitle.match(regex) ) {
+					node.visitParents(function(node) {
+						$(node.li).show();
+						return (node.parent != null);
+					}, true); 
+					return 'skip';  
+	            } else {
+	                $(node.li).hide();
+	            }
+			}
+		});
+	}
 	
 	function expandAll() {
 		$("#tree").dynatree("getRoot").visit(function(node){
@@ -508,5 +413,65 @@
 			}   		
 		});
 		return false;
-	});   		 						
+	});
+
+	function showBlanket() { $('.deploy_loading').fadeIn(); }
+
+	function hideBlanket() { $('.deploy_loading').hide(); }  
+
+	var rootNode;
+	
+	function index_org(refresh) {
+		console.log('indexing org')
+		console.log(refresh)
+		$.ajax({
+			type: "GET",
+			url: "http://127.0.0.1:7777/metadata/index", 
+			data: {
+				 mm_current_project_directory: mm_cpd,
+				 do_refresh: refresh
+			},
+			beforeSend: function() { showBlanket(); },
+			complete: function(data){
+				console.log(data)
+				$("#tree").dynatree("destroy")
+				$("#tree ul").html(data.responseText);
+				$("#tree").dynatree({
+					persist: false,
+					checkbox: true,
+					selectMode: 3
+				});
+				$("#tree").dynatree("getRoot").visit(function(node) {
+	        		node.expand(false);
+	    		});  
+				rootNode = $("#tree").dynatree("getRoot");
+				hideBlanket();				
+			} 
+		});
+	}
+
+	function refresh_index() {
+		index_org(true);
+	}
+
+	function deploy() {
+		$.ajax({
+			type: "POST",
+			url: "http://127.0.0.1:7777/deploy", 
+			data: {
+				un: $("#un").val(),
+			    pw: $("#pw").val(),
+			    server_url: $("#server_url").val(),
+			    check_only: isValidateOnly(),
+			    tree: get_tree(),
+			    mm_current_project_directory: mm_cpd
+			},
+			beforeSend: function() { showBlanket(); },
+			complete: function(data){
+				console.log(data)
+				$("#result").html(data.responseText);
+				hideBlanket();
+			} 
+	 	});
+	} 		 						
 </script>

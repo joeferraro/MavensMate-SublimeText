@@ -1,9 +1,9 @@
 # encoding: utf-8
-require ENV['TM_BUNDLE_SUPPORT'] + '/lib/mavensmate.rb'
-require ENV['TM_BUNDLE_SUPPORT'] + '/lib/factory.rb'
-require ENV['TM_BUNDLE_SUPPORT'] + '/lib/metadata_helper.rb'
-require ENV['TM_BUNDLE_SUPPORT'] + '/lib/object.rb'
-require ENV['TM_BUNDLE_SUPPORT'] + '/lib/util.rb'
+require SUPPORT + '/lib/mavensmate.rb'
+require SUPPORT + '/lib/factory.rb'
+require SUPPORT + '/lib/metadata_helper.rb'
+require SUPPORT + '/lib/object.rb'
+require SUPPORT + '/lib/util.rb'
 class DeployController < ApplicationController
   
   include MetadataHelper  
@@ -11,16 +11,16 @@ class DeployController < ApplicationController
   layout "base", :only => [:index, :index_new, :show_compile_result] 
           
   def index
-    if File.not.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/config/.org_metadata"
-      MavensMate.build_index
-    else     
-      confirmed = TextMate::UI.request_confirmation(
-        :title => "MavensMate",
-        :prompt => "Would you like to refresh the local index of your Salesforce.com org's metadata?",
-        :button1 => "Refresh",
-        :button2 => "No")
-    end
-    
+    # if File.not.exist? "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata"
+    #   MavensMate.build_index
+    # else     
+    #   confirmed = TextMate::UI.request_confirmation(
+    #     :title => "MavensMate",
+    #     :prompt => "Would you like to refresh the local index of your Salesforce.com org's metadata?",
+    #     :button1 => "Refresh",
+    #     :button2 => "No")
+    # end
+    #MavensMate.build_index
     connections = []
     begin
       pconfig = MavensMate.get_project_config
@@ -38,20 +38,20 @@ class DeployController < ApplicationController
     end
     
     changesets = []
-    if File.directory?("#{ENV['TM_PROJECT_DIRECTORY']}/changesets")
-      Dir.foreach("#{ENV['TM_PROJECT_DIRECTORY']}/changesets") do |c|
-        next if c == "." or c == ".."
-        changesets.push(c)
-      end                                                            
-    end
+    # if File.directory?("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/changesets")
+    #   Dir.foreach("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/changesets") do |c|
+    #     next if c == "." or c == ".."
+    #     changesets.push(c)
+    #   end                                                            
+    # end
     
-    MavensMate.build_index if confirmed
-    meta_array = eval(File.read("#{ENV['TM_PROJECT_DIRECTORY']}/config/.org_metadata")) #=> comprehensive list of server metadata    
-    render "_deploy", :locals => { :meta_array => meta_array, :child_metadata_definition => CHILD_META_DICTIONARY, :connections => connections, :changesets => changesets }
+    #MavensMate.build_index if confirmed
+    #meta_array = eval(File.read("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata")) #=> comprehensive list of server metadata    
+    render "_deploy", :locals => { :child_metadata_definition => CHILD_META_DICTIONARY, :connections => connections, :changesets => changesets }
   end
   
   def index_new
-    # if File.not.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/config/.org_metadata"
+    # if File.not.exist? "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata"
     #   MavensMate.build_index
     # else     
     #   confirmed = TextMate::UI.request_confirmation(
@@ -80,15 +80,15 @@ class DeployController < ApplicationController
     end
     
     changesets = []
-    if File.directory?("#{ENV['TM_PROJECT_DIRECTORY']}/changesets")
-      Dir.foreach("#{ENV['TM_PROJECT_DIRECTORY']}/changesets") do |c|
+    if File.directory?("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/changesets")
+      Dir.foreach("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/changesets") do |c|
         next if c == "." or c == ".."
         changesets.push(c)
       end                                                            
     end
     
     MavensMate.build_index if confirmed
-    meta_array = eval(File.read("#{ENV['TM_PROJECT_DIRECTORY']}/config/.org_metadata")) #=> comprehensive list of server metadata    
+    meta_array = eval(File.read("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata")) #=> comprehensive list of server metadata    
     render "_deploy_compare", :locals => { :meta_array => meta_array, :child_metadata_definition => CHILD_META_DICTIONARY, :connections => connections, :changesets => changesets }
   end
   
@@ -113,16 +113,16 @@ class DeployController < ApplicationController
           is_check_only = params[:check_only]          
           result = MavensMate.deploy_to_server(params)
           result = MavensMate::Util.parse_deploy_response(result)
-          `osascript '#{ENV['TM_BUNDLE_SUPPORT']}/osx/growl.scpt' 'Deploy complete'`
+          `osascript '#{SUPPORT}/osx/growl.scpt' 'Deploy complete'`
                     
           require 'erb'
-          template = ERB.new File.new("#{ENV['TM_BUNDLE_SUPPORT']}/app/views/deploy/_async_deploy_result.html.erb").read, nil, "-"
+          template = ERB.new File.new("#{SUPPORT}/app/views/deploy/_async_deploy_result.html.erb").read, nil, "-"
           erb = template.result(binding)        
-          src = File.new("#{ENV['TM_PROJECT_DIRECTORY']}/config/.async_deploy_result.html", "w")
+          src = File.new("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.async_deploy_result.html", "w")
           src.puts(erb)
           src.close
           MavensMate.close_deploy_window          
-          `open "#{ENV['TM_PROJECT_DIRECTORY']}/config/.async_deploy_result.html"`        
+          `open "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.async_deploy_result.html"`        
         rescue Exception => e
           TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))  
         end  
@@ -135,7 +135,7 @@ class DeployController < ApplicationController
         result = MavensMate.deploy_to_server(params)
         result = MavensMate::Util.parse_deploy_response(result)
         render "_deploy_result", :locals => { :result => result, :is_check_only => params[:check_only] }
-        `osascript '#{ENV['TM_BUNDLE_SUPPORT']}/osx/growl.scpt' 'Deploy complete'`
+        `osascript '#{SUPPORT}/osx/growl.scpt' 'Deploy complete'`
       rescue Exception => e
         TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))  
       end
@@ -151,7 +151,7 @@ class DeployController < ApplicationController
         file_name = message[:file_name]
 				fns = message[:file_name].split("/")
 				file_name = fns[fns.length - 1]   			         	
-				full_path =  "#{ENV['TM_PROJECT_DIRECTORY']}/src/#{message[:file_name]}"
+				full_path =  "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/#{message[:file_name]}"
 				full_path.gsub!(/unpackaged\//, '')
         TextMate.go_to(:file => full_path, :line => message[:line_number], :column => message[:column_number])        
       rescue

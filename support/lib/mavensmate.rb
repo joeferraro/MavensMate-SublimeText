@@ -384,57 +384,30 @@ module MavensMate
     
   #deploys project metadata to a salesforce.com server
   def self.deploy_to_server(params)
-    validate [:internet, :mm_project]
-
     begin
-      if params[:mode] == "async"
-        endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
-        tmp_dir = MavensMate::FileFactory.put_tmp_directory
-        client = MavensMate::Client.new
-        if params[:package_type] == "Custom"
-          hash = params[:package]
-          deploy = true
-          MavensMate::FileFactory.put_package(tmp_dir, binding, false)
-          zip_file = client.retrieve({ :package => "#{tmp_dir}/package.xml" })
-        else
-          zip_file = client.retrieve({ :package => "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/changesets/#{params[:changeset]}/unpackaged/package.xml" })
-        end               
-        client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
-        result = client.deploy({
-          :zip_file => zip_file,
-          :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"
-        })
-        MavensMate::FileFactory.remove_directory(tmp_dir) unless params[:package_type] != "Custom"
-        return result
+      endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
+      tmp_dir = MavensMate::FileFactory.put_tmp_directory
+      client = MavensMate::Client.new
+      if params[:package_type] == "Custom"
+        hash = params[:package]
+        deploy = true
+        MavensMate::FileFactory.put_package(tmp_dir, binding, false)
+        zip_file = client.retrieve({ :package => "#{tmp_dir}/package.xml" })
       else
-        puts '<div id="mm_logger">'
-        TextMate.call_with_progress( :title => "MavensMate", :message => "Deploying to the server") do
-          endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
-          tmp_dir = MavensMate::FileFactory.put_tmp_directory
-          client = MavensMate::Client.new
-          if params[:package_type] == "Custom"
-            hash = params[:package]
-            deploy = true
-            MavensMate::FileFactory.put_package(tmp_dir, binding, false)
-            zip_file = client.retrieve({ :package => "#{tmp_dir}/package.xml" })
-          else
-            zip_file = client.retrieve({ :package => "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/changesets/#{params[:changeset]}/unpackaged/package.xml" })
-          end                
-          client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint })
-          result = client.deploy({
-            :zip_file => zip_file,
-            :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"
-          })
-          MavensMate::FileFactory.remove_directory(tmp_dir) unless params[:package_type] != "Custom"
-          puts "</div>"
-          return result
-        end  
-      end
+        zip_file = client.retrieve({ :package => "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/changesets/#{params[:changeset]}/unpackaged/package.xml" })
+      end                
+      client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => endpoint, :override_session => true })
+      result = client.deploy({
+        :zip_file => zip_file,
+        :deploy_options => "<checkOnly>#{params[:check_only]}</checkOnly><rollbackOnError>true</rollbackOnError>"
+      })
+      MavensMate::FileFactory.remove_directory(tmp_dir) unless params[:package_type] != "Custom"
+      return result
     rescue Exception => e
-      #alert e.message + "\n" + e.backtrace.join("\n")
-      puts "</div>"
       MavensMate::FileFactory.remove_directory(tmp_dir)
-      alert e.message
+      #result = { :success => false, :message => e.message + "\n" + e.backtrace.join("\n") }
+      result = { :success => false, :message => e.message }
+      return result
     end
   end
   
@@ -630,41 +603,37 @@ module MavensMate
   
   #builds server index and stores in .org_metadata
   def self.build_index
-    mhash = eval(File.read("#{ENV['TM_BUNDLE_SUPPORT']}/conf/metadata_dictionary"))
+    mhash = eval(File.read("#{SUPPORT}/conf/metadata_dictionary"))
     mhash.sort! { |a,b| a[:xml_name].downcase <=> b[:xml_name].downcase } 
     project_array = []
     progress = 0
-    threads = []      
-    TextMate.call_with_progress(:title =>'MavensMate',
-             :summary => 'Building server metadata index',
-             :details => 'This could take a while, but it\'ll all be worth it!',
-             :indeterminate => true ) do |dialog|        
-      client = MavensMate::Client.new
-      mhash.each do |metadata|         
-        threads << Thread.new {
-          thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
-          #progress = progress + 100/mhash.length
-          #dialog.parameters = {'summary' => 'Retrieving '+metadata[:xml_name],'progressValue' => progress }
-          begin   
-            project_array.push({
-              :title => metadata[:xml_name],
-              :key => metadata[:xml_name],
-              :isLazy => false,
-              :isFolder => true,
-              :selected => false,
-              :children => thread_client.list(metadata[:xml_name], false, "array"),
-              :inFolder => metadata[:in_folder],
-              :hasChildTypes => metadata[:child_xml_names] ? true : false
-            })
-          rescue  Exception => e
-            puts e.message + "\n" + e.backtrace.join("\n")  
-          end
-        }        
-      end
-      threads.each { |aThread|  aThread.join }
-    end                                            
+    threads = []            
+    client = MavensMate::Client.new
+    mhash.each do |metadata|         
+      threads << Thread.new {
+        thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
+        #progress = progress + 100/mhash.length
+        #dialog.parameters = {'summary' => 'Retrieving '+metadata[:xml_name],'progressValue' => progress }
+        begin   
+          project_array.push({
+            :title => metadata[:xml_name],
+            :key => metadata[:xml_name],
+            :isLazy => false,
+            :isFolder => true,
+            :selected => false,
+            :children => thread_client.list(metadata[:xml_name], false, "array"),
+            :inFolder => metadata[:in_folder],
+            :hasChildTypes => metadata[:child_xml_names] ? true : false
+          })
+        rescue  Exception => e
+          puts e.message + "\n" + e.backtrace.join("\n")  
+        end
+      }        
+    end
+    threads.each { |aThread|  aThread.join }
     project_array.sort! { |a,b| a[:title].downcase <=> b[:title].downcase }
     File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata", 'w') {|f| f.write(project_array.inspect) }
+    return project_array
   end
   
   #selects all metadata in tree

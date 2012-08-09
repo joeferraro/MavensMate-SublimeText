@@ -23,6 +23,8 @@ module MavensMate
           server.mount('/vc', VersionControlServlet) 
           server.mount('/auth', AuthenticationServlet)
           server.mount('/test', ApexUnitTestServlet)
+          server.mount('/metadata/index', MetadataIndexServlet)
+          server.mount('/deploy', DeployServlet)
           server.start  
         end
 
@@ -44,6 +46,8 @@ module MavensMate
             server.mount('/vc', VersionControlServlet) 
             server.mount('/auth', AuthenticationServlet)
             server.mount('/test', ApexUnitTestServlet)
+            server.mount('/metadata/index', MetadataIndexServlet)
+            server.mount('/deploy', DeployServlet)
             server.start  
           end   
           Process.detach(pid)
@@ -71,11 +75,73 @@ module MavensMate
               html = ac.render_to_string "unit_test/_test_result", :locals => { :result => result }
               resp.body = html
             rescue Exception => e
-              puts e.message + "\n\n" + e.backtrace.join("\n")
-              resp.body = "TEST RESULT: " + test_result.inspect + "\n\n" + "Request: " + req.inspect + "\n\n" + e.message + "\n\n" + e.backtrace.join("\n")
+              #puts e.message + "\n\n" + e.backtrace.join("\n")
+              #resp.body = "TEST RESULT: " + test_result.inspect + "\n\n" + "Request: " + req.inspect + "\n\n" + e.message + "\n\n" + e.backtrace.join("\n")
+              result = {
+                  :success  => false, 
+                  :message  => e.message 
+              }
+              resp.body = result.to_json
             end
           end
         end
+
+        #indexes server metadata to the .org_metadata file in the project config folder
+        class MetadataIndexServlet < WEBrick::HTTPServlet::AbstractServlet
+          def do_GET(req, resp)            
+            begin              
+              resp['Content-Type'] = 'html'
+              ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
+              do_refresh = req.query["do_refresh"]
+              metadata_array = nil
+              if do_refresh == "true" or do_refresh == true
+                metadata_array = MavensMate.build_index
+              else
+                metadata_array = eval(File.read("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata")) #=> comprehensive list of server metadata    
+              end
+              ac = ApplicationController.new
+              html = ac.render_to_string "deploy/_metadata_tree", :locals => { :meta_array => metadata_array }
+              resp.body = html
+            rescue Exception => e
+                resp['Content-Type'] = 'json'
+                result = {
+                  :success  => false, 
+                  :message  => e.message + "\n\n" + e.backtrace.join("\n")
+                }
+                resp.body = result.to_json
+            end
+          end    
+        end
+
+        class DeployServlet < WEBrick::HTTPServlet::AbstractServlet
+          def do_POST(req, resp)    
+            begin
+              resp['Content-Type'] = 'html'
+              ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
+              params = {}
+              params[:un]           = req.query["un"]
+              params[:pw]           = req.query["pw"]
+              params[:server_url]   = req.query["server_url"]
+              params[:package]      = eval(req.query["tree"])
+              params[:check_only]   = req.query["check_only"]
+              params[:package_type] = "Custom"
+              deploy_result = MavensMate.deploy_to_server(params)
+              html = nil
+              begin
+                result = MavensMate::Util.parse_deploy_response(deploy_result)
+                ac = ApplicationController.new
+                html = ac.render_to_string "deploy/_deploy_result", :locals => { :result => result, :is_check_only => params[:check_only] }
+              rescue
+                html = '<div id="error_message" class="alert-message error"><p><strong>Deployment Failed!</strong></p><p>'+deploy_result[:message]+'</p></div> '
+              end
+              resp.body = html
+            rescue Exception => e
+              result = '<div id="error_message" class="alert-message error"><p><strong>Deployment Failed!</strong></p><p>'+e.message+'</p></div> '
+              resp.body = result
+            end
+          end
+        end
+
         
         class ProjectServlet < WEBrick::HTTPServlet::AbstractServlet
           def do_POST(req, resp)            

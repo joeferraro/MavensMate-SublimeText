@@ -32,32 +32,34 @@ module MavensMate
     attr_accessor :user_id
     # metadata api endpoint url
     attr_accessor :metadata_server_url
-    
-    is_retry = false
-           
+               
     def initialize(creds={})
       HTTPI.log = false
       Savon.configure do |config|
         config.log = false
       end      
       
-      begin
-        if ENV["MM_CURRENT_PROJECT_DIRECTORY"] != ''
-          yml = YAML::load(File.open(ENV['MM_CURRENT_PROJECT_DIRECTORY'] + "/config/.session"))
-          self.user_id = yml['user_id']
-          self.sid = yml['sid']
-          self.metadata_server_url = yml['metadata_server_url']
-          self.endpoint = yml['endpoint']
-          self.pclient = get_partner_client
-        end
+      if ! creds[:override_session]
+        begin
+          if ENV["MM_CURRENT_PROJECT_DIRECTORY"] != ''
+            yml = YAML::load(File.open(ENV['MM_CURRENT_PROJECT_DIRECTORY'] + "/config/.session"))
+            self.user_id = yml['user_id']
+            self.sid = yml['sid']
+            self.metadata_server_url = yml['metadata_server_url']
+            self.endpoint = yml['endpoint']
+            self.pclient = get_partner_client
+          end
 
-        response = self.pclient.request :get_user_info do
-          soap.header = get_soap_header
+          response = self.pclient.request :get_user_info do
+            soap.header = get_soap_header
+          end
+
+          return
+        rescue Exception => e
+          #exception here means most likely that cached auth creds are no longer valid
+          #we're ok with this, the script will attempt another login
+          #raise Exception.new(e.message)
         end
-        #raise Exception.new(response.to_hash.inspect)
-        return
-      rescue Exception => e
-        #raise Exception.new(e.message)
       end
 
       if creds[:sid].nil? && creds[:metadata_server_url].nil?        
@@ -76,7 +78,7 @@ module MavensMate
       end
       
       begin
-        if ENV["MM_CURRENT_PROJECT_DIRECTORY"] != ''
+        if ENV["MM_CURRENT_PROJECT_DIRECTORY"] != '' and ! creds[:override_session]
           src = File.new(ENV["MM_CURRENT_PROJECT_DIRECTORY"]+"/config/.session", "w")
           src.puts("user_id: " + self.user_id)
           src.puts("sid: " + self.sid)
