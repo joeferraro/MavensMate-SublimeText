@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'rubygems'
 require 'json'
 require File.dirname(File.dirname(File.dirname(__FILE__))) + "/constants.rb"
@@ -72,6 +73,10 @@ module MavensMate
             begin
               result = MavensMate.run_tests(req.query["selected_tests"].split(","))
               ac = ApplicationController.new
+              if RUBY_VERSION =~ /1.9/
+                Encoding.default_external = Encoding::UTF_8
+                Encoding.default_internal = Encoding::UTF_8
+              end 
               html = ac.render_to_string "unit_test/_test_result", :locals => { :result => result }
               resp.body = html
             rescue Exception => e
@@ -79,7 +84,7 @@ module MavensMate
               #resp.body = "TEST RESULT: " + test_result.inspect + "\n\n" + "Request: " + req.inspect + "\n\n" + e.message + "\n\n" + e.backtrace.join("\n")
               result = {
                   :success  => false, 
-                  :message  => e.message 
+                  :message  => e.message + e.backtrace.join("\n") 
               }
               resp.body = result.to_json
             end
