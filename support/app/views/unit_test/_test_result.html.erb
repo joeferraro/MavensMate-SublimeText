@@ -1,6 +1,6 @@
 <%
 	def htmlize(str)
-      str.to_s.gsub(/&/, "&amp;").gsub(/"/, "&quot;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+      str.to_s.gsub(/&/, "&amp;").gsub(/"/, "&quot;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\t", "&nbsp;&nbsp;&nbsp;&nbsp;").gsub(" ", "&nbsp;")
     end
 
 	warnings = []
