@@ -15,105 +15,16 @@ class ProjectController < ApplicationController
   layout "base", :only => [:index_new, :index_edit, :index_new_changeset]
 
   def index_new
-    kill_server
     my_json = File.read("#{ENV['TM_BUNDLE_SUPPORT']}/conf/metadata_describe.json")
     support_folder = ENV['TM_BUNDLE_SUPPORT']
     sf = support_folder.gsub(/lib\/../, "")
     render "_project_new", :locals => { :user_action => params[:user_action], :my_json => my_json, :child_metadata_definition => CHILD_META_DICTIONARY, :support_folder => sf}
   end 
    
-  def index_edit    
-    kill_server
-    if File.not.exist? "#{ENV['TM_PROJECT_DIRECTORY']}/config/.org_metadata"
-      MavensMate.build_index
-    else     
-      confirmed = TextMate::UI.request_confirmation(
-        :title => "MavensMate",
-        :prompt => "Would you like to refresh the local index of your Salesforce.com org's metadata?",
-        :button1 => "Refresh",
-        :button2 => "No")
-    end  
-    
-    MavensMate.build_index if confirmed
-    
-    project_array = eval(File.read("#{ENV['TM_PROJECT_DIRECTORY']}/config/.org_metadata")) #=> comprehensive list of server metadata
-    
-    require 'rubygems'
-    require 'nokogiri'
-    project_package = Nokogiri::XML(File.open("#{ENV['TM_PROJECT_DIRECTORY']}/src/package.xml"))
-    project_package.remove_namespaces!
-    project_package.xpath("//types/name").each do |node|
-      object_definition = MavensMate::FileFactory.get_meta_type_by_name(node.text) || MavensMate::FileFactory.get_child_meta_type_by_name(node.text)  
-      #=> ApexClass
-      is_parent = !object_definition[:parent_xml_name]
-      server_object = project_array.detect { |f| f[:key] == node.text }
-      next if server_object.nil? && is_parent
-            
-      if is_parent
-        server_object[:selected] = "selected"
-        server_object[:select_mode] = (node.previous_element.text == "*") ? "all" : "some"
-        MavensMate.select_all(server_object) if server_object[:select_mode] == "all"
-        next if server_object[:selected] == "all"     
-      end
-      
-      if not is_parent
-        #=> CustomField
-        parent_object_definition = MavensMate::FileFactory.get_meta_type_by_name(object_definition[:parent_xml_name]) #=> CustomObject
-        prev_node = node.previous_element    
-        while prev_node.not.nil? && prev_node.node_name == "members"
-          next if prev_node.text.not.include? "."
-          obj_name = prev_node.text.split(".")[0] #=> Lead
-          obj_attribute = prev_node.text.split(".")[1] #=> Field_Name__c
-           
-          server_object = project_array.detect { |f| f[:key] == object_definition[:parent_xml_name] } #=> CustomObject
-          sobject = server_object[:children].detect {|f| f[:title] == obj_name } #=> Lead
-          sobject_metadata = sobject[:children].detect {|f| f[:title] == object_definition[:tag_name] } #=> fields
-          sobject_metadata[:children].each do |item|
-            if item[:title] == obj_attribute
-              item[:selected] = "selected"
-              break
-            end
-          end          
-          prev_node = prev_node.previous_element || nil
-        end
-      end
-      
-      prev_node = node.previous_element    
-      while prev_node.not.nil? && prev_node.node_name == "members"
-        #skip items in folders for now
-        if prev_node.include? "/"
-          prev_node = prev_node.previous_element || nil
-          next
-        end
-        child_object = server_object[:children].detect {|f| f[:key] == prev_node.text }
-        child_object[:selected] = "selected" if child_object.not.nil?
-        MavensMate.select_all(child_object) if object_definition[:child_xml_names]
-        prev_node = prev_node.previous_element || nil
-      end
-      
-      prev_node = node.previous_element    
-      while prev_node.not.nil? && prev_node.node_name == "members"
-        #process only items in folders
-        if prev_node.text.not.include? "/"
-          prev_node = prev_node.previous_element || nil
-          next
-        end
-        child_object = server_object[:children].detect {|f| f[:key] == prev_node.text.split("/")[0]}        
-        begin  
-          child_object[:children].each do |gchild|
-            gchild[:selected] = "selected" if gchild[:key] == prev_node.text
-          end
-        rescue Exception => e
-          #puts e.message + "\n" + e.backtrace.join("\n")
-        end
-        prev_node = prev_node.previous_element || nil
-      end
-    end
-    
+  def index_edit
     pconfig = MavensMate.get_project_config
     password = KeyChain::find_internet_password("#{pconfig['project_name']}-mm")
-    
-    render "_project_edit", :locals => { :package => project_package, :project_array => project_array, :child_metadata_definition => CHILD_META_DICTIONARY, :pname => pconfig['project_name'], :pun => pconfig['username'], :ppw => password, :pserver => pconfig['environment'] }
+    render "_project_edit", :locals => { :child_metadata_definition => CHILD_META_DICTIONARY, :pname => pconfig['project_name'], :pun => pconfig['username'], :ppw => password, :pserver => pconfig['environment'] }
   end
     
   #updates current project
@@ -126,56 +37,7 @@ class ProjectController < ApplicationController
       TextMate::UI.alert(:warning, "MavensMate", e.message + "\n" + e.backtrace.join("\n"))
     end
   end
-  
-  #update project creds
-  def update_creds
-    begin
-      un = params[:un]
-      pw = params[:pw]
-      server_url = params[:server_url]
-
-      TextMate.call_with_progress( :title => "MavensMate", :message => "Validating Salesforce.com Credentials" ) do
-        client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => params[:server_url] })
-      end
-      
-      TextMate.call_with_progress( :title => "MavensMate", :message => "Updating project configuration" ) do
-        environment = (server_url.include? "test") ? "sandbox" : "production"
-        require 'yaml'
-        yml = YAML::load(File.open("#{ENV['TM_PROJECT_DIRECTORY']}/config/settings.yaml")) 
-        project_name = yml['project_name']
-        yml['username'] = un
-        yml['environment'] = environment 
-        File.open("#{ENV['TM_PROJECT_DIRECTORY']}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) }
-        MavensMate.add_to_keychain(project_name, pw) 
-      end 
-    rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
-    end
-  end
-  
-  #checks provided salesforce.com credentials    
-  def login
-    if params[:un].nil? || params[:pw].nil? || params[:server_url].nil?
-      TextMate::UI.alert(:warning, "MavensMate", "Please provide Salesforce.com credentials before selecting metadata")
-      abort
-    end
-      
-    begin
-      TextMate.call_with_progress( :title => "MavensMate", :message => "Validating Salesforce.com Credentials" ) do
-        self.client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => params[:server_url] })
-      end
-      #$stdout.flush
-      #flush
-      if ! self.client.sid.nil? && ! self.client.metadata_server_url.nil?
-        puts "<input type='hidden' value='#{self.client.sid}' id='sid'/>"
-        puts "<input type='hidden' value='#{self.client.metadata_server_url}' id='murl'/>"
-      end
-    rescue Exception => e
-      TextMate::UI.alert(:warning, "MavensMate", e.message)
-      return
-    end
-  end
-  
+    
   #creates new local project from selected salesforce data
   def new_custom_project  
     begin

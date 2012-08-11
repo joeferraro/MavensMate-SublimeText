@@ -324,7 +324,7 @@ module MavensMate
       require 'fileutils'   
       FileUtils.rm_r "#{pd}/config/objects" if File.directory? "#{pd}/config/objects"
       MavensMate::FileFactory.clean_directory("#{pd}/config/objects", ".object")        
-      client = MavensMate::Client.new
+      client = MavensMate::Client.new({:override_session => true})
       threads << Thread.new {
         thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
         if options[:package]
@@ -351,13 +351,15 @@ module MavensMate
           Dir.mkdir("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config") unless File.exists?("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config") 
           MavensMate::FileFactory.put_object_metadata(get_project_name, object_zip)   
         }        
-        threads.each { |aThread|  aThread.join }                  
       end
-      result = { :success => true } 
+      threads.each { |aThread|  aThread.join }                  
+      result = { :success => true }
+      return result if options[:force_return] 
       puts result.to_json 
     rescue Exception => e
       #alert e.message + "\n" + e.backtrace.join("\n")
       result = { :success => false, :message => +e.message + "\n" + e.backtrace.join("\n") }
+      return result if options[:force_return] 
       puts result.to_json  
     end   
   end

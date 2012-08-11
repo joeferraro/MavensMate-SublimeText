@@ -81,6 +81,13 @@ def mm_workspace():
         workspace = sublime.active_window().active_view().settings().get('mm_workspace')
     return workspace
 
+#displays edit project dialog
+class EditProjectCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        start_local_server()
+        temp_file_name = generate_ui("edit_project", mm_project_directory())
+        launch_mavens_mate_window(temp_file_name)
+
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):

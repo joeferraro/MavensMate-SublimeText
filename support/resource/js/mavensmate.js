@@ -57,17 +57,6 @@ function submitFormOnEnter() {
 	}); 
 } 
 
-//update project
-function updateProject() {
-	$('#result_output').html(
-		dispatch({
-			controller: 'project', 
-			action: 'update',   
-			tree: get_tree()
-		})
-	);
-} 
-
 //gets tree content in ruby hash form
 function get_tree() {			
 	var json = { }
