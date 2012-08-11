@@ -17,10 +17,10 @@
 	         			"caption": "Checkout Project",
 	         			"command": "checkout_project"
 	         		},
-	         		// {
-	         		// 	"caption": "Edit Project",
-	         		// 	"command": "edit_project"
-	         		// },
+	         		{
+	         			"caption": "Edit Project",
+	         			"command": "edit_project"
+	         		},
 	         		{
 	         			"caption": "Clean Project",
 	         			"command": "clean_project"

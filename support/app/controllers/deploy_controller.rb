@@ -11,16 +11,6 @@ class DeployController < ApplicationController
   layout "base", :only => [:index, :index_new, :show_compile_result] 
           
   def index
-    # if File.not.exist? "#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata"
-    #   MavensMate.build_index
-    # else     
-    #   confirmed = TextMate::UI.request_confirmation(
-    #     :title => "MavensMate",
-    #     :prompt => "Would you like to refresh the local index of your Salesforce.com org's metadata?",
-    #     :button1 => "Refresh",
-    #     :button2 => "No")
-    # end
-    #MavensMate.build_index
     connections = []
     begin
       pconfig = MavensMate.get_project_config

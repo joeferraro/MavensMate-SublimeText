@@ -4,6 +4,7 @@ require 'json'
 require File.dirname(File.dirname(File.dirname(__FILE__))) + "/constants.rb"
 include Constants
 require File.dirname(__FILE__) + '/lsof.rb'
+require File.dirname(__FILE__) + '/object.rb'
 require File.dirname(__FILE__) + '/mavensmate.rb'
 require 'webrick'
 include WEBrick
@@ -20,6 +21,7 @@ module MavensMate
           }
           
           server.mount('/project', ProjectServlet)
+          server.mount('/project/edit', ProjectEditServlet)
           server.mount('/metadata/list', MetadataListServlet) 
           server.mount('/vc', VersionControlServlet) 
           server.mount('/auth', AuthenticationServlet)
@@ -43,6 +45,7 @@ module MavensMate
             }
             
             server.mount('/project', ProjectServlet)
+            server.mount('/project/edit', ProjectEditServlet)
             server.mount('/metadata/list', MetadataListServlet) 
             server.mount('/vc', VersionControlServlet) 
             server.mount('/auth', AuthenticationServlet)
@@ -95,8 +98,13 @@ module MavensMate
         class MetadataIndexServlet < WEBrick::HTTPServlet::AbstractServlet
           def do_GET(req, resp)            
             begin              
+              if RUBY_VERSION =~ /1.9/
+                Encoding.default_external = Encoding::UTF_8
+                Encoding.default_internal = Encoding::UTF_8
+              end
               resp['Content-Type'] = 'html'
               ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
+              mode = req.query["mode"] || ""
               do_refresh = req.query["do_refresh"]
               metadata_array = nil
               if do_refresh == "true" or do_refresh == true
@@ -104,8 +112,83 @@ module MavensMate
               else
                 metadata_array = eval(File.read("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata")) #=> comprehensive list of server metadata    
               end
+              if mode == "edit"
+                require 'rubygems'
+                require 'nokogiri'
+                project_package = Nokogiri::XML(File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/package.xml"))
+                project_package.remove_namespaces!
+                project_package.xpath("//types/name").each do |node|
+                  object_definition = MavensMate::FileFactory.get_meta_type_by_name(node.text) || MavensMate::FileFactory.get_child_meta_type_by_name(node.text)  
+                  #=> ApexClass
+                  is_parent = !object_definition[:parent_xml_name]
+                  server_object = metadata_array.detect { |f| f[:key] == node.text }
+                  next if server_object.nil? && is_parent
+                        
+                  if is_parent
+                    server_object[:selected] = "selected"
+                    server_object[:select_mode] = (node.previous_element.text == "*") ? "all" : "some"
+                    MavensMate.select_all(server_object) if server_object[:select_mode] == "all"
+                    next if server_object[:selected] == "all"     
+                  end
+                  
+                  if not is_parent
+                    #=> CustomField
+                    puts "not parent"
+                    parent_object_definition = MavensMate::FileFactory.get_meta_type_by_name(object_definition[:parent_xml_name]) #=> CustomObject
+                    prev_node = node.previous_element    
+                    while prev_node.not.nil? && prev_node.node_name == "members"
+                      next if prev_node.text.not.include? "."
+                      obj_name = prev_node.text.split(".")[0] #=> Lead
+                      obj_attribute = prev_node.text.split(".")[1] #=> Field_Name__c
+                       
+                      server_object = metadata_array.detect { |f| f[:key] == object_definition[:parent_xml_name] } #=> CustomObject
+                      sobject = server_object[:children].detect {|f| f[:title] == obj_name } #=> Lead
+                      sobject_metadata = sobject[:children].detect {|f| f[:title] == object_definition[:tag_name] } #=> fields
+                      sobject_metadata[:children].each do |item|
+                        if item[:title] == obj_attribute
+                          item[:selected] = "selected"
+                          break
+                        end
+                      end          
+                      prev_node = prev_node.previous_element || nil
+                    end
+                  end
+                  
+                  prev_node = node.previous_element    
+                  while prev_node.not.nil? && prev_node.node_name == "members"
+                    #skip items in folders for now
+                    if prev_node.include? "/"
+                      prev_node = prev_node.previous_element || nil
+                      next
+                    end
+                    child_object = server_object[:children].detect {|f| f[:key] == prev_node.text }
+                    child_object[:selected] = "selected" if child_object.not.nil?
+                    MavensMate.select_all(child_object) if object_definition[:child_xml_names]
+                    prev_node = prev_node.previous_element || nil
+                  end
+                  
+                  prev_node = node.previous_element    
+                  while prev_node.not.nil? && prev_node.node_name == "members"
+                    #process only items in folders
+                    if prev_node.text.not.include? "/"
+                      prev_node = prev_node.previous_element || nil
+                      next
+                    end
+                    child_object = server_object[:children].detect {|f| f[:key] == prev_node.text.split("/")[0]}        
+                    begin  
+                      child_object[:children].each do |gchild|
+                        gchild[:selected] = "selected" if gchild[:key] == prev_node.text
+                      end
+                    rescue Exception => e
+                      #puts e.message + "\n" + e.backtrace.join("\n")
+                    end
+                    prev_node = prev_node.previous_element || nil
+                  end
+                end
+              end
+
               ac = ApplicationController.new
-              html = ac.render_to_string "deploy/_metadata_tree", :locals => { :meta_array => metadata_array }
+              html = ac.render_to_string "deploy/_metadata_tree", :locals => { :metadata_array => metadata_array, :mode => mode }
               resp.body = html
             rescue Exception => e
                 resp['Content-Type'] = 'json'
@@ -147,7 +230,6 @@ module MavensMate
           end
         end
 
-        
         class ProjectServlet < WEBrick::HTTPServlet::AbstractServlet
           def do_POST(req, resp)            
             begin
@@ -184,7 +266,23 @@ module MavensMate
             end
           end
         end
-            
+
+        class ProjectEditServlet < WEBrick::HTTPServlet::AbstractServlet
+          def do_POST(req, resp)            
+            begin
+              tree = eval(req.query["tree"])  
+              result = MavensMate.clean_project({ :update_sobjects => false, :update_package => true, :package => tree, :force_return => true })
+              if result[:success] == true
+                `killAll MavensMate` 
+              end
+              resp.body = result.to_json
+            rescue Exception => e
+              puts e.message + e.backtrace.join("\n")
+              resp.body = e.message.to_json
+            end        
+          end
+        end
+
         class MetadataNewServlet < WEBrick::HTTPServlet::AbstractServlet
           def do_POST(req, resp)            
             begin              
@@ -208,20 +306,46 @@ module MavensMate
         class AuthenticationServlet < WEBrick::HTTPServlet::AbstractServlet
           def do_GET(req, resp)            
             begin              
+              update_creds = req.query["update_creds"] || false
               sid = nil
               murl = nil
               client = MavensMate::Client.new({ 
                 :username => req.query["un"], 
                 :password => req.query["pw"], 
-                :endpoint => req.query["server_url"] 
+                :endpoint => req.query["server_url"], 
+                :override_session => req.query["override_session"] || false
               })
               if ! client.sid.nil? && ! client.metadata_server_url.nil?
-                result = {
-                  :success  => true, 
-                  :sid      => client.sid, 
-                  :murl     => client.metadata_server_url 
-                }
-                resp.body = result.to_json
+                if update_creds
+                  if RUBY_VERSION =~ /1.9/
+                    Encoding.default_external = Encoding::UTF_8
+                    Encoding.default_internal = Encoding::UTF_8
+                  end
+                  ENV['MM_CURRENT_PROJECT_DIRECTORY'] = req.query["pd"].to_s
+                  un = req.query["un"].to_s
+                  pw = req.query["pw"].to_s
+                  server_url = req.query["server_url"].to_s
+                  environment = (server_url.include? "test") ? "sandbox" : "production"
+                  require 'yaml'
+                  yml = YAML::load(File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/settings.yaml")) 
+                  project_name = yml['project_name'].to_s
+                  yml['username'] = un
+                  yml['environment'] = environment 
+                  File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) }
+                  MavensMate.add_to_keychain(project_name, pw)
+                  result = {
+                    :success  => true,
+                    :message => "Credentials successfully updated!"
+                  }
+                  resp.body = result.to_json
+                else
+                  result = {
+                    :success  => true, 
+                    :sid      => client.sid, 
+                    :murl     => client.metadata_server_url 
+                  }
+                  resp.body = result.to_json
+                end
               end
             rescue Exception => e
                 result = {

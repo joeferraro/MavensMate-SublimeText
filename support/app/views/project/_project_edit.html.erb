@@ -1,6 +1,14 @@
-<div id="result_output">
-	
+<div id="result_output" class="error">
+	<div id="result_wrapper" style="padding:0px 10px;">
+		<div class="alert-message error" style="display:none;">
+			<p id="error_message"></p>
+		</div>
+		<div class="alert-message success" style="display:none;">
+			<p id="success_message"></p>
+		</div>		
+	</div>
 </div>
+
 
 <div class="content">
 	
@@ -43,39 +51,7 @@
 		<div id="treewrapper" style="height:100%">
 			<div id="tree">
 				<ul>
-				<% project_array.each do |hash| %>
-					<% 
-						next if !hash[:children]
-						#next if hash[:children].size == 0
-						class_name = (hash[:children] && hash[:children].size > 0) ? "folder" : "" 
-					%>
-					<li data="level: 1, hasChildTypes: <%=hash[:hasChildTypes]%>, inFolder: <%=hash[:inFolder]%>" id="<%= hash[:key] %>" class="<%= hash[:selected] %> folder level1"><%= hash[:title] %>					
-						<% if hash[:children] %>
-						<ul>
-							<% hash[:children].each do |child| %>
-								<% child_class_name = (child[:children] && child[:children].size > 0) ? "folder" : "" %>
-								<li data="level: 2" id="<%= child[:key] %>" class="<%= child[:selected] %> <%= child_class_name %> level2"><%= child[:title] %>
-								<% if child[:children] && child[:children].size > 0 %>
-									<ul>
-										<% child[:children].each do |gchild| %>
-											<li data="level: 3" class="<%= gchild[:selected] %> level3"><%= gchild[:title] %>
-												<% if gchild[:children] && gchild[:children].size > 0 %>
-													<ul>
-														<% gchild[:children].each do |ggchild| %>
-															<li data="level: 4" class="<%= ggchild[:selected] %> level4"><%= ggchild[:title] %></li>
-														<% end %>
-													</ul>
-												<% end %>
-											</li>
-										<% end %>
-									</ul>
-								<% end %>
-								</li>
-							<% end %>
-						</ul>
-						<% end %>
-					</li>
-				<% end %>
+				
 				</ul>
 			</div>
 			<div id="info"></div>
@@ -94,21 +70,106 @@
 		</div>
 	</fieldset>
 </form>   
+
+<div class="twipsy deploy_loading">
+	<div class="loading_indicator"></div>                                        	
+</div>
+<div class="deploy_wait_description">
+	Indexing metadata...
+</div>
 	
 	<script type="text/javascript">
+		var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
+		var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
+
 		var child_def = {}
         <% child_metadata_definition.each do |child| %>
         	child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
 	   	<% end %>  
 		
 		function updateProjectCreds() {
-			dispatch({
-			    controller: "project",
-			    action: "update_creds",
-			    un: $("#un").val(),
-			    pw: $("#pw").val(),
-			    server_url: $("#server_url").val() 
-			}) 
+			console.log('updating project creds')
+			$.ajax({
+				type: "GET",
+				url: "http://127.0.0.1:7777/auth", 
+				data: {
+					un: $("#un").val(),
+			    	pw: $("#pw").val(),
+			    	server_url: $("#server_url").val(),
+			    	override_session: true,
+			    	update_creds: true,
+			    	pd: mm_cpd 
+				},
+				beforeSend: function() { showBlanket(); },
+				complete: function(data){
+					console.log(data)
+					var response = JSON.parse(data.responseText)
+					if (response["success"] == false) {
+						$("#error_message").html(response["message"])
+						$(".alert-message.success").hide()
+						$(".alert-message.error").show()
+					} else {
+						$("#success_message").html(response["message"])
+						$(".alert-message.error").hide()
+						$(".alert-message.success").show()
+					}
+					hideBlanket();				
+				} 
+			});
+		}
+
+		function updateProject() {
+			console.log('updating project')
+			$.ajax({
+				type: "POST",
+				url: "http://127.0.0.1:7777/project/edit", 
+				data: {
+					tree: get_tree()
+				},
+				beforeSend: function() { showBlanket(); },
+				complete: function(data){
+					console.log(data)
+					var response = JSON.parse(data.responseText)
+					if (response["success"] == false) {
+						$("#error_message").html(response["message"])
+						$(".alert-message.error").show()
+					} else {
+						$("#success_message").html("OK!")
+						$(".alert-message.success").show()
+					}
+					hideBlanket();				
+				} 
+			});
+		}
+
+		function index_org(refresh) {
+			console.log('indexing org')
+			console.log(refresh)
+			$.ajax({
+				type: "GET",
+				url: "http://127.0.0.1:7777/metadata/index", 
+				data: {
+					 mm_current_project_directory: mm_cpd,
+					 do_refresh: refresh,
+					 mode: "edit"
+				},
+				beforeSend: function() { showBlanket(); },
+				complete: function(data){
+					console.log(data)
+					$("#tree").dynatree("destroy")
+					$("#tree ul").html(data.responseText);
+					$("#tree").dynatree({
+						persist: false,
+						checkbox: true,
+						selectMode: 3
+					});
+					$("#tree").dynatree("getRoot").visit(function(node) {
+		        		node.expand(false);
+		    		});  
+					rootNode = $("#tree").dynatree("getRoot");
+					hideBlanket();				
+				} 
+			});
 		}
 			
 		$(function() {		   
@@ -136,15 +197,15 @@
 			//resize elements
 			$("#project_wrapper").height($(window).height() - 175)
 			
-			//instantiate and populate metadata tree
-			$("#tree").dynatree({
-				persist: false,
-				checkbox: true,
-				selectMode: 3
-			}); 
 			
 			$(window).resize(function() {
 				$("#project_wrapper").height($(window).height() - 175)
 			});
-		});		
+
+			index_org(!has_indexed_metadata);
+		});	
+
+		function showBlanket() { $('.deploy_loading').fadeIn(); }
+
+		function hideBlanket() { $('.deploy_loading').hide(); }  	
 	</script>
