@@ -81,6 +81,24 @@ def mm_workspace():
         workspace = sublime.active_window().active_view().settings().get('mm_workspace')
     return workspace
 
+class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
+    def run (self, dirs):
+        printer = PanelPrinter.get(self.window.id())
+        printer.show()
+        printer.write('\nRefreshing from server\n')
+        dir_string = ','.join(dirs)
+        printer.write(dir_string+'\n')
+        temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
+        try:
+            temp.write(dir_string)
+        finally:
+            temp.close()
+        threads = []
+        thread = MetadataAPICall("clean_directories", "'"+temp.name+"' '"+mm_project_directory()+"'")
+        threads.append(thread)
+        thread.start()
+        handle_threads(threads, printer, handle_result, 0)  
+
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):

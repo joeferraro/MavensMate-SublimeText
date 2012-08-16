@@ -5,7 +5,8 @@
 	    "children":
 	    	[
 				{ "caption": "Compile Selected Files", "command": "delete_metadata", "args": {"files": []} },
-				{ "caption": "Delete Selected Files from Salesforce Server", "command": "delete_metadata", "args": {"files": []} }
+				{ "caption": "Delete Selected Files from Salesforce Server", "command": "delete_metadata", "args": {"files": []} },
+				{ "caption": "Refresh From Server", "command": "refresh_directory", "args": {"dirs": []} }
 	    	]
 	 }
 ]
