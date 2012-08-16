@@ -308,6 +308,16 @@ module MavensMate
 
   def self.clean_dirs(options={})
     begin
+      if ! options[:dirs]
+        result = { :success => false, :message => "No directories specified" }
+        puts result.to_json 
+        return
+      end
+      dirs = options[:dirs].split(",")
+      if dirs.size == 1 and dirs.first.split("/").last == "src"
+        clean_project
+        return
+      end
       hash = { }
       options[:dirs].split(",").each do |dir|
         dir_base_name = dir.split("/").last
