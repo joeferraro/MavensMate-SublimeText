@@ -319,7 +319,10 @@ class MetadataAPICall(threading.Thread):
         try:
             res = ast.literal_eval(msg_string)
         except:
-            res = eval(msg_string)
+            try:
+                res = eval(msg_string)
+            except:
+                res = msg_string
         self.result = res
 
 def handle_threads(threads, printer, handle_result, i=0):
@@ -343,7 +346,9 @@ def handle_threads(threads, printer, handle_result, i=0):
     handle_result(printer, compile_result)
 
 def print_result_message(res, printer):
-    if 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
+    if isinstance(res, str):
+        printer.write('\n[OPERATION FAILED]:' + res + '\n')
+    elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
         res = res['check_deploy_status_response']['result']
         line_col = ""
         msg = None

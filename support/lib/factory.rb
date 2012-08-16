@@ -157,8 +157,7 @@ module MavensMate
       end
       
       def finish_clean(project_name, project_zip)
-        project_folder = ENV['MM_WORKSPACE']
-        #Dir.chdir(project_folder+"/"+project_name)
+        #project_folder = ENV['MM_WORKSPACE']
         File.open("#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/metadata.zip", 'wb') {|f| f.write(Base64.decode64(project_zip))}
         Zip::ZipFile.open("#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/metadata.zip") { |zip_file|
             zip_file.each { |f|
