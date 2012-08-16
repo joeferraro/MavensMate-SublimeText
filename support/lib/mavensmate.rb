@@ -19,7 +19,6 @@ module MavensMate
     if (params[:pn] == "" || params[:un] == "" || params[:pw] == "")
       return alert "Project Name, Salesforce Username, and Salesforce Password are all required fields!"
     end
-    MetadataHelper.
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
