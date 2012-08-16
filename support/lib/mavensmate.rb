@@ -19,13 +19,13 @@ module MavensMate
     if (params[:pn] == "" || params[:un] == "" || params[:pw] == "")
       return alert "Project Name, Salesforce Username, and Salesforce Password are all required fields!"
     end
-       
+    MetadataHelper.
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
   	  return alert "Hm, it looks like this project already exists in your project folder."
   	end
-  	
+
     begin   
       un            = params[:un]
       pw            = params[:pw]
@@ -304,6 +304,43 @@ module MavensMate
       res = { :success => false, :message => e.message }
       puts res.to_json
     end  
+  end
+
+  def self.clean_dirs(options={})
+    begin
+      hash = { }
+      options[:dirs].split(",").each do |dir|
+        dir_base_name = dir.split("/").last
+        type = MetadataHelper.get_meta_type_by_dir(dir_base_name)[:xml_name]
+        hash[type] = ["*"]
+      end
+      threads = []
+      Thread.abort_on_exception = true
+      client = nil
+      pd = ENV['MM_CURRENT_PROJECT_DIRECTORY']
+      Dir.foreach("#{pd}/src") do |entry| #iterate the metadata folders
+        next if entry.include? "."
+        next if !options[:dirs].include?(entry) #skip the folder if it's not being refreshed
+        Dir.foreach("#{pd}/src/#{entry}") do |subentry| #iterate the files inside those folders
+          next if subentry == '.' || subentry == '..' || subentry == '.svn' || subentry == '.git'
+          FileUtils.rm_r "#{pd}/src/#{entry}/#{subentry}" #delete what's inside
+        end
+      end
+      tmp_dir = MavensMate::FileFactory.put_tmp_directory
+      MavensMate::FileFactory.put_package(tmp_dir, binding, false)
+      client = MavensMate::Client.new
+      threads << Thread.new {
+        thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
+        project_zip = thread_client.retrieve({ :package => tmp_dir+"/package.xml" })
+        MavensMate::FileFactory.finish_clean(get_project_name, project_zip) #put the metadata in the project directory  
+      }
+      threads.each { |aThread|  aThread.join }                  
+      result = { :success => true }
+      puts result.to_json 
+    rescue Exception => e
+      result = { :success => false, :message => +e.message + "\n" + e.backtrace.join("\n") }
+      puts result.to_json
+    end
   end
         
   #wipes local project and rewrites with server copies based on current project's package.xml, preserves svn/git      
