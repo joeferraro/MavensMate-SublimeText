@@ -569,6 +569,7 @@ module MavensMate
         client = Savon::Client.new do |wsdl, http|
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/partner.xml", __FILE__)
           http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
+          http.auth.ssl.verify_mode = :none
         end
         client.wsdl.endpoint = self.endpoint        
         return client
@@ -579,6 +580,7 @@ module MavensMate
         client = Savon::Client.new do |wsdl, http|
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/metadata.xml", __FILE__)
           http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
+          http.auth.ssl.verify_mode = :none
         end
         client.wsdl.endpoint = self.metadata_server_url
         return client
