@@ -33,28 +33,24 @@ module MavensMate
 
         def start
           stop
-          exit if fork            # Parent exits, child continues.
-          Process.setsid          # Become session leader.
-          exit if fork            # Zap session leader.
+          server = WEBrick::HTTPServer.new(
+            :Port => 7777,
+            :ServerType => WEBrick::Daemon
+          )
           
-          pid = fork do
-            server = WEBrick::HTTPServer.new(:Port => 7777)
-            
-            ['INT', 'TERM'].each { |signal|
-               trap(signal) { server.shutdown } 
-            }
-            
-            server.mount('/project', ProjectServlet)
-            server.mount('/project/edit', ProjectEditServlet)
-            server.mount('/metadata/list', MetadataListServlet) 
-            server.mount('/vc', VersionControlServlet) 
-            server.mount('/auth', AuthenticationServlet)
-            server.mount('/test', ApexUnitTestServlet)
-            server.mount('/metadata/index', MetadataIndexServlet)
-            server.mount('/deploy', DeployServlet)
-            server.start  
-          end   
-          Process.detach(pid)
+          ['INT', 'TERM'].each { |signal|
+             trap(signal) { server.shutdown } 
+          }
+          
+          server.mount('/project', ProjectServlet)
+          server.mount('/project/edit', ProjectEditServlet)
+          server.mount('/metadata/list', MetadataListServlet) 
+          server.mount('/vc', VersionControlServlet) 
+          server.mount('/auth', AuthenticationServlet)
+          server.mount('/test', ApexUnitTestServlet)
+          server.mount('/metadata/index', MetadataIndexServlet)
+          server.mount('/deploy', DeployServlet)
+          server.start  
         end
       
         def stop
