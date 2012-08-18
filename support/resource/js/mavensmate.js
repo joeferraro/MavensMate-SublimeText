@@ -1,6 +1,6 @@
 $(function() {
 
-	$("input:first").focus(); //focus first input element
+	$("input[type='text']:first").focus(); //focus first input element
 	resizeWindowOnDomElementRemoved();
 	//submitFormOnEnter();
 		
