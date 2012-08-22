@@ -26,6 +26,8 @@ module MavensMate
     attr_accessor :pclient
     # metadata client
     attr_accessor :mclient
+    # apex client
+    attr_accessor :aclient
     # session id
     attr_accessor :sid
     # current user id
@@ -105,10 +107,11 @@ module MavensMate
       
       begin
         res = response.to_hash
+        #puts res.inspect
         self.metadata_server_url = res[:login_response][:result][:metadata_server_url]
         self.sid = res[:login_response][:result][:session_id].to_s
         self.user_id = res[:login_response][:result][:user_id].to_s
-        self.pclient.wsdl.endpoint = res[:login_response][:result][:server_url] 
+        self.pclient.wsdl.endpoint = res[:login_response][:result][:server_url]
       rescue Exception => e
         #puts e.message 
       end
@@ -130,15 +133,15 @@ module MavensMate
       retrieve_hash = response.to_hash
       retrieve_id = retrieve_hash[:retrieve_response][:result][:id]
       
-      is_finished = false
-      while is_finished == false
+      finished = false
+      while finished == false
         sleep 2
         response = self.mclient.request :check_status do |soap|
           soap.header = get_soap_header  
           soap.body = { :id => retrieve_id  }
         end
         status_hash = response.to_hash
-        is_finished = status_hash[:check_status_response][:result][:done]
+        finished = status_hash[:check_status_response][:result][:done]
       end
       
       begin
@@ -153,6 +156,29 @@ module MavensMate
       retrieve_request_hash = retrieve_response.body
       #puts "RETRIEVE: " + retrieve_request_hash.inspect
       zip_file = retrieve_request_hash[:check_retrieve_status_response][:result][:zip_file]
+    end
+
+    def run_tests(tests=[], debug_options)
+      test_xml = ""
+      tests.each do |t|
+        test_xml << "<classes>#{t}</classes>"
+      end
+      self.aclient = get_apex_client
+      #puts self.aclient.wsdl.soap_actions
+      response = self.aclient.request :run_tests do |soap|
+        soap.header = { 
+          "ins0:SessionHeader" => { "ins0:sessionId" => self.sid }, 
+          "ins0:DebuggingHeader" => { "ins0:categories" => { "ins0:category" => debug_options[:category],  "ins0:level" => debug_options[:level] } }
+        } 
+        soap.body = "<RunTestsRequest><allTests>false</allTests>#{test_xml}</RunTestsRequest>"
+      end
+      #puts response.to_hash.inspect
+      #require 'pp'
+      #pp response.header
+      #pp response.to_hash
+      response_body = response.to_hash
+      response_body[:log] = response.header
+      return response_body
     end
     
     #deploy/delete base64 encoded metadata to salesforce    
@@ -172,42 +198,25 @@ module MavensMate
       end
             
       update_id = create_hash[:deploy_response][:result][:id]
-      is_finished = false
-      timer = 0
-      is_timeout = false
+      finished = false
       
-      while ! is_finished
+      while ! finished
         sleep 1
-        timer += 1
         response = self.mclient.request :check_status do |soap|
           soap.header = get_soap_header
           soap.body = { :id => update_id }
         end
         check_status_hash = response.to_hash
-        is_finished = check_status_hash[:check_status_response][:result][:done]        
-
-        if timer == ENV['FM_TIMEOUT'].to_i
-          is_timeout = true
-          break
-        end
+        finished = check_status_hash[:check_status_response][:result][:done]        
       end
-      
-      if is_timeout == true
-        return { 
-          :is_success => false,
-          :message => "TIMEOUT"
-        }
-      end
-            
+                  
       response = self.mclient.request :check_deploy_status do |soap|
         soap.header = get_soap_header
         soap.body = { :id => update_id  }
       end
       
       deploy_hash = response.to_hash
-      #deploy_hash = response.to_xml
-      #puts "deploy result is: " + deploy_hash.inspect
-            
+      #puts "deploy result is: " + deploy_hash.inspect            
       return deploy_hash            
     end
     
@@ -585,6 +594,18 @@ module MavensMate
         client.wsdl.endpoint = self.metadata_server_url
         return client
       end
+
+      #returns apex connection
+      def get_apex_client
+        client = Savon::Client.new do |wsdl, http|
+          wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/apex.xml", __FILE__)
+          http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
+          http.auth.ssl.verify_mode = :none
+        end
+        client.wsdl.endpoint = self.metadata_server_url.gsub(/\/m\//, "/s/")
+        return client
+      end
+
       
   end
 end

@@ -1,15 +1,20 @@
 <%
 	def htmlize(str)
-      str.to_s.gsub(/&/, "&amp;").gsub(/"/, "&quot;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\t", "&nbsp;&nbsp;&nbsp;&nbsp;").gsub(" ", "&nbsp;")
+      str.to_s.gsub(/&/, "&amp;").gsub(/"/, "&quot;").gsub("<", "&lt;").gsub(">", "&gt;").gsub("\t", "&nbsp;&nbsp;&nbsp;&nbsp;").gsub(" ", "&nbsp;").gsub("\n", "<br/>")
     end
+    log = "Not Available"
+    begin
+    	log = htmlize(result[:log][:debugging_info][:debug_log])
+    rescue
 
+   	end
 	warnings = []
 	general_warnings = []
-	if result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings]
-		if result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings].kind_of? Array
-			warnings = result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings]
+	if result[:run_tests_response][:result][:code_coverage_warnings]
+		if result[:run_tests_response][:result][:code_coverage_warnings].kind_of? Array
+			warnings = result[:run_tests_response][:result][:code_coverage_warnings]
 		else
-			warnings.push(result[:check_deploy_status_response][:result][:run_test_result][:code_coverage_warnings])	
+			warnings.push(result[:run_tests_response][:result][:code_coverage_warnings])	
 		end
 	end
 	warnings.each do |w|
@@ -20,28 +25,28 @@
 	
 	
 	failures = []
-	if result[:check_deploy_status_response][:result][:run_test_result][:failures]
-		if result[:check_deploy_status_response][:result][:run_test_result][:failures].kind_of? Array
-			failures = result[:check_deploy_status_response][:result][:run_test_result][:failures]
+	if result[:run_tests_response][:result][:failures]
+		if result[:run_tests_response][:result][:failures].kind_of? Array
+			failures = result[:run_tests_response][:result][:failures]
 		else
-			failures.push(result[:check_deploy_status_response][:result][:run_test_result][:failures])	
+			failures.push(result[:run_tests_response][:result][:failures])	
 		end
 	end
 	
 	successes = []
-	if result[:check_deploy_status_response][:result][:run_test_result][:successes]
-		if result[:check_deploy_status_response][:result][:run_test_result][:successes].kind_of? Array
-			successes = result[:check_deploy_status_response][:result][:run_test_result][:successes]
+	if result[:run_tests_response][:result][:successes]
+		if result[:run_tests_response][:result][:successes].kind_of? Array
+			successes = result[:run_tests_response][:result][:successes]
 		else
-			successes.push(result[:check_deploy_status_response][:result][:run_test_result][:successes])	
+			successes.push(result[:run_tests_response][:result][:successes])	
 		end
 	end
 	
 	code_coverage_result = []
-	if result[:check_deploy_status_response][:result][:run_test_result][:code_coverage].kind_of? Array
-		code_coverage_result = result[:check_deploy_status_response][:result][:run_test_result][:code_coverage]
+	if result[:run_tests_response][:result][:code_coverage].kind_of? Array
+		code_coverage_result = result[:run_tests_response][:result][:code_coverage]
 	else
-		code_coverage_result.push(result[:check_deploy_status_response][:result][:run_test_result][:code_coverage])	
+		code_coverage_result.push(result[:run_tests_response][:result][:code_coverage])	
 	end
 	
 	class_coverage = []
@@ -347,35 +352,11 @@
 	<!-- END TRIGGER PROCESSING -->
 </div>
 
+<div id="log_wrapper">
+	<div style="padding:10px;">
+		<%= log %>
+	</div>
+</div>
+
 
 <!-- </div>  -->
-
-<script type="text/javascript">
-	//move class/trigger html into appropriate tabs
-	$("#class_coverage_wrapper").html(
-		$("#class_wrapper").html()
-	)
-	$("#trigger_coverage_wrapper").html(
-		$("#trigger_wrapper").html()
-	)
-	$("#warnings_coverage_wrapper").html(
-		$("#warnings_wrapper").html()
-	)
-	$("#class_wrapper").remove()
-	$("#trigger_wrapper").remove()
-	$("#warnings_wrapper").remove()
-
-	$(".results_hidden").show();
-	$("#a_result").click();
-	window.resizeTo(740, document.getElementById('result_wrapper').scrollHeight+175);	
-</script>
-<style>
-	table.test_result {
-		border-top:none;
-	}
-	table.test_result th, table.test_result td {
-		padding:5px;
-		line-height:1;
-	}
-	
-</style>

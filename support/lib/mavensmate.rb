@@ -558,24 +558,14 @@ module MavensMate
   end
   
   #runs apex tests in selected class
-  def self.run_tests(tests)
-    #validate [:internet, :mm_project, :run_test]
-    run_test_body = ""
-    tests.each do |t|
-      run_test_body << "<runTests>#{t}</runTests>"
-    end    
-    run_test_body << "<rollbackOnError>true</rollbackOnError>"
-    
+  def self.run_tests(tests, debug_options)
     begin
-      zip_file = MavensMate::FileFactory.put_empty_metadata    
       client = MavensMate::Client.new
-      result = client.deploy({:zip_file => zip_file, :deploy_options => run_test_body })
-      return result      
+      result = client.run_tests(tests, debug_options)
+      return result
     rescue Exception => e
-      #alert e.message + "\n" + e.backtrace.join("\n")
       return e.message + "\n" + e.backtrace.join("\n")
-    end
-    
+    end    
   end
      
   #displays autocomplete dialog based on current word. supports sobject fields & apex primitive methods
