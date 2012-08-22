@@ -1,8 +1,4 @@
 #!/usr/bin/env ruby -W0
-# require "rubygems"
-# require "savon"
-# require "builder"
-# require "zip/zipfilesystem"
 require File.dirname(File.dirname(__FILE__)) + "/constants.rb"
 include Constants
 require SUPPORT + "/environment.rb"
