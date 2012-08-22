@@ -69,8 +69,12 @@ module MavensMate
             require File.dirname(File.dirname(File.dirname(__FILE__))) + "/support/tmvc/lib/application_controller.rb"
             resp['Content-Type'] = 'html'
             test_result = {}
+            debug_options = {
+              :level => req.query["level"],
+              :category => req.query["category"]
+            }
             begin
-              result = MavensMate.run_tests(req.query["selected_tests"].split(","))
+              result = MavensMate.run_tests(req.query["selected_tests"].split(","), debug_options)
               ac = ApplicationController.new
               if RUBY_VERSION =~ /1.9/
                 Encoding.default_external = Encoding::UTF_8

@@ -103,21 +103,46 @@ h4 {
 .ms-selectable, .ms-selection {
 	width:292px;
 }
+
+.ms-container {
+	background: none !important;
+}
+
+.ms-selectable {
+	margin-right:10px !important;
+	margin-bottom: 10px !important;
+}
+
+table.test_result {
+	border-top:none;
+}
+table.test_result th, table.test_result td {
+	padding:5px;
+	line-height:1;
+}
+
+embed.hidden {
+    position: absolute;
+    left: -10000px;
+}
+	
 </style>
 <div class="content" id="content1">	
 
 	<ul class="tabs">
 	  <li class="active"><a href="#tests_content">Apex Tests</a></li>
+	  <li class="game"><a href="#game_content">Pacman</a></li>
 	  <li class="results_hidden"><a href="#tests_results" id="a_result">Test Results</a></li>
-	  <li class="results_hidden"><a href="#class_coverage" id="b_result">Apex Class Coverage</a></li>
-	  <li class="results_hidden"><a href="#trigger_coverage" id="c_result">Apex Trigger Coverage</a></li>
-	  <li class="results_hidden"><a href="#warnings" id="d_result">Coverage Warnings</a></li>	
+	  <li class="results_hidden"><a href="#class_coverage" id="b_result">Class Coverage</a></li>
+	  <li class="results_hidden"><a href="#trigger_coverage" id="c_result">Trigger Coverage</a></li>
+	  <li class="results_hidden"><a href="#warnings" id="d_result">Warnings</a></li>
+	  <li class="results_hidden"><a href="#log" id="e_result">Log</a></li>
 	</ul> 
 
 	<div class="pill-content">
 	  <div class="active" id="tests_content">
 	  	<div style="" class="headers">
-				<form>
+			<form style="margin-bottom:5px;">
 			     <select id="tests" multiple="multiple" class="multiselect" style="display: none;">
 			      <% 
 							selected_file = ENV['TM_FILEPATH'] || ENV['TM_SELECTED_FILE']
@@ -134,8 +159,41 @@ h4 {
 							<option <%= selected %> value="<%= cls %>"><%= cls %></option>
 			 			<% end %>
 			    </select>
-				</form>
-			</div>
+			</form>
+		</div>
+		<form class="form" style="margin:0px;">
+			<fieldset style="margin:0px;padding:0px;">
+				<div class="clearfix">
+					<label for="category" style="width:110px;margin-right:10px;">Log Category</label>
+					<select id="category">
+						<option>Db</option>
+						<option>Workflow</option>
+						<option>Validation</option>
+						<option>Callout</option>
+						<option value="Apex_code" selected="true">Apex Code</option>
+						<option value="Apex_profiling">Apex Profiling</option>
+						<option>All</option>
+					</select>
+				</div>
+			</fieldset>
+			<fieldset style="margin:0px;padding:0px;">
+				<div class="clearfix" id="levelwrapper">
+					<label for="level" style="width:110px;margin-right:10px;">Log Level</label>
+					<select id="level">
+						<option value="ERROR">ERROR</option>
+						<option value="WARN">WARN</option>
+						<option value="INFO">INFO</option>
+						<option value="DEBUG" selected="true">DEBUG</option>
+						<option value="FINE">FINE</option>
+						<option value="FINER">FINER</option>
+						<option value="FINEST">FINEST</option>
+					</select>
+				</div>
+			</fieldset>
+		</form>
+	  </div>
+	  <div id="game_content">
+	  	<embed class="" src="http://www.classicgamesarcade.com/games/pacman.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="pacman"></embed>
 	  </div>
 	  <div id="tests_results">
 	  	<div id="result_output">
@@ -155,31 +213,30 @@ h4 {
 	    <div id="warnings_coverage_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
 		</div>
 	  </div>
+	  <div id="log">
+	    <div id="log_coverage_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
+		</div>
+	  </div>
 	</div> 
 </div>
 
 <form class="form-stacked" id="action_buttons" style="padding-left:12px;">
-	<fieldset style="padding-top:0px;">
+	<fieldset style="padding-top:0px;position:relative;">
 		<div class="actions">					
-			<input type="button" class="btn primary" value="Run Tests" onclick="run_tests()"> 
+			<input type="button" class="btn primary" value="Run Tests" onclick="run_tests()" id="btnRunTests"> 
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 		</div>
+		<img src="<%=ENV['TM_BUNDLE_SUPPORT']%>/resource/images/big_loading.gif" style="position:absolute;top:13px;right:25px;width:36px;display:none;" id="running_tests_indicator"/>
 	</fieldset>
 </form>
 
-<div class="twipsy deploy_loading">
-	<div class="loading_indicator"></div>                                        	
-</div>
-<div class="deploy_wait_description">
-	Creating Project...
-</div>
 
 <script>
 
-function showBlanket() { $('.deploy_loading').fadeIn(); }
+function showBlanket() { $('#running_tests_indicator').fadeIn(); }
 
-function hideBlanket() { $('.deploy_loading').hide(); }
+function hideBlanket() { $('#running_tests_indicator').hide(); }
 
 function run_tests() {
 	$.ajax({
@@ -188,41 +245,84 @@ function run_tests() {
 		dataType: "html",
 		data: {
 			 selected_tests: $('#tests').val().join(),
-			 mm_current_project_directory: '<%= ENV['MM_CURRENT_PROJECT_DIRECTORY'] %>'
+			 mm_current_project_directory: '<%= ENV['MM_CURRENT_PROJECT_DIRECTORY'] %>',
+			 level: $("#level").val(),
+			 category: $("#category").val()
 		},
-		beforeSend: function() { showBlanket(); },
+		beforeSend: function() { showBlanket(); $("#btnRunTests").hide() },
 		complete: function(data){
 			console.log(data)
-			//i believe data.responseText will be raw html
 			$("#result_wrapper").html(data.responseText)
-			hideBlanket();				
+
+			$("#class_coverage_wrapper").html(
+				$("#class_wrapper").html()
+			)
+			$("#trigger_coverage_wrapper").html(
+				$("#trigger_wrapper").html()
+			)
+			$("#warnings_coverage_wrapper").html(
+				$("#warnings_wrapper").html()
+			)
+			$("#log_coverage_wrapper").html(
+				$("#log_wrapper").html()
+			)
+			$("#class_wrapper").remove()
+			$("#trigger_wrapper").remove()
+			$("#warnings_wrapper").remove()
+			$("#log_wrapper").remove()
+
+			$(".results_hidden").show();
+			if ($("#game_content").css("display") == "none") {
+				$("#a_result").click();
+				window.resizeTo(760, document.getElementById('result_wrapper').scrollHeight+175);	
+			}
+
+			hideBlanket();
+			$("#btnRunTests").show();				
 		} 
 	});
 }
 
 function resize() {
-	window.resizeTo(675, document.getElementById('content1').offsetHeight+155);
+	window.resizeTo(675, 570);
 }
 
 function resize_height() {
 	window.resizeTo(window.width, document.getElementById('content1').offsetHeight+65);
 }
 
+function resize_test_container_sizes() {
+	$(".ms-selectable, .ms-selection").css("width", $(window).width()/2 - 12)
+	$(".ms-selectable, .ms-selection").css("height", $(window).height() - 275)
+	$(".ms-list").css("height", $(".ms-selectable").height()-40)
+}
+
+function resize_pacman() {
+	$("#pacman").css("width", $(window).width() - 12)
+	$("#pacman").css("height", $(window).height() - 175)
+}
+
 $(function(){
 	$('#tests').multiSelect({
-     selectableHeader : '<div class="alert-message block-message-custom" style="padding: 7px 12px !important;border:none;border-bottom:1px solid #ccc;margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;"><p style="float:left;"><strong>Available Tests</strong></p><div style="clear:both;"></div>	</div>',
-     selectedHeader : '<div class="alert-message block-message-custom" style="padding: 7px 12px !important;border:none;border-bottom:1px solid #ccc;margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;"><p style="float:left;"><strong>Selected Tests</strong></p><div style="clear:both;"></div>	</div>'
+     selectableHeader : '<div class="alert-message block-message-custom" style="padding: 7px 12px !important;border:none;border-bottom:1px solid #ccc;margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;"><p style="float:left;"><strong>Available Tests</strong></p><p style="float:right;"><a style="color:#0069D6;" href="javascript:void(0);" onclick="$(\'#tests\').multiSelect(\'select_all\');">Select All</a></p><div style="clear:both;"></div></div>',
+     selectedHeader : '<div class="alert-message block-message-custom" style="padding: 7px 12px !important;border:none;border-bottom:1px solid #ccc;margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;"><p style="float:left;"><strong>Selected Tests</strong></p><p style="float:right;"><a style="color:#0069D6;" href="javascript:void(0);" onclick="$(\'#tests\').multiSelect(\'deselect_all\');">Select None</a></p><div style="clear:both;"></div></div>'
    });
 
 	$('.tabs').tabs()
-	
-	//  	$('.tabs a').bind('change', function (e) {
-	// 	//resize();
-	// });   
-	
-	resize(); 
+
+	// $('.tabs').bind('change', function (e) {
+ //  		//console.log(e.target) // activated tab
+ //  		if ($(e.target).html() == "Pacman") {
+ //  			$("#pacman").removeClass("hidden")
+ //  		} else {
+ //  			$("#pacman").addClass("hidden")
+ //  		}
+	// })
+
+	//setTimeout(resize(), 500);
+	resize()
+	resize_test_container_sizes(); 
 	window.moveTo((screen.width-675)/2,(screen.height-document.getElementById('content1').offsetHeight-400)/2);
-	
 });
 
 function toggleSourceButton(el, index, type) {
@@ -245,11 +345,23 @@ $("#result_wrapper").height($(window).height() - 175)
 $("#class_coverage_wrapper").height($(window).height() - 175)
 $("#trigger_coverage_wrapper").height($(window).height() - 175)
 $("#warnings_coverage_wrapper").height($(window).height() - 175)
+$("#log_coverage_wrapper").height($(window).height() - 175)
 $(window).resize(function() {
     $("#result_wrapper").height($(window).height() - 175)
     $("#class_coverage_wrapper").height($(window).height() - 175)   
     $("#trigger_coverage_wrapper").height($(window).height() - 175)
-    $("#warnings_coverage_wrapper").height($(window).height() - 175)   
+    $("#warnings_coverage_wrapper").height($(window).height() - 175)
+	$("#log_coverage_wrapper").height($(window).height() - 175)
+    resize_test_container_sizes()  
+    resize_pacman()
 });
+
+$("#category").change(function() {
+	if (this.value == "Apex_code") {
+		$("#levelwrapper").show()
+	} else {
+		$("#levelwrapper").hide()
+	}
+})
 
 </script>
