@@ -1,7 +1,7 @@
 $(function() {
 
 	$("input[type='text']:first").focus(); //focus first input element
-	resizeWindowOnDomElementRemoved();
+	//resizeWindowOnDomElementRemoved();
 	//submitFormOnEnter();
 		
 });
