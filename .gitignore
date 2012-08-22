@@ -6,3 +6,5 @@ mavensmate.pyc
 support/.DS_Store
 
 *.cache
+
+support/app/views/unit_test/_test_result_old.html.erb
