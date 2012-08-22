@@ -81,6 +81,23 @@ def mm_workspace():
         workspace = sublime.active_window().active_view().settings().get('mm_workspace')
     return workspace
 
+def mark_line_numbers(lines):
+    icon = 'dot'
+    points = [sublime.active_window().active_view().text_point(l - 1, 0) for l in lines]
+    regions = [sublime.Region(p, p) for p in points]
+    sublime.active_window().active_view().add_regions('deleted', regions, "operation.fail",
+        icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
+
+def clear_marked_line_numbers():
+    sublime.active_window().active_view().erase_regions('deleted')
+
+class MarkLinesCommand(sublime_plugin.WindowCommand):
+    def run (self):
+        #mark_lines(self, None)
+        clear_marked_lines()
+
+#refreshes selected directory (or directories)
+# if src is refreshed, project is "cleaned"
 class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
     def run (self, dirs):
         printer = PanelPrinter.get(self.window.id())
@@ -297,6 +314,8 @@ class HideDebugPanelCommand(sublime_plugin.WindowCommand):
         if is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(False)
 
+#calls out to the ruby scripts that interact with the metadata api
+#pushes them to background threads and reads the piped response
 class MetadataAPICall(threading.Thread):
     def __init__(self, command_name, params):
         self.result = None
@@ -325,6 +344,7 @@ class MetadataAPICall(threading.Thread):
                 res = msg_string
         self.result = res
 
+#handles spawned threads and prints the "loading indicator" to the mm_panel
 def handle_threads(threads, printer, handle_result, i=0):
     compile_result = ""
     next_threads = []
@@ -345,8 +365,10 @@ def handle_threads(threads, printer, handle_result, i=0):
 
     handle_result(printer, compile_result)
 
+#prints the result of the ruby script, can be a string or a dict
 def print_result_message(res, printer):
     if isinstance(res, str):
+        clear_marked_line_numbers()
         printer.write('\n[OPERATION FAILED]:' + res + '\n')
     elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
         res = res['check_deploy_status_response']['result']
@@ -369,6 +391,7 @@ def print_result_message(res, printer):
         if msg != None:
             if 'line_number' in msg:
                 line_col = ' (Line: '+msg['line_number']
+                mark_line_numbers([int(float(msg['line_number']))])
             if 'column_number' in msg:
                 line_col += ', Column: '+msg['column_number']
             if len(line_col) > 0:
@@ -379,14 +402,19 @@ def print_result_message(res, printer):
                 printer.write('\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['method_name'] + ': ' + f['message'] + '\n')
 
     elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == True:     
+        clear_marked_line_numbers()
         printer.write('\n[Deployed Successfully]' + '\n')
     elif res['success'] == False and 'message' in res:
+        clear_marked_line_numbers()
         printer.write('\n[OPERATION FAILED]:' + res['message'] + '\n')
     elif res['success'] == False:
+        clear_marked_line_numbers()
         printer.write('\n[OPERATION FAILED]' + '\n')
     else:
+        clear_marked_line_numbers()
         printer.write('\n[Operation Completed Successfully]' + '\n')    
 
+#handles the result of the ruby script
 def handle_result(printer, result):
     print_result_message(result, printer) 
     if 'check_deploy_status_response' in result: 
@@ -394,11 +422,12 @@ def handle_result(printer, result):
         if res['success'] == True and 'location' in res :
             sublime.active_window().open_file(res['location'])
         if res['success'] == True and hide_panel == True:
-            printer.hide() 
+            printer.hide()             
     elif 'success' in result:
         if result['success'] == True and hide_panel == True:
             printer.hide() 
 
+#parses the input from sublime text
 def parse_new_metadata_input(input):
     input = input.replace(" ", "")
     if "," in input:
