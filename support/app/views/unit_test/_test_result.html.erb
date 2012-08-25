@@ -53,7 +53,7 @@
 	trigger_coverage = []
 	
     code_coverage_result.each do |r|
-		if r[:type] == "Trigger"
+		if r[:id].start_with?("01q")
 			trigger_coverage.push(r)
 		else
 			class_coverage.push(r)
