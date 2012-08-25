@@ -158,6 +158,28 @@ module MavensMate
       zip_file = retrieve_request_hash[:check_retrieve_status_response][:result][:zip_file]
     end
 
+    def compile_apex(options={})
+      self.aclient = get_apex_client
+      puts self.aclient.wsdl.soap_actions
+      if options[:type] == "ApexClass"
+        response = self.aclient.request :compile_classes do |soap|
+          soap.header = { "ins0:SessionHeader" => { "ins0:sessionId" => self.sid } }
+          soap.body = "<CompileClassesRequest>#{options[:body]}</CompileClassesRequest>"
+        end
+      else
+        response = self.aclient.request :compile_triggers do |soap|
+          soap.header = { "ins0:SessionHeader" => { "ins0:sessionId" => self.sid } } 
+          soap.body = "<CompileTriggersRequest>#{options[:body]}</CompileTriggersRequest>"
+        end
+      end
+      require 'pp'
+      pp response.header
+      pp response.to_hash
+      #response_body = response.to_hash
+      #response_body[:log] = response.header
+      #return response_body
+    end
+
     def run_tests(tests=[], debug_options)
       test_xml = ""
       tests.each do |t|
