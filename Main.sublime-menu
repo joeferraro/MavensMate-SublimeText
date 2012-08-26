@@ -60,6 +60,10 @@
 	         	"command": "run_apex_unit_tests"
 	     	},
 	     	{
+	    		"caption": "Execute Apex",  
+	         	"command": "execute_anonymous"
+	     	},
+	     	{
 	        	"id": "compile_active", 
 	    		"caption": "Compile Active File",  
 	         	"command": "compile_active_file"

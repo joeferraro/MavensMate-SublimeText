@@ -159,25 +159,46 @@ module MavensMate
     end
 
     def compile_apex(options={})
+      res = {}
       self.aclient = get_apex_client
-      puts self.aclient.wsdl.soap_actions
+      #puts self.aclient.wsdl.soap_actions
       if options[:type] == "ApexClass"
         response = self.aclient.request :compile_classes do |soap|
           soap.header = { "ins0:SessionHeader" => { "ins0:sessionId" => self.sid } }
           soap.body = "<CompileClassesRequest>#{options[:body]}</CompileClassesRequest>"
         end
+        res[:check_deploy_status_response] = response.to_hash[:compile_classes_response]
       else
         response = self.aclient.request :compile_triggers do |soap|
           soap.header = { "ins0:SessionHeader" => { "ins0:sessionId" => self.sid } } 
           soap.body = "<CompileTriggersRequest>#{options[:body]}</CompileTriggersRequest>"
         end
+        res[:check_deploy_status_response] = response.to_hash[:compile_triggers_response]
       end
-      require 'pp'
-      pp response.header
-      pp response.to_hash
+      #require 'pp'
+      #pp response.header
+      #pp response.to_hash
       #response_body = response.to_hash
       #response_body[:log] = response.header
-      #return response_body
+      return res
+    end
+
+    def execute_apex(options={})
+      res = {}
+      self.aclient = get_apex_client
+      response = self.aclient.request :execute_anonymous do |soap|
+        soap.header = { 
+          "ins0:SessionHeader" => { "ins0:sessionId" => self.sid }, 
+          "ins0:DebuggingHeader" => { "ins0:categories" => { "ins0:category" => options[:category],  "ins0:level" => options[:level] } }
+        } 
+        soap.body = "<apexcode>#{options[:body]}</apexcode>"
+      end
+      #require 'pp'
+      #pp response.header
+      #pp response.to_hash
+      response_body = response.to_hash
+      response_body[:log] = response.header
+      return response_body
     end
 
     def run_tests(tests=[], debug_options)

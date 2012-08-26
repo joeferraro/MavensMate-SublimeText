@@ -20,8 +20,12 @@
     "command": "compile_project"
   },
   {
-      "caption": "Run Apex Tests",  
-      "command": "run_apex_unit_tests"
+    "caption": "MavensMate: Run Apex Tests",  
+    "command": "run_apex_unit_tests"
+  },
+  {
+    "caption": "MavensMate: Execute Apex",   
+    "command": "execute_anonymous"
   },
   {
     "caption": "MavensMate: New Apex Class",
