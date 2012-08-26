@@ -103,6 +103,10 @@
 	         			"command": "show_debug_panel"
 					}	
 	         	]
+	     	},
+	     	{
+	     		"caption": "Update MavensMate",
+	     		"command": "update_me"
 	     	}
 	    ]  
 	}  
