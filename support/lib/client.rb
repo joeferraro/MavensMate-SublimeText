@@ -201,7 +201,7 @@ module MavensMate
       return response_body
     end
 
-    def run_tests(tests=[], debug_options)
+    def run_tests(tests, debug_options)
       test_xml = ""
       tests.each do |t|
         test_xml << "<classes>#{t}</classes>"
