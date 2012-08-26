@@ -96,6 +96,11 @@ class MarkLinesCommand(sublime_plugin.WindowCommand):
         #mark_lines(self, None)
         clear_marked_lines()
 
+class UpdateMeCommand(sublime_plugin.WindowCommand):
+    def run(command):
+        import webbrowser
+        webbrowser.open('https://github.com/joeferraro/MavensMate-SublimeText#update')
+
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
 class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
