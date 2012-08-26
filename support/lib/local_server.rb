@@ -28,6 +28,7 @@ module MavensMate
           server.mount('/test', ApexUnitTestServlet)
           server.mount('/metadata/index', MetadataIndexServlet)
           server.mount('/deploy', DeployServlet)
+          server.mount('/execute', ExecuteApexServlet)
           server.start  
         end
 
@@ -50,6 +51,7 @@ module MavensMate
           server.mount('/test', ApexUnitTestServlet)
           server.mount('/metadata/index', MetadataIndexServlet)
           server.mount('/deploy', DeployServlet)
+          server.mount('/execute', ExecuteApexServlet)
           server.start  
         end
       
@@ -60,6 +62,28 @@ module MavensMate
           if Lsof.running?(7777)
             Lsof.kill(7777)
           end          
+        end
+
+        class ExecuteApexServlet < WEBrick::HTTPServlet::AbstractServlet
+          def do_POST(req, resp)
+            begin
+              ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
+              resp['Content-Type'] = 'json'
+              options = {
+                :level => req.query["level"],
+                :category => req.query["category"],
+                :body => req.query["body"]
+              }
+              result = MavensMate.execute_apex(options)
+              resp.body = result.to_json
+            rescue Exception => e
+              result = {
+                  :success  => false, 
+                  :message  => e.message + e.backtrace.join("\n") 
+              }
+              resp.body = result.to_json
+            end
+          end
         end
 
         class ApexUnitTestServlet < WEBrick::HTTPServlet::AbstractServlet

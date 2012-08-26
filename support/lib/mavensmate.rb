@@ -180,8 +180,6 @@ module MavensMate
     
   #creates new metadata (ApexClass, ApexTrigger, ApexPage, ApexComponent)
   def self.new_metadata(options={})
-    #meta_type, api_name, object_api_name   
-    #validate [:internet, :mm_project]    
     begin
       object_name     = options[:object_api_name] || ""
       apex_class_type = options[:apex_class_type] || "base"
@@ -222,13 +220,31 @@ module MavensMate
      
   #compiles selected file(s) or active file
   def self.save(active_file=false) 
-    #validate [:internet, :mm_project]
     result = nil
     begin
-      #puts '<div id="mm_logger">'
-      #compiling_what = (!active_file) ? "Selected Metadata" : File.basename(ENV['TM_FILEPATH'])
-
       client = MavensMate::Client.new
+      if ENV["TM_FILEPATH"].end_with?("trigger") or ENV["TM_FILEPATH"].end_with?("cls")
+        options = {}
+        file = File.open(ENV["TM_FILEPATH"], "rb") 
+        file_body = file.read
+        file.close
+        if ENV["TM_FILEPATH"].end_with?("trigger")
+          options = {:type => "ApexTrigger", :body => file_body }
+        else
+          options = {:type => "ApexClass", :body => file_body }
+        end
+        begin
+          result = client.compile_apex(options)
+          puts result.to_json
+          return
+        rescue Exception => e
+          #res = { :success => false, :message => e.message + "\n" + e.backtrace.join("\n")}
+          #puts res.to_json
+          #return
+          #exception is OK here, let's assume we need to do a straight deploy call
+        end
+      end
+
       files_to_save = get_metadata_hash(active_file)
 
       #if client.has_server_conflict(files_to_save)          
@@ -243,15 +259,23 @@ module MavensMate
       zip_file = MavensMate::FileFactory.put_tmp_metadata(files_to_save)     
       result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})            
       puts result.to_json
-      #puts "</div>"    
     rescue Exception => e
-      res = { :success => false, :message => e.message }
+      res = { :success => false, :message => e.message+ "\n" + e.backtrace.join("\n") }
       puts res.to_json
-      #alert e.message
     end
     # if ! result[:check_deploy_status_response][:result][:success]       
     #   TextMate.exit_show_html(dispatch :controller => "deploy", :action => "show_compile_result", :result => result)        
     # end
+  end
+
+  def self.execute_apex(options)
+    begin
+      client = MavensMate::Client.new
+      result = client.execute_apex(options)
+      return result
+    rescue Exception => e
+      return { :success => false, :message => e.message }
+    end
   end
     
   #refreshes the selected file from the server // TODO:selected *files*
@@ -460,7 +484,6 @@ module MavensMate
   end
   
   def self.diff(params)
-    #validate [:internet, :mm_project]    
     hash = params[:package]
     deploy = true
     tmp_dir = Dir.tmpdir

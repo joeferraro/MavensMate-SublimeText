@@ -116,6 +116,12 @@ class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, printer, handle_result, 0)  
 
+class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        start_local_server()
+        temp_file_name = generate_ui("execute_anonymous", mm_project_directory())
+        launch_mavens_mate_window(temp_file_name)
+
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
@@ -183,7 +189,7 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
         if sublime.ok_cancel_dialog("Are you sure you want to delete the selected files from Salesforce?", "Delete"):
             printer = PanelPrinter.get(self.window.id())
             printer.show()
-            printer.write('Deleting Selected Metadata\n')
+            printer.write('\nDeleting Selected Metadata\n')
             file_string = ','.join(files)
             temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
             try:
@@ -333,6 +339,8 @@ class MetadataAPICall(threading.Thread):
         msg_string = msg_string.replace(":null", "None")
         msg_string = msg_string.replace("namespace\"None", "namespace\":None")
         msg_string = msg_string.replace("\\n", "\\\n")
+        msg_string = msg_string.replace("problem\"None", "problem\":None")
+        msg_string = msg_string.replace("id\"None", "id\":None")
         print "result is: " + msg_string
         res = None
         try:
@@ -370,7 +378,8 @@ def print_result_message(res, printer):
     if isinstance(res, str):
         clear_marked_line_numbers()
         printer.write('\n[OPERATION FAILED]:' + res + '\n')
-    elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False:
+    elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False and 'messages' in res['check_deploy_status_response']['result']:
+        #here we're parsing a response from the metadata endpoint
         res = res['check_deploy_status_response']['result']
         line_col = ""
         msg = None
@@ -400,7 +409,18 @@ def print_result_message(res, printer):
         elif failures != None:
             for f in failures: 
                 printer.write('\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['method_name'] + ': ' + f['message'] + '\n')
-
+    elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == False and 'messages' not in res['check_deploy_status_response']['result']:
+        #here we're parsing a response from the apex endpoint
+        res = res['check_deploy_status_response']['result']
+        line_col = ""
+        if 'line' in res:
+            line_col = ' (Line: '+res['line']
+            mark_line_numbers([int(float(res['line']))])
+        if 'column' in res:
+            line_col += ', Column: '+res['column']
+        if len(line_col) > 0:
+            line_col += ')'
+        printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
     elif 'check_deploy_status_response' in res and res['check_deploy_status_response']['result']['success'] == True:     
         clear_marked_line_numbers()
         printer.write('\n[Deployed Successfully]' + '\n')
