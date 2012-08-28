@@ -16,6 +16,7 @@ mm_dir = os.getcwdu()
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
+# completions = []
 
 def get_ruby():
     ruby = "ruby"    
@@ -297,9 +298,36 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, printer, handle_result, 0)
 
+# class MavensMateCompletions(sublime_plugin.EventListener):
+#     def on_query_completions(self, view, prefix, locations):
+#         print 'MavensMate: completion helper'
+#         fn, ext = os.path.splitext(view.file_name())
+#         if (ext == '.cls' or ext == '.trigger') and prefix != None:
+#             lower_prefix = prefix.lower()
+#             if os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"):
+#                 #prefix = prefix.lower()
+#                 # import json
+#                 # json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
+#                 # data = json.load(json_data)
+#                 # json_data.close()
+#                 # pd = data["static_methods"]
+#                 #for method in pd:
+#                     #print method
+#                 #    _completions.append((method, method))
+#                 #del completions[:]
+#                 #print _completions
+#                 #_completions.append(('shit', 'shit'))
+#                 #return sorted(_completions)
+#                 return [('um', 'ok')]
+#     def on_query_context(self, view, key, operator, operand, match_all):
+#         print "context"
+#         print key
+
+
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
     def on_post_save(self, view):
+        settings = sublime.load_settings('mavensmate.sublime-settings')
         active_file = get_active_file()
         fileName, ext = os.path.splitext(active_file)
         valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger', '.tab', '.layout', '.resource', '.remoteSite']
