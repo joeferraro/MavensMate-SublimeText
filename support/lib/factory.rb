@@ -77,7 +77,7 @@ module MavensMate
       end
            
       #puts settings.yaml in the project config directory
-      def put_project_config(username, project_name, server_url)
+      def put_project_config(username, project_name, server_url, namespace)
         project_folder = MavensMate.get_project_folder
         project_folder +='/' unless project_folder.end_with?("/")
         Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config")
@@ -88,6 +88,7 @@ module MavensMate
           src.puts("username: " + username)
           environment = (server_url.include? "test") ? "sandbox" : "production"           
           src.puts("environment: " + environment)
+          src.puts("namespace: " + namespace) if namespace
           src.close
         else
           src = File.open(project_folder+project_name+"/config/settings.yaml", "w") 
@@ -95,6 +96,7 @@ module MavensMate
           src.puts("username: " + username)
           environment = (server_url.include? "test") ? "sandbox" : "production"           
           src.puts("environment: " + environment)
+          src.puts("namespace: " + namespace) if namespace
           src.close
         end
         put_tm_properties(project_folder+project_name)
