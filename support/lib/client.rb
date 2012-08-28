@@ -107,7 +107,6 @@ module MavensMate
       
       begin
         res = response.to_hash
-        #puts res.inspect
         self.metadata_server_url = res[:login_response][:result][:metadata_server_url]
         self.sid = res[:login_response][:result][:session_id].to_s
         self.user_id = res[:login_response][:result][:user_id].to_s
@@ -206,6 +205,7 @@ module MavensMate
       tests.each do |t|
         test_xml << "<classes>#{t}</classes>"
       end
+      namespace = org_namespace || ""
       self.aclient = get_apex_client
       #puts self.aclient.wsdl.soap_actions
       response = self.aclient.request :run_tests do |soap|
@@ -213,7 +213,7 @@ module MavensMate
           "ins0:SessionHeader" => { "ins0:sessionId" => self.sid }, 
           "ins0:DebuggingHeader" => { "ins0:categories" => { "ins0:category" => debug_options[:category],  "ins0:level" => debug_options[:level] } }
         } 
-        soap.body = "<RunTestsRequest><allTests>false</allTests>#{test_xml}</RunTestsRequest>"
+        soap.body = "<RunTestsRequest><namespace>#{namespace}</namespace><allTests>false</allTests>#{test_xml}</RunTestsRequest>"
       end
       #puts response.to_hash.inspect
       #require 'pp'
@@ -263,6 +263,20 @@ module MavensMate
       return deploy_hash            
     end
     
+    def org_namespace
+      self.mclient = get_metadata_client
+      begin
+        response = self.mclient.request :describe_metadata do |soap|
+          soap.header = get_soap_header  
+          soap.body = "<apiVersion>#{MM_API_VERSION}</apiVersion>"
+        end
+      rescue Savon::SOAP::Fault => fault
+        raise Exception.new(fault.to_s)
+      end
+      hash = response.to_hash
+      return hash[:describe_metadata_response][:result][:organization_namespace] 
+    end
+
     #describes an org's metadata
     def describe
       self.mclient = get_metadata_client
