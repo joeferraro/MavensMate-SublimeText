@@ -40,17 +40,17 @@ module MavensMate
       vc_url        = vc_url + "/" + project_name if vc_type == "SVN" 
       endpoint      = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"    
       ENV["MM_WORKSPACE"] = params[:where]
+      
+      client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
 
       Thread.abort_on_exception = true
       threads = []  
 
-      MavensMate::FileFactory.put_project_directory(project_name) #put project directory in the filesystem 
-      
-      MavensMate::FileFactory.put_project_config(un, project_name, server_url)
+      MavensMate::FileFactory.put_project_directory(project_name) #put project directory in the filesystem     
+      MavensMate::FileFactory.put_project_config(un, project_name, server_url, client.org_namespace)
       MavensMate::FileFactory.put_sublime_text_project_file(project_name)
       add_to_keychain(project_name, pw)
 
-      client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
       threads << Thread.new {          
         thread_client = MavensMate::Client.new({ 
           :sid => client.sid, 
@@ -164,8 +164,9 @@ module MavensMate
         object_zip = client.retrieve(options) #get selected metadata
   		}
   		threads.each { |aThread|  aThread.join }
-                                                  
-      MavensMate::FileFactory.put_project_config(un, project_name, server_url)
+        
+      client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
+      MavensMate::FileFactory.put_project_config(un, project_name, server_url, client.org_namespace)
       MavensMate::FileFactory.put_sublime_text_project_file(project_name)
       add_to_keychain(project_name, pw)      		        
       Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 
@@ -222,6 +223,12 @@ module MavensMate
   def self.save(active_file=false) 
     result = nil
     begin
+      if ENV["TM_FILEPATH"] == nil or ENV["TM_FILEPATH"] == ""
+        res = { :success => false, :message => "Please select a valid file" }
+        puts res.to_json
+        return
+      end
+
       client = MavensMate::Client.new
       if ENV["TM_FILEPATH"].end_with?("trigger") or ENV["TM_FILEPATH"].end_with?("cls")
         options = {}
@@ -593,20 +600,18 @@ module MavensMate
      
   #displays autocomplete dialog based on current word. supports sobject fields & apex primitive methods
   def self.complete
-    require ENV['TM_SUPPORT_PATH'] + '/lib/ui'
-    require ENV['TM_SUPPORT_PATH'] + '/lib/current_word'
-    #current_word = ENV['TM_CURRENT_WORD']
-    current_word = Word.current_word(/\.([-a-zA-Z0-9_]+)/,:left)
-    puts current_word
+    current_word = ENV['TM_CURRENT_WORD'].dup
+    current_word.downcase!
     abort if current_word.nil?
     suggestions = []
-        
-    if File.exist?("#{ENV['TM_BUNDLE_SUPPORT']}/lib/apex/#{current_word.downcase!}.yaml")
+    if File.exist?("#{ENV['TM_BUNDLE_SUPPORT']}/lib/apex/#{current_word}.yaml")
       apex_methods({:method_type => "static_methods", :object => current_word}).each do |m|
         suggestions.push({ "display" => m })
       end
-      selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
-      prints suggestions[selection] if not selection.nil?
+      puts suggestions.to_json
+      return
+      #selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
+      #prints suggestions[selection] if not selection.nil?
     else
       current_object = ""
       lines=[]
