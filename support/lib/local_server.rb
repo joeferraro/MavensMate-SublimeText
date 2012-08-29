@@ -97,21 +97,32 @@ module MavensMate
               :level => req.query["level"],
               :category => req.query["category"]
             }
+            api = req.query["api"]
             begin
-              result = MavensMate.run_tests(req.query["selected_tests"].split(","), debug_options)
-              ac = ApplicationController.new
-              if RUBY_VERSION =~ /1.9/
-                Encoding.default_external = Encoding::UTF_8
-                Encoding.default_internal = Encoding::UTF_8
-              end 
-              html = ac.render_to_string "unit_test/_test_result", :locals => { :result => result }
-              resp.body = html
+              result = MavensMate.run_tests(req.query["selected_tests"].split(","), debug_options, api)
+              if result[:run_tests_response] || result[:check_deploy_status_response]
+                ac = ApplicationController.new
+                if RUBY_VERSION =~ /1.9/
+                  Encoding.default_external = Encoding::UTF_8
+                  Encoding.default_internal = Encoding::UTF_8
+                end 
+                if api == "apex"
+                  html = ac.render_to_string "unit_test/_test_result", :locals => { :result => result }
+                else
+                  html = ac.render_to_string "unit_test/_test_result_metadata_api", :locals => { :result => result }
+                end
+                resp.body = html
+              else
+                result = {
+                  :success  => false, 
+                  :message  => result.inspect
+                }
+                resp.body = result.to_json
+              end
             rescue Exception => e
-              #puts e.message + "\n\n" + e.backtrace.join("\n")
-              #resp.body = "TEST RESULT: " + test_result.inspect + "\n\n" + "Request: " + req.inspect + "\n\n" + e.message + "\n\n" + e.backtrace.join("\n")
               result = {
                   :success  => false, 
-                  :message  => e.message + e.backtrace.join("\n") 
+                  :message  => e.message + e.backtrace.join("\n") + "<br/>" + result.inspect
               }
               resp.body = result.to_json
             end
