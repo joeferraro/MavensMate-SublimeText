@@ -164,6 +164,13 @@ embed.hidden {
 		<form class="form" style="margin:0px;">
 			<fieldset style="margin:0px;padding:0px;">
 				<div class="clearfix">
+					<label for="api" style="width:110px;margin-right:10px;">Endpoint</label>
+					<select id="api">
+						<option value="apex">Apex API</option>
+						<option value="metadata">Metadata API</option>
+					</select>
+				</div>
+				<div class="clearfix">
 					<label for="category" style="width:110px;margin-right:10px;">Log Category</label>
 					<select id="category">
 						<option>Db</option>
@@ -247,7 +254,8 @@ function run_tests() {
 			 selected_tests: $('#tests').val().join(),
 			 mm_current_project_directory: '<%= ENV['MM_CURRENT_PROJECT_DIRECTORY'] %>',
 			 level: $("#level").val(),
-			 category: $("#category").val()
+			 category: $("#category").val(),
+			 api: $("#api").val()
 		},
 		beforeSend: function() { showBlanket(); $("#btnRunTests").hide() },
 		complete: function(data){
@@ -293,7 +301,7 @@ function resize_height() {
 
 function resize_test_container_sizes() {
 	$(".ms-selectable, .ms-selection").css("width", $(window).width()/2 - 20)
-	$(".ms-selectable, .ms-selection").css("height", $(window).height() - 275)
+	$(".ms-selectable, .ms-selection").css("height", $(window).height() - 325)
 	$(".ms-list").css("height", $(".ms-selectable").height()-40)
 }
 

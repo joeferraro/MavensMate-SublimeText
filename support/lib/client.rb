@@ -207,7 +207,6 @@ module MavensMate
       end
       namespace = org_namespace || ""
       self.aclient = get_apex_client
-      #puts self.aclient.wsdl.soap_actions
       response = self.aclient.request :run_tests do |soap|
         soap.header = { 
           "ins0:SessionHeader" => { "ins0:sessionId" => self.sid }, 
@@ -215,10 +214,6 @@ module MavensMate
         } 
         soap.body = "<RunTestsRequest><namespace>#{namespace}</namespace><allTests>false</allTests>#{test_xml}</RunTestsRequest>"
       end
-      #puts response.to_hash.inspect
-      #require 'pp'
-      #pp response.header
-      #pp response.to_hash
       response_body = response.to_hash
       response_body[:log] = response.header
       return response_body
@@ -230,11 +225,21 @@ module MavensMate
       soapbody = "<zipFile>#{options[:zip_file]}</zipFile>"
       soapbody << "<DeployOptions>#{options[:deploy_options]}</DeployOptions>" unless options[:deploy_options].nil?
       begin
-        response = self.mclient.request :deploy do |soap|
-          soap.header = get_soap_header
-          soap.body = soapbody
+        if options[:debug_options]
+          debug_options = options[:debug_options]
+          response = self.mclient.request :deploy do |soap|
+            soap.header = { 
+              "ins0:SessionHeader" => { "ins0:sessionId" => self.sid }, 
+              "ins0:DebuggingHeader" => { "ins0:categories" => { "ins0:category" => debug_options[:category],  "ins0:level" => debug_options[:level] } }
+            }
+            soap.body = soapbody
+          end
+        else
+          response = self.mclient.request :deploy do |soap|
+            soap.header = get_soap_header
+            soap.body = soapbody
+          end
         end
-        #puts "raw deploy response: " + response.inspect
         create_hash = response.to_hash
       rescue Savon::SOAP::Fault => fault
         raise Exception.new(fault.to_s)
@@ -259,7 +264,7 @@ module MavensMate
       end
       
       deploy_hash = response.to_hash
-      #puts "deploy result is: " + deploy_hash.inspect            
+      deploy_hash[:log] = response.header if options[:debug_options]
       return deploy_hash            
     end
     
