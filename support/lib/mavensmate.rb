@@ -694,8 +694,6 @@ module MavensMate
     mhash.each do |metadata|         
       threads << Thread.new {
         thread_client = MavensMate::Client.new({ :sid => client.sid, :metadata_server_url => client.metadata_server_url })
-        #progress = progress + 100/mhash.length
-        #dialog.parameters = {'summary' => 'Retrieving '+metadata[:xml_name],'progressValue' => progress }
         begin   
           project_array.push({
             :title => metadata[:xml_name],
