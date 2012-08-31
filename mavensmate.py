@@ -11,7 +11,11 @@ import ast
 import copy
 if os.name != 'nt':
     import unicodedata
- 
+import unicodedata, re
+import urllib
+from xml.dom.minidom import parse, parseString
+import json
+
 mm_dir = os.getcwdu()
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
@@ -298,31 +302,97 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, printer, handle_result, 0)
 
-# class MavensMateCompletions(sublime_plugin.EventListener):
-#     def on_query_completions(self, view, prefix, locations):
-#         print 'MavensMate: completion helper'
-#         fn, ext = os.path.splitext(view.file_name())
-#         if (ext == '.cls' or ext == '.trigger') and prefix != None:
-#             lower_prefix = prefix.lower()
-#             if os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"):
-#                 #prefix = prefix.lower()
-#                 # import json
-#                 # json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
-#                 # data = json.load(json_data)
-#                 # json_data.close()
-#                 # pd = data["static_methods"]
-#                 #for method in pd:
-#                     #print method
-#                 #    _completions.append((method, method))
-#                 #del completions[:]
-#                 #print _completions
-#                 #_completions.append(('shit', 'shit'))
-#                 #return sorted(_completions)
-#                 return [('um', 'ok')]
-#     def on_query_context(self, view, key, operator, operand, match_all):
-#         print "context"
-#         print key
+class MavensMateCompletions(sublime_plugin.EventListener):
+    def on_query_completions(self, view, prefix, locations):
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        if settings.get('mm_autocomplete') == False:
+            return []
 
+        pt = locations[0] - len(prefix) - 1
+        ch = view.substr(sublime.Region(pt, pt + 1))
+        if not ch == '.': return []
+
+        word = view.substr(view.word(pt))
+        fn, ext = os.path.splitext(view.file_name())
+        if (ext == '.cls' or ext == '.trigger') and word != None and word != '':
+            _completions = []
+            lower_prefix = word.lower()
+            if os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"): #=> apex static methods
+                prefix = prefix.lower()
+                json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
+                data = json.load(json_data)
+                json_data.close()
+                pd = data["static_methods"]
+                for method in pd:
+                    _completions.append((method, method))
+                return sorted(_completions)
+            else: 
+                print '------'
+                current_line = view.rowcol(pt)
+                current_line_index = current_line[0]
+                current_object = None
+                region_from_top_to_current_word = sublime.Region(0, pt + 1)
+                lines = view.lines(region_from_top_to_current_word)
+                object_name_lower = ''
+                for line in reversed(lines):
+                    line_contents = view.substr(line)
+                    if line_contents.find(word) == -1: continue #skip the line if our word isn't in the line
+                    if line_contents.strip().replace("\t", "").startswith('/*') and line_contents.strip().replace("\t", "").endswith('*/'): continue
+                    
+                    import re
+                    pattern = "'(.* "+word+" .*)'"
+                    m = re.search(pattern, line_contents)
+                    if m != None: continue #skip if we match our word in a string
+
+                    object_name = line_contents[0:line_contents.find(word)]
+                    object_name = object_name.replace("\t", "")
+                    if len(object_name) == 0: continue
+                    object_name_lower = object_name.lower()
+                    object_name_lower = object_name_lower.strip()
+                    if object_name_lower.startswith('//'): continue
+                    print object_name_lower
+                    object_name_lower = object_name_lower[::-1] #=> reverses line
+                    parts = object_name_lower.split(" ")
+                    object_name_lower = parts[0]
+                    object_name_lower = object_name_lower[::-1] #=> reverses line
+                    #print object_name_lower
+                    #need to handle with word is found within a multiline comment
+                if os.path.isfile(mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
+                    json_data = open(mm_dir+"/support/lib/apex/"+object_name_lower+".json")
+                    data = json.load(json_data)
+                    json_data.close()
+                    pd = data["instance_methods"]
+                    for method in pd:
+                        _completions.append((method, method))
+                    return sorted(_completions)
+                elif os.path.isfile(mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
+                    object_dom = parse(mm_project_directory()+"/config/objects/"+object_name_lower+".object")
+                    for node in object_dom.getElementsByTagName('fields'):
+                        field_name = ''
+                        field_type = ''
+                        for child in node.childNodes:                            
+                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                            if child.nodeName == 'fullName':
+                                field_name = child.firstChild.nodeValue
+                            elif child.nodeName == 'type':
+                                field_type = child.firstChild.nodeValue
+                        _completions.append((field_name+" ("+field_type+")", field_name))
+                    return sorted(_completions)
+                elif os.path.isfile(mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
+                    object_dom = parse(mm_project_directory()+"/src/objects/"+object_name_lower+".object")
+                    for node in object_dom.getElementsByTagName('fields'):
+                        field_name = ''
+                        field_type = ''
+                        for child in node.childNodes:                            
+                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                            if child.nodeName == 'fullName':
+                                field_name = child.firstChild.nodeValue
+                            elif child.nodeName == 'type':
+                                field_type = child.firstChild.nodeValue
+                        _completions.append((field_name+" ("+field_type+")", field_name))
+                    return sorted(_completions)
+                else: #=> TODO: some other apex object
+                    print 'not found'
 
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
