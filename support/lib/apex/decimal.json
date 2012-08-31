@@ -1,0 +1,25 @@
+{
+  "instance_methods": [
+    "abs()", 
+    "divide(Decimal_divisor, Integer_scale)", 
+    "divide(Decimal_divisor, Integer_scale, Object_roundingMode)", 
+    "doubleValue()", 
+    "format()", 
+    "intValue()", 
+    "longValue()", 
+    "pow(Integer_exponent)", 
+    "precision()", 
+    "round()", 
+    "round(System.RoundingMode_roundingMode)", 
+    "scale()", 
+    "setScale(Integer_scale)", 
+    "setScale(Integer_scale, System.RoundingMode_roundingMode)", 
+    "stripTrailingZeros()", 
+    "toPlainString()"
+  ], 
+  "static_methods": [
+    "valueOf(Double_d)", 
+    "valueOf(Long_l)", 
+    "valueOf(String_s)"
+  ]
+}
