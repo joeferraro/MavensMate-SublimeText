@@ -24,5 +24,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_hide_panel_time" : 0,
 
 	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
-	"mm_compile_on_save" : true		
+	"mm_compile_on_save" : true,
+
+	"mm_autocomplete" : true
 }
