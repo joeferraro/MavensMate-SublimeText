@@ -12,3 +12,5 @@ support/app/views/unit_test/_test_result_old.html.erb
 support/lib/test.rb
 
 support/lib/test_helper.rb
+
+support/lib/.DS_Store
