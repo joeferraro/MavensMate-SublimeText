@@ -1,0 +1,12 @@
+{
+  "instance_methods": [
+    "format()", 
+    "intValue()", 
+    "longValue()", 
+    "round()"
+  ], 
+  "static_methods": [
+    "valueOf(anyType_x)", 
+    "valueOf(String_s)"
+  ]
+}
