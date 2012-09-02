@@ -84,7 +84,11 @@
 	         	"command": "deploy_to_server"
 	     	},
 	     	{
-	        	"id": "metadata", 
+	    		"caption": "Generate Apex Documentation",  
+	         	"command": "generate_apex_class_docs"
+	     	},
+	     	{
+	        	"id": "open", 
 	    		"caption": "Open",  
 	         	"children":
 	         	[
