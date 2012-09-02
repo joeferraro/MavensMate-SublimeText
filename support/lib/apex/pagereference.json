@@ -1,0 +1,15 @@
+{
+  "instance_methods": [
+    "getAnchor()", 
+    "getContent()",
+ 	"getContentAsPDF()", 
+    "getCookies()",
+	"getHeaders()", 
+    "getParameters()",
+ 	"getRedirect()", 
+    "getUrl()",
+	"setAnchor(String_anchor)", 
+    "setCookies(Cookie[]_cookies)",
+ 	"setRedirect(Boolean_redirect)"
+  ]
+}
