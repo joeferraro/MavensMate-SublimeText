@@ -10,6 +10,7 @@ MavensMate is a SublimeText plugin that aims to replicate the functionality of t
 * Play Pacman while your Apex unit tests run
 * Deploy metadata to other Salesforce.com orgs
 * Apex Execute Anonymous
+* Apex Code Assist (beta!!)
 
 *Currently, MavensMate only officially supports OS X. It's on the roadmap to fully support Windows/Linux.
  
@@ -45,5 +46,8 @@ $ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/mast
 <img src="http://wearemavens.com/images/mm/execute.png"/>
 ###Quick Panel
 <img src="http://wearemavens.com/images/mm/panel.png"/>
+###Apex Code Assist
+<img src="http://wearemavens.com/images/mm/code_3.png"/>
+<img src="http://wearemavens.com/images/mm/code_4.png"/>
 ###Pacman
 <img src="http://wearemavens.com/images/mm/pacman.png"/>

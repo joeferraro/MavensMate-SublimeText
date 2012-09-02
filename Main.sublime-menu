@@ -84,10 +84,6 @@
 	         	"command": "deploy_to_server"
 	     	},
 	     	{
-	    		"caption": "Generate Apex Documentation",  
-	         	"command": "generate_apex_class_docs"
-	     	},
-	     	{
 	        	"id": "open", 
 	    		"caption": "Open",  
 	         	"children":
@@ -107,6 +103,10 @@
 	         			"command": "show_debug_panel"
 					}	
 	         	]
+	     	},
+	     	{
+	    		"caption": "Index Apex Code",  
+	         	"command": "generate_apex_class_docs"
 	     	},
 	     	{
 	     		"caption": "Update MavensMate",
