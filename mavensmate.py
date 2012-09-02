@@ -20,7 +20,6 @@ mm_dir = os.getcwdu()
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
-# completions = []
 
 def get_ruby():
     ruby = "ruby"    
@@ -36,6 +35,7 @@ def start_local_server():
 
 def stop_local_server():
     cmd_b = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.stop'"
+    os.system(cmd)
 
 def generate_ui(ruby_script, arg0):
     cmd = ruby+" '"+mm_dir+"/commands/"+ruby_script+".rb' '"+arg0+"'"
@@ -61,7 +61,6 @@ def get_active_file():
     return sublime.active_window().active_view().file_name()
 
 def is_mm_project():
-    import json
     #return sublime.active_window().active_view().settings().get('mm_project_directory') != None #<= bug
     is_mm_project = None
     try:
@@ -101,6 +100,7 @@ class MarkLinesCommand(sublime_plugin.WindowCommand):
         #mark_lines(self, None)
         clear_marked_lines()
 
+#takes user to the update directions on github (should be unnecessary once package control support is finalized)
 class UpdateMeCommand(sublime_plugin.WindowCommand):
     def run(command):
         import webbrowser
@@ -302,10 +302,32 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, printer, handle_result, 0)
 
+# #visualforce completions
+# class VisualforceCompletions(sublime_plugin.EventListener):
+#     def on_query_completions(self, view, prefix, locations):
+#         # Only trigger within HTML
+#         # if not view.match_selector(locations[0],
+#         #         "text.html - source"):
+#         #     return []
+#         # print len(prefix)  
+#         # pt = locations[0] - len(prefix) - 1
+#         # ch = view.substr(sublime.Region(pt, pt + 1))
+#         # if ch != ':':
+#         #     return []
+#         # print ch
+#         # word = view.substr(view.word(pt))
+#         # print word
+        
+#         # return ([
+#         #     ("foooooo\tTag", "a href=\"$1\">$2</a>")
+#         # ], sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS)
+#         return []
+
+#completions for force.com-specific use cases
 class MavensMateCompletions(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        if settings.get('mm_autocomplete') == False:
+        if settings.get('mm_autocomplete') == False or is_mm_project() == False:
             return []
 
         pt = locations[0] - len(prefix) - 1
@@ -313,6 +335,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
         if not ch == '.': return []
 
         word = view.substr(view.word(pt))
+        print '------'
+        print "trying to find instantiation of: " + word
         fn, ext = os.path.splitext(view.file_name())
         if (ext == '.cls' or ext == '.trigger') and word != None and word != '':
             _completions = []
@@ -326,8 +350,14 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 for method in pd:
                     _completions.append((method, method))
                 return sorted(_completions)
+            elif os.path.isfile(mm_project_directory()+"/src/classes/"+lower_prefix+".cls"): #=> custom apex class static methods
+                with open(mm_project_directory()+"/src/classes/"+lower_prefix+".cls", 'rU') as f:
+                        for line in f:
+                            if 'static' not in line: continue
+                            line = line.strip()
+                            #line = line.replace("public ", "").replace(" static ", "").replace("global ", "")
+                            print line
             else: 
-                print '------'
                 current_line = view.rowcol(pt)
                 current_line_index = current_line[0]
                 current_object = None
@@ -336,26 +366,46 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 object_name_lower = ''
                 for line in reversed(lines):
                     line_contents = view.substr(line)
+                    line_contents = line_contents.replace("\t", "").strip()
                     if line_contents.find(word) == -1: continue #skip the line if our word isn't in the line
-                    if line_contents.strip().replace("\t", "").startswith('/*') and line_contents.strip().replace("\t", "").endswith('*/'): continue
-                    
+                    if line_contents.strip().startswith('/*') and line_contents.strip().endswith('*/'): continue #skip the line if it's a comment
+                    if line_contents.startswith('//'): continue #skip line line if it's a comment
+
+                    print "contents of line: " + line_contents
+
                     import re
                     pattern = "'(.* "+word+" .*)'"
                     m = re.search(pattern, line_contents)
                     if m != None: continue #skip if we match our word in a string
 
+                    pattern = "'("+word+")'"
+                    m = re.search(pattern, line_contents)
+                    if m != None: continue #skip if we match our word, exact string
+
+                    pattern = "(\(.*"+word+")"
+                    m = re.search(pattern, line_contents)
+                    if m != None: continue #skip if we match our word inside parens
+
                     object_name = line_contents[0:line_contents.find(word)]
-                    object_name = object_name.replace("\t", "")
                     if len(object_name) == 0: continue
                     object_name_lower = object_name.lower()
                     object_name_lower = object_name_lower.strip()
-                    if object_name_lower.startswith('//'): continue
-                    print object_name_lower
                     object_name_lower = object_name_lower[::-1] #=> reverses line
                     parts = object_name_lower.split(" ")
                     object_name_lower = parts[0]
                     object_name_lower = object_name_lower[::-1] #=> reverses line
-                    #print object_name_lower
+                    if "this." in object_name_lower: continue
+                    print "our object: " + object_name_lower
+
+
+                    object_name = object_name.strip()
+                    object_name = object_name[::-1] #=> reverses line
+                    parts = object_name.split(" ")
+                    object_name = parts[0]
+                    object_name = object_name[::-1] #=> reverses line
+                    print "our object capped: " + object_name
+
+                    if object_name_lower != None and object_name_lower != "": break
                     #need to handle with word is found within a multiline comment
                 if os.path.isfile(mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
                     json_data = open(mm_dir+"/support/lib/apex/"+object_name_lower+".json")
@@ -376,7 +426,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                 field_name = child.firstChild.nodeValue
                             elif child.nodeName == 'type':
                                 field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" ("+field_type+")", field_name))
+                        _completions.append((field_name+" \t"+field_type, field_name))
                     return sorted(_completions)
                 elif os.path.isfile(mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
                     object_dom = parse(mm_project_directory()+"/src/objects/"+object_name_lower+".object")
@@ -389,10 +439,50 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                 field_name = child.firstChild.nodeValue
                             elif child.nodeName == 'type':
                                 field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" ("+field_type+")", field_name))
+                        _completions.append((field_name+" \t"+field_type, field_name))
                     return sorted(_completions)
-                else: #=> TODO: some other apex object
-                    print 'not found'
+                elif os.path.isfile(mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
+                    search_name = prep_for_search(object_name)
+                    print search_name
+                    print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
+                    if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
+                        object_dom = parse(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
+                        for node in object_dom.getElementsByTagName('memberdef'):
+                            member_type = ''
+                            member_name = ''
+                            member_args = ''
+                            for child in node.childNodes:                            
+                                if child.nodeName != 'name' and child.nodeName != 'type' and child.nodeName != 'argsstring': continue
+                                if child.nodeName == 'name':
+                                    if child.firstChild != None: member_name = child.firstChild.nodeValue
+                                elif child.nodeName == 'type':
+                                    if child.firstChild != None: member_type = child.firstChild.nodeValue
+                                elif child.nodeName == 'argsstring':
+                                    if child.firstChild != None: member_args = child.firstChild.nodeValue   
+                                print member_args 
+                                if member_name != '' and member_name != 'set' and member_name != 'get':
+                                    _completions.append((member_name+member_args+" \t"+member_type, member_name + member_args))
+                        return sorted(_completions)
+
+#uses doxygen to generate xml-based documentation which assists in code completion/suggest functionality in MavensMate
+class GenerateApexClassDocs(sublime_plugin.WindowCommand):
+    def run(self):
+        dinput = mm_project_directory() + "/src/classes"
+        doutput = mm_project_directory() + "/config/.class_docs"
+        if os.path.exists(mm_project_directory() + "/config/.class_docs/xml"):
+            import shutil
+            shutil.rmtree(mm_project_directory() + "/config/.class_docs/xml")
+        if not os.path.exists(mm_project_directory() + "/config/.class_docs"):
+            os.makedirs(mm_project_directory() + "/config/.class_docs")
+
+        printer = PanelPrinter.get(self.window.id())
+        printer.show() 
+        printer.write('\nIndexing Apex class definitions...\n')
+        threads = []
+        thread = ExecuteDoxygen(dinput, doutput)
+        threads.append(thread)
+        thread.start()
+        handle_doxygen_threads(threads, printer) 
 
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
@@ -454,6 +544,58 @@ class MetadataAPICall(threading.Thread):
             except:
                 res = msg_string
         self.result = res
+
+#executes doxygen in the background
+class ExecuteDoxygen(threading.Thread):
+    def __init__(self, dinput, doutput):
+        self.result = None
+        self.dinput = dinput
+        self.doutput = doutput
+        threading.Thread.__init__(self)   
+
+    def run(self):
+        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ./doxygen -'
+        print command
+        os.chdir(mm_dir + "/bin")
+        os.system(command)
+
+#handles the completion of doxygen execution
+def handle_doxygen_threads(threads, printer):
+    next_threads = []
+    for thread in threads:
+        printer.write('.')
+        if thread.is_alive():
+            next_threads.append(thread)
+            continue
+        if thread.result == False:
+            continue
+        compile_result = thread.result
+
+    threads = next_threads
+    if len(threads):
+        sublime.set_timeout(lambda: handle_doxygen_threads(threads, printer), 200)
+        return
+
+    for filename in os.listdir(mm_project_directory() + "/config/.class_docs/xml"):
+        print filename
+        if filename.startswith('_') or filename.startswith('dir_'): 
+            os.remove(mm_project_directory() + "/config/.class_docs/xml/" + filename) 
+            continue
+        if filename == 'combine.xslt' or filename == 'compound.xsd': 
+            os.remove(mm_project_directory() + "/config/.class_docs/xml/" + filename)
+            continue
+        tempName = filename
+        if tempName.startswith('class_'):
+            tempName = tempName.replace('class_', '', 1)
+        elif tempName.startswith('enum_'):
+            tempName = tempName.replace('enum_', '', 1)
+        elif tempName.startswith('interface_'):
+            tempName = tempName.replace('interface_', '', 1)
+        tempName = tempName.replace('_', '')
+        os.rename(mm_project_directory() + "/config/.class_docs/xml/" + filename, mm_project_directory() + "/config/.class_docs/xml/" + tempName)
+
+    printer.write('\n[Indexing complete]' + '\n')
+    printer.hide() 
 
 #handles spawned threads and prints the "loading indicator" to the mm_panel
 def handle_threads(threads, printer, handle_result, i=0):
@@ -561,6 +703,12 @@ def parse_new_metadata_input(input):
     else:
         return input
 
+#preps code completion object for search in doxygen documentation
+def prep_for_search(name): 
+    #s1 = re.sub('(.)([A-Z]+)', r'\1_\2', name).strip()
+    #return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    #return re.sub('([A-Z])', r'\1_', name)
+    return name.replace('_', '')
 
 # future functionality
 
