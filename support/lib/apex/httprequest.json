@@ -1,0 +1,23 @@
+{
+  "instance_methods": 
+    [
+      "getBody()", 
+      "setBody(String_body)",
+      "getBodyAsBlob()",
+      "setBodyAsBlob(Blob_body)",
+      "getBodyDocument()",
+      "setBodyDocument(Dom.Document_document)",
+      "getCompressed()",
+      "setCompressed(Boolean_flag)",
+      "getEndpoint()",
+      "setEndpoint(String_endpoint)",
+      "getHeader(String_key)",
+      "setHeader(String_key, String_value)",
+      "getMethod()",
+      "setMethod(String_method)",
+      "setClientCertificate(String_clientCert, String_password)",
+      "setClientCertificateName(String_certDevName)",
+      "setTimeout(Integer_timeout)",
+      "toString()"
+    ]
+}
