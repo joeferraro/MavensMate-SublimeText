@@ -1,0 +1,14 @@
+{
+  "instance_methods": 
+    [
+      "getBody()", 
+      "getBodyAsBlob()",
+      "getBodyDocument()",
+      "getHeader(String_key)",
+      "getHeaderKeys()",
+      "getStatus()",
+      "getStatusCode()",
+      "getXmlStreamReader()",
+      "toString()"
+    ]
+}
