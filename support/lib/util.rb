@@ -12,7 +12,7 @@ module MavensMate
       def set_project_directory(search_path)
         found = false
         while found == false
-          if ! Dir.entries(search_path).include?(".sublime-project")
+          if Dir.entries(search_path).grep(/sublime-project$/).length == 0
             search_path = File.dirname(search_path)
             next
           else
