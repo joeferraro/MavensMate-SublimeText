@@ -60,12 +60,25 @@ def kill_mavens_mate_window():
 def get_active_file():
     return sublime.active_window().active_view().file_name()
 
+def get_project_name():
+    return os.path.basename(sublime.active_window().folders()[0])
+
+def sublime_project_file_path():
+    project_directory = sublime.active_window().folders()[0]
+    if os.path.isfile(project_directory+"/.sublime-project"):
+        return project_directory+"/.sublime-project"
+    elif os.path.isfile(project_directory+"/"+get_project_name()+".sublime-project"):
+        return project_directory+"/"+get_project_name()+".sublime-project"
+    else:
+        return None
+
 def is_mm_project():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') != None #<= bug
     is_mm_project = None
     try:
         project_directory = sublime.active_window().folders()[0]
         json_data = open(project_directory+"/.sublime-project")
+        json_data = open(sublime_project_file_path())
         data = json.load(json_data)
         pd = data["settings"]["mm_project_directory"]
         is_mm_project = True

@@ -105,7 +105,7 @@ module MavensMate
       def put_sublime_text_project_file(project_name)
         project_folder = MavensMate.get_project_folder
         file_name = "settings.yaml"
-        src = File.new(project_folder+project_name+"/.sublime-project", "w")
+        src = File.new(project_folder+project_name+"/"+project_name+".sublime-project", "w")
         src.puts('{"folders":[{"path": "'+project_folder+project_name+'"}],"settings":{"mm_project_directory":"'+project_folder+project_name+'"}}')
         src.close
       end
