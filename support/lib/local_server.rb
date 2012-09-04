@@ -22,6 +22,7 @@ module MavensMate
           
           server.mount('/project', ProjectServlet)
           server.mount('/project/edit', ProjectEditServlet)
+          server.mount('/project/existing', ExistingProjectServlet)
           server.mount('/metadata/list', MetadataListServlet) 
           server.mount('/vc', VersionControlServlet) 
           server.mount('/auth', AuthenticationServlet)
@@ -45,6 +46,7 @@ module MavensMate
           
           server.mount('/project', ProjectServlet)
           server.mount('/project/edit', ProjectEditServlet)
+          server.mount('/project/existing', ExistingProjectServlet)
           server.mount('/metadata/list', MetadataListServlet) 
           server.mount('/vc', VersionControlServlet) 
           server.mount('/auth', AuthenticationServlet)
@@ -261,6 +263,30 @@ module MavensMate
             rescue Exception => e
               result = '<div id="error_message" class="alert-message error"><p><strong>Deployment Failed!</strong></p><p>'+e.message+'</p></div> '
               resp.body = result
+            end
+          end
+        end
+
+        class ExistingProjectServlet < WEBrick::HTTPServlet::AbstractServlet
+          def do_POST(req, resp)            
+            begin
+              params = {}
+              params[:pn]                 = req.query["pn"]
+              params[:un]                 = req.query["un"]
+              params[:pw]                 = req.query["pw"]
+              params[:server_url]         = req.query["server_url"]
+              params[:existing_location]  = req.query["existing_location"] 
+              ENV["MM_WORKSPACE"]         = req.query["where"]
+              result = MavensMate.new_project_from_existing_directory(params)
+              if result[:success] == true
+                `killAll MavensMate` 
+                #`'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
+              else
+                resp.body = result.to_json
+              end
+            rescue Exception => e
+              puts e.message
+              resp.body = e.message.to_json
             end
           end
         end
