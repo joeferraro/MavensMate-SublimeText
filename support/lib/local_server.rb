@@ -394,6 +394,7 @@ module MavensMate
                   yml['environment'] = environment 
                   File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) }
                   MavensMate.add_to_keychain(project_name, pw)
+                  FileUtils.rm_r("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.session") if File.exist?("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.session")
                   result = {
                     :success  => true,
                     :message => "Credentials successfully updated!"
