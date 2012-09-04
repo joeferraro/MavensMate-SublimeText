@@ -30,11 +30,8 @@ If you're using RVM, you probably want to update the "mm_ruby" setting:
 
 	"mm_ruby": "~/.rvm/bin/rvm-auto-ruby"
 
-##Update
-
-```
-$ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.rb)
-```
+##Wiki
+<a href="https://github.com/joeferraro/MavensMate-SublimeText/wiki">https://github.com/joeferraro/MavensMate-SublimeText/wiki</a>
 
 ##Screenshots
 
