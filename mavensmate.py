@@ -38,9 +38,8 @@ def stop_local_server():
     cmd_b = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.stop'"
     os.system(cmd)
 
-def generate_ui(ruby_script, arg0):
-    cmd = ruby+" '"+mm_dir+"/commands/"+ruby_script+".rb' '"+arg0+"'"
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+def generate_ui(ruby_script, args):
+    p = subprocess.Popen(ruby+" '"+mm_dir+"/commands/"+ruby_script+".rb' "+args+"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     if p.stdout is not None : 
         msg = p.stdout.readlines()
     temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
@@ -138,45 +137,87 @@ class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, printer, handle_result, 0)  
 
+#creates a MavensMate project from an existing directory
+class CreateMavensMateProject(sublime_plugin.WindowCommand):
+    def run (self, dirs):
+        directory = dirs[0]
+
+        if directory.endswith("/src"):
+            printer = PanelPrinter.get(self.window.id())
+            printer.show()
+            printer.write('\n[OPERATION FAILED] You must run this command from the project folder, not the "src" folder\n')
+            return            
+
+        dir_entries = os.listdir(directory)
+        has_source_directory = False
+        for entry in dir_entries:
+            if entry == "src":
+                has_source_directory = True
+                break
+
+        if has_source_directory == False:
+            printer = PanelPrinter.get(self.window.id())
+            printer.show()
+            printer.write('\n[OPERATION FAILED] Unable to locate "src" folder\n')
+            return
+        
+        dir_entries = os.listdir(directory+"/src")
+        has_package = False
+        for entry in dir_entries:
+            if entry == "package.xml":
+                has_package = True
+                break
+
+        if has_package == False:
+            printer = PanelPrinter.get(self.window.id())
+            printer.show()
+            printer.write('\n[OPERATION FAILED] Unable to locate package.xml in src folder \n')
+            return        
+
+        start_local_server()
+        temp_file_name = generate_ui("new_project_from_directory", "'"+directory+"' '"+mm_workspace()+"'")
+        launch_mavens_mate_window(temp_file_name)
+
+#launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
-        temp_file_name = generate_ui("execute_anonymous", mm_project_directory())
+        temp_file_name = generate_ui("execute_anonymous", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
 
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
-        temp_file_name = generate_ui("edit_project", mm_project_directory())
+        temp_file_name = generate_ui("edit_project", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
 
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
-        temp_file_name = generate_ui("new_project", mm_workspace())
+        temp_file_name = generate_ui("new_project", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
 
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
-        temp_file_name = generate_ui("deploy_to_server", mm_project_directory())
+        temp_file_name = generate_ui("deploy_to_server", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
 
 #displays new project dialog
 class CheckoutProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
-        temp_file_name = generate_ui("checkout_project", mm_workspace())
+        temp_file_name = generate_ui("checkout_project", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)   
 
 #displays unit test dialog
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
-        temp_file_name = generate_ui("run_apex_tests", mm_project_directory())
+        temp_file_name = generate_ui("run_apex_tests", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name) 
 
 #replaces local copy of metadata with latest server copies
