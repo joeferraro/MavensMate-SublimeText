@@ -13,7 +13,48 @@ STDOUT.sync = true
 module MavensMate
   
   include MetadataHelper
-   
+  
+  def self.new_project_from_existing_directory(params)
+    begin
+      project_name        = params[:pn]
+      un                  = params[:un]
+      pw                  = params[:pw]
+      server_url          = params[:server_url]
+      existing_location   = params[:existing_location]
+      endpoint            = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"    
+
+      client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
+      Thread.abort_on_exception = true
+      threads = []
+      MavensMate::FileFactory.put_project_config(un, project_name, server_url, client.org_namespace)     
+      file_name = "settings.yaml"
+      src = File.new(existing_location+"/"+project_name+".sublime-project", "w")
+      src.puts('{"folders":[{"path": "'+existing_location+'"}],"settings":{"mm_project_directory":"'+existing_location+'"}}')
+      src.close
+      add_to_keychain(project_name, pw)
+      threads << Thread.new {
+        thread_client = MavensMate::Client.new({ 
+         :sid => client.sid, 
+         :metadata_server_url => client.metadata_server_url 
+        })
+        object_response = thread_client.list("CustomObject", true)
+        object_list = []
+        object_response[:list_metadata_response][:result].each do |obj|
+         object_list.push(obj[:full_name])
+        end 
+        object_hash = { "CustomObject" => object_list }               
+        options = { :meta_types => object_hash }
+        object_zip = thread_client.retrieve(options) #get selected metadata
+        Dir.mkdir(existing_location+"/config") unless File.exists?(existing_location+"/config") 
+        MavensMate::FileFactory.put_object_metadata(project_name, object_zip)
+      } 
+      threads.each { |t|  t.join }
+      return { :success => true, :message => "", :project_name => project_name }
+    rescue Exception => e
+      return { :success => false, :message => e.message }
+    end
+  end
+
   #creates new local project from salesforce metadata 
   def self.new_project(params)      
     if (params[:pn] == "" || params[:un] == "" || params[:pw] == "")
