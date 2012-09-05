@@ -353,7 +353,7 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         thread = MetadataAPICall("refresh_from_server", "'"+active_file+"'")
         threads.append(thread)
         thread.start()
-        handle_threads(threads, printer, handle_result, 0)
+        handle_threads(threads, printer, handle_refresh_result, 0)
 
 # #visualforce completions
 # class VisualforceCompletions(sublime_plugin.EventListener):
@@ -679,6 +679,7 @@ class MetadataAPICall(threading.Thread):
         msg_string = msg_string.replace(":false", ":False")
         msg_string = msg_string.replace(":null", "None")
         msg_string = msg_string.replace("namespace\"None", "namespace\":None")
+        msg_string = msg_string.replace("stack_trace\"None", "stack_trace\":None")
         msg_string = msg_string.replace("\\n", "\\\n")
         msg_string = msg_string.replace("problem\"None", "problem\":None")
         msg_string = msg_string.replace("id\"None", "id\":None")
@@ -839,6 +840,23 @@ def handle_result(printer, result):
     elif 'success' in result:
         if result['success'] == True and hide_panel == True:
             printer.hide() 
+
+def handle_refresh_result(printer, result):
+    print_result_message(result, printer) 
+    if 'check_deploy_status_response' in result: 
+        res = result['check_deploy_status_response']['result']
+        if res['success'] == True and 'location' in res :
+            sublime.active_window().open_file(res['location'])
+        if res['success'] == True and hide_panel == True:
+            printer.hide()            
+            #refresh_active_view()
+    elif 'success' in result:
+        if result['success'] == True and hide_panel == True:
+            printer.hide() 
+            #refresh_active_view()
+
+def refresh_active_view():
+    sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
 
 #parses the input from sublime text
 def parse_new_metadata_input(input):
