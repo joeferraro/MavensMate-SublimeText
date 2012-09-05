@@ -196,7 +196,7 @@ class EditProjectCommand(sublime_plugin.ApplicationCommand):
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
-        temp_file_name = generate_ui("new_project", "'"+mm_project_directory()+"'")
+        temp_file_name = generate_ui("new_project", "'"+mm_workspace()+"'")
         launch_mavens_mate_window(temp_file_name)
 
 #displays deploy dialog
