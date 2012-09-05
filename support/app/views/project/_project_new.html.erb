@@ -194,8 +194,9 @@
 					if (response["success"] == false) {
 						$("#error_message").html(response["message"])
 						$("#result_output").show()
-					}				
-				} 
+					}
+					hideBlanket();
+				}
 		 	});
 		}
 
@@ -211,7 +212,6 @@
 	   	<% end %>
 	
 		$(function() {		   						
-			
 			$("#project_wrapper").height($(window).height() - 175)
 			
 			$('#vc_alias').popover({
@@ -369,7 +369,7 @@
 								$("#result_output").hide()
 							}
 							hideBlanket();				
-						} 
+						}
 				 	});
 				}
 		    });
@@ -492,7 +492,8 @@
 	            },  
 	            "html"  
 	        );   
-		} 			
+		} 
+
 	</script>
 	<style>
 		#result_output {

@@ -675,23 +675,10 @@ class MetadataAPICall(threading.Thread):
         if p.stdout is not None : 
            msg = p.stdout.readlines()
         msg_string  = '\n'.join(msg)
-        msg_string = msg_string.replace(":true", ":True")
-        msg_string = msg_string.replace(":false", ":False")
-        msg_string = msg_string.replace(":null", "None")
-        msg_string = msg_string.replace("namespace\"None", "namespace\":None")
-        msg_string = msg_string.replace("stack_trace\"None", "stack_trace\":None")
-        msg_string = msg_string.replace("\\n", "\\\n")
-        msg_string = msg_string.replace("problem\"None", "problem\":None")
-        msg_string = msg_string.replace("id\"None", "id\":None")
-        print "result is: " + msg_string
-        res = None
         try:
-            res = ast.literal_eval(msg_string)
+            res = json.loads(msg_string) 
         except:
-            try:
-                res = eval(msg_string)
-            except:
-                res = msg_string
+            res = msg_string
         self.result = res
 
 #executes doxygen in the background
