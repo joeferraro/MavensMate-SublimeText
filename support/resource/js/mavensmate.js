@@ -1,9 +1,12 @@
 $(function() {
-
+	try {
+		setUpAjaxErrorHandling()
+	} catch(e) {
+		console.log(e)
+	}
 	$("input[type='text']:first").focus(); //focus first input element
 	//resizeWindowOnDomElementRemoved();
-	//submitFormOnEnter();
-		
+	//submitFormOnEnter();		
 });
 
 //window resizer and mover
@@ -125,4 +128,33 @@ function get_tree() {
 	myJSONText = myJSONText.replace(/\$/g,"\\$")
 	//console.log(myJSONText) 
 	return myJSONText
+}
+
+function setUpAjaxErrorHandling() {
+	$.ajaxSetup({
+        error: function(jqXHR, exception) {
+            try {
+            	errorMessage = ''
+	            if (jqXHR.status === 0) {
+	               	errorMessage = 'Not connected.\n Verify Network.'
+	            } else if (jqXHR.status == 404) {
+	                errorMessage = 'Requested page not found. [404]'
+	            } else if (jqXHR.status == 500) {
+	                errorMessage = 'Internal Server Error [500].'
+	            } else if (exception === 'parsererror') {
+	                errorMessage = 'Requested JSON parse failed.'
+	            } else if (exception === 'timeout') {
+	                errorMessage = 'Timeout error.'
+	            } else if (exception === 'abort') {
+	                errorMessage = 'Ajax request aborted.'
+	            } else {
+	                errorMessage = 'Uncaught Error.\n' + jqXHR.responseText
+	            }
+	            $("#error_message").html(errorMessage)
+    			hideBlanket()
+            } catch(e) {
+            	console.log(e)
+            }
+        }
+    });
 }
