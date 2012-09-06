@@ -18,6 +18,8 @@ import json
 import apex_reserved 
 
 mm_dir = os.getcwdu()
+#PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
+#for future reference (windows/linux support)
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
@@ -113,16 +115,28 @@ class MarkLinesCommand(sublime_plugin.WindowCommand):
 
 #takes user to the update directions on github (should be unnecessary once package control support is finalized)
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
-    def run(command):
+    def run(self):
+        from functools import partial
         printer = PanelPrinter.get(sublime.active_window().id())
         printer.show()
         printer.write('\nUpdating MavensMate, please wait...\n')
         import shutil
         tmp_dir = tempfile.gettempdir()
         shutil.copyfile(mm_dir+"/install.rb", tmp_dir+"/install.rb")
+        thread = threading.Thread(target=self.updatePackage)
+        thread.start()       
+        ThreadProgress(thread, 'Updating MavensMate', 'MavensMate has been updated successfully')
+    def updatePackage(self):       
+        tmp_dir = tempfile.gettempdir()
         os.chdir(tmp_dir)
-        os.system(ruby+" install.rb")
+        time.sleep(3)
+        os.system(ruby+" install.rb")    
+        sublime.set_timeout(partial(self.notify), 1)
+    def notify(self):    
+        sublime.message_dialog("MavensMate has been updated successfully!")
+        printer = PanelPrinter.get(sublime.active_window().id())
         printer.hide()
+
 
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
@@ -233,7 +247,7 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
         data = json.load(json_data)
         json_data.close()
         version = data["packages"][0]["platforms"]["osx"][0]["version"]
-        sublime.message_dialog("You are running version "+version+" of MavensMate")
+        sublime.message_dialog("MavensMate v"+version+"\n\nMavensMate is an open source Sublime Text package for Force.com\n\nmavens.io/mm")
 
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
@@ -357,7 +371,7 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         thread.start()
         handle_threads(threads, printer, handle_result, 0)
 
-#deploys the currently active file
+#refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
     def run(self):
         printer = PanelPrinter.get(self.window.id())
@@ -927,6 +941,50 @@ def prep_for_search(name):
 #            else:
 #               pass      # leave new/untitled files (for the moment)
 #         print tabs
+
+class ThreadProgress():
+    """
+    Animates an indicator, [=   ], in the status area while a thread runs
+
+    :param thread:
+        The thread to track for activity
+
+    :param message:
+        The message to display next to the activity indicator
+
+    :param success_message:
+        The message to display once the thread is complete
+    """
+
+    def __init__(self, thread, message, success_message):
+        self.thread = thread
+        self.message = message
+        self.success_message = success_message
+        self.addend = 1
+        self.size = 8
+        sublime.set_timeout(lambda: self.run(0), 100)
+
+    def run(self, i):
+        if not self.thread.is_alive():
+            if hasattr(self.thread, 'result') and not self.thread.result:
+                sublime.status_message('')
+                return
+            sublime.status_message(self.success_message)
+            return
+
+        before = i % self.size
+        after = (self.size - 1) - before
+
+        sublime.status_message('%s [%s=%s]' % \
+            (self.message, ' ' * before, ' ' * after))
+
+        if not after:
+            self.addend = -1
+        if not before:
+            self.addend = 1
+        i += self.addend
+
+        sublime.set_timeout(lambda: self.run(i), 100)
 
 class PanelPrinter(object):
     printers = {}
