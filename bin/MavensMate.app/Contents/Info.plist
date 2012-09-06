@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>11D50d</string>
+	<string>11E2068</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -38,13 +38,17 @@
 	<string>0433</string>
 	<key>DTXcodeBuild</key>
 	<string>4E3002</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.7</string>
-	<key>LSUIElement</key>
-	<false/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2012 Mavens. All rights reserved.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>WebKitDeveloperExtras</key>
+	<true/>
 </dict>
 </plist>
