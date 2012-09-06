@@ -220,6 +220,14 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
         temp_file_name = generate_ui("run_apex_tests", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name) 
 
+class ShowVersionCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        json_data = open(mm_dir+"/packages.json")
+        data = json.load(json_data)
+        json_data.close()
+        version = data["packages"][0]["platforms"]["osx"][0]["version"]
+        sublime.message_dialog("You are running version "+version+" of MavensMate")
+
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):

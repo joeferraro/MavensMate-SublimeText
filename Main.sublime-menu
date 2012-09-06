@@ -111,6 +111,10 @@
 	     	{
 	     		"caption": "Update MavensMate",
 	     		"command": "update_me"
+	     	},
+	     	{
+	     		"caption": "About MavensMate",
+	     		"command": "show_version"
 	     	}
 	    ]  
 	}  
