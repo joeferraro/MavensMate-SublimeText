@@ -33,7 +33,7 @@ If you're using RVM, you probably want to update the "mm_ruby" setting:
 ##Update
 Run "Update MavensMate" command
 
-<img src="http://wearemavens.com/images/mm/update2.png"/>
+<img src="http://wearemavens.com/images/mm/mmupdate.png"/>
 
 OR run the following terminal command:
 ```
