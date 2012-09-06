@@ -112,10 +112,17 @@ class MarkLinesCommand(sublime_plugin.WindowCommand):
         clear_marked_lines()
 
 #takes user to the update directions on github (should be unnecessary once package control support is finalized)
-class UpdateMeCommand(sublime_plugin.WindowCommand):
+class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        import webbrowser
-        webbrowser.open('https://github.com/joeferraro/MavensMate-SublimeText#update')
+        printer = PanelPrinter.get(sublime.active_window().id())
+        printer.show()
+        printer.write('\nUpdating MavensMate, please wait...\n')
+        import shutil
+        tmp_dir = tempfile.gettempdir()
+        shutil.copyfile(mm_dir+"/install.rb", tmp_dir+"/install.rb")
+        os.chdir(tmp_dir)
+        os.system(ruby+" install.rb")
+        printer.hide()
 
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
