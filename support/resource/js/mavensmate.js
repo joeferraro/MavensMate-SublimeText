@@ -155,6 +155,7 @@ function setUpAjaxErrorHandling() {
             } catch(e) {
             	console.log(e)
             }
-        }
+        },
+        timeout: 3600000
     });
 }
