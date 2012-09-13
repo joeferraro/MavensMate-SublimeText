@@ -106,7 +106,10 @@ def mark_line_numbers(lines):
         icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
 
 def clear_marked_line_numbers():
-    sublime.active_window().active_view().erase_regions('deleted')
+    try:
+        sublime.active_window().active_view().erase_regions('deleted')
+    except:
+        print 'no regions to clean up'
 
 class MarkLinesCommand(sublime_plugin.WindowCommand):
     def run (self):

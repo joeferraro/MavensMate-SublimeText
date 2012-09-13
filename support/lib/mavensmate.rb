@@ -345,7 +345,7 @@ module MavensMate
     begin
       zip_file = MavensMate::FileFactory.put_delete_metadata(get_metadata_hash)     
       client = MavensMate::Client.new
-      result = client.deploy({:zip_file => zip_file})
+      result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
       if result[:check_deploy_status_response][:result][:success]       
         get_selected_files.each do |f|
           FileUtils.rm_r f   
