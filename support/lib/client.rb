@@ -99,6 +99,8 @@ module MavensMate
       begin
         response = self.pclient.request :login do
           #soap.body = { :username => self.username, :password => self.password }
+          self.username = MavensMate::Util.soap_escape(self.username)
+          self.password = MavensMate::Util.soap_escape(self.password)
           soap.body = '<ins0:username>'+self.username+'</ins0:username><ins0:password>'+self.password+'</ins0:password>'
         end
       rescue Savon::SOAP::Fault => fault

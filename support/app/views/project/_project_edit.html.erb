@@ -183,6 +183,15 @@
 				$("#project_wrapper").height($(window).height() - 175)
 			});  
 			
+			<% 
+				begin
+					ppw = ppw.gsub!(/'/, '\'').gsub!(/\"/, '\"')  
+					pname = pname.gsub!(/'/, '\'').gsub!(/\"/, '\"')  
+				rescue
+
+				end
+			%>
+
 			var server_url = ("<%= pserver %>" == "production") ? "https://www.salesforce.com" : "https://test.salesforce.com"
 			$("#pn").val("<%= pname %>");  
 			$("#un").val("<%= pun %>");
