@@ -21,6 +21,15 @@ module MavensMate
           end
         end
       end
+
+      def soap_escape(str)
+        begin
+          str = str.gsub(/&/,"&amp;").gsub(/'/, "&apos;").gsub(/"/, "&quot;").gsub(/>/, "&gt;").gsub(/</, "&lt;")
+        rescue Exception => e
+
+        end
+        return str
+      end
       
       def get_sfdc_endpoint(url)
          endpoint = (url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"  

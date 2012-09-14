@@ -37,7 +37,8 @@ module MavensMate
           stop
           server = WEBrick::HTTPServer.new(
             :Port => 7777,
-            :ServerType => WEBrick::Daemon
+            :ServerType => WEBrick::Daemon,
+            :RequestTimeout => 1800
           )
           
           ['INT', 'TERM'].each { |signal|
