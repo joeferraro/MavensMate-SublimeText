@@ -21,12 +21,12 @@ module MavensMate
       pw                  = params[:pw]
       server_url          = params[:server_url]
       existing_location   = params[:existing_location]
-      endpoint            = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"    
+      endpoint            = MavensMate::Util.get_sfdc_endpoint(server_url)      
 
       client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
       Thread.abort_on_exception = true
       threads = []
-      MavensMate::FileFactory.put_project_config(un, project_name, server_url, client.org_namespace)     
+      MavensMate::FileFactory.put_project_config(un, project_name, endpoint, client.org_namespace)     
       file_name = "settings.yaml"
       src = File.new(existing_location+"/"+project_name+".sublime-project", "w")
       src.puts('{"folders":[{"path": "'+existing_location+'"}],"settings":{"mm_project_directory":"'+existing_location+'"}}')
@@ -79,7 +79,7 @@ module MavensMate
       vc_type       = params[:vc_type] || "SVN"
       vc_branch     = params[:vc_branch] || "master"
       vc_url        = vc_url + "/" + project_name if vc_type == "SVN" 
-      endpoint      = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"    
+      endpoint      = MavensMate::Util.get_sfdc_endpoint(server_url)   
       ENV["MM_WORKSPACE"] = params[:where]
       
       client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
@@ -88,7 +88,7 @@ module MavensMate
       threads = []  
 
       MavensMate::FileFactory.put_project_directory(project_name) #put project directory in the filesystem     
-      MavensMate::FileFactory.put_project_config(un, project_name, server_url, client.org_namespace)
+      MavensMate::FileFactory.put_project_config(un, project_name, endpoint, client.org_namespace)
       MavensMate::FileFactory.put_sublime_text_project_file(project_name)
       add_to_keychain(project_name, pw)
 
@@ -178,7 +178,7 @@ module MavensMate
       vc_url      = params[:vc_url] || ""
       vc_type     = params[:vc_type] || "SVN"
       vc_branch   = params[:vc_branch] || "master"
-      endpoint    = (server_url.include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
+      endpoint    = MavensMate::Util.get_sfdc_endpoint(server_url)  
       
       Thread.abort_on_exception = true
       threads = []
@@ -207,7 +207,7 @@ module MavensMate
   		threads.each { |aThread|  aThread.join }
         
       client = MavensMate::Client.new({ :username => un, :password => pw, :endpoint => endpoint })
-      MavensMate::FileFactory.put_project_config(un, project_name, server_url, client.org_namespace)
+      MavensMate::FileFactory.put_project_config(un, project_name, endpoint, client.org_namespace)
       MavensMate::FileFactory.put_sublime_text_project_file(project_name)
       add_to_keychain(project_name, pw)      		        
       Dir.mkdir(project_folder+project_name+"/config") unless File.exists?(project_folder+project_name+"/config") 

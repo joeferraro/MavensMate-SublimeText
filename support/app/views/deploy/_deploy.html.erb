@@ -191,14 +191,6 @@
 	</fieldset>
 </form> 
 
-<div class="twipsy deploy_loading">
-	<div class="loading_indicator"></div>                                        	
-</div>
-<div class="deploy_wait_description">
-	Indexing metadata...
-</div>
-
-
 <script type="text/javascript">
 	var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
 	var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
@@ -415,10 +407,6 @@
 		return false;
 	});
 
-	function showBlanket() { $('.deploy_loading').fadeIn(); }
-
-	function hideBlanket() { $('.deploy_loading').hide(); }  
-
 	var rootNode;
 	
 	function index_org(refresh) {
@@ -431,7 +419,7 @@
 				 mm_current_project_directory: mm_cpd,
 				 do_refresh: refresh
 			},
-			beforeSend: function() { showBlanket(); },
+			beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.  Thanks for being patient! :)'); },
 			complete: function(data){
 				console.log(data)
 				$("#tree").dynatree("destroy")
@@ -445,7 +433,7 @@
 	        		node.expand(false);
 	    		});  
 				rootNode = $("#tree").dynatree("getRoot");
-				hideBlanket();				
+				hideLoading();				
 			} 
 		});
 	}
@@ -466,11 +454,11 @@
 			    tree: get_tree(),
 			    mm_current_project_directory: mm_cpd
 			},
-			beforeSend: function() { showBlanket(); },
+			beforeSend: function() { showLoading('Deploying to Salesforce.com'); },
 			complete: function(data){
 				console.log(data)
 				$("#result").html(data.responseText);
-				hideBlanket();
+				hideLoading();
 			} 
 	 	});
 	} 		 						

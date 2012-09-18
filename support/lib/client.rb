@@ -69,7 +69,7 @@ module MavensMate
         self.username = creds[:username]
         self.password = creds[:password]
         if ! creds[:endpoint].include? "Soap"
-          creds[:endpoint] = (creds[:endpoint].include? "test") ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
+          creds[:endpoint] = MavensMate::Util.get_sfdc_endpoint(creds[:endpoint])
         end
         self.endpoint = creds[:endpoint] 
         self.pclient = get_partner_client
@@ -633,7 +633,7 @@ module MavensMate
         username = yml['username']
         environment = yml['environment']
         password = KeyChain::find_internet_password("#{project_name}-mm")
-        endpoint = environment == "sandbox" ? "https://test.salesforce.com/services/Soap/u/#{MM_API_VERSION}" : "https://www.salesforce.com/services/Soap/u/#{MM_API_VERSION}"
+        endpoint = MavensMate::Util.get_sfdc_endpoint_by_type(environment)
         return { :username => username, :password => password, :endpoint => endpoint }
       end
       

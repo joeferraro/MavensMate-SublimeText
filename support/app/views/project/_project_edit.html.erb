@@ -38,6 +38,7 @@
 						<select id="server_url">
 							<option>https://www.salesforce.com</option>
 							<option>https://test.salesforce.com</option>
+							<option>https://prerellogin.pre.salesforce.com</option>
 						</select>
 					</div>
 					<div class="clearfix" style="margin-top:20px;">
@@ -71,12 +72,6 @@
 	</fieldset>
 </form>   
 
-<div class="twipsy deploy_loading">
-	<div class="loading_indicator"></div>                                        	
-</div>
-<div class="deploy_wait_description">
-	Indexing metadata...
-</div>
 	
 	<script type="text/javascript">
 		var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
@@ -100,7 +95,7 @@
 			    	update_creds: true,
 			    	pd: mm_cpd 
 				},
-				beforeSend: function() { showBlanket(); },
+				beforeSend: function() { showLoading('Updating project credentials'); },
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
@@ -113,7 +108,7 @@
 						$(".alert-message.error").hide()
 						$(".alert-message.success").show()
 					}
-					hideBlanket();				
+					hideLoading();				
 				} 
 			});
 		}
@@ -126,7 +121,7 @@
 				data: {
 					tree: get_tree()
 				},
-				beforeSend: function() { showBlanket(); },
+				beforeSend: function() { showLoading('Updating project'); },
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
@@ -137,7 +132,7 @@
 						$("#success_message").html("OK!")
 						$(".alert-message.success").show()
 					}
-					hideBlanket();				
+					hideLoading();				
 				} 
 			});
 		}
@@ -153,7 +148,7 @@
 					 do_refresh: refresh,
 					 mode: "edit"
 				},
-				beforeSend: function() { showBlanket(); },
+				beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.  Thanks for being patient! :)'); },
 				complete: function(data){
 					console.log(data)
 					$("#tree").dynatree("destroy")
@@ -167,7 +162,7 @@
 		        		node.expand(false);
 		    		});  
 					rootNode = $("#tree").dynatree("getRoot");
-					hideBlanket();				
+					hideLoading();				
 				} 
 			});
 		}
@@ -192,11 +187,10 @@
 				end
 			%>
 
-			var server_url = ("<%= pserver %>" == "production") ? "https://www.salesforce.com" : "https://test.salesforce.com"
 			$("#pn").val("<%= pname %>");  
 			$("#un").val("<%= pun %>");
 			$("#pw").val("<%= ppw %>");
-			$("#server_url").val(server_url);
+			$("#server_url").val("<%= pserver_url %>");
 			
 			$("#pn").prop('disabled', true);  
 			//$("#un").prop('disabled', true);  
@@ -213,8 +207,5 @@
 
 			index_org(!has_indexed_metadata);
 		});	
-
-		function showBlanket() { $('.deploy_loading').fadeIn(); }
-
-		function hideBlanket() { $('.deploy_loading').hide(); }  	
+	
 	</script>

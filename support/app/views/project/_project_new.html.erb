@@ -57,6 +57,7 @@
 						<select id="server_url">
 							<option>https://www.salesforce.com</option>
 							<option>https://test.salesforce.com</option>
+							<option>https://prerellogin.pre.salesforce.com</option>
 						</select>
 					</div>  
 				</fieldset>
@@ -136,12 +137,6 @@
 	</fieldset>
 </form>
 
-<div class="twipsy deploy_loading">
-	<div class="loading_indicator"></div>                                        	
-</div>
-<div class="deploy_wait_description">
-	Creating Project...
-</div>
 
 
 	<script type="text/javascript">
@@ -165,7 +160,7 @@
 					 where: "<%= ENV['MM_WORKSPACE'] %>",
 					 action: "new"
 				},
-				beforeSend: function() { showBlanket(); },
+				beforeSend: function() { showLoading('Creating new MavensMate project'); },
 				complete: function(data){
 					//console.log(data)
 					var response = JSON.parse(data.responseText)
@@ -173,7 +168,7 @@
 						$("#error_message").html(response["message"])
 						$("#result_output").show()
 					}
-					hideBlanket();
+					hideLoading();
 				} 
 		 	});
 		}
@@ -196,7 +191,7 @@
 					 where: "<%= ENV['MM_WORKSPACE'] %>",
 					 action: "checkout"
 				},
-				beforeSend: function() { showBlanket(); },
+				beforeSend: function() { showLoading('Checking project our from source control'); },
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
@@ -204,15 +199,11 @@
 						$("#error_message").html(response["message"])
 						$("#result_output").show()
 					}
-					hideBlanket();
+					hideLoading();
 				}
 		 	});
 		}
-
-		function showBlanket() { $('.deploy_loading').fadeIn(); }
-
-		function hideBlanket() { $('.deploy_loading').hide(); }
-		
+	
 		var user_action = "<%= user_action %>";
 		
 		var child_def = {}
@@ -365,7 +356,7 @@
 							 pw: $("#pw").val(), 
 							 server_url: $("#server_url").val()
 						},
-						beforeSend: function() { showBlanket(); },
+						beforeSend: function() { showLoading('Attempting to authenticate to Salesforce using the provided credentials'); },
 						complete: function(data){
 							//console.log(data)
 							var response = JSON.parse(data.responseText)
@@ -377,7 +368,7 @@
 								$('#murl').val(response["murl"])
 								$("#result_output").hide()
 							}
-							hideBlanket();				
+							hideLoading();				
 						}
 				 	});
 				}

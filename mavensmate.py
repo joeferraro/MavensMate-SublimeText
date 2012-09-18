@@ -655,7 +655,7 @@ class GenerateApexClassDocs(sublime_plugin.WindowCommand):
         if not os.path.exists(mm_project_directory() + "/config/.class_docs"):
             os.makedirs(mm_project_directory() + "/config/.class_docs")
 
-        printer = PanelPrinter.get(self.window.id())
+        printer = PanelPrinter.get(self.window.id())  
         printer.show() 
         printer.write('\nIndexing Apex class definitions...\n')
         threads = []

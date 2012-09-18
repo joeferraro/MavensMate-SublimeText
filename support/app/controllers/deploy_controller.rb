@@ -17,6 +17,7 @@ class DeployController < ApplicationController
       pconfig['org_connections'].each do |connection| 
         pw = KeyChain::find_internet_password("#{pconfig['project_name']}-mm-#{connection['username']}")
         server_url = connection["environment"] == "production" ? "https://www.salesforce.com" : "https://test.salesforce.com" 
+        #server_url = MavensMate::Util.get_sfdc_endpoint_by_type(connection["environment"])  
         connections.push({
           :un => connection["username"], 
           :pw => pw,

@@ -9,6 +9,23 @@ $(function() {
 	//submitFormOnEnter();		
 });
 
+function showElement(id) {
+	$("#"+id).show();
+}
+
+function hideElement(id) {
+	$("#"+id).hide();
+}
+
+function showLoading(message) {
+	$("#loading_message").html(message)
+	$(".loading").fadeIn();
+}
+
+function hideLoading() {
+	$(".loading").hide();
+}
+
 //window resizer and mover
 function resizeAndCenterWindow() {
 	resizeWindow();
@@ -151,7 +168,7 @@ function setUpAjaxErrorHandling() {
 	                errorMessage = 'Uncaught Error.\n' + jqXHR.responseText
 	            }
 	            $("#error_message").html(errorMessage)
-    			hideBlanket()
+    			hideLoading()
             } catch(e) {
             	console.log(e)
             }
