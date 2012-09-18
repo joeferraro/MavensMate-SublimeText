@@ -134,12 +134,7 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
         os.chdir(tmp_dir)
         time.sleep(3)
         os.system(ruby+" install.rb")    
-        sublime.set_timeout(partial(self.notify), 1)
-    def notify(self):    
-        sublime.message_dialog("MavensMate has been updated successfully!")
-        printer = PanelPrinter.get(sublime.active_window().id())
-        printer.hide()
-
+        #sublime.set_timeout(partial(self.notify), 1)
 
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
@@ -973,6 +968,9 @@ class ThreadProgress():
                 sublime.status_message('')
                 return
             sublime.status_message(self.success_message)
+            sublime.message_dialog("MavensMate has been updated successfully!")
+            printer = PanelPrinter.get(sublime.active_window().id())
+            printer.hide()
             return
 
         before = i % self.size
