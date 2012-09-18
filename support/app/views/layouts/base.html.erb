@@ -25,6 +25,16 @@
 	<div id='debug'></div>
   	<div id='wrapper'>
 		<% yield %>
+
+    <div class="loading">
+      <div class="twipsy"></div> 
+      <div class="loading_message_wrapper">
+        <div class="loading_message">
+          <div class="loading_indicator"></div> 
+          <span id="loading_message"></span>
+        </div>
+      </div>                                    
+    </div>
 	</div>
 </body>
 

@@ -340,7 +340,7 @@ module MavensMate
               resp.body = result.to_json
             rescue Exception => e
               puts e.message + e.backtrace.join("\n")
-              resp.body = e.message.to_json
+              resp.body = e.message.to_json + e.backtrace.join("\n")
             end        
           end
         end

@@ -36,6 +36,7 @@
 						<select id="server_url">
 							<option>https://www.salesforce.com</option>
 							<option>https://test.salesforce.com</option>
+							<option>https://prerellogin.pre.salesforce.com</option>
 						</select>
 					</div>											
 				</fieldset>
@@ -55,12 +56,6 @@
 	</fieldset>
 </form>   
 
-<div class="twipsy deploy_loading">
-	<div class="loading_indicator"></div>                                        	
-</div>
-<div class="deploy_wait_description">
-	Indexing metadata...
-</div>
 	
 	<script type="text/javascript">
 		var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
@@ -80,7 +75,7 @@
 			    	existing_location: "<%= existing_directory %>"
 
 				},
-				beforeSend: function() { showBlanket(); },
+				beforeSend: function() { showLoading('Creating MavensMate project'); },
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
@@ -93,7 +88,7 @@
 						$(".alert-message.error").hide()
 						$(".alert-message.success").show()
 					}
-					hideBlanket();				
+					hideLoading();				
 				} 
 			});
 		}
@@ -119,8 +114,5 @@
 			});
 
 		});	
-
-		function showBlanket() { $('.deploy_loading').fadeIn(); }
-
-		function hideBlanket() { $('.deploy_loading').hide(); }  	
+	
 	</script>

@@ -24,7 +24,13 @@ class ProjectController < ApplicationController
   def index_edit
     pconfig = MavensMate.get_project_config
     password = KeyChain::find_internet_password("#{pconfig['project_name']}-mm")
-    render "_project_edit", :locals => { :child_metadata_definition => CHILD_META_DICTIONARY, :pname => pconfig['project_name'], :pun => pconfig['username'], :ppw => password, :pserver => pconfig['environment'] }
+    render "_project_edit", :locals => { 
+      :child_metadata_definition => CHILD_META_DICTIONARY, 
+      :pname => pconfig['project_name'], 
+      :pun => pconfig['username'], 
+      :ppw => password, 
+      :pserver_url => MavensMate::Util.get_short_sfdc_endpoint_by_type(pconfig['environment'])
+    }
   end
 
   def index_new_from_existing

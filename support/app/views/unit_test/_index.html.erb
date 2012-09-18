@@ -241,10 +241,6 @@ embed.hidden {
 
 <script>
 
-function showBlanket() { $('#running_tests_indicator').fadeIn(); }
-
-function hideBlanket() { $('#running_tests_indicator').hide(); }
-
 function run_tests() {
 	$.ajax({
 		type: "POST",
@@ -257,7 +253,7 @@ function run_tests() {
 			 category: $("#category").val(),
 			 api: $("#api").val()
 		},
-		beforeSend: function() { showBlanket(); $("#btnRunTests").hide() },
+		beforeSend: function() { showElement("running_tests_indicator"); $("#btnRunTests").hide() },
 		complete: function(data){
 			console.log(data)
 			$("#result_wrapper").html(data.responseText)
@@ -285,7 +281,7 @@ function run_tests() {
 				window.resizeTo(760, document.getElementById('result_wrapper').scrollHeight+175);	
 			}
 
-			hideBlanket();
+			hideElement("running_tests_indicator");
 			$("#btnRunTests").show();				
 		} 
 	});

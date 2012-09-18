@@ -214,10 +214,6 @@
 var editor;
 var line;
 
-function showBlanket() { $('#running_tests_indicator').fadeIn(); }
-
-function hideBlanket() { $('#running_tests_indicator').hide(); }
-
 function showSuccessMessage() {
 	$(".alert-message.error").hide()
 	$(".alert-message.success").show()
@@ -242,7 +238,7 @@ function execute_apex() {
 			 level: $("#level").val(),
 			 category: $("#category").val()
 		},
-		beforeSend: function() { showBlanket(); $("#btnExecuteApex").hide(); editor.getSession().clearAnnotations(); editor.setReadOnly(true); },
+		beforeSend: function() { showLoading('Executing Apex'); $("#btnExecuteApex").hide(); editor.getSession().clearAnnotations(); editor.setReadOnly(true); },
 		complete: function(data){
 			var response = JSON.parse(data.responseText)
 			console.log(response)
@@ -285,7 +281,7 @@ function execute_apex() {
 				$("#a_result").click();
 			}
 			
-			hideBlanket();
+			hideLoading();
 			$("#btnExecuteApex").show();	
 			editor.setReadOnly(false);			
 		} 
