@@ -30,6 +30,10 @@ If you're using RVM, you probably want to update the "mm_ruby" setting:
 
 	"mm_ruby": "~/.rvm/bin/rvm-auto-ruby"
 
+If you happen to encounter issues installing Nokogiri, here's a helpful URL:
+
+	http://nokogiri.org/tutorials/installing_nokogiri.html
+
 ##Update
 Run "Update MavensMate" command
 
