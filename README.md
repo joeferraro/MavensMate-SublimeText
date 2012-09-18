@@ -30,6 +30,10 @@ If you're using RVM, you probably want to update the "mm_ruby" setting:
 
 	"mm_ruby": "~/.rvm/bin/rvm-auto-ruby"
 
+If you encounter any ugly error messages in the MavensMate UI that reference gem dependencies, try installing v0.0.7 of MavensMate:
+
+	$ gem install mavensmate -v 0.0.7
+
 If you happen to encounter issues installing Nokogiri, here's a helpful URL:
 
 	http://nokogiri.org/tutorials/installing_nokogiri.html
