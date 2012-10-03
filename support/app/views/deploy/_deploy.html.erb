@@ -19,6 +19,13 @@
 		<a class="close" href="#">×</a>
 		<p><strong>Error!</strong> You need to provide valid Salesforce.com credentials in Project Details.</p>
 	</div>
+
+	<% if connections.size == 0 %>
+		<div class="alert-message error" data-alert="alert" id="connection_alert">
+			<p><strong>Error!</strong> In order to deploy to server(s), you must first create a deployment connection (MavensMate --> Project --> Deployment Connections)</p>
+		</div>
+		<% return %>
+	<% end %>
 	
 	<ul class="tabs">
 		<li class="active"><a href="#form">Deploy Options</a></li>
@@ -31,35 +38,28 @@
 			<form class="form-stacked">
 				<fieldset>
 					<div class="clearfix">
-						<label for="un">Salesforce Username</label> 
+						<label for="un">Deployment Targets</label> 
 						<% 
 							display = connections.size == 0 ? "block" : "none"
 						%>
 						
 						<% if connections.size > 0 %>
-							<select id="un_list">
-								<% connections.each do |c| %>
-									<option><%=c[:un]%></option>
+							<select style="width:90%;" id="un_list" multiple="multiple" data-placeholder="Select 1 or more connections...">
+								<% connections.each_with_index do |c, i| %>
+									<% selected = 'selected="selected"' if i == 0 %>
+									<option <%= selected %> value="<%= c[:un] + ";" + c[:type] %>"><%=c[:un]%></option>
 								<% end %> 
-								<option value="new">-- Custom Connection --</option>
+								<!-- <option value="new">-- Custom Connection --</option> -->
 							</select>	
 						<% end %>
-						<input style="margin-top:5px;display:<%= display %>" class="xlarge" size="100" type="text" id="un">
-					</div>
-					<div class="clearfix">
-						<label for="pw">Salesforce Password</label> 
-						<input class="xlarge" size="100" type="password" id="pw">
-					</div>
-					<div class="clearfix">
-						<label for="server_url">Server URL</label> 
-						<select id="server_url">
-							<option>https://www.salesforce.com</option>
-							<option>https://test.salesforce.com</option>
-						</select>
-					</div>				
+					</div>			
 				</fieldset>
 			</form>
 			<style>
+				.chzn-choices {
+					border-radius: 3px !important;
+				}
+
 				.deploy_options .clearfix {
 					margin-left: 20px;
 					margin-bottom:0px;
@@ -252,9 +252,9 @@
 			function( event ) {
 				if (event.target.id == "result") {
 					$("#result_tab").click(); 
-				    $("#result_table_wrapper").height($(window).height() - 240)
+				    $(".result_table_class").height($(window).height() - 300)
 					$(window).resize(function() {
-				        $("#result_table_wrapper").height($(window).height() - 240)
+				        $(".result_table_class").height($(window).height() - 300)
 				    });
 				    resizeWindowAfterResult();
 				}
@@ -340,6 +340,8 @@
 	    });
 		
 		index_org(!has_indexed_metadata);
+
+		$("#un_list").chosen();
 	});
 
 	function filter_tree(searchTerm) {
@@ -442,14 +444,28 @@
 		index_org(true);
 	}
 
+	function get_target_json() {
+		var targets = $("#un_list").val();
+		var ts = []
+		for (t in targets) {
+			console.log(targets[t])
+			var username = targets[t].split(';')[0]
+			var type = targets[t].split(';')[1]
+			var t = {}
+			t.username = username
+			t.type = type
+			ts.push(t)
+		}
+		var json1 = JSON.stringify(ts)
+		return json1 
+	}
+
 	function deploy() {
 		$.ajax({
 			type: "POST",
 			url: "http://127.0.0.1:7777/deploy", 
 			data: {
-				un: $("#un").val(),
-			    pw: $("#pw").val(),
-			    server_url: $("#server_url").val(),
+				targets: get_target_json(),
 			    check_only: isValidateOnly(),
 			    tree: get_tree(),
 			    mm_current_project_directory: mm_cpd
