@@ -116,6 +116,14 @@ class MarkLinesCommand(sublime_plugin.WindowCommand):
         #mark_lines(self, None)
         clear_marked_lines()
 
+#launches the org connections UI
+class OrgConnectionsCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        start_local_server()
+        temp_file_name = generate_ui("deployment_connections", "'"+mm_project_directory()+"'")
+        launch_mavens_mate_window(temp_file_name)
+
+
 #takes user to the update directions on github (should be unnecessary once package control support is finalized)
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(self):
@@ -665,7 +673,7 @@ class RemoteEdit(sublime_plugin.EventListener):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         active_file = get_active_file()
         fileName, ext = os.path.splitext(active_file)
-        valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger', '.tab', '.layout', '.resource', '.remoteSite']
+        valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger', '.tab', '.layout', '.resource', '.remoteSite', '.labels', '.app', '.dashboard']
         if settings.get('mm_compile_on_save') == True and is_mm_project() == True and ext in valid_file_extensions:
             printer = PanelPrinter.get(view.window().id())
             printer.show() 

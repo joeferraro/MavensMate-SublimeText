@@ -17,9 +17,9 @@ class OrgConnectionController < ApplicationController
   #adds a new deployment connection to a project, stores creds in keychain
   def new_connection
     begin
-      un = params[:un]
-      pw = params[:pw]
-      server_url = params[:server_url]
+      un = params[:un].to_s
+      pw = params[:pw].to_s
+      server_url = params[:server_url].to_s
       
       TextMate.call_with_progress( :title => "MavensMate", :message => "Validating Salesforce.com Credentials" ) do
         client = MavensMate::Client.new({ :username => params[:un], :password => params[:pw], :endpoint => params[:server_url] })

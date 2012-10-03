@@ -1,39 +1,39 @@
-<div id="result_output">
-	
-</div>
-
 <div class="content">
-    
-  	<% if connections.size == 0 %>
-		<div class="alert-message block-message info">
-        	<p><strong>A deployment connection is a Salesforce.com org that you wish to deploy to from this MavensMate project.</strong></p>
-      	</div>
-		<div class="alert-message block-message warning">
-        	<p><strong>You do not have any deployment connections set up </strong></p> 
-      	</div>
-	<% else %>
-	<div class="alert-message block-message-custom" style="margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;">
-			<p style="float:left;"><strong>Deployment Connections</strong></p>
-		<div style="clear:both;"></div>	
-	</div>  
-	<table class="bordered-table test_result" style="-webkit-border-radius: 0px 0px 4px 4px;">
-		<thead>
-			<tr>
-				<th>Connection</th>
-				<th>Action</th>
-			</tr>
-		</thead>
-		<tbody>
-	<% connections.each do |c| %>
-		<tr>
-			<td><%= c[:un] %></td>
-			<td><a href="javascript:void(0);" onclick="deleteConnection('<%= c[:un] %>')">Remove</a></td>
-		</tr>
-	<% end %>
-		</tbody>
-	</table>
+	<div id="error_wrapper">
 	
-	<% end %>
+	</div>
+    <span id="connections_wrapper">
+	  	<% if connections.size == 0 %>
+			<div class="alert-message block-message info">
+	        	<p><strong>A deployment connection is a Salesforce.com org that you wish to deploy to from this MavensMate project.</strong></p>
+	      	</div>
+			<div class="alert-message block-message warning">
+	        	<p><strong>You do not have any deployment connections set up </strong></p> 
+	      	</div>
+		<% else %>
+		<div class="alert-message block-message-custom" style="margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;">
+				<p style="float:left;"><strong>Deployment Connections</strong></p>
+			<div style="clear:both;"></div>	
+		</div>  
+		<table class="bordered-table test_result" style="-webkit-border-radius: 0px 0px 4px 4px;">
+			<thead>
+				<tr>
+					<th>Connection</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody id="connections_list">
+				<% connections.each do |c| %>
+					<tr>
+						<td><%= c[:un] %></td>
+						<td><a href="javascript:void(0);" onclick="deleteConnection('<%= c[:un] %>')">Remove</a></td>
+					</tr>
+				<% end %>
+			</tbody>
+		</table>
+		
+		<% end %>
+	</div>
 	
 	<div id="form" class="active">
 		<form class="form-stacked">
@@ -51,6 +51,7 @@
 					<select id="server_url">
 						<option>https://www.salesforce.com</option>
 						<option>https://test.salesforce.com</option>
+						<option>https://prerellogin.pre.salesforce.com</option>
 					</select>
 				</div>
 				<div class="clearfix" style="margin-top:15px;">
@@ -74,11 +75,55 @@
 
 	<script type="text/javascript">
 		function deleteConnection(username) {
-			$('body').html(dispatch({controller: 'org_connection', action: 'delete_connection', un: username }));
+			$.ajax({
+				type: "DELETE",
+				url: "http://127.0.0.1:7777/connections", 
+				data: {
+					 un: username,
+					 pd: '<%= ENV['MM_CURRENT_PROJECT_DIRECTORY'] %>'
+
+				},
+				beforeSend: function() { showLoading('Removing connection'); },
+				complete: function(data){
+					$("#error_wrapper").html('')
+					console.log(data)				
+					var response = JSON.parse(data.responseText)
+					if (response["success"] == false) {
+						$("#error_wrapper").html(response["message"])
+					} else {
+						$("#connections_wrapper").html(response["message"])
+					}
+					hideLoading()			
+				}
+		 	});
 		}
 		
 		function newConnection() {
-			$('body').html(dispatch({controller: 'org_connection', action: 'new_connection', un: $('#un').val(), pw: $('#pw').val(), server_url: $('#server_url').val() }));
+			$.ajax({
+				type: "POST",
+				url: "http://127.0.0.1:7777/connections", 
+				data: {
+					 un: $("#un").val(), 
+					 pw: $("#pw").val(), 
+					 server_url: $("#server_url").val(),
+					 pd: '<%= ENV['MM_CURRENT_PROJECT_DIRECTORY'] %>'
+
+				},
+				beforeSend: function() { showLoading('Adding connection'); },
+				complete: function(data){
+					$("#error_wrapper").html('')
+					console.log(data)				
+					var response = JSON.parse(data.responseText)
+					if (response["success"] == false) {
+						$("#error_wrapper").html(response["message"])
+					} else {
+						$("#un").val('')
+						$("#pw").val('')
+						$("#connections_wrapper").html(response["message"])
+					}
+					hideLoading()			
+				}
+		 	});
 		}
 
 		$(function() {		   						   		

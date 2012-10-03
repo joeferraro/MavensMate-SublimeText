@@ -1,4 +1,4 @@
-<div id="result" style="padding:10px;">
+<div class="result_wrapper" style="padding:10px;">
 	<% if result[:is_success] %>
 		<div class="alert-message success">
 			<% deploy_type = (is_check_only == "1") ? "validation" : "deployment"  %>
@@ -12,11 +12,11 @@
 	<% end %>
 	<% if ! result[:is_success] %>
 		<div id="error_message" class="alert-message error">
-			<p><strong>Deployment Failed!</strong></p>
+			<p><strong>Deployment Failed!</strong>&nbsp;</p>
 		</div> 
 	<% end %>
 	
-		<div id="result_table_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;border:2px solid #ccc;">
+		<div class="result_table_class" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;border:2px solid #ccc;">
 			
 			<% if result[:messages].size > 0 %>
 			<div style="padding:5px 10px;background-color:#f2f2f2;border-bottom:2px solid #ccc;cursor:pointer;" onclick="$('#result_table').toggle();">Deploy Messages</div>			
