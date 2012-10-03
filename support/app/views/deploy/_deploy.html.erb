@@ -1,13 +1,13 @@
 <style>
-	.bordered-table, .bordered-table td {
-		-webkit-border-radius: 0px !important;
-		border-radius: 0px !important;
-	}
-	
-	.bordered-table {
-		border-bottom:2px solid #ccc !important;
-	}
-   
+.bordered-table, .bordered-table td {
+    -webkit-border-radius: 0px !important;
+	border-radius: 0px !important;
+}
+
+.bordered-table {
+	border-bottom:2px solid #ccc !important;
+}
+
 </style>
 <div id="result_output">
 	
@@ -31,6 +31,7 @@
 		<li class="active"><a href="#form">Deploy Options</a></li>
 		<li><a href="#metadata">Metadata</a></li>
 		<li><a href="#result" id="result_tab">Result</a></li>
+		<li><a href="#arcade" id="arcade_tab">Arcade</a></li>
 	</ul>
 	
 	<div class="pill-content">
@@ -40,7 +41,7 @@
 					<div class="clearfix">
 						<label for="un">Deployment Targets</label> 
 						<% 
-							display = connections.size == 0 ? "block" : "none"
+						display = connections.size == 0 ? "block" : "none"
 						%>
 						
 						<% if connections.size > 0 %>
@@ -102,27 +103,27 @@
 					</div>     -->
 <!-- 					<div id="deploy_info" style="display:none;" class="alert-message block-message info">
 			        	<p><strong>This deployment will run in async mode.</strong></p>
-			      	</div> -->
-					
-				</fieldset>
+			        </div> -->
+
+			    </fieldset>
 			</form>
 		</div>
 		
 		
 		<style>
-			#filter {
-				background-color:#f7f7f7;
-				padding:5px;
-				border-bottom:1px solid #ccc;
-				margin-bottom:10px;
-				position:relative;
-			}
+		#filter {
+			background-color:#f7f7f7;
+			padding:5px;
+			border-bottom:1px solid #ccc;
+			margin-bottom:10px;
+			position:relative;
+		}
 		</style>
-				
+
 		<div id="metadata">
 			
 			<form class="form-stacked" style="padding-left:5px;margin-bottom:2px;">
-			 	<fieldset>
+				<fieldset>
 <!-- 			   		<div class="clearfix">
 						<label for="ptype">Package Type</label> 
 						<select id="ptype">
@@ -135,7 +136,7 @@
 						<label for="cset">Changeset</label> 
 						<select id="cset">
 							<% changesets.each do |c| %>
-								<option><%= c %></option>
+							<option><%= c %></option>
 							<% end %>
 						</select>
 					</div>   			
@@ -143,15 +144,15 @@
 			</form>
 			
 			<script>
-				$("#ptype").change(function() {
-					if (this.value == "Custom") {
-						$("#project_wrapper").show();
-						$("#changesetwrapper").hide();
-					} else {
-						$("#project_wrapper").hide();
-						$("#changesetwrapper").show();
-					}
-				})
+			$("#ptype").change(function() {
+				if (this.value == "Custom") {
+					$("#project_wrapper").show();
+					$("#changesetwrapper").hide();
+				} else {
+					$("#project_wrapper").hide();
+					$("#changesetwrapper").show();
+				}
+			})
 			</script>
 			
 			<div id="project_wrapper">
@@ -160,13 +161,13 @@
 					<input type="text" id="txtFilter" style="width:165px" />
 					<a href="#" id="btnClearFilter" onclick="clearFilter();" class="btn small error" style="visibility:invisible;opacity:0;font-weight:bold;position:relative;top:1px;right:30px;padding:4px 7px 4px;">X</a>
 					<a href="#" id="btnSelectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">all</a>
-                    <a href="#" id="btnDeselectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">none</a>
+					<a href="#" id="btnDeselectAll" class="btn small" style="font-weight:normal;padding:4px 7px 4px;">none</a>
 				</div>
 				
 				<div id="treewrapper">
 					<div id="tree">
 						<ul>
-						
+
 						</ul>												
 					</div>
 					<div id="info"></div>
@@ -174,6 +175,25 @@
 			</div>
 		</div>
 		
+		<div class="content" id="arcade">
+			<ul class="tabs tabs-below">
+				<li class="game"><a href="#game_pacman">Pacman</a></li>
+				<li class="game"><a href="#game_tetris">Tetris</a></li>
+				<li class="game"><a href="#game_donkey">Donkey Kong</a></li>
+			</ul>
+			<div class="pill-content">
+				<div class="active" id="game_pacman">
+					<embed src="http://www.classicgamesarcade.com/games/pacman.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="pacman" class="flash_game"></embed>
+				</div>
+				<div id="game_tetris">
+					<embed src="http://www.classicgamesarcade.com/games/flash-tetris.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="tetris" class="flash_game"></embed>
+				</div>
+				<div id="game_donkey">
+					<embed src="http://www.classicgamesarcade.com/games/donkeykong.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="donkey" class="flash_game"></embed>
+				</div>
+			</div>
+		</div>
+
 		<div id="result">
 			
 		</div>		
@@ -182,89 +202,71 @@
 
 
 <form class="form-stacked" id="action_buttons">
-	<fieldset style="padding-top:0px;">
+	<fieldset style="padding-top:0px;position:relative;">
 		<div class="actions">					
 			<input id="btnDeploy" type="button" class="btn primary" value="Deploy to Server"  onclick='deploy()'>
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 		</div>
+		<img src="<%=ENV['TM_BUNDLE_SUPPORT']%>/resource/images/big_loading.gif" style="position:absolute;top:13px;right:25px;width:36px;display:none;" id="deployment_indicator"/>
 	</fieldset>
 </form> 
 
 <script type="text/javascript">
-	var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
-	var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
+var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
+var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
 
-	document.title = "Deploy To Server";
-	
-	var child_def = {}
-    <%- child_metadata_definition.each do |child| -%>
-    child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
-   	<%- end -%>
+document.title = "Deploy To Server";
 
-	var pw_def = {}
-    <%- connections.each do |c| -%>
-    pw_def['<%= c[:un] %>'] = '<%= c[:pw] %>';
-   	<%- end -%>
-	
-	var surl_def = {}
-    <%- connections.each do |c| -%>
-    surl_def['<%= c[:un] %>'] = '<%= c[:server_url] %>';
-   	<%- end -%>
-		
-	function isValidateOnly() {
-	    if ($("#check_only").is(":checked")) {
-	        return "1";
-	    } else {
-	        return "0";
-	    }
+var child_def = {}
+<%- child_metadata_definition.each do |child| -%>
+child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
+<%- end -%>
+
+var pw_def = {}
+<%- connections.each do |c| -%>
+pw_def['<%= c[:un] %>'] = '<%= c[:pw] %>';
+<%- end -%>
+
+var surl_def = {}
+<%- connections.each do |c| -%>
+surl_def['<%= c[:un] %>'] = '<%= c[:server_url] %>';
+<%- end -%>
+
+function isValidateOnly() {
+	if ($("#check_only").is(":checked")) {
+		return "1";
+	} else {
+		return "0";
 	}
-	
-	function deployMode() {
-		if ($("#set_and_forget").is(":checked")) {
-	        return "async";
-	    } else {
-	        return "";
-	    }
-	}
-		
-	$("#save_changeset").click(function() {
-		if (this.checked) {
-			$("#changeset_name_wrapper").show();			
-		} else {
-			$("#changeset_name_wrapper").hide();
-		}
-	});
-		
-	function resizeWindowAfterResult() {
-		window.resizeTo(800, window.innerHeight);
-		window.moveTo(
-			(screen.width-800)/2,
-			(screen.height-document.getElementById('wrapper').offsetHeight-400)/2
-	    );
-	}
+}
 
-	$(function() {
+function deployMode() {
+	if ($("#set_and_forget").is(":checked")) {
+		return "async";
+	} else {
+		return "";
+	}
+}
 
-	    //if dom elements is removed, we need to resize the window
-		$( "body" ).bind(
-			"DOMNodeInserted",
-			function( event ) {
-				if (event.target.id == "result") {
-					$("#result_tab").click(); 
-				    $(".result_table_class").height($(window).height() - 300)
-					$(window).resize(function() {
-				        $(".result_table_class").height($(window).height() - 300)
-				    });
-				    resizeWindowAfterResult();
-				}
-			}
-		); 
-		
-		// $("#un").val($("#un_list").val());
-		// $("#pw").val(pw_def[this.value]);
-		// $("#server_url").val(surl_def[this.value]);  
-		
+$("#save_changeset").click(function() {
+	if (this.checked) {
+		$("#changeset_name_wrapper").show();			
+	} else {
+		$("#changeset_name_wrapper").hide();
+	}
+});
+
+function resizeWindowAfterResult() {
+	window.resizeTo(800, window.innerHeight);
+	window.moveTo(
+		(screen.width-800)/2,
+		(screen.height-document.getElementById('wrapper').offsetHeight-400)/2
+		);
+}
+
+$(function() {
+ 		
 		$("#check_only").change(function() {
 			if (!this.checked) {
 				$("#btnDeploy").val('Deploy to Server');
@@ -291,26 +293,27 @@
 			$("#un").val($("#un_list").val());
 			$("#pw").val(pw_def[$("#un_list").val()]);
 		}  
-	
+
 		$('.tabs').tabs();
 
-	    $("#project_wrapper").height($(window).height() - 225)
+		$("#project_wrapper").height($(window).height() - 225)
 
-	    var resizeHeight = $("#form").height();
-	    resizeAndCenterWindowByHeight(resizeHeight + 250);
+		var resizeHeight = $("#form").height();
+		resizeAndCenterWindowByHeight(resizeHeight + 250);
 
-	    $(window).resize(function() {
-	        $("#project_wrapper").height($(window).height() - 225)
-	    });
+		$(window).resize(function() {
+			$("#project_wrapper").height($(window).height() - 225)
+			resize_games()
+		});
 
 
-	    $.expr[':'].Contains = function(a, i, m) {
-	        return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
-	    };
+		$.expr[':'].Contains = function(a, i, m) {
+			return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+		};
 
-	    $("#txtFilter")
-	    .change(function() {
-	        var filter = $(this).val(); 
+		$("#txtFilter")
+		.change(function() {
+			var filter = $(this).val(); 
 			//if (filter.length < 3) return false;
 	        // if (filter) {
 	        //     // this finds all links in a list that contain the input,
@@ -324,19 +327,19 @@
 	        // } else {
 	        //     $(".dynatree-node").parent().show();
 	        // }
-    		if (filter) {
-				$("#btnClearFilter").css({opacity: 1.0, visibility: "visible"})
-				expandAll();        	
-				filter_tree(filter);				
-			} else {
-		    	$("#btnClearFilter").css({opacity: 0.0, visibility: "invisible"})
-				clearFilter();
-			}
+	        if (filter) {
+	        	$("#btnClearFilter").css({opacity: 1.0, visibility: "visible"})
+	        	expandAll();        	
+	        	filter_tree(filter);				
+	        } else {
+	        	$("#btnClearFilter").css({opacity: 0.0, visibility: "invisible"})
+	        	clearFilter();
+	        }
 	        return false;
 	    })
-	    .keyup(function() {
+.keyup(function() {
 	        // fire the above change event after every letter	
-			$(this).change();
+	        $(this).change();
 	    });
 		
 		index_org(!has_indexed_metadata);
@@ -344,105 +347,101 @@
 		$("#un_list").chosen();
 	});
 
-	function filter_tree(searchTerm) {
-		var regex = new RegExp(searchTerm,"i");
-		rootNode.visit(function(node) {
-		    if (node.isVisible() && node.data.title) {
-				nodeTitle = node.data.title;
-				if ( nodeTitle.match(regex) ) {
-					node.visitParents(function(node) {
-						$(node.li).show();
-						return (node.parent != null);
-					}, true); 
-					return 'skip';  
-	            } else {
-	                $(node.li).hide();
-	            }
+function filter_tree(searchTerm) {
+	var regex = new RegExp(searchTerm,"i");
+	rootNode.visit(function(node) {
+		if (node.isVisible() && node.data.title) {
+			nodeTitle = node.data.title;
+			if ( nodeTitle.match(regex) ) {
+				node.visitParents(function(node) {
+					$(node.li).show();
+					return (node.parent != null);
+				}, true); 
+				return 'skip';  
+			} else {
+				$(node.li).hide();
 			}
-		});
-	}
-	
-	function expandAll() {
-		$("#tree").dynatree("getRoot").visit(function(node){
-		    node.expand(true);
-		});
-	}
-	
-	function collapseAll() {
-		$("#tree").dynatree("getRoot").visit(function(node){
-		    node.expand(false);
-		});
-	}
-	
-	function clearFilter() {
-		$('#txtFilter').val('');
-		$("#btnClearFilter").css({opacity: 0.0, visibility: "visible"});
-		collapseAll();
-		$(".dynatree-container li").show(); 
-		$('#txtFilter').focus();
-	}
-	
-	$("#btnDeselectAll").click(function(){
-		$("#tree").dynatree("getRoot").visit(function(node){   		
-			if ($(node.li).css('display') != 'none') { 
-				try {
-					if (node.data.level > 1)
-						node.select(false);
-				} catch(e) {
-					node.select(false);   				
-				}
+		}
+	});
+}
+
+function expandAll() {
+	$("#tree").dynatree("getRoot").visit(function(node){
+		node.expand(true);
+	});
+}
+
+function collapseAll() {
+	$("#tree").dynatree("getRoot").visit(function(node){
+		node.expand(false);
+	});
+}
+
+function clearFilter() {
+	$('#txtFilter').val('');
+	$("#btnClearFilter").css({opacity: 0.0, visibility: "visible"});
+	collapseAll();
+	$(".dynatree-container li").show(); 
+	$('#txtFilter').focus();
+}
+
+$("#btnDeselectAll").click(function(){
+	$("#tree").dynatree("getRoot").visit(function(node){   		
+		if ($(node.li).css('display') != 'none') { 
+			try {
+				if (node.data.level > 1)
+					node.select(false);
+			} catch(e) {
+				node.select(false);   				
 			}
-		});
-		return false;
+		}
 	});
-	$("#btnSelectAll").click(function(){
-		$("#tree").dynatree("getRoot").visit(function(node){		   			
-			if ($(node.li).css('display') != 'none') {
-				try {
-					if (node.data.level > 1)
-						node.select(true);
-				} catch(e) {
-					node.select(true);   				
-				}
-			}   		
-		});
-		return false;
+	return false;
+});
+$("#btnSelectAll").click(function(){
+	$("#tree").dynatree("getRoot").visit(function(node){		   			
+		if ($(node.li).css('display') != 'none') {
+			try {
+				if (node.data.level > 1)
+					node.select(true);
+			} catch(e) {
+				node.select(true);   				
+			}
+		}   		
 	});
+	return false;
+});
 
-	var rootNode;
-	
-	function index_org(refresh) {
-		console.log('indexing org')
-		console.log(refresh)
-		$.ajax({
-			type: "GET",
-			url: "http://127.0.0.1:7777/metadata/index", 
-			data: {
-				 mm_current_project_directory: mm_cpd,
-				 do_refresh: refresh
-			},
-			beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.  Thanks for being patient! :)'); },
-			complete: function(data){
-				console.log(data)
-				$("#tree").dynatree("destroy")
-				$("#tree ul").html(data.responseText);
-				$("#tree").dynatree({
-					persist: false,
-					checkbox: true,
-					selectMode: 3
-				});
-				$("#tree").dynatree("getRoot").visit(function(node) {
-	        		node.expand(false);
-	    		});  
-				rootNode = $("#tree").dynatree("getRoot");
-				hideLoading();				
-			} 
-		});
-	}
+var rootNode;
 
-	function refresh_index() {
-		index_org(true);
-	}
+function index_org(refresh) {
+	console.log('indexing org')
+	console.log(refresh)
+	$.ajax({
+		type: "GET",
+		url: "http://127.0.0.1:7777/metadata/index", 
+		data: {
+			mm_current_project_directory: mm_cpd,
+			do_refresh: refresh
+		},
+		beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.  Thanks for being patient! :)'); },
+		complete: function(data){
+			console.log(data)
+			$("#tree").dynatree("destroy")
+			$("#tree ul").html(data.responseText);
+			$("#tree").dynatree({
+				persist: false,
+				checkbox: true,
+				selectMode: 3
+			});
+			$("#tree").dynatree("getRoot").visit(function(node) {
+				node.expand(false);
+			});  
+			rootNode = $("#tree").dynatree("getRoot");
+			hideLoading();				
+		} 
+	});
+}
 
 	function get_target_json() {
 		var targets = $("#un_list").val();
@@ -470,12 +469,30 @@
 			    tree: get_tree(),
 			    mm_current_project_directory: mm_cpd
 			},
-			beforeSend: function() { showLoading('Deploying to Salesforce.com'); },
+			beforeSend: function() { showElement("deployment_indicator"); $("#btnDeploy").hide()  },
 			complete: function(data){
 				console.log(data)
 				$("#result").html(data.responseText);
-				hideLoading();
+
+				hideElement("deployment_indicator");
+				$("#btnDeploy").show();
+
+				$(".result_table_class").height($(window).height() - 300)
+				$(window).resize(function() {
+			        $(".result_table_class").height($(window).height() - 300)
+			    });
+
+				if ($("#arcade").css("display") == "none") {
+					$("#result_tab").click();
+				    resizeWindowAfterResult();
+				}
 			} 
 	 	});
-	} 		 						
+	} 
+
+function refresh_index() {
+	index_org(true);
+}
+
+
 </script>

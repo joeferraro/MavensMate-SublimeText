@@ -28,6 +28,10 @@
 	         		{
 	         			"caption": "Compile Project",
 	         			"command": "compile_project"
+	         		},
+	         		{
+	         			"caption": "Deployment Connections",
+	         			"command": "org_connections"
 	         		}
 	         	]
 	     	},

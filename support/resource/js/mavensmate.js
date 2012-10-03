@@ -34,22 +34,22 @@ function resizeAndCenterWindow() {
 
 //window resizer and mover
 function resizeAndCenterWindowByHeight(height) {
-   	window.resizeTo(325, height+160);
+   	window.resizeTo(385, height+160);
 	try {
 		$("#deploy_output").height(height);
 	} catch(e) { }	
-	window.moveTo((screen.width-325)/2,(screen.height-document.getElementById('wrapper').offsetHeight-400)/2);
+	window.moveTo((screen.width-385)/2,(screen.height-document.getElementById('wrapper').offsetHeight-400)/2);
 }
 
 function resizeWindow() {
-   	window.resizeTo(325, document.getElementById('wrapper').offsetHeight+72);
+   	window.resizeTo(385, document.getElementById('wrapper').offsetHeight+72);
 	try {
 		$("#deploy_output").height(document.getElementById('wrapper').offsetHeight);
 	} catch(e) { } 
 }
 
 function centerWindow() {
-	window.moveTo((screen.width-325)/2,(screen.height-document.getElementById('wrapper').offsetHeight-400)/2);
+	window.moveTo((screen.width-385)/2,(screen.height-document.getElementById('wrapper').offsetHeight-400)/2);
 }   
 
 //if dom elements is removed, we need to resize the window
@@ -175,4 +175,9 @@ function setUpAjaxErrorHandling() {
         },
         timeout: 3600000
     });
+}
+
+function resize_games() {
+	$(".flash_game").css("width", $(window).width() - 20)
+	$(".flash_game").css("height", $(window).height() - 225)
 }

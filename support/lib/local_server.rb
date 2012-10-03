@@ -55,6 +55,7 @@ module MavensMate
           server.mount('/metadata/index', MetadataIndexServlet)
           server.mount('/deploy', DeployServlet)
           server.mount('/execute', ExecuteApexServlet)
+          server.mount('/connections', OrgConnectionServlet)
           server.start  
         end
       
@@ -243,26 +244,62 @@ module MavensMate
           def do_POST(req, resp)    
             begin
               resp['Content-Type'] = 'html'
+              response = ''
               ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
-              params = {}
-              params[:un]           = req.query["un"]
-              params[:pw]           = req.query["pw"]
-              params[:server_url]   = req.query["server_url"]
-              params[:package]      = eval(req.query["tree"])
-              params[:check_only]   = req.query["check_only"]
-              params[:package_type] = "Custom"
-              deploy_result = MavensMate.deploy_to_server(params)
-              html = nil
-              begin
-                result = MavensMate::Util.parse_deploy_response(deploy_result)
-                ac = ApplicationController.new
-                html = ac.render_to_string "deploy/_deploy_result", :locals => { :result => result, :is_check_only => params[:check_only] }
-              rescue
-                html = '<div id="error_message" class="alert-message error"><p><strong>Deployment Failed!</strong></p><p>'+deploy_result[:message]+'</p></div> '
+              targets = JSON.parse(req.query["targets"].to_s)
+              connections = []
+              deploy_targets = []
+              pconfig = MavensMate.get_project_config
+              pconfig['org_connections'].each do |connection| 
+                pw = KeyChain::find_internet_password("#{pconfig['project_name']}-mm-#{connection['username']}")
+                server_url = connection["environment"] == "production" ? "https://www.salesforce.com" : "https://test.salesforce.com" 
+                connections.push({
+                  :un => connection["username"], 
+                  :pw => pw,
+                  :server_url => server_url,
+                  :type => connection["environment"]
+                })
               end
-              resp.body = html
+
+              targets.each do |t|
+                un = t["username"]
+                type = t["type"]
+                c = connections.detect { |c| c[:un] == un and c[:type] == type }
+                deploy_targets.push(c)
+              end
+
+              Thread.abort_on_exception = true
+              threads = []
+              tree = eval(req.query["tree"].to_s)
+              is_check_only = req.query["check_only"]
+
+              deploy_targets.each do |t|
+                threads << Thread.new {
+                  params = {}
+                  params[:un]            = t[:un]
+                  params[:pw]            = t[:pw]
+                  params[:endpoint_type] = t[:type]
+                  params[:package]       = tree
+                  params[:check_only]    = is_check_only
+                  params[:package_type]  = "Custom"
+                  deploy_result = MavensMate.deploy_to_server(params)
+                  html = nil
+                  begin
+                    result = MavensMate::Util.parse_deploy_response(deploy_result)
+                    ac = ApplicationController.new
+                    html = ac.render_to_string "deploy/_deploy_result", :locals => { :result => result, :is_check_only => params[:check_only], :target_username => t[:un] }
+                  rescue
+                    html = '<div id="error_message" class="alert-message error"><p><strong>Deployment Failed!</strong></p><p>'+deploy_result[:message]+'</p></div> '
+                  end
+                  response << html
+                }
+              end
+              threads.each { |t|  t.join }
+              ac = ApplicationController.new
+              html_payload = ac.render_to_string "deploy/_deploy_target_tabs", :locals => { :deploy_result_html => response, :targets => deploy_targets }
+              resp.body = html_payload
             rescue Exception => e
-              result = '<div id="error_message" class="alert-message error"><p><strong>Deployment Failed!</strong></p><p>'+e.message+'</p></div> '
+              result = '<div id="error_message" class="alert-message error"><p><strong>Deployment Failed!</strong></p><p>'+e.message + e.backtrace.join("\n")+'</p></div> '
               resp.body = result
             end
           end
@@ -325,6 +362,90 @@ module MavensMate
             rescue Exception => e
               puts e.message
               resp.body = e.message.to_json
+            end
+          end
+        end
+
+        class OrgConnectionServlet < WEBrick::HTTPServlet::AbstractServlet
+          def do_POST(req, resp)  
+            begin
+              un = req.query["un"].to_s
+              pw = req.query["pw"].to_s
+              server_url = req.query["server_url"].to_s
+              client = MavensMate::Client.new({ 
+                :username => req.query["un"], 
+                :password => req.query["pw"], 
+                :endpoint => req.query["server_url"], 
+                :override_session => true
+              })
+              project_directory = req.query["pd"].to_s
+              ENV['MM_CURRENT_PROJECT_DIRECTORY'] = project_directory
+              environment = MavensMate::Util.get_endpoint_type_by_short_url(server_url)
+              require 'yaml'
+              yml = YAML::load(File.open("#{project_directory}/config/settings.yaml")) 
+              project_name = yml['project_name']      
+              connections = []
+              if yml["org_connections"]
+                connections = yml["org_connections"]
+                keychain_name = project_name + "-mm-"
+                %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U}         
+                connections.push({ "username" => un, "environment" => environment })
+              else
+                %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U} 
+                yml["org_connections"] = [{ "username" => un, "environment" => environment }]
+                connections.push({ "username" => un, "environment" => environment })
+              end 
+              File.open("#{project_directory}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) }
+              resp['Content-Type'] = 'json'
+              ac = ApplicationController.new
+              connections = MavensMate.get_org_connections 
+              html = ac.render_to_string "org_connection/_connections", :locals => { :connections => connections }
+              result = {
+                :success  => true,
+                :message => html
+              }
+              resp.body = result.to_json
+            rescue Exception => e
+              html = '<div id="error_message" class="alert-message error"><p><strong>Error!</strong></p><p>'+e.message+'</p></div> '
+              result = {
+                :success  => false,
+                :message => html
+              }
+              resp.body = result.to_json
+            end
+          end
+
+          def do_DELETE(req, resp) 
+            begin
+              un = req.query["un"].to_s
+              require 'yaml'
+              project_directory = req.query["pd"].to_s
+              ENV['MM_CURRENT_PROJECT_DIRECTORY'] = project_directory
+              yml = YAML::load(File.open("#{project_directory}/config/settings.yaml")) 
+              project_name = yml['project_name']      
+              conns = nil
+              if yml["org_connections"]
+                conns = yml["org_connections"]
+                conns.delete_if{|conn| conn["username"] == un }
+                yml["org_connections"] = conns
+              end
+              File.open("#{project_directory}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) } 
+              resp['Content-Type'] = 'json'
+              ac = ApplicationController.new
+              connections = MavensMate.get_org_connections 
+              html = ac.render_to_string "org_connection/_connections", :locals => { :connections => connections }
+              result = {
+                :success  => true,
+                :message => html
+              }
+              resp.body = result.to_json
+            rescue Exception => e
+              html = '<div id="error_message" class="alert-message error"><p><strong>Error!</strong></p><p>'+e.message+'</p></div> '
+              result = {
+                :success  => false,
+                :message => html
+              }
+              resp.body = result.to_json 
             end
           end
         end

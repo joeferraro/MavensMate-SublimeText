@@ -21,7 +21,8 @@ class DeployController < ApplicationController
         connections.push({
           :un => connection["username"], 
           :pw => pw,
-          :server_url => server_url
+          :server_url => server_url,
+          :type => connection["environment"]
         })
       end 
     rescue Exception => e
