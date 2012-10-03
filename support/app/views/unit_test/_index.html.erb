@@ -207,13 +207,13 @@ table.code td {
 				</ul>
 				<div class="pill-content">
 					<div class="active" id="game_pacman">
-						<embed class="" src="http://www.classicgamesarcade.com/games/pacman.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="pacman"></embed>
+						<embed class="flash_game" src="http://www.classicgamesarcade.com/games/pacman.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="pacman"></embed>
 					</div>
 					<div id="game_tetris">
-						<embed src="http://www.classicgamesarcade.com/games/flash-tetris.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="tetris"></embed>
+						<embed src="http://www.classicgamesarcade.com/games/flash-tetris.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="tetris" class="flash_game"></embed>
 					</div>
 					<div id="game_donkey">
-						<embed src="http://www.classicgamesarcade.com/games/donkeykong.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="donkey"></embed>
+						<embed src="http://www.classicgamesarcade.com/games/donkeykong.swf" width="100%" height="75%" autostart="true" loop="false" controller="true" id="donkey" class="flash_game"></embed>
 					</div>
 				</div>
 			</div>
@@ -317,11 +317,6 @@ function resize_test_container_sizes() {
 	$(".ms-list").css("height", $(".ms-selectable").height()-40)
 }
 
-function resize_pacman() {
-	$("#pacman").css("width", $(window).width() - 12)
-	$("#pacman").css("height", $(window).height() - 175)
-}
-
 $(function(){
 	$('#tests').multiSelect({
 		selectableHeader : '<div class="alert-message block-message-custom" style="padding: 7px 12px !important;border:none;border-bottom:1px solid #ccc;margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;"><p style="float:left;"><strong>Available Tests</strong></p><p style="float:right;"><a style="color:#0069D6;" href="javascript:void(0);" onclick="$(\'#tests\').multiSelect(\'select_all\');">Select All</a></p><div style="clear:both;"></div></div>',
@@ -373,7 +368,7 @@ $(window).resize(function() {
 	$("#warnings_coverage_wrapper").height($(window).height() - 175)
 	$("#log_coverage_wrapper").height($(window).height() - 175)
 	resize_test_container_sizes()  
-	resize_pacman()
+	resize_games()
 });
 
 $("#category").change(function() {
