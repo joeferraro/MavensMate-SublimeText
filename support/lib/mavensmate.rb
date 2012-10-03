@@ -505,7 +505,7 @@ module MavensMate
   #deploys project metadata to a salesforce.com server
   def self.deploy_to_server(params)
     begin
-      endpoint = MavensMate::Util.get_sfdc_endpoint(params[:server_url])
+      endpoint = MavensMate::Util.get_sfdc_endpoint_by_type(params[:endpoint_type])
       tmp_dir = MavensMate::FileFactory.put_tmp_directory
       client = MavensMate::Client.new
       if params[:package_type] == "Custom"
@@ -525,8 +525,8 @@ module MavensMate
       return result
     rescue Exception => e
       MavensMate::FileFactory.remove_directory(tmp_dir)
-      #result = { :success => false, :message => e.message + "\n" + e.backtrace.join("\n") }
-      result = { :success => false, :message => e.message }
+      result = { :success => false, :message => e.message + "\n" + e.backtrace.join("\n") }
+      #result = { :success => false, :message => e.message }
       return result
     end
   end
@@ -809,6 +809,22 @@ module MavensMate
   def self.get_project_folder
     project_folder = ENV['MM_WORKSPACE']
   	project_folder +='/' unless project_folder.end_with?("/")
+  end
+
+  def self.get_org_connections
+    connections = []
+    begin
+      pconfig = MavensMate.get_project_config
+      pconfig['org_connections'].each do |connection| 
+        pw = KeyChain::find_internet_password("#{pconfig['project_name']}-mm-#{connection['name']}")
+        connections.push({
+          :un => connection["username"], 
+          :pw => pw
+        })
+      end 
+    rescue      
+    end
+    return connections
   end
   
   private
