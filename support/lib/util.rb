@@ -19,6 +19,12 @@ module MavensMate
         "prerelease" => PRERELEASE_ENDPOINT_SHORT
       }
 
+      SHORT_URL_ENDPOINTS_TO_TYPE = {
+        PRODUCTION_ENDPOINT_SHORT => "production",
+        SANDBOX_ENDPOINT_SHORT    => "sandbox",
+        PRERELEASE_ENDPOINT_SHORT => "prerelease"
+      }
+
       ENDPOINTS = {
         "production" => PRODUCTION_ENDPOINT,
         "sandbox"    => SANDBOX_ENDPOINT,
@@ -68,6 +74,10 @@ module MavensMate
 
       def get_short_sfdc_endpoint_by_type(type)
         return SHORT_ENDPOINTS[type]
+      end
+
+      def get_endpoint_type_by_short_url(endpoint)
+        return SHORT_URL_ENDPOINTS_TO_TYPE[endpoint]
       end
 
       def get_sfdc_endpoint(url)
