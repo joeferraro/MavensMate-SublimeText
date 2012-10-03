@@ -186,7 +186,12 @@ module MavensMate
   	  threads << Thread.new {      
         Dir.mkdir(project_folder) unless File.exists?(project_folder)
     		if vc_type == "Git"
-    		  %x{git clone '#{vc_url}' -b '#{vc_branch}' '#{project_folder}#{project_name}'}
+    		  if(vc_branch.downcase == 'head')
+            %x{git clone '#{vc_url}' '#{project_folder}#{project_name}'} 
+          else
+            branchname = vc_branch.split('/').last
+            %x{git clone '#{vc_url}' -b '#{branchname}' '#{project_folder}#{project_name}'}
+          end
     		elsif vc_type == "SVN"
       		Dir.mkdir("#{project_folder}#{project_name}") unless File.exists?("#{project_folder}#{project_name}")
       		Dir.chdir("#{project_folder}")
