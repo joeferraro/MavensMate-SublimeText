@@ -191,7 +191,7 @@
 					 where: "<%= ENV['MM_WORKSPACE'] %>",
 					 action: "checkout"
 				},
-				beforeSend: function() { showLoading('Checking project our from source control'); },
+				beforeSend: function() { showLoading('Checking project out from source control'); },
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
