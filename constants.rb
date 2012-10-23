@@ -1,5 +1,7 @@
 module Constants
 	ROOT = File.dirname(__FILE__)
+  SUBLIME_PACKAGES_ROOT = File.dirname(ROOT)
+  SUBLIME_USER_ROOT = SUBLIME_PACKAGES_ROOT + "/User"
 	SUPPORT = ROOT + "/support"
 	LIB_ROOT = SUPPORT + "/lib"
  	TMVC_ROOT = SUPPORT + "/tmvc"

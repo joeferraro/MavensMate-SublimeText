@@ -1,6 +1,14 @@
 module MetadataHelper
   
-  MM_API_VERSION = ENV['MM_API_VERSION'] || "25.0" 
+  require 'json'
+  begin
+    mm_default_config = JSON.parse(File.read("#{ROOT}/mavensmate.sublime-settings"))
+    mm_user_config = JSON.parse(File.read("#{SUBLIME_USER_ROOT}/mavensmate.sublime-settings"))
+  rescue
+    #TODO
+  end
+
+  MM_API_VERSION = mm_user_config['mm_api_version'] || mm_default_config['mm_api_version'] || ENV['MM_API_VERSION'] || "26.0" 
   CORE_METADATA_TYPES = [ "ApexClass", "ApexComponent", "ApexPage", "ApexTrigger", "StaticResource" ]  
   META_DICTIONARY = eval(File.read("#{SUPPORT}/conf/metadata_dictionary"))
   CHILD_META_DICTIONARY = eval(File.read("#{SUPPORT}/conf/metadata_children_dictionary"))

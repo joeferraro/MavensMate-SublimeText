@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 
-<!--
-Salesforce.com Partner Web Services API Version 22.0
-Generated on 2011-10-01 16:28:19 +0000.
 
-Copyright 1999-2011 salesforce.com, inc.
+<!--
+Salesforce.com Partner Web Services API Version 26.0
+Generated on 2012-10-23 13:48:51 +0000.
+
+Copyright 1999-2012 salesforce.com, inc.
 All Rights Reserved
 -->
 
@@ -177,6 +178,7 @@ All Rights Reserved
                     <enumeration value="BCC_NOT_ALLOWED_IF_BCC_COMPLIANCE_ENABLED"/>
                     <enumeration value="CANNOT_CASCADE_PRODUCT_ACTIVE"/>
                     <enumeration value="CANNOT_CHANGE_FIELD_TYPE_OF_APEX_REFERENCED_FIELD"/>
+                    <enumeration value="CANNOT_CHANGE_FIELD_TYPE_OF_REFERENCED_FIELD"/>
                     <enumeration value="CANNOT_CREATE_ANOTHER_MANAGED_PACKAGE"/>
                     <enumeration value="CANNOT_DEACTIVATE_DIVISION"/>
                     <enumeration value="CANNOT_DELETE_LAST_DATED_CONVERSION_RATE"/>
@@ -187,6 +189,8 @@ All Rights Reserved
                     <enumeration value="CANNOT_MODIFY_MANAGED_OBJECT"/>
                     <enumeration value="CANNOT_RENAME_APEX_REFERENCED_FIELD"/>
                     <enumeration value="CANNOT_RENAME_APEX_REFERENCED_OBJECT"/>
+                    <enumeration value="CANNOT_RENAME_REFERENCED_FIELD"/>
+                    <enumeration value="CANNOT_RENAME_REFERENCED_OBJECT"/>
                     <enumeration value="CANNOT_REPARENT_RECORD"/>
                     <enumeration value="CANNOT_UPDATE_CONVERTED_LEAD"/>
                     <enumeration value="CANT_DISABLE_CORP_CURRENCY"/>
@@ -201,6 +205,7 @@ All Rights Reserved
                     <enumeration value="CUSTOM_LINK_LIMIT_EXCEEDED"/>
                     <enumeration value="CUSTOM_TAB_LIMIT_EXCEEDED"/>
                     <enumeration value="DELETE_FAILED"/>
+                    <enumeration value="DELETE_OPERATION_TOO_LARGE"/>
                     <enumeration value="DELETE_REQUIRED_ON_CASCADE"/>
                     <enumeration value="DEPENDENCY_EXISTS"/>
                     <enumeration value="DUPLICATE_CASE_SOLUTION"/>
@@ -219,6 +224,7 @@ All Rights Reserved
                     <enumeration value="ENTITY_IS_ARCHIVED"/>
                     <enumeration value="ENTITY_IS_DELETED"/>
                     <enumeration value="ENTITY_IS_LOCKED"/>
+                    <enumeration value="ENVIRONMENT_HUB_MEMBERSHIP_CONFLICT"/>
                     <enumeration value="ERROR_IN_MAILER"/>
                     <enumeration value="FAILED_ACTIVATION"/>
                     <enumeration value="FIELD_CUSTOM_VALIDATION_EXCEPTION"/>
@@ -259,8 +265,10 @@ All Rights Reserved
                     <enumeration value="INVALID_OPERATION"/>
                     <enumeration value="INVALID_OPERATOR"/>
                     <enumeration value="INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST"/>
+                    <enumeration value="INVALID_PACKAGE_VERSION"/>
                     <enumeration value="INVALID_PARTNER_NETWORK_STATUS"/>
                     <enumeration value="INVALID_PERSON_ACCOUNT_OPERATION"/>
+                    <enumeration value="INVALID_QUERY_LOCATOR"/>
                     <enumeration value="INVALID_READ_ONLY_USER_DML"/>
                     <enumeration value="INVALID_SAVE_AS_ACTIVITY_FLAG"/>
                     <enumeration value="INVALID_SESSION_ID"/>
@@ -307,6 +315,7 @@ All Rights Reserved
                     <enumeration value="PORTAL_NO_ACCESS"/>
                     <enumeration value="PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT"/>
                     <enumeration value="PRIVATE_CONTACT_ON_ASSET"/>
+                    <enumeration value="QUERY_TIMEOUT"/>
                     <enumeration value="RECORD_IN_USE_BY_WORKFLOW"/>
                     <enumeration value="REQUEST_RUNNING_TOO_LONG"/>
                     <enumeration value="REQUIRED_FEATURE_MISSING"/>
@@ -549,6 +558,7 @@ All Rights Reserved
                     <element name="deprecatedAndHidden" type="xsd:boolean"/>
                     <element name="field"            type="xsd:string"/>
                     <element name="relationshipName" type="xsd:string" minOccurs="0"/>
+                    <element name="restrictedDelete" type="xsd:boolean" minOccurs="0"/>
                 </sequence>
             </complexType>
 
@@ -583,6 +593,7 @@ All Rights Reserved
                     <enumeration value="email"/>
                     <enumeration value="encryptedstring"/>
                     <enumeration value="datacategorygroupreference"/>
+                    <enumeration value="location"/>
                     <enumeration value="anyType"/> <!-- can be string, picklist, reference, boolean, currency, int, double, percent, id, date, datetime, url, email -->
                 </restriction>
             </simpleType>
@@ -604,44 +615,48 @@ All Rights Reserved
 
             <complexType name="Field">
                 <sequence>
-                    <element name="autoNumber"         type="xsd:boolean"/>
-                    <element name="byteLength"         type="xsd:int"/>
-                    <element name="calculated"         type="xsd:boolean"/>
-                    <element name="calculatedFormula"  type="xsd:string" minOccurs="0"/>
-                    <element name="caseSensitive"      type="xsd:boolean"/>
-                    <element name="controllerName"     type="xsd:string" minOccurs="0"/>
-                    <element name="createable"         type="xsd:boolean"/>
-                    <element name="custom"             type="xsd:boolean"/>
-                    <element name="defaultValueFormula" type="xsd:string" minOccurs="0"/>
-                    <element name="defaultedOnCreate"  type="xsd:boolean"/>
-                    <element name="dependentPicklist"  type="xsd:boolean" minOccurs="0"/>
-                    <element name="deprecatedAndHidden" type="xsd:boolean"/>
-                    <element name="digits"             type="xsd:int"/>
-                    <element name="externalId"         type="xsd:boolean" minOccurs="0"/>
-                    <element name="filterable"         type="xsd:boolean"/>
-                    <element name="groupable"          type="xsd:boolean"/>
-                    <element name="htmlFormatted"      type="xsd:boolean" minOccurs="0"/>
-                    <element name="idLookup"           type="xsd:boolean"/>
-                    <element name="inlineHelpText"     type="xsd:string" minOccurs="0"/>
-                    <element name="label"              type="xsd:string"/>
-                    <element name="length"             type="xsd:int"/>
-                    <element name="name"               type="xsd:string"/>
-                    <element name="nameField"          type="xsd:boolean"/>
-                    <element name="namePointing"       type="xsd:boolean" minOccurs="0"/>
-                    <element name="nillable"           type="xsd:boolean"/>
-                    <element name="picklistValues"     type="tns:PicklistEntry" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-                    <element name="precision"          type="xsd:int"/>
-                    <element name="referenceTo"        type="xsd:string" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-                    <element name="relationshipName"   type="xsd:string" minOccurs="0"/>
-                    <element name="relationshipOrder"  type="xsd:int" minOccurs="0"/>
-                    <element name="restrictedPicklist" type="xsd:boolean"/>
-                    <element name="scale"              type="xsd:int"/>
-                    <element name="soapType"           type="tns:soapType"/>
-                    <element name="sortable"           type="xsd:boolean" minOccurs="0"/>
-                    <element name="type"               type="tns:fieldType"/>
-                    <element name="unique"             type="xsd:boolean"/>
-                    <element name="updateable"         type="xsd:boolean"/>
-                    <element name="writeRequiresMasterRead" type="xsd:boolean" minOccurs="0"/>
+                    <element name="autoNumber"                 type="xsd:boolean"/>
+                    <element name="byteLength"                 type="xsd:int"/>
+                    <element name="calculated"                 type="xsd:boolean"/>
+                    <element name="calculatedFormula"          type="xsd:string" minOccurs="0"/>
+                    <element name="cascadeDelete"              type="xsd:boolean" minOccurs="0"/>
+                    <element name="caseSensitive"              type="xsd:boolean"/>
+                    <element name="controllerName"             type="xsd:string" minOccurs="0"/>
+                    <element name="createable"                 type="xsd:boolean"/>
+                    <element name="custom"                     type="xsd:boolean"/>
+                    <element name="defaultValueFormula"        type="xsd:string" minOccurs="0"/>
+                    <element name="defaultedOnCreate"          type="xsd:boolean"/>
+                    <element name="dependentPicklist"          type="xsd:boolean" minOccurs="0"/>
+                    <element name="deprecatedAndHidden"        type="xsd:boolean"/>
+                    <element name="digits"                     type="xsd:int"/>
+                    <element name="displayLocationInDecimal"   type="xsd:boolean" minOccurs="0"/>
+                    <element name="externalId"                 type="xsd:boolean" minOccurs="0"/>
+                    <element name="filterable"                 type="xsd:boolean"/>
+                    <element name="groupable"                  type="xsd:boolean"/>
+                    <element name="htmlFormatted"              type="xsd:boolean" minOccurs="0"/>
+                    <element name="idLookup"                   type="xsd:boolean"/>
+                    <element name="inlineHelpText"             type="xsd:string" minOccurs="0"/>
+                    <element name="label"                      type="xsd:string"/>
+                    <element name="length"                     type="xsd:int"/>
+                    <element name="name"                       type="xsd:string"/>
+                    <element name="nameField"                  type="xsd:boolean"/>
+                    <element name="namePointing"               type="xsd:boolean" minOccurs="0"/>
+                    <element name="nillable"                   type="xsd:boolean"/>
+                    <element name="permissionable"             type="xsd:boolean"/>
+                    <element name="picklistValues"             type="tns:PicklistEntry" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+                    <element name="precision"                  type="xsd:int"/>
+                    <element name="referenceTo"                type="xsd:string" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+                    <element name="relationshipName"           type="xsd:string" minOccurs="0"/>
+                    <element name="relationshipOrder"          type="xsd:int" minOccurs="0"/>
+                    <element name="restrictedDelete"           type="xsd:boolean" minOccurs="0"/>
+                    <element name="restrictedPicklist"         type="xsd:boolean"/>
+                    <element name="scale"                      type="xsd:int"/>
+                    <element name="soapType"                   type="tns:soapType"/>
+                    <element name="sortable"                   type="xsd:boolean" minOccurs="0"/>
+                    <element name="type"                       type="tns:fieldType"/>
+                    <element name="unique"                     type="xsd:boolean"/>
+                    <element name="updateable"                 type="xsd:boolean"/>
+                    <element name="writeRequiresMasterRead"    type="xsd:boolean" minOccurs="0"/>
                 </sequence>
             </complexType>
 
@@ -948,6 +963,15 @@ All Rights Reserved
 
 
 
+
+            <complexType name="DescribeSearchScopeOrderResult">
+                <sequence>
+                    <element name="keyPrefix"       type="xsd:string" />
+                    <element name="name"            type="xsd:string"/>
+                </sequence>
+            </complexType>
+
+
             <complexType name="DescribeTabSetResult">
                 <sequence>
                     <element name="label"           type="xsd:string" />
@@ -1096,6 +1120,22 @@ All Rights Reserved
             </element>
 
 
+
+
+            <element name="describeSearchScopeOrder">
+                <complexType>
+                    <sequence/>
+                </complexType>
+            </element>
+            <element name="describeSearchScopeOrderResponse">
+                <complexType>
+                    <sequence>
+                        <element name="result" type="tns:DescribeSearchScopeOrderResult" minOccurs="0" maxOccurs="unbounded"/>
+                    </sequence>
+                </complexType>
+            </element>
+
+
             <element name="describeTabs">
                 <complexType>
                     <sequence/>
@@ -1136,6 +1176,22 @@ All Rights Reserved
                 </complexType>
             </element>
             <element name="sendEmailResponse">
+                <complexType>
+                    <sequence>
+                        <element name="result" minOccurs="0" maxOccurs="10" type="tns:SendEmailResult"/>
+                    </sequence>
+                </complexType>
+            </element>
+
+            <!-- Send Email Message Types -->
+            <element name="sendEmailMessage">
+                <complexType>
+                    <sequence>
+                        <element name="ids" type="tns:ID" minOccurs="0" maxOccurs="10"/>
+                    </sequence>
+                </complexType>
+            </element>
+            <element name="sendEmailMessageResponse">
                 <complexType>
                     <sequence>
                         <element name="result" minOccurs="0" maxOccurs="10" type="tns:SendEmailResult"/>
@@ -1581,6 +1637,14 @@ All Rights Reserved
 
 
 
+            <element name="StreamingEnabledHeader">
+                <complexType>
+                    <sequence>
+                        <element name="streamingEnabled" type="xsd:boolean" />
+                    </sequence>
+                </complexType>
+            </element>
+
 
 
         <element name="AllOrNoneHeader">
@@ -1644,8 +1708,11 @@ All Rights Reserved
 
             <simpleType name="ExceptionCode">
                 <restriction base="xsd:string">
+                    <enumeration value="APEX_TRIGGER_COUPLING_LIMIT"/>
                     <enumeration value="API_CURRENTLY_DISABLED"/>
                     <enumeration value="API_DISABLED_FOR_ORG"/>
+                    <enumeration value="ARGUMENT_OBJECT_PARSE_ERROR"/>
+                    <enumeration value="CANNOT_DELETE_OWNER"/>
                     <enumeration value="CANT_ADD_STANDADRD_PORTAL_USER_TO_TERRITORY"/>
                     <enumeration value="CANT_ADD_STANDARD_PORTAL_USER_TO_TERRITORY"/>
                     <enumeration value="CIRCULAR_OBJECT_GRAPH"/>
@@ -1653,20 +1720,30 @@ All Rights Reserved
                     <enumeration value="CLIENT_REQUIRE_UPDATE_FOR_USER"/>
                     <enumeration value="CUSTOM_METADATA_LIMIT_EXCEEDED"/>
                     <enumeration value="DATACLOUD_API_CLIENT_EXCEPTION"/>
+                    <enumeration value="DATACLOUD_API_SERVER_BUSY_EXCEPTION"/>
                     <enumeration value="DATACLOUD_API_SERVER_EXCEPTION"/>
                     <enumeration value="DATACLOUD_API_UNAVAILABLE"/>
+                    <enumeration value="DUPLICATE_ARGUMENT_VALUE"/>
                     <enumeration value="DUPLICATE_VALUE"/>
                     <enumeration value="EMAIL_BATCH_SIZE_LIMIT_EXCEEDED"/>
                     <enumeration value="EMAIL_TO_CASE_INVALID_ROUTING"/>
                     <enumeration value="EMAIL_TO_CASE_LIMIT_EXCEEDED"/>
                     <enumeration value="EMAIL_TO_CASE_NOT_ENABLED"/>
+                    <enumeration value="ENVIRONMENT_HUB_MEMBERSHIP_CONFLICT"/>
                     <enumeration value="EXCEEDED_ID_LIMIT"/>
                     <enumeration value="EXCEEDED_LEAD_CONVERT_LIMIT"/>
                     <enumeration value="EXCEEDED_MAX_SIZE_REQUEST"/>
                     <enumeration value="EXCEEDED_MAX_TYPES_LIMIT"/>
                     <enumeration value="EXCEEDED_QUOTA"/>
+                    <enumeration value="EXTERNAL_OBJECT_AUTHENTICATION_EXCEPTION"/>
+                    <enumeration value="EXTERNAL_OBJECT_CONNECTION_EXCEPTION"/>
+                    <enumeration value="EXTERNAL_OBJECT_EXCEPTION"/>
+                    <enumeration value="EXTERNAL_OBJECT_UNSUPPORTED_EXCEPTION"/>
+                    <enumeration value="FEDERATED_SEARCH_ERROR"/>
+                    <enumeration value="FEED_NOT_ENABLED_FOR_OBJECT"/>
                     <enumeration value="FUNCTIONALITY_NOT_ENABLED"/>
                     <enumeration value="FUNCTIONALITY_TEMPORARILY_UNAVAILABLE"/>
+                    <enumeration value="ILLEGAL_QUERY_PARAMETER_VALUE"/>
                     <enumeration value="INACTIVE_OWNER_OR_USER"/>
                     <enumeration value="INACTIVE_PORTAL"/>
                     <enumeration value="INSUFFICIENT_ACCESS"/>
@@ -1678,12 +1755,15 @@ All Rights Reserved
                     <enumeration value="INVALID_FILTER_LANGUAGE"/>
                     <enumeration value="INVALID_FILTER_VALUE"/>
                     <enumeration value="INVALID_ID_FIELD"/>
+                    <enumeration value="INVALID_INPUT_COMBINATION"/>
                     <enumeration value="INVALID_LOCALE_LANGUAGE"/>
                     <enumeration value="INVALID_LOCATOR"/>
                     <enumeration value="INVALID_LOGIN"/>
+                    <enumeration value="INVALID_MULTIPART_REQUEST"/>
                     <enumeration value="INVALID_NEW_PASSWORD"/>
                     <enumeration value="INVALID_OPERATION"/>
                     <enumeration value="INVALID_OPERATION_WITH_EXPIRED_PASSWORD"/>
+                    <enumeration value="INVALID_PAGING_OPTION"/>
                     <enumeration value="INVALID_QUERY_FILTER_OPERATOR"/>
                     <enumeration value="INVALID_QUERY_LOCATOR"/>
                     <enumeration value="INVALID_QUERY_SCOPE"/>
@@ -1692,12 +1772,14 @@ All Rights Reserved
                     <enumeration value="INVALID_SEARCH_SCOPE"/>
                     <enumeration value="INVALID_SESSION_ID"/>
                     <enumeration value="INVALID_SOAP_HEADER"/>
+                    <enumeration value="INVALID_SORT_OPTION"/>
                     <enumeration value="INVALID_SSO_GATEWAY_URL"/>
                     <enumeration value="INVALID_TYPE"/>
                     <enumeration value="INVALID_TYPE_FOR_OPERATION"/>
                     <enumeration value="JIGSAW_IMPORT_LIMIT_EXCEEDED"/>
                     <enumeration value="JIGSAW_REQUEST_NOT_SUPPORTED"/>
                     <enumeration value="JSON_PARSER_ERROR"/>
+                    <enumeration value="LICENSING_UNKNOWN_ERROR"/>
                     <enumeration value="LIMIT_EXCEEDED"/>
                     <enumeration value="LOGIN_CHALLENGE_ISSUED"/>
                     <enumeration value="LOGIN_CHALLENGE_PENDING"/>
@@ -1718,6 +1800,7 @@ All Rights Reserved
                     <enumeration value="ORG_NOT_OWNED_BY_INSTANCE"/>
                     <enumeration value="PASSWORD_LOCKOUT"/>
                     <enumeration value="PORTAL_NO_ACCESS"/>
+                    <enumeration value="POST_BODY_PARSE_ERROR"/>
                     <enumeration value="QUERY_TIMEOUT"/>
                     <enumeration value="QUERY_TOO_COMPLICATED"/>
                     <enumeration value="REQUEST_LIMIT_EXCEEDED"/>
@@ -1728,9 +1811,12 @@ All Rights Reserved
                     <enumeration value="SOCIALCRM_FEEDSERVICE_API_UNAVAILABLE"/>
                     <enumeration value="SSO_SERVICE_DOWN"/>
                     <enumeration value="TOO_MANY_APEX_REQUESTS"/>
+                    <enumeration value="TOO_MANY_RECIPIENTS"/>
                     <enumeration value="TRIAL_EXPIRED"/>
+                    <enumeration value="UNKNOWN_ATTACHMENT_EXCEPTION"/>
                     <enumeration value="UNKNOWN_EXCEPTION"/>
                     <enumeration value="UNSUPPORTED_API_VERSION"/>
+                    <enumeration value="UNSUPPORTED_ATTACHMENT_ENCODING"/>
                     <enumeration value="UNSUPPORTED_CLIENT"/>
                     <enumeration value="UNSUPPORTED_MEDIA_TYPE"/>
                     <enumeration value="XML_PARSER_ERROR"/>
@@ -1739,8 +1825,11 @@ All Rights Reserved
             <!-- For convenience these QNames are returned in the standard soap faultcode element -->
             <simpleType name="FaultCode">
                 <restriction base="xsd:QName">
+                    <enumeration value="fns:APEX_TRIGGER_COUPLING_LIMIT"/>
                     <enumeration value="fns:API_CURRENTLY_DISABLED"/>
                     <enumeration value="fns:API_DISABLED_FOR_ORG"/>
+                    <enumeration value="fns:ARGUMENT_OBJECT_PARSE_ERROR"/>
+                    <enumeration value="fns:CANNOT_DELETE_OWNER"/>
                     <enumeration value="fns:CANT_ADD_STANDADRD_PORTAL_USER_TO_TERRITORY"/>
                     <enumeration value="fns:CANT_ADD_STANDARD_PORTAL_USER_TO_TERRITORY"/>
                     <enumeration value="fns:CIRCULAR_OBJECT_GRAPH"/>
@@ -1748,20 +1837,30 @@ All Rights Reserved
                     <enumeration value="fns:CLIENT_REQUIRE_UPDATE_FOR_USER"/>
                     <enumeration value="fns:CUSTOM_METADATA_LIMIT_EXCEEDED"/>
                     <enumeration value="fns:DATACLOUD_API_CLIENT_EXCEPTION"/>
+                    <enumeration value="fns:DATACLOUD_API_SERVER_BUSY_EXCEPTION"/>
                     <enumeration value="fns:DATACLOUD_API_SERVER_EXCEPTION"/>
                     <enumeration value="fns:DATACLOUD_API_UNAVAILABLE"/>
+                    <enumeration value="fns:DUPLICATE_ARGUMENT_VALUE"/>
                     <enumeration value="fns:DUPLICATE_VALUE"/>
                     <enumeration value="fns:EMAIL_BATCH_SIZE_LIMIT_EXCEEDED"/>
                     <enumeration value="fns:EMAIL_TO_CASE_INVALID_ROUTING"/>
                     <enumeration value="fns:EMAIL_TO_CASE_LIMIT_EXCEEDED"/>
                     <enumeration value="fns:EMAIL_TO_CASE_NOT_ENABLED"/>
+                    <enumeration value="fns:ENVIRONMENT_HUB_MEMBERSHIP_CONFLICT"/>
                     <enumeration value="fns:EXCEEDED_ID_LIMIT"/>
                     <enumeration value="fns:EXCEEDED_LEAD_CONVERT_LIMIT"/>
                     <enumeration value="fns:EXCEEDED_MAX_SIZE_REQUEST"/>
                     <enumeration value="fns:EXCEEDED_MAX_TYPES_LIMIT"/>
                     <enumeration value="fns:EXCEEDED_QUOTA"/>
+                    <enumeration value="fns:EXTERNAL_OBJECT_AUTHENTICATION_EXCEPTION"/>
+                    <enumeration value="fns:EXTERNAL_OBJECT_CONNECTION_EXCEPTION"/>
+                    <enumeration value="fns:EXTERNAL_OBJECT_EXCEPTION"/>
+                    <enumeration value="fns:EXTERNAL_OBJECT_UNSUPPORTED_EXCEPTION"/>
+                    <enumeration value="fns:FEDERATED_SEARCH_ERROR"/>
+                    <enumeration value="fns:FEED_NOT_ENABLED_FOR_OBJECT"/>
                     <enumeration value="fns:FUNCTIONALITY_NOT_ENABLED"/>
                     <enumeration value="fns:FUNCTIONALITY_TEMPORARILY_UNAVAILABLE"/>
+                    <enumeration value="fns:ILLEGAL_QUERY_PARAMETER_VALUE"/>
                     <enumeration value="fns:INACTIVE_OWNER_OR_USER"/>
                     <enumeration value="fns:INACTIVE_PORTAL"/>
                     <enumeration value="fns:INSUFFICIENT_ACCESS"/>
@@ -1773,12 +1872,15 @@ All Rights Reserved
                     <enumeration value="fns:INVALID_FILTER_LANGUAGE"/>
                     <enumeration value="fns:INVALID_FILTER_VALUE"/>
                     <enumeration value="fns:INVALID_ID_FIELD"/>
+                    <enumeration value="fns:INVALID_INPUT_COMBINATION"/>
                     <enumeration value="fns:INVALID_LOCALE_LANGUAGE"/>
                     <enumeration value="fns:INVALID_LOCATOR"/>
                     <enumeration value="fns:INVALID_LOGIN"/>
+                    <enumeration value="fns:INVALID_MULTIPART_REQUEST"/>
                     <enumeration value="fns:INVALID_NEW_PASSWORD"/>
                     <enumeration value="fns:INVALID_OPERATION"/>
                     <enumeration value="fns:INVALID_OPERATION_WITH_EXPIRED_PASSWORD"/>
+                    <enumeration value="fns:INVALID_PAGING_OPTION"/>
                     <enumeration value="fns:INVALID_QUERY_FILTER_OPERATOR"/>
                     <enumeration value="fns:INVALID_QUERY_LOCATOR"/>
                     <enumeration value="fns:INVALID_QUERY_SCOPE"/>
@@ -1787,12 +1889,14 @@ All Rights Reserved
                     <enumeration value="fns:INVALID_SEARCH_SCOPE"/>
                     <enumeration value="fns:INVALID_SESSION_ID"/>
                     <enumeration value="fns:INVALID_SOAP_HEADER"/>
+                    <enumeration value="fns:INVALID_SORT_OPTION"/>
                     <enumeration value="fns:INVALID_SSO_GATEWAY_URL"/>
                     <enumeration value="fns:INVALID_TYPE"/>
                     <enumeration value="fns:INVALID_TYPE_FOR_OPERATION"/>
                     <enumeration value="fns:JIGSAW_IMPORT_LIMIT_EXCEEDED"/>
                     <enumeration value="fns:JIGSAW_REQUEST_NOT_SUPPORTED"/>
                     <enumeration value="fns:JSON_PARSER_ERROR"/>
+                    <enumeration value="fns:LICENSING_UNKNOWN_ERROR"/>
                     <enumeration value="fns:LIMIT_EXCEEDED"/>
                     <enumeration value="fns:LOGIN_CHALLENGE_ISSUED"/>
                     <enumeration value="fns:LOGIN_CHALLENGE_PENDING"/>
@@ -1813,6 +1917,7 @@ All Rights Reserved
                     <enumeration value="fns:ORG_NOT_OWNED_BY_INSTANCE"/>
                     <enumeration value="fns:PASSWORD_LOCKOUT"/>
                     <enumeration value="fns:PORTAL_NO_ACCESS"/>
+                    <enumeration value="fns:POST_BODY_PARSE_ERROR"/>
                     <enumeration value="fns:QUERY_TIMEOUT"/>
                     <enumeration value="fns:QUERY_TOO_COMPLICATED"/>
                     <enumeration value="fns:REQUEST_LIMIT_EXCEEDED"/>
@@ -1823,9 +1928,12 @@ All Rights Reserved
                     <enumeration value="fns:SOCIALCRM_FEEDSERVICE_API_UNAVAILABLE"/>
                     <enumeration value="fns:SSO_SERVICE_DOWN"/>
                     <enumeration value="fns:TOO_MANY_APEX_REQUESTS"/>
+                    <enumeration value="fns:TOO_MANY_RECIPIENTS"/>
                     <enumeration value="fns:TRIAL_EXPIRED"/>
+                    <enumeration value="fns:UNKNOWN_ATTACHMENT_EXCEPTION"/>
                     <enumeration value="fns:UNKNOWN_EXCEPTION"/>
                     <enumeration value="fns:UNSUPPORTED_API_VERSION"/>
+                    <enumeration value="fns:UNSUPPORTED_ATTACHMENT_ENCODING"/>
                     <enumeration value="fns:UNSUPPORTED_CLIENT"/>
                     <enumeration value="fns:UNSUPPORTED_MEDIA_TYPE"/>
                     <enumeration value="fns:XML_PARSER_ERROR"/>
@@ -1939,6 +2047,8 @@ All Rights Reserved
         <part element="tns:DisableFeedTrackingHeader"    name="DisableFeedTrackingHeader"/>
 
 
+        <part element="tns:StreamingEnabledHeader"       name="StreamingEnabledHeader"/>
+
         <part element="tns:MruHeader"                    name="MruHeader"/>
         <part element="tns:EmailHeader"                  name="EmailHeader"/>
 
@@ -2040,6 +2150,13 @@ All Rights Reserved
     </message>
     <message name="describeSoftphoneLayoutResponse">
         <part element="tns:describeSoftphoneLayoutResponse" name="parameters"/>
+    </message>
+
+    <message name="describeSearchScopeOrderRequest">
+        <part element="tns:describeSearchScopeOrder" name="parameters"/>
+    </message>
+    <message name="describeSearchScopeOrderResponse">
+        <part element="tns:describeSearchScopeOrderResponse" name="parameters"/>
     </message>
 
     <message name="describeTabsRequest">
@@ -2203,6 +2320,13 @@ All Rights Reserved
         <part element="tns:getUserInfoResponse" name="parameters"/>
     </message>
 
+    <message name="sendEmailMessageRequest">
+        <part element="tns:sendEmailMessage" name="parameters"/>
+    </message>
+    <message name="sendEmailMessageResponse">
+        <part element="tns:sendEmailMessageResponse" name="parameters"/>
+    </message>
+
     <message name="sendEmailRequest">
         <part element="tns:sendEmail" name="parameters"/>
     </message>
@@ -2276,6 +2400,12 @@ All Rights Reserved
             <input  message="tns:describeSoftphoneLayoutRequest"/>
             <output message="tns:describeSoftphoneLayoutResponse"/>
             <fault  message="tns:UnexpectedErrorFault" name="UnexpectedErrorFault"/>
+        </operation>
+
+        <operation name="describeSearchScopeOrder">
+            <documentation>Describe a list of objects representing the order and scope of objects on a users search result page</documentation>
+            <input  message="tns:describeSearchScopeOrderRequest"/>
+            <output message="tns:describeSearchScopeOrderResponse"/>
         </operation>
 
         <operation name="describeTabs">
@@ -2433,6 +2563,7 @@ All Rights Reserved
             <fault  message="tns:InvalidQueryLocatorFault" name="InvalidQueryLocatorFault"/>
             <fault  message="tns:UnexpectedErrorFault" name="UnexpectedErrorFault"/>
             <fault  message="tns:InvalidFieldFault" name="InvalidFieldFault"/>
+            <fault  message="tns:MalformedQueryFault" name="MalformedQueryFault"/>
         </operation>
 
         <operation name="search">
@@ -2473,6 +2604,13 @@ All Rights Reserved
             <documentation>Returns standard information relevant to the current user</documentation>
             <input  message="tns:getUserInfoRequest"/>
             <output message="tns:getUserInfoResponse"/>
+            <fault  message="tns:UnexpectedErrorFault" name="UnexpectedErrorFault"/>
+        </operation>
+
+        <operation name="sendEmailMessage">
+            <documentation>Send existing draft EmailMessage</documentation>
+            <input  message="tns:sendEmailMessageRequest"/>
+            <output message="tns:sendEmailMessageResponse"/>
             <fault  message="tns:UnexpectedErrorFault" name="UnexpectedErrorFault"/>
         </operation>
 
@@ -2567,6 +2705,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="SessionHeader"/>
                 <soap:header use="literal" message="tns:Header" part="CallOptions"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
+                <soap:header use="literal" message="tns:Header" part="LocaleOptions"/>
                 <soap:body parts="parameters" use="literal"/>
             </input>
             <output>
@@ -2585,6 +2724,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="SessionHeader"/>
                 <soap:header use="literal" message="tns:Header" part="CallOptions"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
+                <soap:header use="literal" message="tns:Header" part="LocaleOptions"/>
                 <soap:body parts="parameters" use="literal"/>
             </input>
             <output>
@@ -2633,6 +2773,18 @@ All Rights Reserved
                 <soap:fault name="UnexpectedErrorFault" use="literal"/>
             </fault>
         </operation>
+        <operation name="describeSearchScopeOrder">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:header use="literal" message="tns:Header" part="SessionHeader"/>
+                <soap:header use="literal" message="tns:Header" part="CallOptions"/>
+                <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
+                <soap:body parts="parameters" use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
         <operation name="describeTabs">
             <soap:operation soapAction=""/>
             <input>
@@ -2657,6 +2809,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="MruHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllOrNoneHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
@@ -2689,6 +2842,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="MruHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllOrNoneHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
@@ -2721,6 +2875,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="MruHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllOrNoneHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
@@ -2753,6 +2908,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="MruHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
                 <soap:header use="literal" message="tns:Header" part="EmailHeader"/>
@@ -2785,6 +2941,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="EmailHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllOrNoneHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:body parts="parameters" use="literal"/>
@@ -2804,6 +2961,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="CallOptions"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="AllOrNoneHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
@@ -2867,6 +3025,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="CallOptions"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
                 <soap:body parts="parameters" use="literal"/>
@@ -2889,6 +3048,7 @@ All Rights Reserved
                 <soap:header use="literal" message="tns:Header" part="CallOptions"/>
                 <soap:header use="literal" message="tns:Header" part="AllowFieldTruncationHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DisableFeedTrackingHeader"/>
+                <soap:header use="literal" message="tns:Header" part="StreamingEnabledHeader"/>
                 <soap:header use="literal" message="tns:Header" part="DebuggingHeader"/>
                 <soap:header use="literal" message="tns:Header" part="PackageVersionHeader"/>
                 <soap:body parts="parameters" use="literal"/>
@@ -3045,6 +3205,9 @@ All Rights Reserved
             <fault name="InvalidFieldFault">
                 <soap:fault name="InvalidFieldFault" use="literal"/>
             </fault>
+            <fault name="MalformedQueryFault">
+                <soap:fault name="MalformedQueryFault" use="literal"/>
+            </fault>
         </operation>
         <operation name="search">
             <soap:operation soapAction=""/>
@@ -3136,6 +3299,20 @@ All Rights Reserved
                 <soap:fault name="UnexpectedErrorFault" use="literal"/>
             </fault>
         </operation>
+        <operation name="sendEmailMessage">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:header use="literal" message="tns:Header" part="SessionHeader"/>
+                <soap:header use="literal" message="tns:Header" part="CallOptions"/>
+                <soap:body parts="parameters" use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="UnexpectedErrorFault">
+                <soap:fault name="UnexpectedErrorFault" use="literal"/>
+            </fault>
+        </operation>
         <operation name="sendEmail">
             <soap:operation soapAction=""/>
             <input>
@@ -3157,8 +3334,7 @@ All Rights Reserved
     <service name="SforceService">
         <documentation>Sforce SOAP API</documentation>
         <port binding="tns:SoapBinding" name="Soap">
-            <soap:address location="https://login.salesforce.com/services/Soap/u/22.0"/>
+            <soap:address location="https://login.salesforce.com/services/Soap/u/26.0"/>
         </port>
     </service>
 </definitions>
-
