@@ -50,5 +50,9 @@
   {
     "caption": "MavensMate: Deployment Connections",          
     "command": "org_connections"
-  }
+  },
+  {
+    "caption": "MavensMate: Open Project",          
+    "command": "open_project"
+  } 
 ]
