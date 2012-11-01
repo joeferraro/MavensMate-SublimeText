@@ -116,6 +116,50 @@ class MarkLinesCommand(sublime_plugin.WindowCommand):
         #mark_lines(self, None)
         clear_marked_lines()
 
+class OpenProjectCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        open_projects = []
+        try:
+            for w in sublime.windows():
+                if len(w.folders()) == 0:
+                    continue;
+                root = w.folders()[0]
+                if mm_workspace() not in root:
+                    continue
+                project_name = root.split("/")[-1]
+                open_projects.append(project_name)
+        except:
+            print 'ok'
+
+        import os
+        self.dir_map = {}
+        dirs = []
+        for dirname in os.listdir(mm_workspace()):
+            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
+            if dirname in open_projects : continue
+            sublime_project_file = dirname+'.sublime-project'
+            for project_content in os.listdir(mm_workspace()+"/"+dirname):
+                if '.' not in project_content: continue
+                if project_content == '.sublime-project':
+                    sublime_project_file = '.sublime-project'
+                    continue
+            dirs.append(dirname)
+            self.dir_map[dirname] = [dirname, sublime_project_file]
+        self.results = dirs
+        self.window.show_quick_panel(dirs, self.panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        self.picked_project = self.results[picked]
+        print 'opening project: ' + self.picked_project
+        project_file = self.dir_map[self.picked_project][1]
+        if os.path.isfile(mm_workspace()+"/"+self.picked_project+"/"+project_file):
+            p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        else:
+            sublime.message_dialog("Cannot find: "+mm_workspace()+"/"+self.picked_project+"/"+project_file)
+
 #launches the org connections UI
 class OrgConnectionsCommand(sublime_plugin.ApplicationCommand):
     def run(command):
