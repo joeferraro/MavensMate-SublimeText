@@ -19,8 +19,13 @@ module OS
   end
 end
 
-@install_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages/MavensMate")
-@user_settings_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages/User")
+if (OS.mac?) then
+  @install_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages/MavensMate")
+  @user_settings_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages/User")
+elsif (OS.linux?) then
+  @install_path = File.expand_path("~/.config/sublime-text-2/Packages/MavensMate")
+  @user_settings_path = File.expand_path("~/.config/sublime-text-2/Packages/User")
+end
 
 def install_package
   `git clone git://github.com/joeferraro/MavensMate-SublimeText.git '#{@install_path}'`
@@ -58,7 +63,9 @@ def install
     install_package
     install_user_settings
   elsif OS.linux?
-		#future functionality
+    %x{pip install gkeyring}
+    install_package
+    install_user_settings
 	end
 end
 

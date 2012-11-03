@@ -1,6 +1,7 @@
 # encoding: utf-8
 require ENV['TM_BUNDLE_SUPPORT'] + '/lib/mavensmate.rb'
 require ENV['TM_BUNDLE_SUPPORT'] + '/lib/factory.rb'
+require ENV['TM_BUNDLE_SUPPORT'] + '/lib/keychain.rb'
 require ENV['TM_BUNDLE_SUPPORT'] + '/lib/metadata_helper.rb'
 require ENV['TM_BUNDLE_SUPPORT'] + '/lib/object.rb'
 require ENV['TM_BUNDLE_SUPPORT'] + '/lib/util.rb'
@@ -31,11 +32,10 @@ class OrgConnectionController < ApplicationController
       project_name = yml['project_name']      
       if yml["org_connections"]
         connections = yml["org_connections"]
-        keychain_name = project_name + "-mm-"
-        %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U}         
+        KeyChain::add_generic_password("#{project_name}-mm-#{un}", "#{project_name}-mm-#{un}", pw)
         connections.push({ "username" => un, "environment" => environment })
       else
-        %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U} 
+        KeyChain::add_generic_password("#{project_name}-mm-#{un}", "#{project_name}-mm-#{un}", pw)
         yml["org_connections"] = [{ "username" => un, "environment" => environment }]
       end 
       File.open("#{ENV['TM_PROJECT_DIRECTORY']}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) }

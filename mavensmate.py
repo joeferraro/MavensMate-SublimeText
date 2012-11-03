@@ -32,6 +32,14 @@ def get_ruby():
 
 ruby = get_ruby()
 
+def get_doxygen():
+    doxygen = "doxygen"
+    if subprocess.call("which doxygen", shell=True) != 0:
+        doxygen = './doxygen'
+    return doxygen
+
+doxygen = get_doxygen()
+
 def start_local_server():
     cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.start'"
     os.system(cmd)
@@ -44,7 +52,7 @@ def generate_ui(ruby_script, args):
     p = subprocess.Popen(ruby+" '"+mm_dir+"/commands/"+ruby_script+".rb' "+args+"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     if p.stdout is not None : 
         msg = p.stdout.readlines()
-    temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
+    temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm", suffix=".html")
     try:
         temp.write('\n'.join(msg))
     finally:
@@ -52,12 +60,18 @@ def generate_ui(ruby_script, args):
     return temp.name
 
 def launch_mavens_mate_window(temp_file_name):
-    os.system("open '"+mm_dir+"/bin/MavensMate.app' --args -url '"+temp_file_name+"'")
+    if (sys.platform.startswith('darwin')):
+        os.system("open '"+mm_dir+"/bin/MavensMate.app' --args -url '"+temp_file_name+"'")
+    else:
+        os.system("chrome --app='file://%s'" % temp_file_name)
+
     time.sleep(1) 
     os.remove(temp_file_name) #<= we may want to move this delete call to the binary
 
 def kill_mavens_mate_window():
-    os.system("killAll MavensMate")
+    if (sys.platform.startswith('darwin')):
+        os.system("killAll MavensMate")
+    # else: TODO
     
 def get_active_file():
     return sublime.active_window().active_view().file_name()
@@ -769,7 +783,7 @@ class ExecuteDoxygen(threading.Thread):
         threading.Thread.__init__(self)   
 
     def run(self):
-        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ./doxygen -'
+        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ' + doxygen + ' -'
         print command
         os.chdir(mm_dir + "/bin")
         os.system(command)

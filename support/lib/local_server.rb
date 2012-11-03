@@ -3,8 +3,10 @@ require 'rubygems'
 require 'json'
 require File.dirname(File.dirname(File.dirname(__FILE__))) + "/constants.rb"
 include Constants
+require File.dirname(__FILE__) + '/keychain.rb'
 require File.dirname(__FILE__) + '/lsof.rb'
 require File.dirname(__FILE__) + '/object.rb'
+require File.dirname(__FILE__) + '/os.rb'
 require File.dirname(__FILE__) + '/mavensmate.rb'
 require 'webrick'
 include WEBrick
@@ -73,6 +75,7 @@ module MavensMate
             begin
               ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
               resp['Content-Type'] = 'json'
+              resp['Access-Control-Allow-Origin'] = "*"
               options = {
                 :level => req.query["level"],
                 :category => req.query["category"],
@@ -96,6 +99,7 @@ module MavensMate
             require SUPPORT + "/environment.rb"
             require File.dirname(File.dirname(File.dirname(__FILE__))) + "/support/tmvc/lib/application_controller.rb"
             resp['Content-Type'] = 'html'
+            resp['Access-Control-Allow-Origin'] = "*"
             test_result = {}
             debug_options = {
               :level => req.query["level"],
@@ -142,6 +146,7 @@ module MavensMate
                 Encoding.default_internal = Encoding::UTF_8
               end
               resp['Content-Type'] = 'html'
+              resp['Access-Control-Allow-Origin'] = "*"
               ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
               mode = req.query["mode"] || ""
               do_refresh = req.query["do_refresh"]
@@ -231,6 +236,7 @@ module MavensMate
               resp.body = html
             rescue Exception => e
                 resp['Content-Type'] = 'json'
+                resp['Access-Control-Allow-Origin'] = "*"
                 result = {
                   :success  => false, 
                   :message  => e.message + "\n\n" + e.backtrace.join("\n")
@@ -244,6 +250,7 @@ module MavensMate
           def do_POST(req, resp)    
             begin
               resp['Content-Type'] = 'html'
+              resp['Access-Control-Allow-Origin'] = "*"
               response = ''
               ENV["MM_CURRENT_PROJECT_DIRECTORY"] = req.query["mm_current_project_directory"]
               targets = JSON.parse(req.query["targets"].to_s)
@@ -317,8 +324,12 @@ module MavensMate
               ENV["MM_WORKSPACE"]         = req.query["where"]
               result = MavensMate.new_project_from_existing_directory(params)
               if result[:success] == true
-                `killAll MavensMate` 
-                #`'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
+                if OS.mac? then
+                  `killAll MavensMate` 
+                  # `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
+                elsif OS.linux? || OS.windows? then
+                  %x{subl --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'}
+                end
               else
                 resp.body = result.to_json
               end
@@ -353,9 +364,13 @@ module MavensMate
                 result = MavensMate.new_project(params)
               end           
               if result[:success]
-                `killAll MavensMate` 
-                #`~/bin/subl --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/.sublime-project'` if result[:success]
-                `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
+                if OS.mac? then
+                  # `killAll MavensMate` 
+                  #`~/bin/subl --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/.sublime-project'` if result[:success]
+                  `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
+                elsif OS.linux? || OS.windows? then
+                  %x{subl --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'}
+                end
               else
                 resp.body = result.to_json
               end
@@ -388,15 +403,16 @@ module MavensMate
               if yml["org_connections"]
                 connections = yml["org_connections"]
                 keychain_name = project_name + "-mm-"
-                %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U}         
+                KeyChain::add_generic_password("#{project_name}-mm-#{un}", "#{project_name}-mm-#{un}", pw)
                 connections.push({ "username" => un, "environment" => environment })
               else
-                %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U} 
+                KeyChain::add_generic_password("#{project_name}-mm-#{un}", "#{project_name}-mm-#{un}", pw)
                 yml["org_connections"] = [{ "username" => un, "environment" => environment }]
                 connections.push({ "username" => un, "environment" => environment })
               end 
               File.open("#{project_directory}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) }
               resp['Content-Type'] = 'json'
+              resp['Access-Control-Allow-Origin'] = "*"
               ac = ApplicationController.new
               connections = MavensMate.get_org_connections 
               html = ac.render_to_string "org_connection/_connections", :locals => { :connections => connections }
@@ -431,6 +447,7 @@ module MavensMate
               end
               File.open("#{project_directory}/config/settings.yaml", 'w') { |f| YAML.dump(yml, f) } 
               resp['Content-Type'] = 'json'
+              resp['Access-Control-Allow-Origin'] = "*"
               ac = ApplicationController.new
               connections = MavensMate.get_org_connections 
               html = ac.render_to_string "org_connection/_connections", :locals => { :connections => connections }
@@ -456,7 +473,9 @@ module MavensMate
               tree = eval(req.query["tree"])  
               result = MavensMate.clean_project({ :update_sobjects => false, :update_package => true, :package => tree, :force_return => true })
               if result[:success] == true
-                `killAll MavensMate` 
+                if OS.mac? then
+                  `killAll MavensMate`
+                end
               end
               resp.body = result.to_json
             rescue Exception => e
