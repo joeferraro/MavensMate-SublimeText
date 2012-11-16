@@ -12,6 +12,7 @@ module MetadataHelper
   CORE_METADATA_TYPES = [ "ApexClass", "ApexComponent", "ApexPage", "ApexTrigger", "StaticResource" ]  
   META_DICTIONARY = eval(File.read("#{SUPPORT}/conf/metadata_dictionary"))
   CHILD_META_DICTIONARY = eval(File.read("#{SUPPORT}/conf/metadata_children_dictionary"))
+  MM_TIMEOUT = mm_user_config['mm_timeout'] || mm_default_config['mm_timeout'] || ENV['MM_TIMEOUT'] || 3600
   
   META_LABEL_MAP = { 
     "ApexClass" => "Apex Class", 
