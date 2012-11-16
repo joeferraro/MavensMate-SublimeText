@@ -380,14 +380,8 @@ module MavensMate
               result = MavensMate.new_project_from_existing_directory(params)
               if result[:success] == true
                 project_file = File.join(ENV['MM_WORKSPACE'], params[:pn], params[:pn]+".sublime-project")
-                if OS.mac? then
-                  `killAll MavensMate` 
-                  # `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
-                elsif OS.linux? then
-                  %x{subl --project '#{project_file}'}
-                elsif OS.windows? then
-                  %x{sublime_text.exe --project #{project_file}}
-                end
+                `killAll MavensMate` 
+                # `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
               else
                 body = result.to_json
               end
@@ -543,16 +537,15 @@ module MavensMate
               tree = eval(req["tree"])  
               result = MavensMate.clean_project({ :update_sobjects => false, :update_package => true, :package => tree, :force_return => true })
               if result[:success] == true
-                if OS.mac? then
-                  `killAll MavensMate`
-                end
+                `killAll MavensMate`
               end
               
               body = result.to_json
             rescue Exception => e
               puts e.message + e.backtrace.join("\n")
               body = e.message.to_json + e.backtrace.join("\n")
-            end        
+            end  
+            MavensMate::LocalServerThin.respond("", 'text/json')
           end
         end
 
