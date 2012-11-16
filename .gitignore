@@ -16,3 +16,7 @@ support/lib/test_helper.rb
 support/lib/.DS_Store
 
 apex_reserved.pyc
+
+support/lib/test_packages.rb
+
+bin/.DS_Store

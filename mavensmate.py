@@ -23,6 +23,7 @@ mm_dir = os.getcwdu()
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
+local_server = settings.get('mm_local_server', 1)
 
 def get_ruby():
     ruby = "ruby"    
@@ -33,11 +34,17 @@ def get_ruby():
 ruby = get_ruby()
 
 def start_local_server():
-    cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.start'"
+    if local_server == "thin":
+        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.start'"
+    else:
+        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.start'"
     os.system(cmd)
 
 def stop_local_server():
-    cmd_b = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.stop'"
+    if local_server == "thin":
+        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.stop'"
+    else:
+        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.stop'"
     os.system(cmd)
 
 def generate_ui(ruby_script, args):
