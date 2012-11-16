@@ -643,8 +643,11 @@ module MavensMate
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/partner.xml", __FILE__)
           http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
           http.auth.ssl.verify_mode = :none
+          http.headers = { "Accept-Encoding" => "gzip, deflate", "Connection" => "Keep-Alive" }
+          http.read_timeout = MM_TIMEOUT
+          http.open_timeout = MM_TIMEOUT
         end
-        client.wsdl.endpoint = self.endpoint        
+        client.wsdl.endpoint = self.endpoint   
         return client
       end
       
@@ -654,6 +657,9 @@ module MavensMate
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/metadata.xml", __FILE__)
           http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
           http.auth.ssl.verify_mode = :none
+          http.headers = { "Accept-Encoding" => "gzip, deflate", "Connection" => "Keep-Alive" }
+          http.read_timeout = MM_TIMEOUT
+          http.open_timeout = MM_TIMEOUT
         end
         client.wsdl.endpoint = self.metadata_server_url
         return client
@@ -665,6 +671,9 @@ module MavensMate
           wsdl.document = File.expand_path(ENV['TM_BUNDLE_SUPPORT']+"/wsdl/apex.xml", __FILE__)
           http.proxy = ENV["http_proxy"] if ENV["http_proxy"]
           http.auth.ssl.verify_mode = :none
+          http.headers = { "Accept-Encoding" => "gzip, deflate", "Connection" => "Keep-Alive" }
+          http.read_timeout = MM_TIMEOUT
+          http.open_timeout = MM_TIMEOUT
         end
         client.wsdl.endpoint = self.metadata_server_url.gsub(/\/m\//, "/s/")
         return client
