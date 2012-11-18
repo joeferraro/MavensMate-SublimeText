@@ -13,12 +13,12 @@
 <div class="content">
 	
 	<ul class="tabs">
-		<li><a id="project_details_tab" href="#form">Project Details</a></li>
-		<li class="active"><a href="#metadata">Project Metadata</a></li>
+		<li class="active"><a id="project_details_tab" href="#form">Project Details</a></li>
+		<li><a href="#metadata">Project Metadata</a></li>
 	</ul>
 	
 	<div class="pill-content">  
-		<div id="form">
+		<div id="form" class="active">
 			<form class="form-stacked">
 				<fieldset>
 					<div class="clearfix">
@@ -47,7 +47,7 @@
 				</fieldset>
 			</form>
 		</div>
-		<div id="metadata" class="active">
+		<div id="metadata">
 			<div id="project_wrapper">
 		<div id="treewrapper" style="height:100%">
 			<div id="tree">
@@ -65,7 +65,9 @@
 <form class="form-stacked" id="action_buttons">
 	<fieldset style="padding-top:0px;">
 		<div class="actions">					
-			<input type="button" id="btnSubmit" class="btn primary" value="Update Project Metadata"  onclick="updateProject();">
+			<input type="button" id="btnSubmit" class="btn primary" value="Update Project"  onclick="updateProject();">
+			&nbsp;
+			<button type="button" class="btn success" value="Refresh Metadata" onclick="index_org(true);">Refresh Metadata</button>
 			&nbsp;
 			<button type="reset" class="btn" onclick="window.close();">Cancel</button>
 		</div>
@@ -76,7 +78,7 @@
 	<script type="text/javascript">
 		var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
 		var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
-
+		var operation;
 		var child_def = {}
         <% child_metadata_definition.each do |child| %>
         	child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
@@ -84,6 +86,7 @@
 		
 		function updateProjectCreds() {
 			console.log('updating project creds')
+			operation = "update_creds"
 			$.ajax({
 				type: "GET",
 				url: "http://127.0.0.1:7777/auth", 
@@ -99,22 +102,14 @@
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
-					if (response["success"] == false) {
-						$("#error_message").html(response["message"])
-						$(".alert-message.success").hide()
-						$(".alert-message.error").show()
-					} else {
-						$("#success_message").html(response["message"])
-						$(".alert-message.error").hide()
-						$(".alert-message.success").show()
-					}
-					hideLoading();				
+					check_status(response["id"])				
 				} 
 			});
 		}
 
 		function updateProject() {
 			console.log('updating project')
+			operation = "update"
 			$.ajax({
 				type: "POST",
 				url: "http://127.0.0.1:7777/project/edit", 
@@ -125,14 +120,7 @@
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
-					if (response["success"] == false) {
-						$("#error_message").html(response["message"])
-						$(".alert-message.error").show()
-					} else {
-						$("#success_message").html("OK!")
-						$(".alert-message.success").show()
-					}
-					hideLoading();				
+					check_status(response["id"])
 				} 
 			});
 		}
@@ -140,6 +128,7 @@
 		function index_org(refresh) {
 			console.log('indexing org')
 			console.log(refresh)
+			operation = "index"
 			$.ajax({
 				type: "GET",
 				url: "http://127.0.0.1:7777/metadata/index", 
@@ -148,11 +137,23 @@
 					 do_refresh: refresh,
 					 mode: "edit"
 				},
-				beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.  Thanks for being patient! :)'); },
-				complete: function(data){
+				beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.<br/><br/>Thanks for being patient! :)'); },
+				complete: function(data, status, xhr){
 					console.log(data)
+					var response = JSON.parse(data.responseText)
+					check_status(response["id"])				
+				} 
+			});
+		}
+
+		function handle_response(response) {
+			if (operation == "index") {
+				if (response["success"] == false) {
+					$("#error_message").html(response["message"])
+					$(".alert-message.error").show()
+				} else {
 					$("#tree").dynatree("destroy")
-					$("#tree ul").html(data.responseText);
+					$("#tree ul").html(response["body"]);
 					$("#tree").dynatree({
 						persist: false,
 						checkbox: true,
@@ -162,9 +163,29 @@
 		        		node.expand(false);
 		    		});  
 					rootNode = $("#tree").dynatree("getRoot");
-					hideLoading();				
-				} 
-			});
+				}
+				hideLoading();
+			} else if (operation == "update") {
+				if (response["success"] == false) {
+					$("#error_message").html(response["message"])
+					$(".alert-message.error").show()
+				} else {
+					$("#success_message").html("OK!")
+					$(".alert-message.success").show()
+				}
+				hideLoading();
+			} else if (operation == "update_creds") {
+				if (response["success"] == false) {
+					$("#error_message").html(response["body"] + "<a class=\"close\" href=\"#\">×</a>")
+					$(".alert-message.success").hide()
+					$(".alert-message.error").show()
+				} else {
+					$("#success_message").html(response["body"] + "<a class=\"close\" href=\"#\">×</a>")
+					$(".alert-message.error").hide()
+					$(".alert-message.success").show()
+				}
+				hideLoading();
+			}
 		}
 			
 		$(function() {		   
@@ -207,5 +228,5 @@
 
 			index_org(!has_indexed_metadata);
 		});	
-	
+
 	</script>

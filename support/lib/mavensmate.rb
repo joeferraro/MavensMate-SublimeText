@@ -143,9 +143,9 @@ module MavensMate
     rescue Exception => e
       FileUtils.rm_rf("#{project_folder}#{project_name}")
       #return { :success => false, :message => e.message + "\n\n" + e.backtrace.join("\n"), :project_name => project_name }
-      return { :success => false, :message => e.message, :project_name => project_name }
+      return { :success => false, :body => e.message, :project_name => project_name, :body_type => "text" }
     end
-    return { :success => true, :message => "", :project_name => project_name }
+    return { :success => true, :body => "", :project_name => project_name, :body_type => "text" }
   end
   
   #checks out salesforce.com project from svn, applies MavensMate nature
@@ -327,7 +327,7 @@ module MavensMate
       result = client.execute_apex(options)
       return result
     rescue Exception => e
-      return { :success => false, :message => e.message }
+      return { :success => false, :body => e.message, :body_type => "text" }
     end
   end
     
@@ -760,6 +760,16 @@ module MavensMate
     project_array.sort! { |a,b| a[:title].downcase <=> b[:title].downcase }
     File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata", 'w') {|f| f.write(project_array.inspect) }
     return project_array
+  end
+
+  def self.file_ready
+    return false
+    begin
+      f = File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/.org_metadata", 'r')
+      return true
+    rescue
+      return false
+    end
   end
   
   #selects all metadata in tree

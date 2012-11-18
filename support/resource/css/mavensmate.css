@@ -24,6 +24,10 @@ input {
 	height:21px;
 }
 
+#log_selector {
+	font-family: Courier New;
+}
+
 #mm_logger {
 	display:none;
 	height:200px;

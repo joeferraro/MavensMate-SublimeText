@@ -194,9 +194,6 @@ module MavensMate
         } 
         soap.body = "<apexcode>#{options[:body]}</apexcode>"
       end
-      #require 'pp'
-      #pp response.header
-      #pp response.to_hash
       response_body = response.to_hash
       response_body[:log] = response.header
       return response_body

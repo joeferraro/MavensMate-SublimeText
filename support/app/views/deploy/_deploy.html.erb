@@ -213,57 +213,57 @@
 </form> 
 
 <script type="text/javascript">
-var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
-var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
+	var mm_cpd = '<%= ENV["MM_CURRENT_PROJECT_DIRECTORY"] %>';
+	var has_indexed_metadata = <%= File.exist? "#{ENV["MM_CURRENT_PROJECT_DIRECTORY"]}/config/.org_metadata" %>;
+	var operation;
+	document.title = "Deploy To Server";
 
-document.title = "Deploy To Server";
+	var child_def = {}
+	<%- child_metadata_definition.each do |child| -%>
+	child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
+	<%- end -%>
 
-var child_def = {}
-<%- child_metadata_definition.each do |child| -%>
-child_def['<%= child[:tag_name] %>'] = '<%= child[:xml_name] %>';
-<%- end -%>
+	var pw_def = {}
+	<%- connections.each do |c| -%>
+	pw_def['<%= c[:un] %>'] = '<%= c[:pw] %>';
+	<%- end -%>
 
-var pw_def = {}
-<%- connections.each do |c| -%>
-pw_def['<%= c[:un] %>'] = '<%= c[:pw] %>';
-<%- end -%>
+	var surl_def = {}
+	<%- connections.each do |c| -%>
+	surl_def['<%= c[:un] %>'] = '<%= c[:server_url] %>';
+	<%- end -%>
 
-var surl_def = {}
-<%- connections.each do |c| -%>
-surl_def['<%= c[:un] %>'] = '<%= c[:server_url] %>';
-<%- end -%>
-
-function isValidateOnly() {
-	if ($("#check_only").is(":checked")) {
-		return "1";
-	} else {
-		return "0";
+	function isValidateOnly() {
+		if ($("#check_only").is(":checked")) {
+			return "1";
+		} else {
+			return "0";
+		}
 	}
-}
 
-function deployMode() {
-	if ($("#set_and_forget").is(":checked")) {
-		return "async";
-	} else {
-		return "";
+	function deployMode() {
+		if ($("#set_and_forget").is(":checked")) {
+			return "async";
+		} else {
+			return "";
+		}
 	}
-}
 
-$("#save_changeset").click(function() {
-	if (this.checked) {
-		$("#changeset_name_wrapper").show();			
-	} else {
-		$("#changeset_name_wrapper").hide();
+	$("#save_changeset").click(function() {
+		if (this.checked) {
+			$("#changeset_name_wrapper").show();			
+		} else {
+			$("#changeset_name_wrapper").hide();
+		}
+	});
+
+	function resizeWindowAfterResult() {
+		window.resizeTo(800, window.innerHeight);
+		window.moveTo(
+			(screen.width-800)/2,
+			(screen.height-document.getElementById('wrapper').offsetHeight-400)/2
+			);
 	}
-});
-
-function resizeWindowAfterResult() {
-	window.resizeTo(800, window.innerHeight);
-	window.moveTo(
-		(screen.width-800)/2,
-		(screen.height-document.getElementById('wrapper').offsetHeight-400)/2
-		);
-}
 
 $(function() {
  		
@@ -337,7 +337,7 @@ $(function() {
 	        }
 	        return false;
 	    })
-.keyup(function() {
+		.keyup(function() {
 	        // fire the above change event after every letter	
 	        $(this).change();
 	    });
@@ -347,101 +347,92 @@ $(function() {
 		$("#un_list").chosen();
 	});
 
-function filter_tree(searchTerm) {
-	var regex = new RegExp(searchTerm,"i");
-	rootNode.visit(function(node) {
-		if (node.isVisible() && node.data.title) {
-			nodeTitle = node.data.title;
-			if ( nodeTitle.match(regex) ) {
-				node.visitParents(function(node) {
-					$(node.li).show();
-					return (node.parent != null);
-				}, true); 
-				return 'skip';  
-			} else {
-				$(node.li).hide();
+	function filter_tree(searchTerm) {
+		var regex = new RegExp(searchTerm,"i");
+		rootNode.visit(function(node) {
+			if (node.isVisible() && node.data.title) {
+				nodeTitle = node.data.title;
+				if ( nodeTitle.match(regex) ) {
+					node.visitParents(function(node) {
+						$(node.li).show();
+						return (node.parent != null);
+					}, true); 
+					return 'skip';  
+				} else {
+					$(node.li).hide();
+				}
 			}
-		}
-	});
-}
+		});
+	}
 
-function expandAll() {
-	$("#tree").dynatree("getRoot").visit(function(node){
-		node.expand(true);
-	});
-}
+	function expandAll() {
+		$("#tree").dynatree("getRoot").visit(function(node){
+			node.expand(true);
+		});
+	}
 
-function collapseAll() {
-	$("#tree").dynatree("getRoot").visit(function(node){
-		node.expand(false);
-	});
-}
+	function collapseAll() {
+		$("#tree").dynatree("getRoot").visit(function(node){
+			node.expand(false);
+		});
+	}
 
-function clearFilter() {
-	$('#txtFilter').val('');
-	$("#btnClearFilter").css({opacity: 0.0, visibility: "visible"});
-	collapseAll();
-	$(".dynatree-container li").show(); 
-	$('#txtFilter').focus();
-}
+	function clearFilter() {
+		$('#txtFilter').val('');
+		$("#btnClearFilter").css({opacity: 0.0, visibility: "visible"});
+		collapseAll();
+		$(".dynatree-container li").show(); 
+		$('#txtFilter').focus();
+	}
 
-$("#btnDeselectAll").click(function(){
-	$("#tree").dynatree("getRoot").visit(function(node){   		
-		if ($(node.li).css('display') != 'none') { 
-			try {
-				if (node.data.level > 1)
-					node.select(false);
-			} catch(e) {
-				node.select(false);   				
+	$("#btnDeselectAll").click(function(){
+		$("#tree").dynatree("getRoot").visit(function(node){   		
+			if ($(node.li).css('display') != 'none') { 
+				try {
+					if (node.data.level > 1)
+						node.select(false);
+				} catch(e) {
+					node.select(false);   				
+				}
 			}
-		}
+		});
+		return false;
 	});
-	return false;
-});
-$("#btnSelectAll").click(function(){
-	$("#tree").dynatree("getRoot").visit(function(node){		   			
-		if ($(node.li).css('display') != 'none') {
-			try {
-				if (node.data.level > 1)
-					node.select(true);
-			} catch(e) {
-				node.select(true);   				
-			}
-		}   		
+	$("#btnSelectAll").click(function(){
+		$("#tree").dynatree("getRoot").visit(function(node){		   			
+			if ($(node.li).css('display') != 'none') {
+				try {
+					if (node.data.level > 1)
+						node.select(true);
+				} catch(e) {
+					node.select(true);   				
+				}
+			}   		
+		});
+		return false;
 	});
-	return false;
-});
 
-var rootNode;
+	var rootNode;
 
-function index_org(refresh) {
-	console.log('indexing org')
-	console.log(refresh)
-	$.ajax({
-		type: "GET",
-		url: "http://127.0.0.1:7777/metadata/index", 
-		data: {
-			mm_current_project_directory: mm_cpd,
-			do_refresh: refresh
-		},
-		beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.  Thanks for being patient! :)'); },
-		complete: function(data){
-			console.log(data)
-			$("#tree").dynatree("destroy")
-			$("#tree ul").html(data.responseText);
-			$("#tree").dynatree({
-				persist: false,
-				checkbox: true,
-				selectMode: 3
-			});
-			$("#tree").dynatree("getRoot").visit(function(node) {
-				node.expand(false);
-			});  
-			rootNode = $("#tree").dynatree("getRoot");
-			hideLoading();				
-		} 
-	});
-}
+	function index_org(refresh) {
+		console.log('indexing org')
+		console.log(refresh)
+		operation = "index"
+		$.ajax({
+			type: "GET",
+			url: "http://127.0.0.1:7777/metadata/index", 
+			data: {
+				mm_current_project_directory: mm_cpd,
+				do_refresh: refresh
+			},
+			beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.<br/><br/>Thanks for being patient! :)'); },
+			complete: function(data){
+				console.log(data)
+				var response = JSON.parse(data.responseText)
+				setTimeout(function() { check_status(response["id"]); }, 500);		
+			} 
+		});
+	}
 
 	function get_target_json() {
 		var targets = $("#un_list").val();
@@ -459,7 +450,40 @@ function index_org(refresh) {
 		return json1 
 	}
 
+	function handle_response(response) {
+		if (operation == "deploy") {
+			$("#result").html(response["body"]);
+
+			hideElement("deployment_indicator");
+			$("#btnDeploy").show();
+
+			$(".result_table_class").height($(window).height() - 300)
+			$(window).resize(function() {
+		        $(".result_table_class").height($(window).height() - 300)
+		    });
+
+			if ($("#arcade").css("display") == "none") {
+				$("#result_tab").click();
+			    resizeWindowAfterResult();
+			}
+		} else if (operation == "index") {
+			$("#tree").dynatree("destroy")
+			$("#tree ul").html(response["body"]);
+			$("#tree").dynatree({
+				persist: false,
+				checkbox: true,
+				selectMode: 3
+			});
+			$("#tree").dynatree("getRoot").visit(function(node) {
+				node.expand(false);
+			});  
+			rootNode = $("#tree").dynatree("getRoot");
+			hideLoading();	
+		}
+	}
+
 	function deploy() {
+		operation = "deploy"
 		$.ajax({
 			type: "POST",
 			url: "http://127.0.0.1:7777/deploy", 
@@ -472,20 +496,8 @@ function index_org(refresh) {
 			beforeSend: function() { showElement("deployment_indicator"); $("#btnDeploy").hide()  },
 			complete: function(data){
 				console.log(data)
-				$("#result").html(data.responseText);
-
-				hideElement("deployment_indicator");
-				$("#btnDeploy").show();
-
-				$(".result_table_class").height($(window).height() - 300)
-				$(window).resize(function() {
-			        $(".result_table_class").height($(window).height() - 300)
-			    });
-
-				if ($("#arcade").css("display") == "none") {
-					$("#result_tab").click();
-				    resizeWindowAfterResult();
-				}
+				var response = JSON.parse(data.responseText)
+				check_status(response["id"])
 			} 
 	 	});
 	} 

@@ -55,7 +55,7 @@
 	
     code_coverage_result.each do |r|
 		begin
-			if r.has_key(:id)
+			if r.has_key?(:id)
 				if r[:id].start_with?("01q")
 					trigger_coverage.push(r)
 				else
@@ -68,11 +68,11 @@
 					class_coverage.push(r)
 				end	
 			end
-		rescue
+		rescue Exception => e
 			class_coverage.push(r)
 		end	
 	end
-	
+
 	if class_coverage.size > 1	
 		begin
 			class_coverage.sort! { |a,b| 

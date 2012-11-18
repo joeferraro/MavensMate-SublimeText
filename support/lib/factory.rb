@@ -330,6 +330,28 @@ module MavensMate
         Dir.mkdir mmzip_folder
         return mmzip_folder
       end
+
+      def get_request_id_and_put_tmp_directory
+        tmp_dir = Dir.tmpdir
+        random = MavensMate::Util.get_random_string
+        mmzip_folder = "#{tmp_dir}/.org.mavens.mavensmate.#{random}"
+        Dir.mkdir mmzip_folder
+        return random, mmzip_folder
+      end
+
+      def get_tmp_response_file(id)
+        tmp_dir = Dir.tmpdir
+        return "#{tmp_dir}/.org.mavens.mavensmate.#{id}/.response"
+      end
+
+      def response_ready?(id)
+        tmp_dir = Dir.tmpdir
+        if File.exist?("#{tmp_dir}/.org.mavens.mavensmate.#{id}/.response")
+          return true
+        else
+          return false
+        end
+      end
       
       def remove_directory(dir)
         FileUtils.rm_rf dir if File.exist?(dir)

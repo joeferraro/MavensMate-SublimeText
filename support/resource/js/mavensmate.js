@@ -6,7 +6,10 @@ $(function() {
 	}
 	$("input[type='text']:first").focus(); //focus first input element
 	//resizeWindowOnDomElementRemoved();
-	//submitFormOnEnter();		
+	//submitFormOnEnter();
+	$(".alert-message p a.close").live("click", function(){
+		$(this).parent().parent().hide();
+	})	
 });
 
 function showElement(id) {
@@ -180,4 +183,32 @@ function setUpAjaxErrorHandling() {
 function resize_games() {
 	$(".flash_game").css("width", $(window).width() - 20)
 	$(".flash_game").css("height", $(window).height() - 225)
+}
+
+var CHECK_STATUS_INTERVAL = 3000
+
+function check_status(request_id) {
+	$.ajax({
+		type: "GET",
+		url: "http://127.0.0.1:7777/status", 
+		data: {
+			 id: request_id
+		},
+		complete: function(data, status, xhr){
+			try {
+				console.log('checking status of async request')
+			    console.log(data)
+			    var response = JSON.parse(data.responseText)
+				if (response["status"] == 'pending') {
+			    	setTimeout(function() { check_status(request_id); }, CHECK_STATUS_INTERVAL); //poll for completed async request
+			    } else {
+			    	handle_response(response);
+			    }
+			} catch(e) {
+				console.log('caught an error, polling again...')
+				setTimeout(function() { check_status(request_id); }, 1000);
+			}
+						
+		} 
+	});
 }

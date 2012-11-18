@@ -8,6 +8,7 @@
 .results_hidden {
     display:none;
 }
+
 #mm_logger {
 	display:none;
 	height:200px;
@@ -257,6 +258,36 @@ table.code td {
 
 	<script>
 
+	function handle_response(response) {
+		$("#result_wrapper").html(response["body"])
+
+		$("#class_coverage_wrapper").html(
+			$("#class_wrapper").html()
+			)
+		$("#trigger_coverage_wrapper").html(
+			$("#trigger_wrapper").html()
+			)
+		$("#warnings_coverage_wrapper").html(
+			$("#warnings_wrapper").html()
+			)
+		$("#log_coverage_wrapper").html(
+			$("#log_wrapper").html()
+			)
+		$("#class_wrapper").remove()
+		$("#trigger_wrapper").remove()
+		$("#warnings_wrapper").remove()
+		$("#log_wrapper").remove()
+
+		$(".results_hidden").show();
+		if ($("#arcade").css("display") == "none") {
+			$("#a_result").click();
+			window.resizeTo(760, document.getElementById('result_wrapper').scrollHeight+175);	
+		}
+
+		hideElement("running_tests_indicator");
+		$("#btnRunTests").show();
+	}
+
 	function run_tests() {
 		$.ajax({
 			type: "POST",
@@ -272,33 +303,8 @@ table.code td {
 			beforeSend: function() { showElement("running_tests_indicator"); $("#btnRunTests").hide() },
 			complete: function(data){
 				console.log(data)
-				$("#result_wrapper").html(data.responseText)
-
-				$("#class_coverage_wrapper").html(
-					$("#class_wrapper").html()
-					)
-				$("#trigger_coverage_wrapper").html(
-					$("#trigger_wrapper").html()
-					)
-				$("#warnings_coverage_wrapper").html(
-					$("#warnings_wrapper").html()
-					)
-				$("#log_coverage_wrapper").html(
-					$("#log_wrapper").html()
-					)
-				$("#class_wrapper").remove()
-				$("#trigger_wrapper").remove()
-				$("#warnings_wrapper").remove()
-				$("#log_wrapper").remove()
-
-				$(".results_hidden").show();
-				if ($("#arcade").css("display") == "none") {
-					$("#a_result").click();
-					window.resizeTo(760, document.getElementById('result_wrapper').scrollHeight+175);	
-				}
-
-				hideElement("running_tests_indicator");
-				$("#btnRunTests").show();				
+				var response = JSON.parse(data.responseText)
+				check_status(response["id"])				
 			} 
 		});
 }

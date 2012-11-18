@@ -33,21 +33,11 @@ def get_ruby():
 ruby = get_ruby()
 
 def start_local_server():
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    local_server = settings.get('mm_local_server', 1)
-    if local_server == "thin":
-        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.start'"
-    else:
-        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.start'"
+    cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.start'"
     os.system(cmd)
 
 def stop_local_server():
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    local_server = settings.get('mm_local_server', 1)
-    if local_server == "thin":
-        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.stop'"
-    else:
-        cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server.rb' -e 'MavensMate::LocalServer.stop'"
+    cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.stop'"
     os.system(cmd)
 
 def generate_ui(ruby_script, args):

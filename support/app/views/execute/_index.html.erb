@@ -240,52 +240,54 @@ function execute_apex() {
 		},
 		beforeSend: function() { showLoading('Executing Apex'); $("#btnExecuteApex").hide(); editor.getSession().clearAnnotations(); editor.setReadOnly(true); },
 		complete: function(data){
+			console.log(data)
 			var response = JSON.parse(data.responseText)
-			console.log(response)
-			//editor.getSession().removeGutterDecoration(line, 'gutter-mark');
-			try {
-				if (response["execute_anonymous_response"]["result"]["success"] == true) {
-					debug_log = response["log"]["debugging_info"]["debug_log"]
-					console.log(debug_log)
-					debug_log = debug_log.replace(/\n/g, "<br />");
-					$("#log_coverage_wrapper").html(debug_log)
-					$(".results_hidden").show();
-					$("#a_result").click();
-
-				} else {
-					result = response["execute_anonymous_response"]["result"]
-					var error_message = result["compile_problem"]
-					var exception_message = result["exception_message"]
-					message = error_message
-					if (exception_message != null && exception_message != "") {
-						message += "<br/><br/>" + exception_message
-					}
-					line = (parseInt(result["line"]) == -1) ? 0 : (parseInt(result["line"]) - 1)
-					if (line == -1)
-						line = 0
-					var column = (parseInt(result["column"]) == -1) ? 0 : (parseInt(result["column"]) - 1)
-					editor.getSession().setAnnotations([{
-					  row: line,
-					  column: column,
-					  text: message,
-					  type: "error" // also warning and information
-					}]);
-					//var Range = require("ace/range").Range;
-					//var gd = editor.getSession().addGutterDecoration(line, 'gutter-mark');
-					//var marker = editor.getSession().addMarker(r,"ace_active_line","background");
-				}
-			} catch(e) {
-				console.log(e)
-				$("#log_coverage_wrapper").html(response)
-				$(".results_hidden").show();
-				$("#a_result").click();
-			}
-			
-			hideLoading();
-			$("#btnExecuteApex").show();	
-			editor.setReadOnly(false);			
+			check_status(response["id"])			
 		} 
 	});
+}
+
+function handle_response(response) {
+	try {
+		if (response["execute_anonymous_response"]["result"]["success"] == true) {
+			debug_log = response["log"]["debugging_info"]["debug_log"]
+			console.log(debug_log)
+			debug_log = debug_log.replace(/\n/g, "<br />");
+			$("#log_coverage_wrapper").html(debug_log)
+			$(".results_hidden").show();
+			$("#a_result").click();
+		} else {
+			result = response["execute_anonymous_response"]["result"]
+			var error_message = result["compile_problem"]
+			var exception_message = result["exception_message"]
+			message = error_message
+			if (exception_message != null && exception_message != "") {
+				message += "<br/><br/>" + exception_message
+			}
+			line = (parseInt(result["line"]) == -1) ? 0 : (parseInt(result["line"]) - 1)
+			if (line == -1)
+				line = 0
+			var column = (parseInt(result["column"]) == -1) ? 0 : (parseInt(result["column"]) - 1)
+			editor.getSession().setAnnotations([{
+			  row: line,
+			  column: column,
+			  text: message,
+			  type: "error" // also warning and information
+			}]);
+			//var Range = require("ace/range").Range;
+			//var gd = editor.getSession().addGutterDecoration(line, 'gutter-mark');
+			//var marker = editor.getSession().addMarker(r,"ace_active_line","background");
+		}
+	} catch(e) {
+		console.log(e)
+		$("#log_coverage_wrapper").html(response)
+		$(".results_hidden").show();
+		$("#a_result").click();
+	}
+	
+	hideLoading();
+	$("#btnExecuteApex").show();	
+	editor.setReadOnly(false);
 }
 
 function resize() {

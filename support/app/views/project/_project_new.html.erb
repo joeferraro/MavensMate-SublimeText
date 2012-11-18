@@ -141,7 +141,10 @@
 
 	<script type="text/javascript">
 		var response;
+		var operation;
+
 		function new_custom_project() {
+			operation = "new"
 			$.ajax({
 				type: "POST",
 				url: "http://127.0.0.1:7777/project", 
@@ -162,18 +165,15 @@
 				},
 				beforeSend: function() { showLoading('Creating new MavensMate project'); },
 				complete: function(data){
-					//console.log(data)
+					console.log(data)
 					var response = JSON.parse(data.responseText)
-					if (response["success"] == false) {
-						$("#error_message").html(response["message"])
-						$("#result_output").show()
-					}
-					hideLoading();
+					check_status(response["id"])
 				} 
 		 	});
 		}
 
 		function checkout_project() {
+			operation = "checkout"
 			$.ajax({
 				type: "POST",
 				url: "http://127.0.0.1:7777/project", 
@@ -195,13 +195,29 @@
 				complete: function(data){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
-					if (response["success"] == false) {
-						$("#error_message").html(response["message"])
-						$("#result_output").show()
-					}
-					hideLoading();
+					check_status(response["id"])
 				}
 		 	});
+		}
+
+		function handle_response(response) {
+			if (operation == "checkout" || operation == "new") {
+				if (response["success"] == false) {
+					$("#error_message").html(response["body"])
+					$("#result_output").show()
+				}
+				hideLoading();
+			} else if (operation == "check_creds") {
+				if (response["success"] == false) {
+					$("#error_message").html(response["body"])
+					$("#result_output").show()
+				} else {
+					$('#sid').val(response["sid"])	
+					$('#murl').val(response["murl"])
+					$("#result_output").hide()
+				}
+				hideLoading();
+			}
 		}
 	
 		var user_action = "<%= user_action %>";
@@ -346,8 +362,8 @@
 				if (e.target.href.indexOf("metadata") != -1 && user_action == "checkout") {
 					//return;
 				} else if (e.target.href.indexOf("metadata") != -1 && ($('#sid').val() == null || $('#sid').val() == "")) {
-					console.log('no creds');
-					
+					console.log('checking creds');
+					operation = "check_creds"
 					$.ajax({
 						type: "GET",
 						url: "http://127.0.0.1:7777/auth", 
@@ -358,17 +374,9 @@
 						},
 						beforeSend: function() { showLoading('Attempting to authenticate to Salesforce using the provided credentials'); },
 						complete: function(data){
-							//console.log(data)
+							console.log(data)
 							var response = JSON.parse(data.responseText)
-							if (response["success"] == false) {
-								$("#error_message").html(response["message"])
-								$("#result_output").show()
-							} else {
-								$('#sid').val(response["sid"])	
-								$('#murl').val(response["murl"])
-								$("#result_output").hide()
-							}
-							hideLoading();				
+							check_status(response["id"])				
 						}
 				 	});
 				}
