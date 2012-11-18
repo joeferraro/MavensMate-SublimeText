@@ -20,6 +20,7 @@ import apex_reserved
 mm_dir = os.getcwdu()
 #PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 #for future reference (windows/linux support)
+#sublime.packages_path()
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
@@ -167,8 +168,6 @@ class OrgConnectionsCommand(sublime_plugin.ApplicationCommand):
         temp_file_name = generate_ui("deployment_connections", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
 
-
-#takes user to the update directions on github (should be unnecessary once package control support is finalized)
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(self):
         from functools import partial
@@ -1039,6 +1038,40 @@ class ThreadProgress():
 
         sublime.set_timeout(lambda: self.run(i), 100)
 
+class AutomaticUpgrader(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        try:
+            json_data = open(mm_dir+"/packages.json")
+            data = json.load(json_data)
+            json_data.close()
+            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
+            import urllib
+            j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
+            latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
+
+            print 'current mavensmate version is: ' + current_version
+            print 'latest mavensmate version is: ' + latest_version
+
+            current_array = current_version.split(".")
+            latest_array = latest_version.split(".")
+
+            needs_update = False
+            if current_array[0] < latest_array[0]:
+                needs_update = True
+            elif current_array[1] < latest_array[1]:
+                needs_update = True
+            elif current_array[2] < latest_array[2]:
+                needs_update = True
+
+            if needs_update == True:
+                if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. Would you like to update?", "Update"):
+                    sublime.run_command("update_me")
+        except:
+            print 'skipping MavensMate update check' 
+
 class PanelPrinter(object):
     printers = {}
 
@@ -1180,3 +1213,7 @@ class PanelPrinter(object):
             self.panel.set_read_only(True)
         size = self.panel.size()
         sublime.set_timeout(lambda : self.panel.show(size, True), 2)
+
+if settings.get('mm_check_for_updates') == True:
+    # Start MavensMate updater shortly after Sublime starts
+    sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)

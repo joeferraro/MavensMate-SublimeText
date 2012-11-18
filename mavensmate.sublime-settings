@@ -27,5 +27,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_compile_on_save" : true,
 
 	//if true, MavensMate will hook into the Sublime Text completions API to offer code assistance
-	"mm_autocomplete" : true
+	"mm_autocomplete" : true,
+
+	//if true, MavensMate will check for updates when Sublime Text starts
+	"mm_check_for_updates" : true
 }
