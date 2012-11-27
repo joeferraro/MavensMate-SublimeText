@@ -1143,7 +1143,11 @@ class AutomaticUpgrader(threading.Thread):
             import urllib
             j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
             latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
-
+            release_notes = "\n\nRelease Notes: "
+            try:
+                release_notes = j["packages"][0]["platforms"]["osx"][0]["release_notes"] + "\n\n"
+            except:
+                release_notes = ""
             current_array = current_version.split(".")
             latest_array = latest_version.split(".")
 
@@ -1156,7 +1160,7 @@ class AutomaticUpgrader(threading.Thread):
                 needs_update = True
 
             if needs_update == True:
-                if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. Would you like to update?", "Update"):
+                if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. "+release_notes+"Would you like to update?", "Update"):
                     sublime.set_timeout(lambda: sublime.run_command("update_me"), 1)
         except:
             print 'skipping MavensMate update check' 

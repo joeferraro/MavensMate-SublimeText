@@ -11,6 +11,7 @@
 				"osx": [
 					{
 						"version": "1.5.3",
+						"release_notes": "Fixes auto updater",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
