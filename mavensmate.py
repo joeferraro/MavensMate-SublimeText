@@ -1145,7 +1145,7 @@ class AutomaticUpgrader(threading.Thread):
             latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
             release_notes = "\n\nRelease Notes: "
             try:
-                release_notes = j["packages"][0]["platforms"]["osx"][0]["release_notes"] + "\n\n"
+                release_notes += j["packages"][0]["platforms"]["osx"][0]["release_notes"] + "\n\n"
             except:
                 release_notes = ""
             current_array = current_version.split(".")
