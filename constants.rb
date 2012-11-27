@@ -12,6 +12,7 @@ module Constants
 	ENV["TM_BUNDLE_SUPPORT"] = SUPPORT
   ENV["CLIENT_NAME"] = CLIENT_NAME
 
+  require 'rubygems'
   require 'json'
   begin
     MM_DEFAULT_CONFIG = JSON.parse(File.read("#{ROOT}/mavensmate.sublime-settings"))

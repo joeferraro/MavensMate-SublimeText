@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "1.5.3",
-						"release_notes": "Fixes auto updater",
+						"version": "1.5.4",
+						"release_notes": "Fixes json gem issue affecting ruby 1.8.7 users",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
