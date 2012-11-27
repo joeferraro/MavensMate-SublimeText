@@ -30,9 +30,9 @@
 	         			"command": "compile_project"
 	         		},
 	         		{
-	         			"caption": "Deployment Connections",
-	         			"command": "org_connections"
-	         		}
+			    		"caption": "Index Apex Code",  
+			         	"command": "generate_apex_class_docs"
+			     	}
 	         	]
 	     	},
 			{
@@ -59,14 +59,21 @@
 	         	]
 	     	},
 	     	{
-	        	"id": "run_tests", 
-	    		"caption": "Run Apex Tests",  
-	         	"command": "run_apex_unit_tests"
+	        	"id": "deploy", 
+	    		"caption": "Deploy",  
+	         	"children":
+	         	[
+	         		{
+	         			"caption": "Deployment Connections",
+	         			"command": "org_connections"
+	         		},
+	         		{
+	         			"caption": "Deploy to Server",
+	         			"command": "deploy_to_server"
+	         		}
+	         	]
 	     	},
-	     	{
-	    		"caption": "Execute Apex",  
-	         	"command": "execute_anonymous"
-	     	},
+	     	{"caption":"-"},
 	     	{
 	        	"id": "compile_active", 
 	    		"caption": "Compile Active File",  
@@ -77,41 +84,44 @@
 	    		"caption": "Refresh File From Server",  
 	         	"command": "refresh_active_file"
 	     	},
+	     	{"caption":"-"},
+	     	{
+	        	"id": "run_tests", 
+	    		"caption": "Run Apex Tests",  
+	         	"command": "run_apex_unit_tests"
+	     	},
+	     	{
+	    		"caption": "Execute Apex",  
+	         	"command": "execute_anonymous"
+	     	},
 	     	// {
 	      //   	"id": "delete_active", 
 	    		// "caption": "Delete Active File",  
 	      //    	"command": "mavens_mate"
 	     	// },
+	     	{"caption":"-"},
 	     	{
-	        	"id": "deploy_to_server", 
-	    		"caption": "Deploy To Server",  
-	         	"command": "deploy_to_server"
-	     	},
-	     	{
-	        	"id": "open", 
-	    		"caption": "Open",  
+	        	"id": "settings", 
+	    		"caption": "Settings",  
 	         	"children":
 	         	[
 					{ 
 						"command": "open_file", 
 						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
-						"caption": "Settings - User" 
+						"caption": "User" 
 					},
 					{ 
 						"command": "open_file", 
 						"args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"}, 
-						"caption": "Settings - Default" 
-					},
-					{ 
-	    				"caption": "Debug Panel",  
-	         			"command": "show_debug_panel"
+						"caption": "Default" 
 					}	
 	         	]
 	     	},
-	     	{
-	    		"caption": "Index Apex Code",  
-	         	"command": "generate_apex_class_docs"
-	     	},
+	     	{ 
+				"caption": "Debug Panel",  
+     			"command": "show_debug_panel"
+			},
+			{"caption":"-"},
 	     	{
 	     		"caption": "Update MavensMate",
 	     		"command": "update_me"

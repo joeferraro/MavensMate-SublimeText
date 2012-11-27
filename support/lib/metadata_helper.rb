@@ -1,18 +1,10 @@
 module MetadataHelper
   
-  require 'json'
-  begin
-    mm_default_config = JSON.parse(File.read("#{ROOT}/mavensmate.sublime-settings"))
-    mm_user_config = JSON.parse(File.read("#{SUBLIME_USER_ROOT}/mavensmate.sublime-settings"))
-  rescue
-    #TODO
-  end
-
-  MM_API_VERSION = mm_user_config['mm_api_version'] || mm_default_config['mm_api_version'] || ENV['MM_API_VERSION'] || "26.0" 
+  MM_API_VERSION = MM_USER_CONFIG['mm_api_version'] || MM_DEFAULT_CONFIG['mm_api_version'] || ENV['MM_API_VERSION'] || "26.0" 
   CORE_METADATA_TYPES = [ "ApexClass", "ApexComponent", "ApexPage", "ApexTrigger", "StaticResource" ]  
   META_DICTIONARY = eval(File.read("#{SUPPORT}/conf/metadata_dictionary"))
   CHILD_META_DICTIONARY = eval(File.read("#{SUPPORT}/conf/metadata_children_dictionary"))
-  MM_TIMEOUT = mm_user_config['mm_timeout'] || mm_default_config['mm_timeout'] || ENV['MM_TIMEOUT'] || 3600
+  MM_TIMEOUT = MM_USER_CONFIG['mm_timeout'] || MM_DEFAULT_CONFIG['mm_timeout'] || ENV['MM_TIMEOUT'] || 3600
   
   META_LABEL_MAP = { 
     "ApexClass" => "Apex Class", 

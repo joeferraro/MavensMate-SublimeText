@@ -12,10 +12,11 @@ import copy
 if os.name != 'nt':
     import unicodedata
 import unicodedata, re
-import urllib
+import urllib, urllib2
 from xml.dom.minidom import parse, parseString
 import json
 import apex_reserved 
+import traceback
 
 mm_dir = os.getcwdu()
 #PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
@@ -99,8 +100,7 @@ def mm_workspace():
         workspace = sublime.active_window().active_view().settings().get('mm_workspace')
     return workspace
 
-def mark_line_numbers(lines):
-    icon = 'dot'
+def mark_line_numbers(lines, icon="dot"):
     points = [sublime.active_window().active_view().text_point(l - 1, 0) for l in lines]
     regions = [sublime.Region(p, p) for p in points]
     sublime.active_window().active_view().add_regions('deleted', regions, "operation.fail",
@@ -167,6 +167,7 @@ class OrgConnectionsCommand(sublime_plugin.ApplicationCommand):
         start_local_server()
         temp_file_name = generate_ui("deployment_connections", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
+        send_usage_statistics('Org Connections')
 
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(self):
@@ -254,6 +255,7 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
         start_local_server()
         temp_file_name = generate_ui("execute_anonymous", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
+        send_usage_statistics('Execute Anonymous')
 
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
@@ -261,6 +263,7 @@ class EditProjectCommand(sublime_plugin.ApplicationCommand):
         start_local_server()
         temp_file_name = generate_ui("edit_project", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
+        send_usage_statistics('Edit Project')
 
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
@@ -268,6 +271,7 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
         start_local_server()
         temp_file_name = generate_ui("new_project", "'"+mm_workspace()+"'")
         launch_mavens_mate_window(temp_file_name)
+        send_usage_statistics('New Project')
 
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
@@ -275,13 +279,15 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
         start_local_server()
         temp_file_name = generate_ui("deploy_to_server", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name)
+        send_usage_statistics('Deploy to Server')
 
 #displays new project dialog
 class CheckoutProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("checkout_project", "'"+mm_workspace()+"'")
-        launch_mavens_mate_window(temp_file_name)   
+        launch_mavens_mate_window(temp_file_name)  
+        send_usage_statistics('Checkout Project') 
 
 #displays unit test dialog
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
@@ -289,6 +295,7 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
         start_local_server()
         temp_file_name = generate_ui("run_apex_tests", "'"+mm_project_directory()+"'")
         launch_mavens_mate_window(temp_file_name) 
+        send_usage_statistics('Apex Unit Testing')
 
 class ShowVersionCommand(sublime_plugin.ApplicationCommand):
     def run(command):
@@ -309,7 +316,8 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
             thread = MetadataAPICall("clean_project", "'"+mm_project_directory()+"' '"+mm_workspace()+"'")
             threads.append(thread)
             thread.start()
-            handle_threads(threads, printer, handle_result, 0)  
+            handle_threads(threads, printer, handle_result, 0)
+            send_usage_statistics('Clean Project')  
 
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
@@ -323,6 +331,7 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
             threads.append(thread)
             thread.start()
             handle_threads(threads, printer, handle_result, 0)
+            send_usage_statistics('Compile Project')
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
@@ -342,10 +351,12 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             threads.append(thread)
             thread.start()
             handle_threads(threads, printer, handle_result, 0)  
+            send_usage_statistics('Delete Metadata')
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
+        send_usage_statistics('New Apex Class')
         sublime.active_window().show_input_panel("Apex Class Name, Template (base, test, batch, sched, email, empty)", "MyClass, base", self.on_input, None, None)
     
     def on_input(self, input): 
@@ -354,7 +365,7 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         api_name, class_type = parse_new_metadata_input(input)
         printer.write('\nCreating New Apex Class => ' + api_name + '\n')
         threads = []
-        thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexClass\", :api_name=>\""+api_name+"\"}' '"+mm_project_directory()+"'")
+        thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexClass\", :api_name=>\""+api_name+"\", :apex_class_type=>\""+class_type+"\"}' '"+mm_project_directory()+"'")
         threads.append(thread)
         thread.start()
         handle_threads(threads, printer, handle_result, 0)  
@@ -362,6 +373,7 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
+        send_usage_statistics('New Apex Trigger')
         sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name", "MyAccountTrigger, Account", self.on_input, None, None)
     
     def on_input(self, input): 
@@ -378,6 +390,7 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
+        send_usage_statistics('New Visualforce Page')
         sublime.active_window().show_input_panel("Visualforce Page Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
@@ -394,6 +407,7 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
+        send_usage_statistics('New Visualforce Component')
         sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
@@ -432,27 +446,6 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         threads.append(thread)
         thread.start()
         handle_threads(threads, printer, handle_refresh_result, 0)
-
-# #visualforce completions
-# class VisualforceCompletions(sublime_plugin.EventListener):
-#     def on_query_completions(self, view, prefix, locations):
-#         # Only trigger within HTML
-#         # if not view.match_selector(locations[0],
-#         #         "text.html - source"):
-#         #     return []
-#         # print len(prefix)  
-#         # pt = locations[0] - len(prefix) - 1
-#         # ch = view.substr(sublime.Region(pt, pt + 1))
-#         # if ch != ':':
-#         #     return []
-#         # print ch
-#         # word = view.substr(view.word(pt))
-#         # print word
-        
-#         # return ([
-#         #     ("foooooo\tTag", "a href=\"$1\">$2</a>")
-#         # ], sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS)
-#         return []
 
 #completions for force.com-specific use cases
 class MavensMateCompletions(sublime_plugin.EventListener):
@@ -727,6 +720,18 @@ class RemoteEdit(sublime_plugin.EventListener):
             thread.start()
             handle_threads(threads, printer, handle_result, 0)            
 
+# Future functionality
+# class ExecutionOverlayLoader(sublime_plugin.EventListener):
+#     def on_load(self, view):
+#         print view.file_name()
+#         fileName, ext = os.path.splitext(view.file_name())
+#         if ext == ".cls" or ext == ".trigger":
+#             threads = []
+#             thread = MetadataAPICall("get_apex_overlays", "'"+view.file_name()+"'")
+#             threads.append(thread)
+#             thread.start()
+#             generic_handle_threads(threads, write_overlays)            
+
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
     def run(self): 
@@ -811,6 +816,30 @@ def handle_doxygen_threads(threads, printer):
     printer.write('\n[Indexing complete]' + '\n')
     printer.hide() 
 
+# future functionality
+# def generic_handle_threads(threads, result_callback):
+#     operation_result = ""
+#     next_threads = []
+#     for thread in threads:
+#         if thread.is_alive():
+#             next_threads.append(thread)
+#             continue
+#         if thread.result == False:
+#             continue
+#         operation_result = thread.result
+    
+#     threads = next_threads
+
+#     if len(threads):
+#         sublime.set_timeout(lambda: generic_handle_threads(threads, result_callback), 600)
+#         return
+
+#     result_callback(operation_result)
+
+# def write_overlays(overlay_result):
+#     print overlay_result
+#     sublime.set_timeout(lambda: mark_line_numbers([int(float('17'))], "dot"), 2000)
+
 #handles spawned threads and prints the "loading indicator" to the mm_panel
 def handle_threads(threads, printer, handle_result, i=0):
     compile_result = ""
@@ -859,7 +888,7 @@ def print_result_message(res, printer):
         if msg != None:
             if 'line_number' in msg:
                 line_col = ' (Line: '+msg['line_number']
-                mark_line_numbers([int(float(msg['line_number']))])
+                mark_line_numbers([int(float(msg['line_number']))], "bookmark")
             if 'column_number' in msg:
                 line_col += ', Column: '+msg['column_number']
             if len(line_col) > 0:
@@ -874,7 +903,7 @@ def print_result_message(res, printer):
         line_col = ""
         if 'line' in res:
             line_col = ' (Line: '+res['line']
-            mark_line_numbers([int(float(res['line']))])
+            mark_line_numbers([int(float(res['line']))], "bookmark")
         if 'column' in res:
             line_col += ', Column: '+res['column']
         if len(line_col) > 0:
@@ -941,6 +970,14 @@ def prep_for_search(name):
     #return re.sub('([A-Z])', r'\1_', name)
     return name.replace('_', '')
 
+def send_usage_statistics(action):
+    if settings.get('mm_send_usage_statistics') == True:
+        sublime.set_timeout(lambda: UsageReporter(action).start(), 3000)
+
+def check_for_updates():
+    if settings.get('mm_check_for_updates') == True:
+        sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
+
 # future functionality
 
 #TODO: deploys the currently open tabs
@@ -991,6 +1028,27 @@ def prep_for_search(name):
 #               pass      # leave new/untitled files (for the moment)
 #         print tabs
 
+# #visualforce completions
+# class VisualforceCompletions(sublime_plugin.EventListener):
+#     def on_query_completions(self, view, prefix, locations):
+#         # Only trigger within HTML
+#         # if not view.match_selector(locations[0],
+#         #         "text.html - source"):
+#         #     return []
+#         # print len(prefix)  
+#         # pt = locations[0] - len(prefix) - 1
+#         # ch = view.substr(sublime.Region(pt, pt + 1))
+#         # if ch != ':':
+#         #     return []
+#         # print ch
+#         # word = view.substr(view.word(pt))
+#         # print word
+        
+#         # return ([
+#         #     ("foooooo\tTag", "a href=\"$1\">$2</a>")
+#         # ], sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS)
+#         return []
+
 class ThreadProgress():
     """
     Animates an indicator, [=   ], in the status area while a thread runs
@@ -1038,6 +1096,40 @@ class ThreadProgress():
 
         sublime.set_timeout(lambda: self.run(i), 100)
 
+class UsageReporter(threading.Thread):
+    def __init__(self, action):
+        self.action = action
+        threading.Thread.__init__(self)
+
+    def run(self):
+        try:
+            ip_address = ''
+            try:
+                #get ip address
+                ip_address = urllib2.urlopen('http://ip.42.pl/raw').read()
+            except:
+                ip_address = 'unknown'
+
+            #get current version of mavensmate
+            json_data = open(mm_dir+"/packages.json")
+            data = json.load(json_data)
+            json_data.close()
+            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
+
+            #post to usage servlet
+            url = "https://mavensmate.appspot.com/usage"
+            headers = { "Content-Type":"application/x-www-form-urlencoded" }
+
+            handler = urllib2.HTTPSHandler(debuglevel=0)
+            opener = urllib2.build_opener(handler)
+
+            req = urllib2.Request("https://mavensmate.appspot.com/usage", data='version='+current_version+'&ip_address='+ip_address+'&action='+self.action+'', headers=headers)
+            response = opener.open(req).read()
+            #print response
+        except: 
+            traceback.print_exc(file=sys.stdout)
+            print 'failed to send usage statistic'
+
 class AutomaticUpgrader(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -1051,9 +1143,6 @@ class AutomaticUpgrader(threading.Thread):
             import urllib
             j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
             latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
-
-            print 'current mavensmate version is: ' + current_version
-            print 'latest mavensmate version is: ' + latest_version
 
             current_array = current_version.split(".")
             latest_array = latest_version.split(".")
@@ -1213,7 +1302,6 @@ class PanelPrinter(object):
             self.panel.set_read_only(True)
         size = self.panel.size()
         sublime.set_timeout(lambda : self.panel.show(size, True), 2)
-
-if settings.get('mm_check_for_updates') == True:
-    # Start MavensMate updater shortly after Sublime starts
-    sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
+  
+check_for_updates()
+send_usage_statistics('Startup')

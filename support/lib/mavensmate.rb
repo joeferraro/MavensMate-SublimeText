@@ -7,6 +7,7 @@ require SUPPORT + '/lib/factory'
 require SUPPORT + '/lib/exceptions'
 require SUPPORT + '/lib/metadata_helper'
 require SUPPORT + '/lib/util'
+require SUPPORT + '/lib/logger'
 
 STDOUT.sync = true
 
@@ -14,6 +15,10 @@ module MavensMate
   
   include MetadataHelper
   
+  def self.logger
+    return MavensMate::Log.instance
+  end
+
   def self.new_project_from_existing_directory(params)
     begin
       project_name        = params[:pn]
@@ -267,6 +272,7 @@ module MavensMate
      
   #compiles selected file(s) or active file
   def self.save(active_file=false) 
+    MavensMate::logger.debug 'compiling file'
     result = nil
     begin
       if ENV["TM_FILEPATH"] == nil or ENV["TM_FILEPATH"] == ""
@@ -314,6 +320,8 @@ module MavensMate
       puts result.to_json
     rescue Exception => e
       res = { :success => false, :message => e.message+ "\n" + e.backtrace.join("\n") }
+      #MavensMate::logger.error "error compiling"
+      #MavensMate::logger.error e.message+ "\n" + e.backtrace.join("\n")
       puts res.to_json
     end
     # if ! result[:check_deploy_status_response][:result][:success]       
@@ -659,65 +667,7 @@ module MavensMate
       end
     end   
   end
-     
-  #displays autocomplete dialog based on current word. supports sobject fields & apex primitive methods
-  def self.complete
-    current_word = ENV['TM_CURRENT_WORD'].dup
-    current_word.downcase!
-    abort if current_word.nil?
-    suggestions = []
-    if File.exist?("#{ENV['TM_BUNDLE_SUPPORT']}/lib/apex/#{current_word}.yaml")
-      apex_methods({:method_type => "static_methods", :object => current_word}).each do |m|
-        suggestions.push({ "display" => m })
-      end
-      puts suggestions.to_json
-      return
-      #selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
-      #prints suggestions[selection] if not selection.nil?
-    else
-      current_object = ""
-      lines=[]
-      File.open(ENV['TM_FILEPATH']) do |file|
-         file.each_line do |line| 
-             lines.push(line)
-         end
-      end
-      lines = lines[0, ENV['TM_LINE_NUMBER'].to_i - 1]
-      lines.reverse!
-      lines.each_with_index do |line, index| 
-        next if not line.include?(" #{current_word} ")
-        line = line.slice(0, line.index(" #{current_word} "))
-        line.reverse!
-        line = line.slice(0, line.index(/[\[\]\(\)\s]/))
-        current_object = line.reverse
-        break
-      end
-    
-      abort if current_object.nil?
-    
-      if File.exist?("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/objects/#{current_object}.object")
-        require 'rubygems'
-        require 'nokogiri'
-        doc = Nokogiri::XML(File.open("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/config/objects/#{current_object}.object"))
-        doc.remove_namespaces!
-        doc.xpath("//fields/fullName").each do |node|
-          suggestions.push({ "display" => node.text })
-        end
-        selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
-        prints suggestions[selection] if not selection.nil?    
-      else
-        current_object.downcase!
-        if File.exist?("#{ENV['TM_BUNDLE_SUPPORT']}/lib/apex/#{current_object}.yaml")
-          apex_methods({:method_type => "instance_methods", :object => current_object}).each do |m|
-            suggestions.push({ "display" => m })
-          end
-          selection = TextMate::UI.complete(suggestions, {:case_insensitive => true})
-          prints suggestions[selection] if not selection.nil?
-        end
-      end
-    end
-  end
-   
+      
   #returns the project name
   def self.get_project_name
     yml = YAML::load(File.open(ENV['MM_CURRENT_PROJECT_DIRECTORY'] + "/config/settings.yaml"))

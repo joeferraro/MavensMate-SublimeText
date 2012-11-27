@@ -38,8 +38,11 @@ module MavensMate
     def initialize(creds={})
       HTTPI.log = false
       Savon.configure do |config|
-        config.log = false
-      end      
+        config.log = (MM_LOG_LEVEL.casecmp('DEBUG') == 0 && MM_SOAP_LOG == true)
+        config.logger = MavensMate::logger
+      end 
+
+      MavensMate::logger.debug 'initializing soap client'     
       
       if ! creds[:override_session]
         begin
@@ -60,7 +63,7 @@ module MavensMate
         rescue Exception => e
           #exception here means most likely that cached auth creds are no longer valid
           #we're ok with this, the script will attempt another login
-          #raise Exception.new(e.message)
+          MavensMate::logger.debug 'cached creds no longer valid, will request new sid'  
         end
       end
 
@@ -97,13 +100,14 @@ module MavensMate
     #logs into SFDC, sets metadata server url & sessionid
     def login
       begin
+        MavensMate::logger.debug 'attempting login'     
         response = self.pclient.request :login do
-          #soap.body = { :username => self.username, :password => self.password }
           self.username = MavensMate::Util.soap_escape(self.username)
           self.password = MavensMate::Util.soap_escape(self.password)
           soap.body = '<ins0:username>'+self.username+'</ins0:username><ins0:password>'+self.password+'</ins0:password>'
         end
       rescue Savon::SOAP::Fault => fault
+        MavensMate::logger.error 'error logging in: ' + fault.to_s     
         raise Exception.new(fault.to_s)
       end
       
@@ -229,6 +233,7 @@ module MavensMate
           response = self.mclient.request :deploy do |soap|
             soap.header = { 
               "ins0:SessionHeader" => { "ins0:sessionId" => self.sid }, 
+              "ins0:CallOptions" => { "ins0:client" => CLIENT_NAME }, 
               "ins0:DebuggingHeader" => { "ins0:categories" => { "ins0:category" => debug_options[:category],  "ins0:level" => debug_options[:level] } }
             }
             soap.body = soapbody
@@ -355,10 +360,33 @@ module MavensMate
         return false
       end
     end
-    
+
+    def get_apex_entity_id_by_name(options={})
+      file_path = options[:file_name]
+      file_name = file_path.split("/").last
+      apex_entity_name = file_name.split(".")[0]
+      extension = file_name.split(".")[1]
+      apex_entity_type = MavensMate::FileFactory.get_meta_type_by_suffix(extension)[:xml_name]
+      response = self.pclient.request :query do |soap|
+        soap.header = get_soap_header
+        soap.body = { :queryString => "Select Id From #{apex_entity_type} Where Name = '#{apex_entity_name}'" }
+      end
+      records = prepare_query_result(response)
+      return records[0][:id][0]
+    end
+
+    def list_execution_overlays(options={})
+      #ExecutableEntityId = id of the apex class or trigger
+      response = self.pclient.request :query do |soap|
+        soap.header = get_soap_header
+        soap.body = { :queryString => "Select Id, Line, Iteration from ApexExecutionOverlayAction Where ExecutableEntityId = '#{options[:id]}'" }
+      end
+      records = prepare_query_result(response)
+    end
+
     #list metadata for a specific type
     def list(type="",raw=false,format="json")
-      
+      MavensMate::logger.info 'listing metadata: ' + type
       metadata_type = MavensMate::FileFactory.get_meta_type_by_name(type) || {}
       has_children_metadata = false
       if ! metadata_type[:child_xml_names].nil? and metadata_type[:child_xml_names].kind_of? Array
@@ -676,6 +704,17 @@ module MavensMate
         return client
       end
 
-      
+      def prepare_query_result(response)
+        records = []
+        response_hash = response.to_hash
+        qr = response_hash[:query_response][:result]
+        if ! qr[:records].kind_of? Array
+          records.push(qr[:records])
+        else
+          records = qr[:records]
+        end
+        return records
+      end
+  
   end
 end

@@ -40,18 +40,20 @@ module MavensMate
 
         def start
           stop
+          MavensMate::logger.debug 'thin server starting on port 7777'
           exit if fork            # Parent exits, child continues.
           Process.setsid          # Become session leader.
           exit if fork            # Zap session leader.
 
           pid = fork do
             server = MavensMate::LocalServerThin.get_server_config 
-            Thin::Server.new('0.0.0.0', 7777, server).start! 
+            Thin::Server.new('0.0.0.0', 7777, server).start!
           end
           Process.detach(pid)
         end
 
         def respond(body, type)
+          MavensMate::logger.debug 'responding from localhost:7777\n'+body
           [
             200,
             { 'Content-Type' => type, 'Access-Control-Allow-Origin' => "*" },
@@ -60,6 +62,7 @@ module MavensMate
         end
 
         def stop
+          MavensMate::logger.debug 'shutting down server running on port 7777'
           if Lsof.running?(7125)
             Lsof.kill(7125)
           end
@@ -96,11 +99,11 @@ module MavensMate
           end 
         end
 
-        #TODO: not async...does it need to be?
         class AuthenticationServlet
           def call(env)            
             req = Rack::Request.new(env)
             request_id, tmp_directory = MavensMate::FileFactory.get_request_id_and_put_tmp_directory
+            MavensMate::logger.debug 'AuthenticationServlet: ' + req.inspect
             Thread.new {
               begin              
                 update_creds = req["update_creds"] || false

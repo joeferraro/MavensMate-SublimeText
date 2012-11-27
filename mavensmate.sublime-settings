@@ -30,5 +30,14 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_autocomplete" : true,
 
 	//if true, MavensMate will check for updates when Sublime Text starts
-	"mm_check_for_updates" : true
+	"mm_check_for_updates" : true,
+
+	//possible values: FATAL(logs unhandleable errors), ERROR (logs handleable runtime errors), INFO (logs generic high-level information), DEBUG (logs method calls, detailed soap calls, and other low-level information)
+	"mm_log_level" : "FATAL",
+
+	//if true AND mm_log_level is set to "DEBUG", then mavensmate will log detailed soap calls
+	"mm_soap_log" : false,
+
+	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see mavensmate.py for source of the call)
+	"mm_send_usage_statistics" : true
 }
