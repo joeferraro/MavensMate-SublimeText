@@ -117,6 +117,54 @@
 					}	
 	         	]
 	     	},
+	     	{
+	        	"id": "docs", 
+	    		"caption": "Documentation",  
+	         	"children":
+	         	[
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText"}, 
+						"caption": "Project Home" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki"}, 
+						"caption": "Project Wiki" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Syntax-Highlighting"}, 
+						"caption": "Syntax Highlighting" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Apex-Code-Assist-(beta)"}, 
+						"caption": "Code Assist" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Shortcut-Keys"}, 
+						"caption": "Shortcut Keys" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Logging"}, 
+						"caption": "Logging" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Known-Issues"}, 
+						"caption": "Known Issues" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}, 
+						"caption": "Issues" 
+					}
+
+	         	]
+	     	},
 	     	{ 
 				"caption": "Debug Panel",  
      			"command": "show_debug_panel"
