@@ -174,7 +174,7 @@ module MavensMate
                 options = {
                   :level => req["level"],
                   :category => req["category"],
-                  :body => req["body"]
+                  :body => MavensMate::Util.soap_escape(req["body"])
                 }
                 result = MavensMate.execute_apex(options)
                 body = result.to_json

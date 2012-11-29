@@ -36,7 +36,12 @@ ruby = get_ruby()
 
 def start_local_server():
     cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.start'"
-    os.system(cmd)
+    result = os.system(cmd)
+    if result != 0:
+        msg = 'The local MavensMate server has failed to launch; you may have a gem dependency issue. Please run:\n\n`gem install mavensmate`\n\nand try your operation again.'
+        sublime.message_dialog(msg)
+        print msg
+        raise BaseException
 
 def stop_local_server():
     cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.stop'"

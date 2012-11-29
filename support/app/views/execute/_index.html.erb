@@ -280,7 +280,7 @@ function handle_response(response) {
 		}
 	} catch(e) {
 		console.log(e)
-		$("#log_coverage_wrapper").html(response)
+		$("#log_coverage_wrapper").html(response["body"])
 		$(".results_hidden").show();
 		$("#a_result").click();
 	}
@@ -308,7 +308,7 @@ $(function(){
 	editor = ace.edit("editor");
 	var JavaMode = require("ace/mode/java").Mode;
 	editor.getSession().setMode(new JavaMode());
-
+	editor.getSession().setUseWrapMode(true);
 	resize()
 	resize_editor()
 	editor.resize()

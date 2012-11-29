@@ -24,7 +24,7 @@ input {
 	height:21px;
 }
 
-#log_selector {
+#log_selector, #log_coverage_wrapper {
 	font-family: Courier New;
 }
 
