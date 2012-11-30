@@ -238,6 +238,13 @@ module MavensMate
       meta_type       = options[:meta_type]
       api_name        = options[:api_name]
 
+      client = MavensMate::Client.new
+      if client.metadata_exist?(options)
+        res = { :success => false, :message => "This API name is already in use in your org" }
+        puts res.to_json
+        return
+      end
+
       zip_file = MavensMate::FileFactory.put_local_metadata(
         :api_name         => api_name, 
         :meta_type        => meta_type, 
@@ -245,7 +252,6 @@ module MavensMate
         :dir              => "tmp", 
         :apex_class_type  => apex_class_type
       )
-      client = MavensMate::Client.new
       result = client.deploy({
         :zip_file => zip_file, 
         :deploy_options => "<rollbackOnError>true</rollbackOnError>"

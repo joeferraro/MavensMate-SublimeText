@@ -94,7 +94,6 @@ module MavensMate
       rescue
 
       end
-
     end
     
     #logs into SFDC, sets metadata server url & sessionid
@@ -360,6 +359,35 @@ module MavensMate
         return false
       end
     end
+
+    def metadata_exist?(options={})
+      begin  
+        begin
+          object_type = options[:meta_type]
+          api_name    = options[:api_name]
+          response = self.pclient.request :query do |soap|
+            soap.header = get_soap_header
+            soap.body = { :queryString => "select count() From #{object_type} Where Name = '#{api_name}'" }
+          end
+        rescue Savon::SOAP::Fault => fault
+          #returning true here so an exception wont interfere with the creation of new metadata
+          return true
+        end
+
+        #puts "\n\nquery response: " + response.to_hash.inspect
+        if response[:query_response][:result][:size] == "0"
+          return false
+        else
+          return true
+        end
+                 
+      rescue Exception => e
+        #returning true here so an exception wont interfere with the creation of new metadata
+        return true
+      end
+    end
+
+
 
     def get_apex_entity_id_by_name(options={})
       file_path = options[:file_name]
