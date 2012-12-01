@@ -12,7 +12,7 @@ MavensMate is a SublimeText plugin that aims to replicate the functionality of t
 * Apex Execute Anonymous
 * Apex Code Assist (beta!!)
 
-*Currently, MavensMate only officially supports OS X. It's on the roadmap to fully support Windows/Linux.
+*Currently, MavensMate only officially supports OS X. A pull request with Linux/Windows support can be found here: https://github.com/joeferraro/MavensMate-SublimeText/pull/53
  
 ##Install
 ```
@@ -31,11 +31,7 @@ If you're using RVM, you probably want to update the "mm_ruby" setting:
 	"mm_ruby": "~/.rvm/bin/rvm-auto-ruby"
 
 ###Install Help
-	https://github.com/joeferraro/MavensMate-SublimeText/wiki/Install-Help
-
-If you happen to encounter issues installing Nokogiri, here's a helpful URL:
-
-	http://nokogiri.org/tutorials/installing_nokogiri.html
+https://github.com/joeferraro/MavensMate-SublimeText/wiki/Install-Help
 
 ##Update
 Run "Update MavensMate" command
