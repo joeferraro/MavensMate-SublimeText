@@ -842,7 +842,7 @@ module MavensMate
     
     #creates a UI alert with the specified message
     def self.alert(message)
-      return { :success => false, :message => message }
+      return { :success => false, :body => message }
     end
     
     #returns the name of a file without its extension
