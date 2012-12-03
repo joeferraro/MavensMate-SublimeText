@@ -68,7 +68,7 @@ module MavensMate
     project_folder = get_project_folder
     project_name = params[:pn]
   	if File.directory?("#{project_folder}#{project_name}")
-  	  return alert "Hm, it looks like this project already exists in your project folder."
+  	  return alert "Hm, it looks like this project already exists in your project folder. Better get more creative!"
   	end
 
     begin   
