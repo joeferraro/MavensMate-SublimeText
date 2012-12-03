@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "1.5.7",
-						"release_notes": "MavensMate now checks server for existing metadata before creation of Classes, Triggers, Pages, and Components",
+						"version": "1.5.8",
+						"release_notes": "Adds resource bundle funtionality for managing static resource archives",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]

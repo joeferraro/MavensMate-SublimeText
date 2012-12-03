@@ -749,6 +749,94 @@ class HideDebugPanelCommand(sublime_plugin.WindowCommand):
         if is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(False)
 
+#right click context menu support for resource bundle creation
+class NewResourceBundleCommand(sublime_plugin.WindowCommand):
+    def run(self, files):
+        if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
+            create_resource_bundle(self, files) 
+
+#prompts users to select a static resource to create a resource bundle
+class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        srs = []
+        for dirname in os.listdir(mm_project_directory()+"/src/staticresources"):
+            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or '-meta.xml' in dirname : continue
+            srs.append(dirname)
+        self.results = srs
+        self.window.show_quick_panel(srs, self.panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        ps = []
+        ps.append(mm_project_directory()+"/src/staticresources/"+self.results[picked])
+        create_resource_bundle(self, ps)
+        
+#deploys selected resource bundle to the server
+class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        self.rbs_map = {}
+        rbs = []
+        for dirname in os.listdir(mm_project_directory()+"/resource-bundles"):
+            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
+            rbs.append(dirname)
+            #self.rbs_map[dirname] = [dirname, sublime_project_file]
+        self.results = rbs
+        self.window.show_quick_panel(rbs, self.panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        self.picked_bundle = self.results[picked]
+        print 'bundling static resource: ' + self.picked_bundle
+        printer = PanelPrinter.get(self.window.id())
+        printer.show()
+        printer.write('\nBundling and deploying to server => ' + self.picked_bundle + '\n') 
+        # delete existing sr
+        if os.path.exists(mm_project_directory()+"/src/staticresources/"+self.picked_bundle):
+            os.remove(mm_project_directory()+"/src/staticresources/"+self.picked_bundle)
+        # zip bundle to static resource dir 
+        os.chdir(mm_project_directory()+"/resource-bundles/"+self.picked_bundle)
+        cmd = "zip -r -X '"+mm_project_directory()+"/src/staticresources/"+self.picked_bundle+"' *"      
+        os.system(cmd)
+        #compile
+        file_path = mm_project_directory()+"/src/staticresources/"+self.picked_bundle
+        threads = []
+        thread = MetadataAPICall("compile_file", "'"+file_path+"'")
+        threads.append(thread)
+        thread.start()
+        handle_threads(threads, printer, handle_result, 0)
+        send_usage_statistics('Deploy Resource Bundle')
+
+#creates resource-bundles for the static resource(s) selected        
+def create_resource_bundle(self, files):
+    for file in files:
+        fileName, fileExtension = os.path.splitext(file)
+        if fileExtension != '.resource':
+            sublime.message_dialog("You can only create resource bundles for static resources")
+            return
+    printer = PanelPrinter.get(self.window.id())
+    printer.show()
+    printer.write('\nCreating Resource Bundle(s)\n')
+
+    if not os.path.exists(mm_project_directory()+'/resource-bundles'):
+        os.makedirs(mm_project_directory()+'/resource-bundles')
+
+    for file in files:
+        fileName, fileExtension = os.path.splitext(file)
+        baseFileName = fileName.split("/")[-1]
+        if os.path.exists(mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension):
+            printer.write('[OPERATION FAILED]: The resource bundle already exists\n')
+            return
+        cmd = 'unzip \''+file+'\' -d \''+mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension+'\''
+        res = os.system(cmd)
+
+    printer.write('[Resource bundle creation complete]\n')
+    printer.hide()
+    send_usage_statistics('Create Resource Bundle') 
+
 #calls out to the ruby scripts that interact with the metadata api
 #pushes them to background threads and reads the piped response
 class MetadataAPICall(threading.Thread):

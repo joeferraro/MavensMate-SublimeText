@@ -6,7 +6,8 @@
 	    	[
 				{ "caption": "Delete Selected Files from Salesforce Server", "command": "delete_metadata", "args": {"files": []} },
 				{ "caption": "Refresh From Server", "command": "refresh_directory", "args": {"dirs": []} },
-				{ "caption": "Create MavensMate Project", "command": "create_mavens_mate_project", "args": {"dirs": []} }
+				{ "caption": "Create MavensMate Project", "command": "create_mavens_mate_project", "args": {"dirs": []} },
+				{ "caption": "Create Resource Bundle(s)", "command": "new_resource_bundle", "args": {"files": []} }
 	    	]
 	 }
 ]

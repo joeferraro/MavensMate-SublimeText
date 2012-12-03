@@ -54,5 +54,13 @@
   {
     "caption": "MavensMate: Open Project",          
     "command": "open_project"
-  } 
+  },
+  {
+    "caption": "MavensMate: Deploy Resource Bundle",          
+    "command": "deploy_resource_bundle"
+  },
+  {
+    "caption": "MavensMate: Create Resource Bundle",          
+    "command": "create_resource_bundle"
+  }
 ]
