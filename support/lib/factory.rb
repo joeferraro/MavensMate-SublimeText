@@ -98,7 +98,6 @@ module MavensMate
           src.puts("namespace: " + namespace) if namespace
           src.close
         end
-        put_tm_properties(project_folder+project_name)
       end
 
       def put_sublime_text_project_file(project_name)
@@ -356,11 +355,7 @@ module MavensMate
       def remove_directory(dir)
         FileUtils.rm_rf dir if File.exist?(dir)
       end
-      
-      def put_tm_properties(project_directory)
-        File.open("#{project_directory}/.tm_properties", 'w') {|f| f.write("projectDirectory     = \"$CWD\"") }
-      end
-      
+            
       #removes files with the specified extension from a directory
       def clean_directory(dir, extension="")
         begin
