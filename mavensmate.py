@@ -26,6 +26,13 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
 
+def check_for_workspace():
+    if not os.path.exists(settings.get('mm_workspace')):
+        #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
+        msg = 'Your mm_workspace directory does not exist. Please create the directory then try your operation again. Thx!'
+        sublime.message_dialog(msg)  
+        raise BaseException
+
 def get_ruby():
     ruby = "ruby"    
     if settings.get('mm_ruby') != None: 
@@ -35,10 +42,11 @@ def get_ruby():
 ruby = get_ruby()
 
 def start_local_server():
+    check_for_workspace()
     cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.start'"
     result = os.system(cmd)
     if result != 0:
-        msg = 'The local MavensMate server has failed to launch; you may have a gem dependency issue. Please run:\n\n`gem install mavensmate`\n\nand try your operation again.'
+        msg = 'The local MavensMate server has failed to launch; you may have a gem dependency issue. Please run:\n\n`gem install mavensmate`\n\nand try your operation again.\n\nIf that does not work: if you are using rvm, it may be that rvm is failing to load in your shell. You may need to modify your .bash_profile as documented here:\n\n"Post Install Configuration"\nhttps://rvm.io/rvm/basics/'
         sublime.message_dialog(msg)
         print msg
         raise BaseException
