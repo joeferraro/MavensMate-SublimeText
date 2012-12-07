@@ -470,6 +470,8 @@ module MavensMate
               template_name = "UrlRewriterApexClass"
             elsif apex_class_type == "empty"
               template_name = "ApexClassNoConstructor"
+            elsif apex_class_type == "exception"
+              template_name = "ApexExceptionClass"
             else
               template_name = "ApexClass"
             end
