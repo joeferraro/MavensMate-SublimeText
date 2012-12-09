@@ -22,7 +22,7 @@ $ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/mast
 
 <img src="http://wearemavens.com/images/mm/menu3.png"/>
 
-Go to "MavensMate --> Open --> Settings - User" and modify "mm_workspace" with the location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
+Go to "MavensMate --> Settings - User" and modify "mm_workspace" with the EXISTING location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
 
 	"mm_workspace": "/Users/your_username/Projects"
 
@@ -34,6 +34,8 @@ If you're using RVM, you probably want to update the "mm_ruby" setting:
 https://github.com/joeferraro/MavensMate-SublimeText/wiki/Install-Help
 
 ##Update
+If "mm_check_for_updates" is set to `true`, MavensMate will check for updates when Sublime Text starts up. If you do not want to subscribe to automatic updates:
+
 Run "Update MavensMate" command
 
 <img src="http://wearemavens.com/images/mm/mmupdate3.png"/>
@@ -42,7 +44,6 @@ OR run the following terminal command:
 ```
 $ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.rb)
 ```
-
 
 ##Wiki
 <a href="https://github.com/joeferraro/MavensMate-SublimeText/wiki">https://github.com/joeferraro/MavensMate-SublimeText/wiki</a>
