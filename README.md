@@ -1,4 +1,4 @@
-#MavensMate
+#MavensMate IDE for Force.com
 
 MavensMate is a SublimeText plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.
 
