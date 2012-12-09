@@ -34,7 +34,7 @@ If you're using RVM, you probably want to update the "mm_ruby" setting:
 https://github.com/joeferraro/MavensMate-SublimeText/wiki/Install-Help
 
 ##Update
-If "mm_check_for_updates" is set to `true`, MavensMate will check for updates when Sublime Text starts up. If you do not want to subscribe to automatic updates:
+If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If you do not want to subscribe to automatic updates:
 
 Run "Update MavensMate" command
 
