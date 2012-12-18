@@ -425,7 +425,7 @@ $(function() {
 				mm_current_project_directory: mm_cpd,
 				do_refresh: refresh
 			},
-			beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.<br/><br/>Thanks for being patient! :)'); },
+			beforeSend: function() { showLoading('Indexing your Salesforce.com metadata.  This operation could take a while depending on the size of your org.<br/><br/>Thanks for being patient! :)'); },
 			complete: function(data){
 				console.log(data)
 				var response = JSON.parse(data.responseText)
