@@ -137,7 +137,7 @@
 					 do_refresh: refresh,
 					 mode: "edit"
 				},
-				beforeSend: function() { showLoading('Indexing your Salesforce.com metatada.  This operation could take a while depending on the size of your org.<br/><br/>Thanks for being patient! :)'); },
+				beforeSend: function() { showLoading('Indexing your Salesforce.com metadata.  This operation could take a while depending on the size of your org.<br/><br/>Thanks for being patient! :)'); },
 				complete: function(data, status, xhr){
 					console.log(data)
 					var response = JSON.parse(data.responseText)
