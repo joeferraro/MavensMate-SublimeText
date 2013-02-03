@@ -18,6 +18,8 @@ import json
 import apex_reserved 
 import traceback
 
+from test_runner import *
+
 mm_dir = os.getcwdu()
 #PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 #for future reference (windows/linux support)
