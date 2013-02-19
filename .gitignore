@@ -1,5 +1,5 @@
 
-mavensmate.pyc
+*.pyc
 
 .DS_Store
 
@@ -20,3 +20,5 @@ apex_reserved.pyc
 support/lib/test_packages.rb
 
 bin/.DS_Store
+
+command_helper.pyc
