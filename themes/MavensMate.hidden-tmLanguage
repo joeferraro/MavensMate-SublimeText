@@ -26,6 +26,18 @@
     </dict>
     <dict>
         <key>match</key>
+        <string>^\Unrecognized command?</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
+        <string>^\[ERROR\]?</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
         <string>^Compiling?</string>
         <key>name</key>
         <string>operation.go</string>

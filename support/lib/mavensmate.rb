@@ -381,6 +381,18 @@ module MavensMate
       puts res.to_json 
     end
   end
+
+  def self.compile_selected_files
+    begin
+      zip_file = MavensMate::FileFactory.put_tmp_metadata(get_metadata_hash)     
+      client = MavensMate::Client.new
+      result = client.deploy({:zip_file => zip_file, :deploy_options => "<rollbackOnError>true</rollbackOnError>"})
+      puts result.to_json
+    rescue Exception => e
+      res = { :success => false, :message => e.message+ "\n" + e.backtrace.join("\n") }
+      puts res.to_json 
+    end
+  end
   
   #compiles entire project
   def self.compile_project
@@ -746,18 +758,7 @@ module MavensMate
 
     end
   end
-  
-  #runs applescript that closes all textmate html windows
-  def self.close_all_html_windows
-    pid = fork do
-      Thread.new do
-        script_path = "#{ENV['TM_BUNDLE_SUPPORT']}/osx/closewindows.scpt"
-        %x{osascript &>/dev/null '#{script_path}'}
-      end
-    end
-    Process.detach(pid)
-  end
-  
+    
   def self.close_deploy_window
     pid = fork do
       Thread.new do
@@ -853,6 +854,7 @@ module MavensMate
     #returns metadata hash of selected files  #=> {"ApexClass" => ["aclass", "anotherclass"], "ApexTrigger" => ["atrigger", "anothertrigger"]}
     def self.get_metadata_hash(active_file=false)
       selected_files = get_selected_files(active_file)     
+      MavensMate::logger.debug 'selected_files: ' + selected_files.inspect
       meta_hash = {}
       selected_files.each do |f|
         #puts "selected file: " + f + "\n\n"
@@ -903,22 +905,31 @@ module MavensMate
       else
         begin
           selected_files = ENV["TM_SELECTED_FILES"].split(",")
+          MavensMate::logger.debug 'selected_files: ' + selected_files.inspect
           #puts selected_files.inspect
           #selected_files = Shellwords.shellwords(ENV["TM_SELECTED_FILES"])
           selected_files.each do |f|
+            MavensMate::logger.debug 'file: ' + f
             next if f.include? "-meta.xml"        
             ext = File.extname(f).gsub(".","") #=> cls
+            MavensMate::logger.debug 'ext: ' + ext
             mt_hash = MavensMate::FileFactory.get_meta_type_by_suffix(ext)      
+            if mt_hash == nil
+              selected_files.delete(f)
+              next
+            end
             if mt_hash[:meta_file]
               if ! selected_files.include? f + "-meta.xml" #if they didn't select the meta file, select it anyway
                 selected_files.push(f + "-meta.xml")   
               end
             end
           end
+          MavensMate::logger.debug 'selected_files: ' + selected_files.inspect
           selected_files.uniq!
           return selected_files
         rescue Exception => e
           #puts e.backtrace
+          MavensMate::logger.debug 'error: ' + e.message + e.backtrace.join("\n") 
           return Array[ENV['TM_FILEPATH']]
         end
       end

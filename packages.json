@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "1.5.8",
-						"release_notes": "Adds resource bundle funtionality for managing static resource archives",
+						"version": "1.5.9",
+						"release_notes": "Adds MavensMate shell commands, ",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]

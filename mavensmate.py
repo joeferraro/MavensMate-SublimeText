@@ -16,6 +16,7 @@ import urllib, urllib2
 from xml.dom.minidom import parse, parseString
 import json
 import apex_reserved 
+import command_helper 
 import traceback
 
 mm_dir = os.getcwdu()
@@ -46,9 +47,13 @@ def start_local_server():
     cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.start'"
     result = os.system(cmd)
     if result != 0:
-        msg = 'The local MavensMate server has failed to launch; you may have a gem dependency issue. Please run:\n\n`gem install mavensmate`\n\nand try your operation again.\n\nIf that does not work: if you are using rvm, it may be that rvm is failing to load in your shell. You may need to modify your .bash_profile as documented here:\n\n"Post Install Configuration"\nhttps://rvm.io/rvm/basics/'
-        sublime.message_dialog(msg)
-        print msg
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        msg = 'The local MavensMate server has failed to launch: \n\n'
+        pout = ''
+        if p.stdout is not None : 
+            pout = p.stdout.readlines()
+        pout = '\n'.join(pout)
+        sublime.message_dialog(msg + pout)
         raise BaseException
 
 def stop_local_server():
@@ -149,7 +154,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         self.dir_map = {}
         dirs = []
         for dirname in os.listdir(mm_workspace()):
-            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
+            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
             if dirname in open_projects : continue
             sublime_project_file = dirname+'.sublime-project'
             for project_content in os.listdir(mm_workspace()+"/"+dirname):
@@ -366,6 +371,53 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             handle_threads(threads, printer, handle_result, 0)  
             send_usage_statistics('Delete Metadata')
 
+#opens the MavensMate shell
+class NewShellCommand(sublime_plugin.TextCommand):
+    def run(self, edit): 
+        send_usage_statistics('New Shell Command')
+        sublime.active_window().show_input_panel("MavensMate Command", "", self.on_input, None, None)
+    
+    def on_input(self, input): 
+        try:
+            ps = input.split(" ")
+            if ps[0] == 'new':
+                metadata_type, metadata_name, object_name = '', '', ''
+                metadata_type   = ps[1]
+                proper_type     = command_helper.dict[metadata_type][0]
+                metadata_name   = ps[2]
+                if len(ps) > 3:
+                    object_name = ps[3]
+                options = {
+                    'metadata_type'     : proper_type,
+                    'metadata_name'     : metadata_name,
+                    'object_api_name'   : object_name,
+                    'apex_class_type'   : 'Base'
+                }
+                new_metadata(self, options)
+            elif ps[0] == 'bundle' or ps[0] == 'b':
+                deploy_resource_bundle(ps[1])
+            else:
+                print_debug_panel_message('Unrecognized command: ' + input + '\n')
+        except:
+            print_debug_panel_message('Unrecognized command: ' + input + '\n')
+
+def new_metadata(self, opts={}):
+    printer = PanelPrinter.get(self.view.window().id())
+    printer.show()
+    printer.write('\nCreating New '+opts['metadata_type']+' => ' + opts['metadata_name'] + '\n')
+    param1 = ''
+    if opts['metadata_type'] == 'ApexClass':
+        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\", :apex_class_type=>\""+opts['apex_class_type']+"\"}"
+    elif opts['metadata_type'] == 'ApexTrigger':
+        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\", :object_api_name=>\""+opts['object_api_name']+"\"}"
+    else:
+        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\"}"
+    threads = []
+    thread = MetadataAPICall("new_metadata", "'"+param1+"' '"+mm_project_directory()+"'")
+    threads.append(thread)
+    thread.start()
+    handle_threads(threads, printer, handle_result, 0)
+
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
@@ -373,15 +425,13 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Apex Class Name, Template (base, test, batch, sched, email, exception, empty)", "MyClass, base", self.on_input, None, None)
     
     def on_input(self, input): 
-        printer = PanelPrinter.get(self.view.window().id())
-        printer.show()
         api_name, class_type = parse_new_metadata_input(input)
-        printer.write('\nCreating New Apex Class => ' + api_name + '\n')
-        threads = []
-        thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexClass\", :api_name=>\""+api_name+"\", :apex_class_type=>\""+class_type+"\"}' '"+mm_project_directory()+"'")
-        threads.append(thread)
-        thread.start()
-        handle_threads(threads, printer, handle_result, 0)  
+        options = {
+            'metadata_type'     : 'ApexClass',
+            'metadata_name'     : api_name,
+            'apex_class_type'   : class_type
+        }
+        new_metadata(self, options)  
 
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
@@ -390,15 +440,13 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name", "MyAccountTrigger, Account", self.on_input, None, None)
     
     def on_input(self, input): 
-        printer = PanelPrinter.get(self.view.window().id())
-        printer.show()
         api_name, sobject_name = parse_new_metadata_input(input)
-        printer.write('\nCreating New Apex Trigger => ' + api_name + '\n')
-        threads = []
-        thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexTrigger\", :api_name=>\""+api_name+"\", :object_api_name=>\""+sobject_name+"\"}' '"+mm_project_directory()+"'")
-        threads.append(thread)
-        thread.start()
-        handle_threads(threads, printer, handle_result, 0)  
+        options = {
+            'metadata_type'     : 'ApexTrigger',
+            'metadata_name'     : api_name,
+            'object_api_name'   : sobject_name
+        }
+        new_metadata(self, options)   
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
@@ -407,15 +455,12 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Visualforce Page Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        printer = PanelPrinter.get(self.view.window().id())
-        printer.show()
         api_name = parse_new_metadata_input(input)
-        printer.write('\nCreating New Visualforce Page => ' + api_name + '\n')
-        threads = []
-        thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexPage\", :api_name=>\""+api_name+"\"}' '"+mm_project_directory()+"'")
-        threads.append(thread)
-        thread.start()
-        handle_threads(threads, printer, handle_result, 0)  
+        options = {
+            'metadata_type'     : 'ApexPage',
+            'metadata_name'     : api_name
+        }
+        new_metadata(self, options)     
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
@@ -424,15 +469,12 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        printer = PanelPrinter.get(self.view.window().id())
-        printer.show()
-        api_name = parse_new_metadata_input(input)
-        printer.write('\nCreating New Visualforce Component => ' + api_name + '\n')
-        threads = []
-        thread = MetadataAPICall("new_metadata", "'{:meta_type=>\"ApexComponent\", :api_name=>\""+api_name+"\"}' '"+mm_project_directory()+"'")
-        threads.append(thread)
-        thread.start()
-        handle_threads(threads, printer, handle_result, 0)  
+        api_name, sobject_name = parse_new_metadata_input(input)
+        options = {
+            'metadata_type'     : 'ApexComponent',
+            'metadata_name'     : api_name
+        }
+        new_metadata(self, options)   
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
@@ -789,7 +831,6 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
         for dirname in os.listdir(mm_project_directory()+"/resource-bundles"):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
             rbs.append(dirname)
-            #self.rbs_map[dirname] = [dirname, sublime_project_file]
         self.results = rbs
         self.window.show_quick_panel(rbs, self.panel_done,
             sublime.MONOSPACE_FONT)
@@ -797,26 +838,29 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
             return
-        self.picked_bundle = self.results[picked]
-        print 'bundling static resource: ' + self.picked_bundle
-        printer = PanelPrinter.get(self.window.id())
-        printer.show()
-        printer.write('\nBundling and deploying to server => ' + self.picked_bundle + '\n') 
-        # delete existing sr
-        if os.path.exists(mm_project_directory()+"/src/staticresources/"+self.picked_bundle):
-            os.remove(mm_project_directory()+"/src/staticresources/"+self.picked_bundle)
-        # zip bundle to static resource dir 
-        os.chdir(mm_project_directory()+"/resource-bundles/"+self.picked_bundle)
-        cmd = "zip -r -X '"+mm_project_directory()+"/src/staticresources/"+self.picked_bundle+"' *"      
-        os.system(cmd)
-        #compile
-        file_path = mm_project_directory()+"/src/staticresources/"+self.picked_bundle
-        threads = []
-        thread = MetadataAPICall("compile_file", "'"+file_path+"'")
-        threads.append(thread)
-        thread.start()
-        handle_threads(threads, printer, handle_result, 0)
-        send_usage_statistics('Deploy Resource Bundle')
+        deploy_resource_bundle(self.results[picked])
+
+def deploy_resource_bundle(bundle_name):
+    if '.resource' not in bundle_name:
+        bundle_name = bundle_name + '.resource'
+    printer = PanelPrinter.get(sublime.active_window().id())
+    printer.show()
+    printer.write('\nBundling and deploying to server => ' + bundle_name + '\n') 
+    # delete existing sr
+    if os.path.exists(mm_project_directory()+"/src/staticresources/"+bundle_name):
+        os.remove(mm_project_directory()+"/src/staticresources/"+bundle_name)
+    # zip bundle to static resource dir 
+    os.chdir(mm_project_directory()+"/resource-bundles/"+bundle_name)
+    cmd = "zip -r -X '"+mm_project_directory()+"/src/staticresources/"+bundle_name+"' *"      
+    os.system(cmd)
+    #compile
+    file_path = mm_project_directory()+"/src/staticresources/"+bundle_name
+    threads = []
+    thread = MetadataAPICall("compile_file", "'"+file_path+"'")
+    threads.append(thread)
+    thread.start()
+    handle_threads(threads, printer, handle_result, 0)
+    send_usage_statistics('Deploy Resource Bundle')
 
 #creates resource-bundles for the static resource(s) selected        
 def create_resource_bundle(self, files):
@@ -962,6 +1006,11 @@ def handle_threads(threads, printer, handle_result, i=0):
 
     handle_result(printer, compile_result)
 
+def print_debug_panel_message(message):
+    printer = PanelPrinter.get(sublime.active_window().id())
+    printer.show()
+    printer.write(message)
+
 #prints the result of the ruby script, can be a string or a dict
 def print_result_message(res, printer):
     if isinstance(res, str):
@@ -1082,35 +1131,44 @@ def check_for_updates():
 # future functionality
 
 #TODO: deploys the currently open tabs
-# class CompileTabsCommand(sublime_plugin.WindowCommand):
-#     def run(self):
-#         #printer = PanelPrinter.get(self.window.id())
-#         files = get_tab_file_names()
-#         files_list = ', '.join(files)
-#         print files_list
-#         # printer.write('Compiling Active Tabs\n')        
-#         # threads = []
-#         # thread = MetadataAPICall("compile_file", "'"+active_file+"'")
-#         # threads.append(thread)
-#         # thread.start()
-#         # handle_threads(threads, printer, handle_result, 0)
-#         foo = 'bar'
+class CompileTabsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        printer = PanelPrinter.get(self.window.id())
+        printer.show()
+        printer.write('\nCompiling tabs\n')
 
-# def get_tab_file_names():
-#     from os import path
-#     from operator import itemgetter
-#     from datetime import datetime
-#     tabs = []
-#     win = sublime.active_window()
-#     for vw in win.views():
-#        if vw.file_name() is not None:
-#           #_, tail = path.split(vw.file_name())
-#           #modified = path.getmtime(vw.file_name())
-#           #tabs.append((tail, vw, modified))
-#           tabs.append('"'+vw.file_name()+'"')
-#        else:
-#           pass      # leave new/untitled files (for the moment)
-#     return tabs 
+        files = get_tab_file_names()
+        files_list = ', '.join(files)
+        print files_list
+        temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
+        try:
+            temp.write(files_list)
+        finally:
+            temp.close()
+        threads = []
+        thread = MetadataAPICall("compile_selected_metadata", "'"+temp.name+"' '"+mm_project_directory()+"'")
+        threads.append(thread)
+        thread.start()
+        handle_threads(threads, printer, handle_result, 0)  
+        send_usage_statistics('Compile Tabs')
+
+
+def get_tab_file_names():
+    from os import path
+    from operator import itemgetter
+    from datetime import datetime
+    tabs = []
+    win = sublime.active_window()
+    for vw in win.views():
+       if vw.file_name() is not None:
+          #_, tail = path.split(vw.file_name())
+          #modified = path.getmtime(vw.file_name())
+          #tabs.append((tail, vw, modified))
+          #tabs.append('"'+vw.file_name()+'"')
+          tabs.append(vw.file_name())
+       else:
+          pass      # leave new/untitled files (for the moment)
+    return tabs 
 
 # class GetTabsCommand(sublime_plugin.WindowCommand):
 #     def run(self):
