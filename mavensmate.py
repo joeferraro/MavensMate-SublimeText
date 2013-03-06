@@ -361,7 +361,7 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
         json_data = open(mm_dir+"/packages.json")
         data = json.load(json_data)
         json_data.close()
-        version = data["packages"][0]["platforms"]["osx"][0]["version"]
+        version = data["packages"][0]["platforms"][sublime.platform()][0]["version"]
         sublime.message_dialog("MavensMate v"+version+"\n\nMavensMate is an open source Sublime Text package for Force.com\n\nmavens.io/mm")
 
 #replaces local copy of metadata with latest server copies
@@ -1384,7 +1384,7 @@ class UsageReporter(threading.Thread):
             json_data = open(mm_dir+"/packages.json")
             data = json.load(json_data)
             json_data.close()
-            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
+            current_version = data["packages"][0]["platforms"][sublime.platform()][0]["version"]
 
             #post to usage servlet
             url = "https://mavensmate.appspot.com/usage"
@@ -1409,13 +1409,14 @@ class AutomaticUpgrader(threading.Thread):
             json_data = open(mm_dir+"/packages.json")
             data = json.load(json_data)
             json_data.close()
-            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
+            current_version = data["packages"][0]["platforms"][sublime.platform()][0]["version"]
             import urllib
-            j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
-            latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
+            my_uri = "https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json" if (sublime.platform() == 'osx') else "https://raw.github.com/amtrack/MavensMate-SublimeText/linux_windows/packages.json"
+            j = json.load(urllib.urlopen(my_uri))
+            latest_version = j["packages"][0]["platforms"][sublime.platform()][0]["version"]
             release_notes = "\n\nRelease Notes: "
             try:
-                release_notes += j["packages"][0]["platforms"]["osx"][0]["release_notes"] + "\n\n"
+                release_notes += j["packages"][0]["platforms"][sublime.platform()][0]["release_notes"] + "\n\n"
             except:
                 release_notes = ""
             current_array = current_version.split(".")

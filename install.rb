@@ -20,15 +20,21 @@ module OS
 end
 
 if (OS.mac?) then
-  @install_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages/MavensMate")
-  @user_settings_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages/User")
+  @packages_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages")
+  @origin = 'joeferraro'
+  @branch = 'master'
 elsif (OS.linux?) then
-  @install_path = File.expand_path("~/.config/sublime-text-2/Packages/MavensMate")
-  @user_settings_path = File.expand_path("~/.config/sublime-text-2/Packages/User")
+  @packages_path = File.expand_path("~/.config/sublime-text-2/Packages")
+  @origin = 'amtrack'
+  @branch = 'linux_windows'
 elsif (OS.windows?) then
-  @install_path = File.expand_path("~/AppData/Roaming/Sublime Text 2/Packages/MavensMate")
-  @user_settings_path = File.expand_path("~/AppData/Roaming/Sublime Text 2/Packages/User")
+  @packages_path = File.expand_path("~/AppData/Roaming/Sublime Text 2/Packages")
+  @origin = 'amtrack'
+  @branch = 'linux_windows'
 end
+@install_path = File.join(@packages_path, "MavensMate")
+@user_settings_path = File.join(@packages_path, "User")
+@github_uri = "https://github.com/#{@origin}/MavensMate-SublimeText.git"
 
 def check_requirements
   if OS.mac? then
@@ -42,7 +48,8 @@ end
 
 def install_package
   puts "installing MavensMate Sublime Text 2 package to '#{@install_path}'"
-  %x{git clone git://github.com/joeferraro/MavensMate-SublimeText.git "#{@install_path}"}
+  FileUtils.mkdir_p(@packages_path)
+  %x{git clone -b #{@branch} --origin #{@origin} #{@github_uri} "#{@install_path}"}
 end
 
 def install_user_settings
