@@ -455,15 +455,16 @@ def new_metadata(self, opts={}):
     printer = PanelPrinter.get(self.view.window().id())
     printer.show()
     printer.write('\nCreating New '+opts['metadata_type']+' => ' + opts['metadata_name'] + '\n')
-    param1 = ''
+    param1 = {}
+    param1['meta_type'] = opts['metadata_type']
+    param1['api_name'] = opts['metadata_name']
     if opts['metadata_type'] == 'ApexClass':
-        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\", :apex_class_type=>\""+opts['apex_class_type']+"\"}"
+        param1['apex_class_type'] = opts['apex_class_type']
     elif opts['metadata_type'] == 'ApexTrigger':
-        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\", :object_api_name=>\""+opts['object_api_name']+"\"}"
-    else:
-        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\"}"
+        param1['object_api_name'] = opts['object_api_name']
+
     threads = []
-    thread = MetadataAPICall("new_metadata", "'"+param1+"' '"+mm_project_directory()+"'")
+    thread = MetadataAPICall("new_metadata", "'%s' '%s'" % (json.dumps(param1), mm_project_directory()))
     threads.append(thread)
     thread.start()
     handle_threads(threads, printer, handle_result, 0)
