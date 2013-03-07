@@ -90,7 +90,8 @@ def launch_mavens_mate_window(temp_file_name):
         os.system("open '"+mm_dir+"/bin/MavensMate.app' --args -url '"+temp_file_name+"'")
         time.sleep(1)
     else:
-        subprocess.Popen("%s --app=file://%s" % (chrome, temp_file_name), shell=True, stdout=subprocess.PIPE)
+        param1 = '--app=file://%s' % temp_file_name
+        subprocess.Popen([chrome, param1], stdout=subprocess.PIPE)
         time.sleep(3)
 
     os.remove(temp_file_name) #<= we may want to move this delete call to the binary
