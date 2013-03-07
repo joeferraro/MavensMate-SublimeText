@@ -600,6 +600,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 return sorted(_completions)
             elif os.path.isfile(mm_project_directory()+"/src/classes/"+word+".cls"): #=> custom apex class static methods
                 search_name = prep_for_search(word)
+                search_name = search_name.lower()
                 print search_name
                 print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"
                 if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
