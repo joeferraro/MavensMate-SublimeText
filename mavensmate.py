@@ -987,11 +987,11 @@ def create_resource_bundle(self, files):
             return
         zfObj = zipfile.ZipFile(file)
         for name in zfObj.namelist():
-            if name.endswith(os.path.sep):
-                os.mkdir(os.path.join(unZipTargetDir, name))
+            if name.endswith(os.path.sep) or name.endswith('/'):
+                os.makedirs(to_posix_path(os.path.join(unZipTargetDir, name)))
             else:
-                ext_filename = os.path.join(unZipTargetDir, name)
-                ext_dir = os.path.dirname(ext_filename)
+                ext_filename = to_posix_path(os.path.join(unZipTargetDir, name))
+                ext_dir = to_posix_path(os.path.dirname(ext_filename))
                 if not os.path.exists(ext_dir): os.mkdir(ext_dir, 0777)
                 outfile = open(ext_filename, 'wb')
                 outfile.write(zfObj.read(name))
