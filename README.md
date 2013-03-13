@@ -17,7 +17,7 @@ MavensMate is a SublimeText plugin that aims to replicate the functionality of t
 ##Install
 ```
 $ gem install mavensmate
-$ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.rb)
+$ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.rb)
 ```
 ###Install Help
 https://github.com/joeferraro/MavensMate-SublimeText/wiki/Install-Help
@@ -29,10 +29,6 @@ https://github.com/joeferraro/MavensMate-SublimeText/wiki/Install-Help
 Go to "MavensMate --> Settings --> User" and modify `mm_workspace` with the EXISTING location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
 
 	"mm_workspace": "/Users/your_username/Projects"
-
-If you're using RVM (recommended), you probably want to update the "mm_ruby" setting:
-
-	"mm_ruby": "~/.rvm/bin/rvm-auto-ruby"
 
 ##Update
 If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If you do not want to subscribe to automatic updates:
