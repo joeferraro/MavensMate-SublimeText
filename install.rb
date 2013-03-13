@@ -23,7 +23,7 @@ end
 @user_settings_path = File.expand_path("~/Library/Application Support/Sublime Text 2/Packages/User")
 
 def install_package
-  `git clone git://github.com/joeferraro/MavensMate-SublimeText.git '#{@install_path}'`
+  `git clone git://github.com/joeferraro/MavensMate-SublimeText.git -b 2.0 '#{@install_path}'`
 end
 
 def install_user_settings
