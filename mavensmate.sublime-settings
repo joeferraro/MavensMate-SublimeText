@@ -7,9 +7,6 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 */
 
 {
-	//** if you wish to utilize rvm, set to "~/.rvm/bin/rvm-auto-ruby"
-	"mm_ruby" : "ruby",
-	
 	//set to location where you wish your MavensMate project to reside (must be an existing directory)
 	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
 	"mm_workspace" : "",
@@ -39,5 +36,14 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_soap_log" : false,
 
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see mavensmate.py for source of the call)
-	"mm_send_usage_statistics" : true
+	"mm_send_usage_statistics" : true,
+
+	//the location of MavensMate.app
+	"mm_app_location" : "/Applications/MavensMate.app",
+
+	//the location of the mm command line tool (must be inside MavensMate.app)
+	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
+
+	//if true, MavensMate.app will start when Sublime Text starts
+	"mm_start_app_on_st_startup" : true
 }

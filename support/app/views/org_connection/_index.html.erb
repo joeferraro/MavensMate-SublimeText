@@ -103,11 +103,10 @@
 				type: "POST",
 				url: "http://127.0.0.1:7777/connections", 
 				data: {
-					 un: $("#un").val(), 
-					 pw: $("#pw").val(), 
-					 server_url: $("#server_url").val(),
-					 pd: '<%= ENV['MM_CURRENT_PROJECT_DIRECTORY'] %>'
-
+					 username 		: $("#un").val(), 
+					 password 		: $("#pw").val(), 
+					 org_type 		: $("#org_type").val(),
+					 project_name 	: '{{name}}'
 				},
 				beforeSend: function() { showLoading('Adding connection'); },
 				complete: function(data){

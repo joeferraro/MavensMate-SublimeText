@@ -62,5 +62,9 @@
   {
     "caption": "MavensMate: Create Resource Bundle",          
     "command": "create_resource_bundle"
+  },
+  {
+    "caption": "MavensMate: Compile Tabs",          
+    "command": "compile_tabs"
   }
 ]
