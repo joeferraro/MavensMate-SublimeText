@@ -6,12 +6,12 @@
 			"description": "MavensMate is a SublimeText plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.",
 			"author": "joeferraro",
 			"homepage": "https://github.com/joeferraro/MavensMate-SublimeText",
-			"last_modified": "2012-11-30 12:10:00",
+			"last_modified": "2013-03-13 12:10:00",
 			"platforms": {
 				"osx": [
 					{
-						"version": "1.5.9",
-						"release_notes": "Adds MavensMate shell commands, ",
+						"version": "2.0",
+						"release_notes": "Beta version that connects to new MavensMate.app",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
