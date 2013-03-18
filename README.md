@@ -24,8 +24,15 @@ MavensMate.exe for Windows has not yet been built.
 MavensMate for Linux has not yet been built.
 
 ##Install
+
+Beta:
 ```
-$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.py -b 2.0)
+$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install_beta.py)
+```
+
+Stable:
+```
+$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.py)
 ```
 
 ##Setup
