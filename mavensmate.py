@@ -625,7 +625,7 @@ class NewResourceBundleCommand(sublime_plugin.WindowCommand):
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self):
         srs = []
-        for dirname in os.listdir(mm_project_directory()+"/src/staticresources"):
+        for dirname in os.listdir(util.mm_project_directory()+"/src/staticresources"):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or '-meta.xml' in dirname : continue
             srs.append(dirname)
         self.results = srs
@@ -636,7 +636,7 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         ps = []
-        ps.append(mm_project_directory()+"/src/staticresources/"+self.results[picked])
+        ps.append(util.mm_project_directory()+"/src/staticresources/"+self.results[picked])
         util.create_resource_bundle(self, ps)
         
 #deploys selected resource bundle to the server

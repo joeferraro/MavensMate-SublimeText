@@ -1,4 +1,4 @@
-#MavensMate IDE for Force.com
+#MavensMate IDE for Force.com (2.0 beta)
 
 MavensMate is a SublimeText plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.
 
@@ -12,16 +12,21 @@ MavensMate is a SublimeText plugin that aims to replicate the functionality of t
 * Apex Execute Anonymous
 * Apex Code Assist (beta!!)
 
-*Currently, MavensMate only officially supports OS X. A pull request with Linux/Windows support can be found here: https://github.com/joeferraro/MavensMate-SublimeText/pull/53
- 
+##Prerequisites
+
+###Mac OSX
+You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
+
+###Windows
+MavensMate.exe for Windows has not yet been built.
+
+###Linux
+MavensMate for Linux has not yet been built.
+
 ##Install
 ```
-$ gem install mavensmate
-$ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.rb)
+$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.py -b 2.0)
 ```
-###Install Help
-https://github.com/joeferraro/MavensMate-SublimeText/wiki/Install-Help
-
 
 ##Setup
 <img src="http://wearemavens.com/images/mm/menu3.png" width="400"/>
@@ -39,7 +44,7 @@ Run "Update MavensMate" command
 
 OR run the following terminal command:
 ```
-$ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.rb)
+$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.py -b 2.0)
 ```
 
 ##Wiki
@@ -60,3 +65,5 @@ $ ruby < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/mast
 <img src="http://wearemavens.com/images/mm/code_4.png"/>
 ###Pacman
 <img src="http://wearemavens.com/images/mm/pacman.png"/>
+
+[mm_download]: http://joe-ferraro.com/mavensmate/MavensMate.zip
