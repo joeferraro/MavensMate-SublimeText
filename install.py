@@ -25,11 +25,10 @@ branch              = None
 git_url             = pipes.quote('git://github.com/joeferraro/MavensMate-SublimeText.git')
 
 def install_from_source():
-    if branch != None:
+    os.system("git clone {0} {1}".format(git_url, pipes.quote(install_path)))
+    if branch != None and branch != '':
         #2.0 is beta
-        os.system("git clone {0} -b {1} {2}".format(git_url, pipes.quote(branch), pipes.quote(install_path)))
-    else:
-        os.system("git clone {0} {1}".format(git_url, pipes.quote(install_path)))
+        os.system("git checkout -b {0} origin/{0}".format(pipes.quote(branch)))
 
 def install_user_settings():
     if os.path.isfile(user_settings_path+"/mavensmate.sublime-settings") == False:
