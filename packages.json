@@ -10,7 +10,7 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "2.0",
+						"version": "2.0.0",
 						"release_notes": "Beta version that connects to new MavensMate.app",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
