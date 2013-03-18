@@ -6,6 +6,7 @@ import json
 import threading 
 import re
 import time
+import pipes
 import urllib, urllib2
 import traceback
 from operator import itemgetter
@@ -23,6 +24,9 @@ hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
 
 def mm_call(operation, printer=True, **kwargs):
+    if operation != 'new_project' and is_project_legacy() == True:
+        operation = 'upgrade_project'
+
     context = kwargs.get('context', None)
     params  = kwargs.get('params', None)
     if printer:
@@ -54,7 +58,9 @@ def mm_call(operation, printer=True, **kwargs):
         elif operation == 'deploy':
             message = 'Opening Deploy dialog'
         elif operation == 'execute_apex':
-            message = 'Opening Execute Apex dialog'    
+            message = 'Opening Execute Apex dialog'
+        elif operation == 'upgrade_project':
+            message = 'Your MavensMate project needs to be upgraded. Opening the upgrade UI.'    
         elif operation == 'delete':
             if len(params['files']) == 1:
                 message = 'Deleting => ' + get_active_file()
@@ -78,6 +84,12 @@ def mm_call(operation, printer=True, **kwargs):
     threads.append(thread)
     thread.start()
     thread_progress_handler(operation, threads, printer, 0)
+
+def is_project_legacy():
+    if os.path.exists(mm_project_directory()+"/config/settings.yaml"):
+        return True
+    else:
+        return False
 
 #monitors thread for activity, passes to the result handler when thread is complete
 def thread_progress_handler(operation, threads, printer, i=0):
@@ -433,17 +445,14 @@ class AutomaticUpgrader(threading.Thread):
                 release_notes += j["packages"][0]["platforms"]["osx"][0]["release_notes"] + "\n\n"
             except:
                 release_notes = ""
-            current_array = current_version.split(".")
-            latest_array = latest_version.split(".")
+
+            installed_version_int = int(float(current_version.replace(".", "")))
+            server_version_int = int(float(latest_version.replace(".", "")))
 
             needs_update = False
-            if current_array[0] < latest_array[0]:
+            if server_version_int > installed_version_int:
                 needs_update = True
-            elif current_array[1] < latest_array[1]:
-                needs_update = True
-            elif current_array[2] < latest_array[2]:
-                needs_update = True
-
+            
             if needs_update == True:
                 if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. "+release_notes+"Would you like to update?", "Update"):
                     sublime.set_timeout(lambda: sublime.run_command("update_me"), 1)
@@ -468,7 +477,7 @@ class MavensMateTerminalCall(threading.Thread):
             '-o'        : self.operation,
             '--html'    : html
         }
-        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex']
+        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project']
         if self.operation in ui_operations:
             args['--ui'] = True
 
@@ -484,6 +493,10 @@ class MavensMateTerminalCall(threading.Thread):
     def submit_payload(self):
         payload = ''
         if self.operation == 'edit_project':
+            payload = {
+                'project_name' : self.project_name
+            }
+        elif self.operation == 'upgrade_project':
             payload = {
                 'project_name' : self.project_name
             }
@@ -531,8 +544,8 @@ class MavensMateTerminalCall(threading.Thread):
     def run(self):
         #TODO: revert (testing now)
         #self.process = subprocess.Popen("'/Users/josephferraro/Development/joey2/bin/python' '/Users/josephferraro/Development/Python/mavensmate/mavensmate.py' {0}".format(self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        print "'{0}' {1}".format(self.mm_location, self.get_arguments())
-        self.process = subprocess.Popen("'{0}' {1}".format(self.mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        print "{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments())
+        self.process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload()
         if self.process.stdout is not None: 
             mm_response = self.process.stdout.readlines()
