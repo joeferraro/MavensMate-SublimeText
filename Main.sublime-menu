@@ -14,10 +14,6 @@
 	         			"command": "new_project"
 	         		},
 	         		{
-	         			"caption": "Checkout Project",
-	         			"command": "checkout_project"
-	         		},
-	         		{
 	         			"caption": "Edit Project",
 	         			"command": "edit_project"
 	         		},
@@ -63,10 +59,6 @@
 	    		"caption": "Deploy",  
 	         	"children":
 	         	[
-	         		{
-	         			"caption": "Deployment Connections",
-	         			"command": "org_connections"
-	         		},
 	         		{
 	         			"caption": "Deploy to Server",
 	         			"command": "deploy_to_server"
