@@ -28,6 +28,7 @@ def install_from_source():
     os.system("git clone {0} {1}".format(git_url, pipes.quote(install_path)))
     if branch != None and branch != '':
         #2.0 is beta
+        os.cwd(install_path)
         os.system("git checkout -b {0} origin/{0}".format(pipes.quote(branch)))
 
 def install_user_settings():
