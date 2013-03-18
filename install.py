@@ -51,5 +51,5 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--branch') #name of the branch being requested
     args = parser.parse_args()
     if args.branch != None and args.branch != '':
-        branch = args.operation
+        branch = args.branch
     install()
