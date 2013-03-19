@@ -23,13 +23,13 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
 
-def mm_call(operation, printer=True, **kwargs):
+def mm_call(operation, mm_debug_panel=True, **kwargs):
     if operation != 'new_project' and is_project_legacy() == True:
         operation = 'upgrade_project'
-
+    printer = None
     context = kwargs.get('context', None)
     params  = kwargs.get('params', None)
-    if printer:
+    if mm_debug_panel:
         try:
             if isinstance(context, sublime.View):
                 active_window_id = sublime.active_window().id()
@@ -39,38 +39,49 @@ def mm_call(operation, printer=True, **kwargs):
             active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
-        message = 'Operating ever so gracefully...'
-        if operation == 'new_metadata':
-            message = 'Creating New '+params['metadata_type']+' => ' + params['metadata_name']
-        elif operation == 'compile':
-            if len(params['files']) == 1:
-                message = 'Compiling => ' + params['files'][0]
-            else:
-                message = 'Compiling Selected Metadata'
-        elif operation == 'compile_project':
-            message = 'Compiling Project' 
-        elif operation == 'edit_project':
-            message = 'Opening Edit Project dialog'  
-        elif operation == 'unit_test':
-            message = 'Opening Apex Test Runner'
-        elif operation == 'clean_project':
-            message = 'Cleaning Project'
-        elif operation == 'deploy':
-            message = 'Opening Deploy dialog'
-        elif operation == 'execute_apex':
-            message = 'Opening Execute Apex dialog'
-        elif operation == 'upgrade_project':
-            message = 'Your MavensMate project needs to be upgraded. Opening the upgrade UI.'    
-        elif operation == 'delete':
-            if len(params['files']) == 1:
-                message = 'Deleting => ' + get_active_file()
-            else:
-                message = 'Deleting Selected Metadata'
-        elif operation == 'refresh':
-            if len(params['files']) == 1:
-                message = 'Refreshing => ' + get_active_file()
-            else:
-                message = 'Refreshing Selected Metadata'
+
+    message = 'Operating ever so gracefully...'
+    if operation == 'new_metadata':
+        message = 'Creating New '+params['metadata_type']+' => ' + params['metadata_name']
+    elif operation == 'compile':
+        if len(params['files']) == 1:
+            message = 'Compiling => ' + params['files'][0]
+        else:
+            message = 'Compiling Selected Metadata'
+    elif operation == 'compile_project':
+        message = 'Compiling Project' 
+    elif operation == 'edit_project':
+        message = 'Opening Edit Project dialog'  
+    elif operation == 'unit_test':
+        message = 'Opening Apex Test Runner'
+    elif operation == 'clean_project':
+        message = 'Cleaning Project'
+    elif operation == 'deploy':
+        message = 'Opening Deploy dialog'
+    elif operation == 'execute_apex':
+        message = 'Opening Execute Apex dialog'
+    elif operation == 'upgrade_project':
+        message = 'Your MavensMate project needs to be upgraded. Opening the upgrade UI.'    
+    elif operation == 'index_apex_overlays':
+        message = 'Indexing Apex Overlays'  
+    elif operation == 'delete':
+        if len(params['files']) == 1:
+            message = 'Deleting => ' + get_active_file()
+        else:
+            message = 'Deleting Selected Metadata'
+    elif operation == 'refresh':
+        if len(params['files']) == 1:
+            message = 'Refreshing => ' + get_active_file()
+        else:
+            message = 'Refreshing Selected Metadata'
+    elif operation == 'new_apex_overlay':
+        message = 'Creating Apex Overlay' 
+    elif operation == 'delete_apex_overlay':
+        message = 'Deleting Apex Overlay'  
+    elif operation == 'fetch_logs':
+        message = 'Fetching Apex Logs'    
+        
+    if mm_debug_panel:
         printer.write('\n'+message+'\n')
 
     threads = []
@@ -81,8 +92,11 @@ def mm_call(operation, printer=True, **kwargs):
         mm_location=settings.get('mm_location'),
         params=params
     )
+
     threads.append(thread)
     thread.start()
+    if mm_debug_panel == False:
+        ThreadProgress(thread, message, 'Operation complete')
     thread_progress_handler(operation, threads, printer, 0)
 
 def is_project_legacy():
@@ -96,7 +110,8 @@ def thread_progress_handler(operation, threads, printer, i=0):
     result = None
     next_threads = []
     for thread in threads:
-        printer.write('.')
+        if printer != None:
+            printer.write('.')
         if thread.is_alive():
             next_threads.append(thread)
             continue
@@ -111,7 +126,36 @@ def thread_progress_handler(operation, threads, printer, i=0):
         return
     handle_result(operation, printer, result)
 
-#handles the result of the ruby script
+def parse_json_from_file(location):
+    try:
+        json_data = open(location)
+        data = json.load(json_data)
+        json_data.close()
+        return data
+    except:
+        return {}
+
+def get_number_of_lines_in_file(file_path):
+    f = open(file_path)
+    lines = f.readlines()
+    f.close()
+    return len(lines) + 1
+
+def get_execution_overlays(file_path):
+    try:
+        response = []
+        fileName, ext = os.path.splitext(file_path)
+        if ext == ".cls" or ext == ".trigger":
+            api_name = fileName.split("/")[-1] 
+            overlays = parse_json_from_file(mm_project_directory()+"/config/.overlays")
+            for o in overlays:
+                if o['API_Name'] == api_name:
+                    response.append(o)
+        return response
+    except:
+        return []
+
+#handles the result of the mm script
 def handle_result(operation, printer, result):
     try:
         #print result
@@ -128,9 +172,11 @@ def handle_result(operation, printer, result):
                         sublime.active_window().open_file(location)
                         break
         if to_bool(result['success']) == True and hide_panel == True:
-            printer.hide()  
+            if printer != None:
+                printer.hide()  
     except:   
-        printer.hide()  
+        if printer != None:
+            printer.hide()  
 
 #creates resource-bundles for the static resource(s) selected        
 def create_resource_bundle(self, files):
@@ -204,16 +250,12 @@ def print_result_message(operation, res, printer):
             line_col += ')'
         printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
     elif 'success' in res and to_bool(res['success']) == True:     
-        clear_marked_line_numbers()
         printer.write('\n[Operation completed Successfully]' + '\n')
     elif to_bool(res['success']) == False and 'body' in res:
-        clear_marked_line_numbers()
         printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
     elif to_bool(res['success']) == False:
-        clear_marked_line_numbers()
         printer.write('\n[OPERATION FAILED]' + '\n')
     else:
-        clear_marked_line_numbers()
         printer.write('\n[Operation Completed Successfully]' + '\n')    
 
 def get_active_file():
@@ -265,17 +307,35 @@ def mm_workspace():
         workspace = sublime.active_window().active_view().settings().get('mm_workspace')
     return workspace
 
-def mark_line_numbers(lines, icon="dot"):
+def mark_overlays(lines):
+    mark_line_numbers(lines, "dot", "overlay")
+
+def write_overlays(overlay_result):
+    print 'writing overlays >>>'
+    print overlay_result
+    result = json.loads(overlay_result)
+    if result["totalSize"] > 0:
+        for r in result["records"]:
+            sublime.set_timeout(lambda: mark_line_numbers([int(r["Line"])], "dot", "overlay"), 100)
+
+def mark_line_numbers(lines, icon="dot", mark_type="compile_issue"):
     points = [sublime.active_window().active_view().text_point(l - 1, 0) for l in lines]
     regions = [sublime.Region(p, p) for p in points]
-    sublime.active_window().active_view().add_regions('deleted', regions, "operation.fail",
+    sublime.active_window().active_view().add_regions(mark_type, regions, "operation.fail",
         icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
 
-def clear_marked_line_numbers():
+def clear_marked_line_numbers(mark_type="compile_issue"):
     try:
-        sublime.active_window().active_view().erase_regions('deleted')
-    except:
+        sublime.set_timeout(lambda: sublime.active_window().active_view().erase_regions(mark_type), 100)
+    except Exception, e:
+        print e.message
         print 'no regions to clean up'
+
+def compile_callback(result):
+    result = json.loads(result)
+    #print result
+    if result['success'] == True:
+        clear_marked_line_numbers()
 
 def print_debug_panel_message(message):
     printer = PanelPrinter.get(sublime.active_window().id())
@@ -328,6 +388,10 @@ def check_for_updates():
     if settings.get('mm_check_for_updates') == True:
         sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
 
+def index_overlays():
+    mm_call('index_apex_overlays', False)
+    send_usage_statistics('Index Apex Overlays')  
+
 #preps code completion object for search in doxygen documentation
 def prep_for_search(name): 
     #s1 = re.sub('(.)([A-Z]+)', r'\1_\2', name).strip()
@@ -343,7 +407,7 @@ def start_mavensmate_app():
     elif p.stderr is not None:
         msg = p.stdout.readlines() 
     if msg == '' or len(msg) == 0:
-        os.system("open -n '"+settings.get('mm_app_location')+"'")
+        os.system("open '"+settings.get('mm_app_location')+"'")
 
 class UsageReporter(threading.Thread):
     def __init__(self, action):
@@ -379,7 +443,6 @@ class UsageReporter(threading.Thread):
             traceback.print_exc(file=sys.stdout)
             print 'failed to send usage statistic'
 
-
 class ThreadProgress():
     """
     Animates an indicator, [=   ], in the status area while a thread runs
@@ -394,12 +457,13 @@ class ThreadProgress():
         The message to display once the thread is complete
     """
 
-    def __init__(self, thread, message, success_message):
+    def __init__(self, thread, message, success_message, callback=None):
         self.thread = thread
         self.message = message
         self.success_message = success_message
         self.addend = 1
         self.size = 8
+        self.callback = None
         sublime.set_timeout(lambda: self.run(0), 100)
 
     def run(self, i):
@@ -408,9 +472,8 @@ class ThreadProgress():
                 sublime.status_message('')
                 return
             sublime.status_message(self.success_message)
-            sublime.message_dialog("MavensMate has been updated successfully!")
-            printer = PanelPrinter.get(sublime.active_window().id())
-            printer.hide()
+            if self.callback != None:
+                self.callback()
             return
 
         before = i % self.size
@@ -426,6 +489,11 @@ class ThreadProgress():
         i += self.addend
 
         sublime.set_timeout(lambda: self.run(i), 100)
+
+def finish_update():
+    sublime.message_dialog("MavensMate has been updated successfully!")
+    printer = PanelPrinter.get(sublime.active_window().id())
+    printer.hide()    
 
 class AutomaticUpgrader(threading.Thread):
     def __init__(self):
@@ -470,6 +538,10 @@ class MavensMateTerminalCall(threading.Thread):
         self.params         = kwargs.get('params', None)
         self.process        = None
         self.result         = None
+        self.callback       = None
+
+        if self.params != None:
+            self.callback   = self.params.get('callback', None)
         threading.Thread.__init__(self)
 
     def get_arguments(self, ui=False, html=False):
@@ -509,6 +581,10 @@ class MavensMateTerminalCall(threading.Thread):
                 'project_name'  : self.project_name,
                 'files'         : self.params.get('files', [])
             }
+        elif self.operation == 'index_apex_overlays':
+            payload = {
+                'project_name'  : self.project_name
+            }
         elif self.operation == 'new_metadata':
             payload = {
                 'project_name'                  : self.project_name,
@@ -536,13 +612,24 @@ class MavensMateTerminalCall(threading.Thread):
                 'project_name'  : self.project_name,
                 'files'         : self.params.get('files', [])
             }
+        elif self.operation == 'fetch_logs':
+            payload = {
+                'project_name'  : self.project_name
+            }
+        elif self.operation == 'new_apex_overlay':
+            payload = self.params
+            payload['project_name'] = self.project_name
+        elif self.operation == 'delete_apex_overlay':
+            payload = self.params
+            payload['project_name'] = self.project_name
+                
         if type(payload) is dict:
-            payload = json.dumps(payload)    
+            payload = json.dumps(payload)  
+        print payload  
         self.process.stdin.write(payload)
         self.process.stdin.close()
 
     def run(self):
-        #TODO: revert (testing now)
         #self.process = subprocess.Popen("'/Users/josephferraro/Development/joey2/bin/python' '/Users/josephferraro/Development/Python/mavensmate/mavensmate.py' {0}".format(self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         print "{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments())
         self.process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -552,8 +639,16 @@ class MavensMateTerminalCall(threading.Thread):
         elif self.process.stderr is not None:
             mm_response = self.process.stderr.readlines()
         response_body = '\n'.join(mm_response)
-        print response_body
+        #print response_body
         self.result = response_body
+        if self.operation == 'compile':
+            compile_callback(response_body)
+        if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
+            sublime.set_timeout(lambda : index_overlays(), 100)
+        if self.callback != None:
+            print self.callback
+            self.callback(response_body)
+
 
 #class representing the MavensMate activity/debug panel in Sublime Text
 class PanelPrinter(object):

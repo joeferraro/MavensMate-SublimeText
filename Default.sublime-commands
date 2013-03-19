@@ -66,5 +66,25 @@
   {
     "caption": "MavensMate: Compile Tabs",          
     "command": "compile_tabs"
+  },
+  {
+    "caption": "MavensMate: Index Apex Execution Overlays",          
+    "command": "index_apex_overlays"
+  },
+  {
+    "caption": "MavensMate: List Apex Execution Overlays",          
+    "command": "list_overlays"
+  },
+  {
+    "caption": "MavensMate: New Apex Execution Overlay",          
+    "command": "new_overlay"
+  },
+  {
+    "caption": "MavensMate: Delete Apex Execution Overlays",          
+    "command": "delete_overlays"
+  },
+  {
+    "caption": "MavensMate: Fetch Apex Logs",          
+    "command": "fetch_logs"
   }
 ]

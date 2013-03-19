@@ -263,7 +263,90 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
             util.mm_call('compile_project', context=self)
             util.send_usage_statistics('Compile Project')
 
+#refreshes the currently active file from the server
+class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        util.mm_call('index_apex_overlays', False, context=self)
+        util.send_usage_statistics('Index Apex Overlays')  
 
+#refreshes the currently active file from the server
+class FetchLogsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        util.mm_call('fetch_logs', False)
+        util.send_usage_statistics('Fetch Apex Logs')  
+
+#when a class or trigger file is opened, adds execution overlay markers if applicable
+class ExecutionOverlayLoader(sublime_plugin.EventListener):
+    def on_load(self, view):
+        print 'attempting to load apex overlays for current file' 
+        fileName, ext = os.path.splitext(view.file_name())
+        if ext == ".cls" or ext == ".trigger":
+            api_name = fileName.split("/")[-1] 
+            overlays = util.parse_json_from_file(util.mm_project_directory()+"/config/.overlays")
+            lines = []
+            for o in overlays:
+                if o['API_Name'] == api_name:
+                    lines.append(int(o["Line"]))
+            sublime.set_timeout(lambda: util.mark_overlays(lines), 100)
+
+#deletes overlays
+class DeleteOverlaysCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        options = [['Delete All In This File', '*']]
+        fileName, ext = os.path.splitext(util.get_active_file())
+        if ext == ".cls" or ext == ".trigger":
+            self.api_name = fileName.split("/")[-1] 
+            overlays = util.get_execution_overlays(util.get_active_file())
+            for o in overlays:
+                options.append(['Line '+str(o["Line"]), str(o["Id"])])
+        self.results = options
+        self.window.show_quick_panel(options, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        self.overlay = self.results[picked]
+        params = {
+            "id" : self.overlay[1]
+        }
+        util.mm_call('delete_apex_overlay', context=self, params=params)
+        util.send_usage_statistics('New Apex Overlay') 
+
+#creates a new overlay
+class NewOverlayCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        fileName, ext = os.path.splitext(util.get_active_file())
+        if ext == ".cls" or ext == ".trigger":
+            if ext == '.cls':
+                self.object_type = 'ApexClass'
+            else: 
+                self.object_type = 'ApexTrigger'
+            self.api_name = fileName.split("/")[-1] 
+            number_of_lines = util.get_number_of_lines_in_file(util.get_active_file())
+            lines = list(xrange(number_of_lines))
+            options = []
+            lines.pop(0)
+            for l in lines:
+                options.append(str(l))
+            self.results = options
+            self.window.show_quick_panel(options, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        self.line_number = self.results[picked]
+        print self.line_number
+        params = {
+            "ActionScriptType"      : "None",
+            "Object_Type"           : self.object_type,
+            "API_Name"              : self.api_name,
+            "IsDumpingHeap"         : True,
+            "Iteration"             : 1,
+            "Line"                  : int(self.line_number)
+        }
+        #util.mark_overlay(self.line_number) #cant do this here bc it removes the rest of them
+        util.mm_call('new_apex_overlay', context=self, params=params)
+        util.send_usage_statistics('New Apex Overlay')  
 
 
 ####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
@@ -280,7 +363,7 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
         shutil.copyfile(mm_dir+"/install.rb", tmp_dir+"/install.rb")
         thread = threading.Thread(target=self.updatePackage)
         thread.start()       
-        ThreadProgress(thread, 'Updating MavensMate', 'MavensMate has been updated successfully')
+        ThreadProgress(thread, 'Updating MavensMate', 'MavensMate has been updated successfully', util.finish_update)
     def updatePackage(self):       
         tmp_dir = tempfile.gettempdir()
         os.chdir(tmp_dir)
@@ -729,21 +812,6 @@ def handle_doxygen_threads(threads, printer):
     printer.write('\n[Indexing complete]' + '\n')
     printer.hide() 
 
-# Future functionality
-# class ExecutionOverlayLoader(sublime_plugin.EventListener):
-#     def on_load(self, view):
-#         print view.file_name()
-#         fileName, ext = os.path.splitext(view.file_name())
-#         if ext == ".cls" or ext == ".trigger":
-#             threads = []
-#             thread = MetadataAPICall("get_apex_overlays", "'"+view.file_name()+"'")
-#             threads.append(thread)
-#             thread.start()
-#             generic_handle_threads(threads, write_overlays)            
-
-# def write_overlays(overlay_result):
-#     print overlay_result
-#     sublime.set_timeout(lambda: mark_line_numbers([int(float('17'))], "dot"), 2000)
 
 util.start_mavensmate_app()  
 util.check_for_updates()

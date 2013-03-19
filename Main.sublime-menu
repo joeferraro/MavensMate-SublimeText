@@ -55,6 +55,17 @@
 	         	]
 	     	},
 	     	{
+	        	"id": "debug", 
+	    		"caption": "Debug",  
+	         	"children":
+	         	[
+	         		{
+	         			"caption": "Index Apex Execution Overlays",
+	         			"command": "index_apex_overlays"
+	         		}
+	         	]
+	     	},
+	     	{
 	        	"id": "deploy", 
 	    		"caption": "Deploy",  
 	         	"children":
