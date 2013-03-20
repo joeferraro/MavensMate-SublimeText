@@ -122,7 +122,7 @@ def thread_progress_handler(operation, threads, printer, i=0):
     threads = next_threads
 
     if len(threads):
-        sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 300)
+        sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 200)
         return
     handle_result(operation, printer, result)
 
@@ -332,8 +332,8 @@ def clear_marked_line_numbers(mark_type="compile_issue"):
         print 'no regions to clean up'
 
 def compile_callback(result):
+    #print 'compile result: ',result
     result = json.loads(result)
-    #print result
     if result['success'] == True:
         clear_marked_line_numbers()
 
@@ -630,8 +630,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.process.stdin.close()
 
     def run(self):
-        #self.process = subprocess.Popen("'/Users/josephferraro/Development/joey2/bin/python' '/Users/josephferraro/Development/Python/mavensmate/mavensmate.py' {0}".format(self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        print "{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments())
+        #print "{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments())
         self.process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload()
         if self.process.stdout is not None: 
