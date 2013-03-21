@@ -630,7 +630,8 @@ class MavensMateTerminalCall(threading.Thread):
         self.process.stdin.close()
 
     def run(self):
-        #print "{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments())
+        print 'executing mm terminal call'
+        print "{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments())
         self.process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload()
         if self.process.stdout is not None: 
@@ -638,7 +639,7 @@ class MavensMateTerminalCall(threading.Thread):
         elif self.process.stderr is not None:
             mm_response = self.process.stderr.readlines()
         response_body = '\n'.join(mm_response)
-        #print response_body
+        print 'response from mm: ' + response_body
         self.result = response_body
         if self.operation == 'compile':
             compile_callback(response_body)
