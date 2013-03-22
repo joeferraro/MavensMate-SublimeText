@@ -198,7 +198,7 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        api_name, sobject_name = util.parse_new_metadata_input(input)
+        api_name = util.parse_new_metadata_input(input)
         options = {
             'metadata_type'     : 'ApexComponent',
             'metadata_name'     : api_name
@@ -348,30 +348,13 @@ class NewOverlayCommand(sublime_plugin.WindowCommand):
         util.mm_call('new_apex_overlay', context=self, params=params)
         util.send_usage_statistics('New Apex Overlay')  
 
+#right click context menu support for resource bundle creation
+class NewResourceBundleCommand(sublime_plugin.WindowCommand):
+    def run(self, files):
+        if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
+            util.create_resource_bundle(self, files) 
 
-####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
-
-#updates MavensMate plugin
-class UpdateMeCommand(sublime_plugin.ApplicationCommand):
-    def run(self):
-        from functools import partial
-        printer = PanelPrinter.get(sublime.active_window().id())
-        printer.show()
-        printer.write('\nUpdating MavensMate, please wait...\n')
-        import shutil
-        tmp_dir = tempfile.gettempdir()
-        shutil.copyfile(mm_dir+"/install.rb", tmp_dir+"/install.rb")
-        thread = threading.Thread(target=self.updatePackage)
-        thread.start()       
-        ThreadProgress(thread, 'Updating MavensMate', 'MavensMate has been updated successfully', util.finish_update)
-    def updatePackage(self):       
-        tmp_dir = tempfile.gettempdir()
-        os.chdir(tmp_dir)
-        time.sleep(3)
-        os.system(ruby+" install.rb")    
-        #sublime.set_timeout(partial(self.notify), 1)
-
-#NOT SUPPORTED AT ALL IN BETA: creates a MavensMate project from an existing directory
+#creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
     def run (self, dirs):
         directory = dirs[0]
@@ -381,7 +364,7 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer.show()
             printer.write('\n[OPERATION FAILED] You must run this command from the project folder, not the "src" folder\n')
             return            
-
+ 
         dir_entries = os.listdir(directory)
         has_source_directory = False
         for entry in dir_entries:
@@ -408,9 +391,34 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer.write('\n[OPERATION FAILED] Unable to locate package.xml in src folder \n')
             return        
 
-        start_local_server()
-        temp_file_name = generate_ui("new_project_from_directory", "'"+directory+"' '"+mm_workspace()+"'")
-        launch_mavens_mate_window(temp_file_name)
+        params = {
+            "directory" : directory
+        }
+        util.mm_call('new_project_from_existing_directory', params=params)
+        util.send_usage_statistics('New Project From Existing Directory')  
+
+
+####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
+
+#updates MavensMate plugin
+class UpdateMeCommand(sublime_plugin.ApplicationCommand):
+    def run(self):
+        from functools import partial
+        printer = PanelPrinter.get(sublime.active_window().id())
+        printer.show()
+        printer.write('\nUpdating MavensMate, please wait...\n')
+        import shutil
+        tmp_dir = tempfile.gettempdir()
+        shutil.copyfile(mm_dir+"/install.rb", tmp_dir+"/install.rb")
+        thread = threading.Thread(target=self.updatePackage)
+        thread.start()       
+        ThreadProgress(thread, 'Updating MavensMate', 'MavensMate has been updated successfully', util.finish_update)
+    def updatePackage(self):       
+        tmp_dir = tempfile.gettempdir()
+        os.chdir(tmp_dir)
+        time.sleep(3)
+        os.system(ruby+" install.rb")    
+        #sublime.set_timeout(partial(self.notify), 1)
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):
@@ -697,12 +705,6 @@ class GenerateApexClassDocs(sublime_plugin.WindowCommand):
         threads.append(thread)
         thread.start()
         handle_doxygen_threads(threads, printer) 
-
-#right click context menu support for resource bundle creation
-class NewResourceBundleCommand(sublime_plugin.WindowCommand):
-    def run(self, files):
-        if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
-            util.create_resource_bundle(self, files) 
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):

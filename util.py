@@ -26,6 +26,14 @@ hide_time = settings.get('mm_hide_panel_time', 1)
 def mm_call(operation, mm_debug_panel=True, **kwargs):
     if operation != 'new_project' and is_project_legacy() == True:
         operation = 'upgrade_project'
+    if not os.path.exists(settings.get('mm_location')):
+        active_window_id = sublime.active_window().id()
+        printer = PanelPrinter.get(active_window_id)
+        printer.show()
+        message = 'Could not find MavensMate.app. Please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
+        printer.write('\n'+message+'\n')
+        return
+
     printer = None
     context = kwargs.get('context', None)
     params  = kwargs.get('params', None)
@@ -79,7 +87,9 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     elif operation == 'delete_apex_overlay':
         message = 'Deleting Apex Overlay'  
     elif operation == 'fetch_logs':
-        message = 'Fetching Apex Logs'    
+        message = 'Fetching Apex Logs'  
+    elif operation == 'project_from_existing_directory':
+        message = 'Opening New Project Dialog'   
         
     if mm_debug_panel:
         printer.write('\n'+message+'\n')
@@ -259,7 +269,10 @@ def print_result_message(operation, res, printer):
         printer.write('\n[Operation Completed Successfully]' + '\n')    
 
 def get_active_file():
-    return sublime.active_window().active_view().file_name()
+    try:
+        return sublime.active_window().active_view().file_name()
+    except Exception, e:
+        return ''
 
 def get_project_name():
     try:
@@ -549,7 +562,7 @@ class MavensMateTerminalCall(threading.Thread):
             '-o'        : self.operation,
             '--html'    : html
         }
-        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project']
+        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project', 'new_project_from_existing_directory']
         if self.operation in ui_operations:
             args['--ui'] = True
 
@@ -622,7 +635,9 @@ class MavensMateTerminalCall(threading.Thread):
         elif self.operation == 'delete_apex_overlay':
             payload = self.params
             payload['project_name'] = self.project_name
-                
+        elif self.operation == 'new_project_from_existing_directory':
+            payload = self.params
+
         if type(payload) is dict:
             payload = json.dumps(payload)  
         print payload  
