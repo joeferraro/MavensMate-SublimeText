@@ -86,6 +86,8 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
             "files"         : files
         }
         util.mm_call('compile', context=self, params=params)
+        util.send_usage_statistics('Compile Selected Files')
+
 
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
@@ -94,6 +96,7 @@ class CompileTabsCommand(sublime_plugin.WindowCommand):
             "files"         : util.get_tab_file_names()
         }
         util.mm_call('compile', context=self, params=params)
+        util.send_usage_statistics('Compile Tabs')
 
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
@@ -353,6 +356,7 @@ class NewResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, files):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
             util.create_resource_bundle(self, files) 
+            util.send_usage_statistics('New Resource Bundle (Sidebar)')
 
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
