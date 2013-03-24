@@ -782,59 +782,6 @@ def deploy_resource_bundle(bundle_name):
     util.mm_call('compile', params=params)
     util.send_usage_statistics('Deploy Resource Bundle')
 
-#executes doxygen in the background
-class ExecuteDoxygen(threading.Thread):
-    def __init__(self, dinput, doutput):
-        self.result = None
-        self.dinput = dinput
-        self.doutput = doutput
-        threading.Thread.__init__(self)   
-
-    def run(self):
-        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ./doxygen -'
-        #print command
-        os.chdir(mm_dir + "/bin")
-        os.system(command)
-
-#handles the completion of doxygen execution
-def handle_doxygen_threads(threads, printer):
-    next_threads = []
-    for thread in threads:
-        printer.write('.')
-        if thread.is_alive():
-            next_threads.append(thread)
-            continue
-        if thread.result == False:
-            continue
-        compile_result = thread.result
-
-    threads = next_threads
-    if len(threads):
-        sublime.set_timeout(lambda: handle_doxygen_threads(threads, printer), 200)
-        return
-
-    for filename in os.listdir(util.mm_project_directory() + "/config/.class_docs/xml"):
-        print(filename)
-        if filename.startswith('_') or filename.startswith('dir_'): 
-            os.remove(util.mm_project_directory() + "/config/.class_docs/xml/" + filename) 
-            continue
-        if filename == 'combine.xslt' or filename == 'compound.xsd': 
-            os.remove(util.mm_project_directory() + "/config/.class_docs/xml/" + filename)
-            continue
-        tempName = filename
-        if tempName.startswith('class_'):
-            tempName = tempName.replace('class_', '', 1)
-        elif tempName.startswith('enum_'):
-            tempName = tempName.replace('enum_', '', 1)
-        elif tempName.startswith('interface_'):
-            tempName = tempName.replace('interface_', '', 1)
-        tempName = tempName.replace('_', '')
-        os.rename(util.mm_project_directory() + "/config/.class_docs/xml/" + filename, util.mm_project_directory() + "/config/.class_docs/xml/" + tempName)
-
-    printer.write('\n[Indexing complete]' + '\n')
-    printer.hide() 
-
-
 util.start_mavensmate_app()  
 util.check_for_updates()
 util.send_usage_statistics('Startup')
