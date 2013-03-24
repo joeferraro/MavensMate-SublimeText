@@ -54,6 +54,6 @@ try:
         if args.branch != None and args.branch != '':
             branch = args.branch
         install()
-except Exception, e:
-    print 'install.py issue'
-    print e.message
+except Exception as e:
+    print('install.py issue')
+    print(e.message)

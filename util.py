@@ -7,7 +7,10 @@ import threading
 import re
 import time
 import pipes
-import urllib, urllib2
+try:
+    import urllib, urllib2
+except:
+    pass
 import traceback
 from operator import itemgetter
 from datetime import datetime
@@ -18,12 +21,17 @@ if os.name != 'nt':
 #for future reference (windows/linux support)
 #sublime.packages_path()
 
-mm_dir = os.getcwdu()
+try:
+    mm_dir = os.getcwdu()
+except:
+    mm_dir = os.path.dirname(__file__)
+
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
 
 def mm_call(operation, mm_debug_panel=True, **kwargs):
+    settings = sublime.load_settings('mavensmate.sublime-settings')
     if operation != 'new_project' and is_project_legacy() == True:
         operation = 'upgrade_project'
     if not os.path.exists(settings.get('mm_location')):
@@ -217,7 +225,7 @@ def create_resource_bundle(self, files):
 
 #prints the result of the mm operation, can be a string or a dict
 def print_result_message(operation, res, printer):
-    print 'result of operation ', res
+    #print 'result of operation ', res
     if to_bool(res['success']) == False and 'messages' in res:
         #here we're parsing a response from the metadata endpoint
         line_col = ""
@@ -233,7 +241,7 @@ def print_result_message(operation, res, printer):
                     failures = res['run_test_result']['failures']
                 elif 'failures' in res['run_test_result']:
                     failures = [res['run_test_result']['failures']]
-            print failures
+            #print(failures)
         else:
             msg = res['messages']
         if msg != None:
@@ -271,7 +279,7 @@ def print_result_message(operation, res, printer):
 def get_active_file():
     try:
         return sublime.active_window().active_view().file_name()
-    except Exception, e:
+    except Exception as e:
         return ''
 
 def get_project_name():
@@ -304,7 +312,7 @@ def is_mm_project():
         data = json.load(json_data)
         pd = data["folders"][0]["path"]
         is_mm_project = True
-    except BaseException, e:
+    except BaseException as e:
         is_mm_project = False
     return is_mm_project
 
@@ -324,8 +332,8 @@ def mark_overlays(lines):
     mark_line_numbers(lines, "dot", "overlay")
 
 def write_overlays(overlay_result):
-    print 'writing overlays >>>'
-    print overlay_result
+    #print 'writing overlays >>>'
+    print(overlay_result)
     result = json.loads(overlay_result)
     if result["totalSize"] > 0:
         for r in result["records"]:
@@ -340,9 +348,9 @@ def mark_line_numbers(lines, icon="dot", mark_type="compile_issue"):
 def clear_marked_line_numbers(mark_type="compile_issue"):
     try:
         sublime.set_timeout(lambda: sublime.active_window().active_view().erase_regions(mark_type), 100)
-    except Exception, e:
-        print e.message
-        print 'no regions to clean up'
+    except Exception as e:
+        print(e.message)
+        print('no regions to clean up')
 
 def compile_callback(result):
     #print 'compile result: ',result
@@ -454,7 +462,7 @@ class UsageReporter(threading.Thread):
             #print response
         except: 
             traceback.print_exc(file=sys.stdout)
-            print 'failed to send usage statistic'
+            print('failed to send usage statistic')
 
 class ThreadProgress():
     """
@@ -538,7 +546,7 @@ class AutomaticUpgrader(threading.Thread):
                 if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. "+release_notes+"Would you like to update?", "Update"):
                     sublime.set_timeout(lambda: sublime.run_command("update_me"), 1)
         except:
-            print 'skipping MavensMate update check' 
+            print('skipping MavensMate update check')
 
 #calls out to the ruby scripts that interact with the metadata api
 #pushes them to background threads and reads the piped response
@@ -640,28 +648,38 @@ class MavensMateTerminalCall(threading.Thread):
 
         if type(payload) is dict:
             payload = json.dumps(payload)  
-        print payload  
-        self.process.stdin.write(payload)
+        print(payload)  
+        try:
+            self.process.stdin.write(payload)
+        except:
+            self.process.stdin.write(payload.encode('utf-8'))
         self.process.stdin.close()
 
     def run(self):
-        print 'executing mm terminal call'
-        print "{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments())
+        print('executing mm terminal call')
+        print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
         self.process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload()
         if self.process.stdout is not None: 
             mm_response = self.process.stdout.readlines()
         elif self.process.stderr is not None:
             mm_response = self.process.stderr.readlines()
-        response_body = '\n'.join(mm_response)
-        print 'response from mm: ' + response_body
+        try:
+            response_body = '\n'.join(mm_response)
+        except:
+            strs = []
+            for line in mm_response:
+                strs.append(line.decode('utf-8'))   
+            response_body = '\n'.join(strs)
+
+        print('response from mm: ' + response_body)
         self.result = response_body
         if self.operation == 'compile':
             compile_callback(response_body)
         if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
             sublime.set_timeout(lambda : index_overlays(), 100)
         if self.callback != None:
-            print self.callback
+            print(self.callback)
             self.callback(response_body)
 
 
@@ -747,8 +765,12 @@ class PanelPrinter(object):
             self.strings[key] = []
             self.queue.append(key)
         if len(string):
-            if not isinstance(string, unicode):
-                string = unicode(string, 'UTF-8', errors='strict')
+            try:
+                if not isinstance(string, unicode):
+                    string = unicode(string, 'UTF-8', errors='strict')
+            except:
+                if type(string) is not str:
+                    string = str(string, 'utf-8')
             if os.name != 'nt':
                 string = unicodedata.normalize('NFC', string)
             self.strings[key].append(string)
@@ -758,41 +780,44 @@ class PanelPrinter(object):
         return key
 
     def write_callback(self):
-        found = False
-        for key in self.strings.keys():
-            if len(self.strings[key]):
-                found = True
+        try:
+            found = False
+            for key in self.strings.keys():
+                if len(self.strings[key]):
+                    found = True
 
-        if not found:
-            return
-        read_only = self.panel.is_read_only()
-        if read_only:
-            self.panel.set_read_only(False)
-        edit = self.panel.begin_edit()
-        keys_to_erase = []
-        for key in list(self.queue):
-            while len(self.strings[key]):
-                string = self.strings[key].pop(0)
-                if string == None:
-                    self.panel.erase_regions(key)
-                    keys_to_erase.append(key)
-                    continue
-                if key == 'sublime_mm':
-                    point = self.panel.size()
-                else:
-                    regions = self.panel.get_regions(key)
-                    if not len(regions):
+            if not found:
+                return
+            read_only = self.panel.is_read_only()
+            if read_only:
+                self.panel.set_read_only(False)
+            edit = self.panel.begin_edit()
+            keys_to_erase = []
+            for key in list(self.queue):
+                while len(self.strings[key]):
+                    string = self.strings[key].pop(0)
+                    if string == None:
+                        self.panel.erase_regions(key)
+                        keys_to_erase.append(key)
+                        continue
+                    if key == 'sublime_mm':
                         point = self.panel.size()
                     else:
-                        region = regions[0]
-                        point = region.b + 1
-                if point == 0 and string[0] == '\n':
-                    string = string[1:]
-                self.panel.insert(edit, point, string)
-                if key != 'sublime_mm':
-                    point = point + len(string) - 1
-                    region = sublime.Region(point, point)
-                    self.panel.add_regions(key, [region], '')
+                        regions = self.panel.get_regions(key)
+                        if not len(regions):
+                            point = self.panel.size()
+                        else:
+                            region = regions[0]
+                            point = region.b + 1
+                    if point == 0 and string[0] == '\n':
+                        string = string[1:]
+                    self.panel.insert(edit, point, string)
+                    if key != 'sublime_mm':
+                        point = point + len(string) - 1
+                        region = sublime.Region(point, point)
+                        self.panel.add_regions(key, [region], '')
+        except:
+            pass #probably a sublime text 3 issue
 
         for key in keys_to_erase:
             if key in self.strings:

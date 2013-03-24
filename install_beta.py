@@ -48,6 +48,6 @@ try:
 
     if __name__ == '__main__':
         install()
-except:
-    print 'install_beta.py issue'
-    print e.message
+except Exception as e:
+    print('install_beta.py issue')
+    print(e.message)

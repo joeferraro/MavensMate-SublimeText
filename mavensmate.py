@@ -12,14 +12,25 @@ if os.name != 'nt':
     import unicodedata
 import unicodedata, re
 from xml.dom.minidom import parse, parseString
-from util import PanelPrinter
-from util import ThreadProgress
+try:
+    import util
+    from util import PanelPrinter
+    from util import ThreadProgress
+    import apex_reserved 
+    import command_helper 
+except:
+    import MavensMate.util as util
+    import MavensMate.apex_reserved as apex_reserved
+    import MavensMate.command_helper as command_helper
+    from MavensMate.util import PanelPrinter
+    from MavensMate.util import ThreadProgress
 import json
-import apex_reserved 
-import command_helper 
-import util
- 
-mm_dir = os.getcwdu()
+
+try:
+    mm_dir = os.getcwdu()
+except:
+    mm_dir = os.path.dirname(__file__)
+
 settings = sublime.load_settings('mavensmate.sublime-settings')
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
@@ -81,7 +92,7 @@ class RemoteEdit(sublime_plugin.EventListener):
 #compiles the selected files
 class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
     def run (self, files):
-        print files
+        #print files
         params = {
             "files"         : files
         }
@@ -119,7 +130,8 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 project_name = root.split("/")[-1]
                 open_projects.append(project_name)
         except:
-            print 'ok'
+            #print 'ok'
+            pass
 
         import os
         self.dir_map = {}
@@ -143,7 +155,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.picked_project = self.results[picked]
-        print 'opening project: ' + self.picked_project
+        print('opening project: ' + self.picked_project)
         project_file = self.dir_map[self.picked_project][1]
         if os.path.isfile(util.mm_workspace()+"/"+self.picked_project+"/"+project_file):
             p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -281,16 +293,20 @@ class FetchLogsCommand(sublime_plugin.WindowCommand):
 #when a class or trigger file is opened, adds execution overlay markers if applicable
 class ExecutionOverlayLoader(sublime_plugin.EventListener):
     def on_load(self, view):
-        print 'attempting to load apex overlays for current file' 
-        fileName, ext = os.path.splitext(view.file_name())
-        if ext == ".cls" or ext == ".trigger":
-            api_name = fileName.split("/")[-1] 
-            overlays = util.parse_json_from_file(util.mm_project_directory()+"/config/.overlays")
-            lines = []
-            for o in overlays:
-                if o['API_Name'] == api_name:
-                    lines.append(int(o["Line"]))
-            sublime.set_timeout(lambda: util.mark_overlays(lines), 100)
+        print('attempting to load apex overlays for current file')
+        try:
+            fileName, ext = os.path.splitext(view.file_name())
+            if ext == ".cls" or ext == ".trigger":
+                api_name = fileName.split("/")[-1] 
+                overlays = util.parse_json_from_file(util.mm_project_directory()+"/config/.overlays")
+                lines = []
+                for o in overlays:
+                    if o['API_Name'] == api_name:
+                        lines.append(int(o["Line"]))
+                sublime.set_timeout(lambda: util.mark_overlays(lines), 100)
+        except Exception as e:
+            print('execution overlay loader error')
+            print(e.message)
 
 #deletes overlays
 class DeleteOverlaysCommand(sublime_plugin.WindowCommand):
@@ -338,7 +354,7 @@ class NewOverlayCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.line_number = self.results[picked]
-        print self.line_number
+        #print self.line_number
         params = {
             "ActionScriptType"      : "None",
             "Object_Type"           : self.object_type,
@@ -466,8 +482,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
         if not ch == '.': return []
 
         word = view.substr(view.word(pt))
-        print '------'
-        print "trying to find instantiation of: " + word
+        #print '------'
+        #print "trying to find instantiation of: " + word
         fn, ext = os.path.splitext(view.file_name())
         if (ext == '.cls' or ext == '.trigger') and word != None and word != '':
             _completions = []
@@ -483,8 +499,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 return sorted(_completions)
             elif os.path.isfile(mm_project_directory()+"/src/classes/"+word+".cls"): #=> custom apex class static methods
                 search_name = util.prep_for_search(word)
-                print search_name
-                print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
+                #print search_name
+                #print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
                 if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
                     object_dom = parse(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
                     for node in object_dom.getElementsByTagName('memberdef'):
@@ -501,7 +517,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                 if child.firstChild != None: member_type = child.firstChild.nodeValue
                             elif child.nodeName == 'argsstring':
                                 if child.firstChild != None: member_args = child.firstChild.nodeValue   
-                            print member_args 
+                            #print member_args 
                             if member_name != '' and member_name != 'set' and member_name != 'get':
                                 _completions.append((member_name+member_args+" \t"+member_type, member_name + member_args))
                     return sorted(_completions)            
@@ -527,19 +543,19 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     pattern = "'(.* "+word+" .*)'"
                     m = re.search(pattern, line_contents)
                     if m != None: 
-                        print 'skipping because word found inside string'
+                        #print 'skipping because word found inside string'
                         continue #skip if we match our word inside of an Apex string
 
                     pattern = "'("+word+")'"
                     m = re.search(pattern, line_contents)
                     if m != None: 
-                        print 'skipping because word found inside exact string'
+                        #print 'skipping because word found inside exact string'
                         continue #skip if we match our word, in an exact Apex string
 
                     pattern = re.compile("(system.debug.*\(.*"+word+")", re.IGNORECASE)
                     m = re.search(pattern, line_contents)
                     if m != None: 
-                        print 'skipping because word found inside system.debug'
+                        #print 'skipping because word found inside system.debug'
                         continue #skip if we match our word inside system.debug
 
                     #STILL NEED TO WORK ON THIS
@@ -550,7 +566,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
                     m = re.search(pattern, line_contents)
                     if m != None: 
-                        print 'skipping because word found inside parens'
+                        #print 'skipping because word found inside parens'
                         continue #skip if we match our word inside parens                
 
                     #TODO: figure out a way to use word boundaries here to handle
@@ -566,10 +582,10 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     pattern = "(\[.*:.*"+word+".*\])"
                     m = re.search(pattern, line_contents)
                     if m != None:
-                        print 'skipping because word found inside query'
+                        #print 'skipping because word found inside query'
                         continue #skip if being bound in a query
 
-                    print "contents of line before strip: " + line_contents
+                    #print "contents of line before strip: " + line_contents
 
                     object_name = None
                     #object_name = line_contents[0:line_contents.find(word)]
@@ -579,14 +595,14 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     except: continue
                     object_name = object_name.strip()
 
-                    print "contents of line after strip: " + object_name
+                    #print "contents of line after strip: " + object_name
 
                     pattern = re.compile("^map\s*<", re.IGNORECASE)
                     m = re.search(pattern, line_contents)
                     if m != None:
                         object_name_lower = "map"
                         object_name = "Map"
-                        print "our object: " + object_name
+                        #print "our object: " + object_name
                         break
 
                     pattern = re.compile("^list\s*<", re.IGNORECASE)
@@ -594,7 +610,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     if m != None:
                         object_name_lower = "list"
                         object_name = "List"
-                        print "our object: " + object_name
+                        #print "our object: " + object_name
                         break
 
                     pattern = re.compile("^set\s*<", re.IGNORECASE)
@@ -602,7 +618,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     if m != None:
                         object_name_lower = "set"
                         object_name = "Set"
-                        print "our object: " + object_name
+                        #print "our object: " + object_name
                         break                        
 
                     if object_name.endswith(","): continue #=> we're guessing the word is method argument
@@ -618,7 +634,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     if "this." in object_name_lower: continue
                     object_name_lower = re.sub(r'\W+', '', object_name_lower) #remove non alphanumeric chars
 
-                    print "our object: " + object_name_lower
+                    #print "our object: " + object_name_lower
 
                     if object_name_lower in apex_reserved.keywords: continue
 
@@ -628,7 +644,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     object_name = parts[0]
                     object_name = object_name[::-1] #=> reverses line
                     object_name = re.sub(r'\W+', '', object_name) #remove non alphanumeric chars
-                    print "our object capped: " + object_name
+                    #print "our object capped: " + object_name
 
                     if object_name_lower != None and object_name_lower != "": break
                     #need to handle with word is found within a multiline comment
@@ -668,8 +684,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     return sorted(_completions)
                 elif os.path.isfile(mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
                     search_name = util.prep_for_search(object_name)
-                    print search_name
-                    print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
+                    #print search_name
+                    #print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
                     if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
                         object_dom = parse(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
                         for node in object_dom.getElementsByTagName('memberdef'):
@@ -685,7 +701,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                     if child.firstChild != None: member_type = child.firstChild.nodeValue
                                 elif child.nodeName == 'argsstring':
                                     if child.firstChild != None: member_args = child.firstChild.nodeValue   
-                                print member_args 
+                                #print member_args 
                                 if member_name != '' and member_name != 'set' and member_name != 'get':
                                     _completions.append((member_name+member_args+" \t"+member_type, member_name + member_args))
                         return sorted(_completions)
@@ -776,7 +792,7 @@ class ExecuteDoxygen(threading.Thread):
 
     def run(self):
         command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ./doxygen -'
-        print command
+        #print command
         os.chdir(mm_dir + "/bin")
         os.system(command)
 
@@ -798,7 +814,7 @@ def handle_doxygen_threads(threads, printer):
         return
 
     for filename in os.listdir(util.mm_project_directory() + "/config/.class_docs/xml"):
-        print filename
+        print(filename)
         if filename.startswith('_') or filename.startswith('dir_'): 
             os.remove(util.mm_project_directory() + "/config/.class_docs/xml/" + filename) 
             continue
