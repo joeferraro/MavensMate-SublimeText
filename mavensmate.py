@@ -782,6 +782,7 @@ def deploy_resource_bundle(bundle_name):
     util.mm_call('compile', params=params)
     util.send_usage_statistics('Deploy Resource Bundle')
 
+util.package_check()
 util.start_mavensmate_app()  
 util.check_for_updates()
 util.send_usage_statistics('Startup')

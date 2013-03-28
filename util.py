@@ -29,6 +29,12 @@ except:
 settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
+packages_path = sublime.packages_path()
+
+def package_check():
+    #ensure user settings are installed
+    if not os.path.exists(packages_path+"/User/mavensmate.sublime-settings"):
+        shutil.copyfile(mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
 
 def mm_call(operation, mm_debug_panel=True, **kwargs):
     settings = sublime.load_settings('mavensmate.sublime-settings')
