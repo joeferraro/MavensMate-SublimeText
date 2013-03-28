@@ -533,7 +533,7 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        api_name, sobject_name = parse_new_metadata_input(input)
+        api_name = parse_new_metadata_input(input)
         options = {
             'metadata_type'     : 'ApexComponent',
             'metadata_name'     : api_name
