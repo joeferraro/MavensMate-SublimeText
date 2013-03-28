@@ -7,6 +7,7 @@ import threading
 import re
 import time
 import pipes
+import shutil
 try:
     import urllib, urllib2
 except:
