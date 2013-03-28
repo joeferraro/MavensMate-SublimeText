@@ -1,6 +1,6 @@
-#MavensMate IDE for Force.com (2.0 beta)
+#MavensMate for Sublime Text plugin (2.0 beta)
 
-MavensMate is a SublimeText plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.
+MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE. Its goal is to allow developers to work inside Sublime Text for all their Force.com-related tasks.
 
 * Create & Edit Salesforce.com projects with specific package metadata
 * Create & compile Apex Classes, Apex Trigger, Visualforce Pages, and Visualforce Components
