@@ -1,8 +1,17 @@
+require SUPPORT + '/lib/os.rb'
+
 class Lsof
   class << self
     def kill(port)
-      pid = listener_pids(port)
-      `#{find_pids_cmd(port)} | xargs kill 2>&1`
+      pids = listener_pids(port)
+      pids.uniq!
+      if MavensMate::OS.windows? then
+        pids.each do |pid|
+          %x{taskkill /F /PID #{pid}}
+        end
+      else
+        `kill #{pids.join(' ')}`
+      end
     end
 
     def running?(port)
@@ -18,13 +27,19 @@ class Lsof
     def listener_pids(port)
       output = `#{find_pids_cmd(port)}`
       output.split("\n").map do |port|
+        if  MavensMate::OS.windows? then
+          port = port.split(" ").last
+        end
         Integer(port)
       end
     end
 
     def find_pids_cmd(port)
-      "lsof -i tcp:#{port} | grep '(LISTEN)' | awk '{print $2}'"
-      "lsof -i :#{port} | grep '(LISTEN)' | awk '{print $2}'"
+      if MavensMate::OS.windows? then
+        "netstat -aon | findstr 0.0.0.0:#{port}"
+      else
+        "LANG=C lsof -i tcp:#{port} | grep '(LISTEN)' | awk '{print $2}'"
+      end
     end
   end
 end

@@ -11,13 +11,16 @@ import ast
 import copy
 if os.name != 'nt':
     import unicodedata
-import unicodedata, re
+import re
 import urllib, urllib2
 from xml.dom.minidom import parse, parseString
 import json
 import apex_reserved 
 import command_helper 
 import traceback
+import zipfile
+
+from test_runner import *
 
 mm_dir = os.getcwdu()
 #PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
@@ -27,6 +30,12 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
 
+sublime_bin = settings.get('mm_sublime', 'sublime_text') if (sublime.platform() != 'osx' or settings.has('mm_sublime')) else '/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl'
+doxygen = settings.get('mm_doxygen', 'doxygen') if (sublime.platform() != 'osx' or settings.has('mm_doxygen')) else './doxygen'
+ruby = settings.get('mm_ruby', 'ruby')
+chrome = settings.get('mm_chrome', 'chrome')
+python = settings.get('mm_python', 'python')
+
 def check_for_workspace():
     if not os.path.exists(settings.get('mm_workspace')):
         #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
@@ -34,23 +43,28 @@ def check_for_workspace():
         sublime.message_dialog(msg)  
         raise BaseException
 
-def get_ruby():
-    ruby = "ruby"    
-    if settings.get('mm_ruby') != None: 
-        ruby = settings.get('mm_ruby')
-    return ruby
+def to_posix_path(path):
+    return path.replace('\\', '/')
 
-ruby = get_ruby()
+def binary_exists(binary):
+    if ('/' in binary):
+        return os.path.isfile(binary)
+    else:
+        if (sublime.platform() == 'windows'):
+            return (subprocess.call(["where", "/Q", binary], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0)
+        elif (sublime.platform() in ['linux', 'osx']):
+            return (subprocess.call(["which", binary], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0)
+    return False
 
 def start_local_server():
     check_for_workspace()
     cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.start'"
-    result = os.system(cmd)
-    if result != 0:
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    p.poll()
+    if p.returncode != 0 and p.returncode != None:
         msg = 'The local MavensMate server has failed to launch: \n\n'
         pout = ''
-        if p.stdout is not None : 
+        if p.stdout is not None:
             pout = p.stdout.readlines()
         pout = '\n'.join(pout)
         sublime.message_dialog(msg + pout)
@@ -58,13 +72,13 @@ def start_local_server():
 
 def stop_local_server():
     cmd = ruby+" -r '"+mm_dir+"/support/lib/local_server_thin.rb' -e 'MavensMate::LocalServerThin.stop'"
-    os.system(cmd)
+    subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
 def generate_ui(ruby_script, args):
     p = subprocess.Popen(ruby+" '"+mm_dir+"/commands/"+ruby_script+".rb' "+args+"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     if p.stdout is not None : 
         msg = p.stdout.readlines()
-    temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
+    temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm", suffix=".html")
     try:
         temp.write('\n'.join(msg))
     finally:
@@ -72,21 +86,29 @@ def generate_ui(ruby_script, args):
     return temp.name
 
 def launch_mavens_mate_window(temp_file_name):
-    os.system("open '"+mm_dir+"/bin/MavensMate.app' --args -url '"+temp_file_name+"'")
-    time.sleep(1) 
+    if (sublime.platform() == 'osx'):
+        os.system("open '"+mm_dir+"/bin/MavensMate.app' --args -url '"+temp_file_name+"'")
+        time.sleep(1)
+    else:
+        param1 = '--app=file://%s' % temp_file_name
+        subprocess.Popen([chrome, param1], stdout=subprocess.PIPE)
+        time.sleep(3)
+
     os.remove(temp_file_name) #<= we may want to move this delete call to the binary
 
 def kill_mavens_mate_window():
-    os.system("killAll MavensMate")
-    
+    if (sublime.platform() == 'osx'):
+        os.system("killAll MavensMate")
+    # else: TODO
+
 def get_active_file():
-    return sublime.active_window().active_view().file_name()
+    return to_posix_path(sublime.active_window().active_view().file_name())
 
 def get_project_name():
-    return os.path.basename(sublime.active_window().folders()[0])
+    return to_posix_path(os.path.basename(sublime.active_window().folders()[0]))
 
 def sublime_project_file_path():
-    project_directory = sublime.active_window().folders()[0]
+    project_directory = to_posix_path(sublime.active_window().folders()[0])
     if os.path.isfile(project_directory+"/.sublime-project"):
         return project_directory+"/.sublime-project"
     elif os.path.isfile(project_directory+"/"+get_project_name()+".sublime-project"):
@@ -108,7 +130,7 @@ def is_mm_project():
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
-    return sublime.active_window().folders()[0]
+    return to_posix_path(sublime.active_window().folders()[0])
 
 def mm_workspace():
     workspace = ""
@@ -142,7 +164,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             for w in sublime.windows():
                 if len(w.folders()) == 0:
                     continue;
-                root = w.folders()[0]
+                root = to_posix_path(w.folders()[0])
                 if mm_workspace() not in root:
                     continue
                 project_name = root.split("/")[-1]
@@ -174,13 +196,17 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         self.picked_project = self.results[picked]
         print 'opening project: ' + self.picked_project
         project_file = self.dir_map[self.picked_project][1]
-        if os.path.isfile(mm_workspace()+"/"+self.picked_project+"/"+project_file):
-            p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        project_file_path = mm_workspace()+"/"+self.picked_project+"/"+project_file
+        if os.path.isfile(project_file_path):
+            p = subprocess.Popen([sublime_bin, '--project', project_file_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
         else:
-            sublime.message_dialog("Cannot find: "+mm_workspace()+"/"+self.picked_project+"/"+project_file)
+            sublime.message_dialog("Cannot find: " + project_file_path)
 
 #launches the org connections UI
 class OrgConnectionsCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("deployment_connections", "'"+mm_project_directory()+"'")
@@ -209,10 +235,14 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
 class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run (self, dirs):
         printer = PanelPrinter.get(self.window.id())
         printer.show()
         printer.write('\nRefreshing from server\n')
+        dirs = [to_posix_path(dir) for dir in dirs]
         dir_string = ','.join(dirs)
         printer.write(dir_string+'\n')
         temp = tempfile.NamedTemporaryFile(delete=False, prefix="mm")
@@ -221,7 +251,7 @@ class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
         finally:
             temp.close()
         threads = []
-        thread = MetadataAPICall("clean_directories", "'"+temp.name+"' '"+mm_project_directory()+"'")
+        thread = MetadataAPICall("clean_directories", "'"+to_posix_path(temp.name)+"' '"+mm_project_directory()+"'")
         threads.append(thread)
         thread.start()
         handle_threads(threads, printer, handle_result, 0)  
@@ -269,6 +299,9 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
 
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("execute_anonymous", "'"+mm_project_directory()+"'")
@@ -277,6 +310,9 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
 
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("edit_project", "'"+mm_project_directory()+"'")
@@ -293,6 +329,9 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
 
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("deploy_to_server", "'"+mm_project_directory()+"'")
@@ -309,6 +348,9 @@ class CheckoutProjectCommand(sublime_plugin.ApplicationCommand):
 
 #displays unit test dialog
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("run_apex_tests", "'"+mm_project_directory()+"'")
@@ -320,11 +362,14 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
         json_data = open(mm_dir+"/packages.json")
         data = json.load(json_data)
         json_data.close()
-        version = data["packages"][0]["platforms"]["osx"][0]["version"]
+        version = data["packages"][0]["platforms"][sublime.platform()][0]["version"]
         sublime.message_dialog("MavensMate v"+version+"\n\nMavensMate is an open source Sublime Text package for Force.com\n\nmavens.io/mm")
 
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
             printer = PanelPrinter.get(self.window.id())
@@ -339,6 +384,9 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
 
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to compile the entire project?", "Compile Project"):
             printer = PanelPrinter.get(self.window.id())
@@ -353,6 +401,9 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, files):
         if sublime.ok_cancel_dialog("Are you sure you want to delete the selected files from Salesforce?", "Delete"):
             printer = PanelPrinter.get(self.window.id())
@@ -405,21 +456,25 @@ def new_metadata(self, opts={}):
     printer = PanelPrinter.get(self.view.window().id())
     printer.show()
     printer.write('\nCreating New '+opts['metadata_type']+' => ' + opts['metadata_name'] + '\n')
-    param1 = ''
+    param1 = {}
+    param1['meta_type'] = opts['metadata_type']
+    param1['api_name'] = opts['metadata_name']
     if opts['metadata_type'] == 'ApexClass':
-        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\", :apex_class_type=>\""+opts['apex_class_type']+"\"}"
+        param1['apex_class_type'] = opts['apex_class_type']
     elif opts['metadata_type'] == 'ApexTrigger':
-        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\", :object_api_name=>\""+opts['object_api_name']+"\"}"
-    else:
-        param1 = "{:meta_type=>\""+opts['metadata_type']+"\", :api_name=>\""+opts['metadata_name']+"\"}"
+        param1['object_api_name'] = opts['object_api_name']
+
     threads = []
-    thread = MetadataAPICall("new_metadata", "'"+param1+"' '"+mm_project_directory()+"'")
+    thread = MetadataAPICall("new_metadata", "'%s' '%s'" % (json.dumps(param1), mm_project_directory()))
     threads.append(thread)
     thread.start()
     handle_threads(threads, printer, handle_result, 0)
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Apex Class')
         sublime.active_window().show_input_panel("Apex Class Name, Template (base, test, batch, sched, email, exception, empty)", "MyClass, base", self.on_input, None, None)
@@ -435,6 +490,9 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
 
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Apex Trigger')
         sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name", "MyAccountTrigger, Account", self.on_input, None, None)
@@ -450,6 +508,9 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Visualforce Page')
         sublime.active_window().show_input_panel("Visualforce Page Name", "", self.on_input, None, None)
@@ -464,12 +525,15 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Visualforce Component')
         sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        api_name, sobject_name = parse_new_metadata_input(input)
+        api_name = parse_new_metadata_input(input)
         options = {
             'metadata_type'     : 'ApexComponent',
             'metadata_name'     : api_name
@@ -478,6 +542,9 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         printer = PanelPrinter.get(self.window.id())
         printer.show()
@@ -491,6 +558,9 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
 
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         printer = PanelPrinter.get(self.window.id())
         printer.show()
@@ -531,8 +601,9 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 return sorted(_completions)
             elif os.path.isfile(mm_project_directory()+"/src/classes/"+word+".cls"): #=> custom apex class static methods
                 search_name = prep_for_search(word)
+                search_name = search_name.lower()
                 print search_name
-                print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
+                print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"
                 if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
                     object_dom = parse(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
                     for node in object_dom.getElementsByTagName('memberdef'):
@@ -701,8 +772,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                 field_type = child.firstChild.nodeValue
                         _completions.append((field_name+" \t"+field_type, field_name))
                     return sorted(_completions)
-                elif os.path.isfile(mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
-                    object_dom = parse(mm_project_directory()+"/src/objects/"+object_name_lower+".object")
+                elif os.path.isfile(mm_project_directory()+"/src/objects/"+object_name+".object"): #=> object fields
+                    object_dom = parse(mm_project_directory()+"/src/objects/"+object_name+".object")
                     for node in object_dom.getElementsByTagName('fields'):
                         field_name = ''
                         field_type = ''
@@ -714,10 +785,11 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                 field_type = child.firstChild.nodeValue
                         _completions.append((field_name+" \t"+field_type, field_name))
                     return sorted(_completions)
-                elif os.path.isfile(mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
+                elif os.path.isfile(mm_project_directory()+"/src/classes/"+object_name+".cls"): #=> apex classes
                     search_name = prep_for_search(object_name)
+                    search_name = search_name.lower()
                     print search_name
-                    print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
+                    print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"
                     if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
                         object_dom = parse(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
                         for node in object_dom.getElementsByTagName('memberdef'):
@@ -740,6 +812,9 @@ class MavensMateCompletions(sublime_plugin.EventListener):
 
 #uses doxygen to generate xml-based documentation which assists in code completion/suggest functionality in MavensMate
 class GenerateApexClassDocs(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         dinput = mm_project_directory() + "/src/classes"
         doutput = mm_project_directory() + "/config/.class_docs"
@@ -789,24 +864,36 @@ class RemoteEdit(sublime_plugin.EventListener):
 
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self): 
         if is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(True)
 
 #hides mavensmate panel
 class HideDebugPanelCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         if is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(False)
 
 #right click context menu support for resource bundle creation
 class NewResourceBundleCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, files):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
             create_resource_bundle(self, files) 
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         srs = []
         for dirname in os.listdir(mm_project_directory()+"/src/staticresources"):
@@ -825,6 +912,9 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         self.rbs_map = {}
         rbs = []
@@ -846,13 +936,25 @@ def deploy_resource_bundle(bundle_name):
     printer = PanelPrinter.get(sublime.active_window().id())
     printer.show()
     printer.write('\nBundling and deploying to server => ' + bundle_name + '\n') 
+    zipFileName = mm_project_directory() + "/src/staticresources/" + bundle_name
+    dirName = mm_project_directory()+"/resource-bundles/"+bundle_name
     # delete existing sr
-    if os.path.exists(mm_project_directory()+"/src/staticresources/"+bundle_name):
-        os.remove(mm_project_directory()+"/src/staticresources/"+bundle_name)
+    if os.path.exists(zipFileName):
+        os.remove(zipFileName)
     # zip bundle to static resource dir 
-    os.chdir(mm_project_directory()+"/resource-bundles/"+bundle_name)
-    cmd = "zip -r -X '"+mm_project_directory()+"/src/staticresources/"+bundle_name+"' *"      
-    os.system(cmd)
+    os.chdir(dirName)
+    fileList = []
+    if os.path.isfile(dirName):
+        fileList.append(dirName)
+    else:
+        for root, dirs, files in os.walk(dirName):
+            for name in files:
+                fileList.append(os.path.join(root, name))
+    zf = zipfile.ZipFile(zipFileName, "w", zipfile.zlib.DEFLATED)
+    for tar in fileList:
+        arcName = tar[len(dirName):]
+        zf.write(tar,arcName)
+    zf.close()
     #compile
     file_path = mm_project_directory()+"/src/staticresources/"+bundle_name
     threads = []
@@ -878,12 +980,22 @@ def create_resource_bundle(self, files):
 
     for file in files:
         fileName, fileExtension = os.path.splitext(file)
-        baseFileName = fileName.split("/")[-1]
-        if os.path.exists(mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension):
+        baseFileName = to_posix_path(fileName).split("/")[-1]
+        unZipTargetDir = mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension
+        if os.path.exists(unZipTargetDir):
             printer.write('[OPERATION FAILED]: The resource bundle already exists\n')
             return
-        cmd = 'unzip \''+file+'\' -d \''+mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension+'\''
-        res = os.system(cmd)
+        zfObj = zipfile.ZipFile(file)
+        for name in zfObj.namelist():
+            if name.endswith(os.path.sep) or name.endswith('/'):
+                os.makedirs(to_posix_path(os.path.join(unZipTargetDir, name)))
+            else:
+                ext_filename = to_posix_path(os.path.join(unZipTargetDir, name))
+                ext_dir = to_posix_path(os.path.dirname(ext_filename))
+                if not os.path.exists(ext_dir): os.mkdir(ext_dir, 0777)
+                outfile = open(ext_filename, 'wb')
+                outfile.write(zfObj.read(name))
+                outfile.close()
 
     printer.write('[Resource bundle creation complete]\n')
     printer.hide()
@@ -918,7 +1030,9 @@ class ExecuteDoxygen(threading.Thread):
         threading.Thread.__init__(self)   
 
     def run(self):
-        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ./doxygen -'
+        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ; echo "CASE_SENSE_NAMES = NO" ) | ' + doxygen + ' -'
+        if (sublime.platform() == 'windows'):
+            command = command.replace(" cat ", " type ").replace(";", "&").replace('\\"',"").replace('"','')
         print command
         os.chdir(mm_dir + "/bin")
         os.system(command)
@@ -1273,7 +1387,7 @@ class UsageReporter(threading.Thread):
             json_data = open(mm_dir+"/packages.json")
             data = json.load(json_data)
             json_data.close()
-            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
+            current_version = data["packages"][0]["platforms"][sublime.platform()][0]["version"]
 
             #post to usage servlet
             url = "https://mavensmate.appspot.com/usage"
@@ -1298,13 +1412,14 @@ class AutomaticUpgrader(threading.Thread):
             json_data = open(mm_dir+"/packages.json")
             data = json.load(json_data)
             json_data.close()
-            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
+            current_version = data["packages"][0]["platforms"][sublime.platform()][0]["version"]
             import urllib
-            j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
-            latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
+            my_uri = "https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json" if (sublime.platform() == 'osx') else "https://raw.github.com/amtrack/MavensMate-SublimeText/linux_windows/packages.json"
+            j = json.load(urllib.urlopen(my_uri))
+            latest_version = j["packages"][0]["platforms"][sublime.platform()][0]["version"]
             release_notes = "\n\nRelease Notes: "
             try:
-                release_notes += j["packages"][0]["platforms"]["osx"][0]["release_notes"] + "\n\n"
+                release_notes += j["packages"][0]["platforms"][sublime.platform()][0]["release_notes"] + "\n\n"
             except:
                 release_notes = ""
             current_array = current_version.split(".")

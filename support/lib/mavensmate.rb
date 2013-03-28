@@ -4,6 +4,7 @@ require 'fileutils'
 require 'json'
 require SUPPORT + '/lib/client'
 require SUPPORT + '/lib/factory'
+require SUPPORT + '/lib/keychain'
 require SUPPORT + '/lib/exceptions'
 require SUPPORT + '/lib/metadata_helper'
 require SUPPORT + '/lib/util'
@@ -771,10 +772,11 @@ module MavensMate
   
   #adds salesforce.com creds to the keychain
   def self.add_to_keychain(project_name, pw)
-    require 'shellwords'
-    pw = Shellwords.escape(pw)
-    project_name = Shellwords.escape(project_name) + "-mm"
-    %x{security add-generic-password -a #{project_name} -s \"MavensMate: #{project_name}\" -w #{pw} -U}
+    #require 'shellwords'
+    #pw = Shellwords.escape(pw)
+    #project_name = Shellwords.escape(project_name) + "-mm"
+    project_name += "-mm"
+    KeyChain::add_generic_password(project_name, project_name, pw)
   end
   
   #returns the selected location of projects
@@ -788,7 +790,7 @@ module MavensMate
     begin
       pconfig = MavensMate.get_project_config
       pconfig['org_connections'].each do |connection| 
-        pw = KeyChain::find_internet_password("#{pconfig['project_name']}-mm-#{connection['name']}")
+        pw = KeyChain::find_internet_password("#{pconfig['project_name']}-mm-#{connection['username']}")
         connections.push({
           :un => connection["username"], 
           :pw => pw

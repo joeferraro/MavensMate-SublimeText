@@ -4,6 +4,7 @@ require SUPPORT + '/lib/factory.rb'
 require SUPPORT + '/lib/metadata_helper.rb'
 require SUPPORT + '/lib/object.rb'
 require SUPPORT + '/lib/util.rb'
+require SUPPORT + '/lib/keychain.rb'
 class DeployController < ApplicationController
   
   include MetadataHelper  

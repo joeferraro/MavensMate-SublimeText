@@ -1,4 +1,15 @@
 require 'erb'   
+require 'coveralls'
+Coveralls.wear!
+
+if ENV['COVERAGE'] == 'true'
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter 'support/test/'
+    add_group 'TMVC', 'support/tmvc'
+    add_group 'Support', 'support/lib'
+  end
+end
 
 class TestHelper
 

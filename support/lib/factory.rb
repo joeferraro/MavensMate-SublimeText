@@ -211,12 +211,14 @@ module MavensMate
         cleanup_tmp        
         put_package(Dir.getwd, binding, true)
         put_empty_package(Dir.getwd)        
+        Dir.chdir(Dir.tmpdir)
         return zip_tmp_directory
       end
       
       def put_empty_metadata
         cleanup_tmp        
-        put_empty_package(Dir.getwd)        
+        put_empty_package(Dir.getwd)
+        Dir.chdir(Dir.tmpdir)
         return zip_tmp_directory
       end
             
@@ -225,16 +227,16 @@ module MavensMate
         put_tmp_directories(hash)
         put_package(Dir.getwd, binding, false)
         put_files_in_tmp_directories(hash)
+        Dir.chdir(Dir.tmpdir)
         return zip_tmp_directory                       
       end
-             
+
       def copy_project_to_tmp
         tmp_dir = Dir.tmpdir
-        FileUtils.rm_rf("#{tmp_dir}/mmzip")
+        FileUtils.rm_r("#{tmp_dir}/mmzip") if File.exists?("#{tmp_dir}/mmzip")
         Dir.mkdir("#{tmp_dir}/mmzip")
-        Dir.mkdir("#{tmp_dir}/mmzip/unpackaged")
         unpackaged_dir = "#{tmp_dir}/mmzip/unpackaged"
-        %x{cp -R '#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/' '#{unpackaged_dir}'}      
+        FileUtils.cp_r("#{ENV['MM_CURRENT_PROJECT_DIRECTORY']}/src/", unpackaged_dir)
         return zip_tmp_directory
       end 
        
@@ -255,7 +257,7 @@ module MavensMate
           Dir.chdir(dir)
         elsif dir == "tmp"
           tmp_dir = Dir.tmpdir
-          FileUtils.rm_rf("#{tmp_dir}/mmzip")
+          FileUtils.rm_r("#{tmp_dir}/mmzip") if File.exists?("#{tmp_dir}/mmzip")
           Dir.mkdir("#{tmp_dir}/mmzip")
           Dir.mkdir("#{tmp_dir}/mmzip/unpackaged")
           Dir.mkdir("#{tmp_dir}/mmzip/unpackaged/"+META_DIR_MAP[meta_type])
@@ -283,8 +285,10 @@ module MavensMate
           end
 
           Dir.chdir("#{tmp_dir}/mmzip")
-          file_contents = File.read("deploy.zip")
+          file_contents = File.open("deploy.zip", "rb"){ |f| f.read }
           base64Package = Base64.encode64(file_contents)
+          Dir.chdir(tmp_dir)
+          return base64Package
         else
           
         end
@@ -376,7 +380,7 @@ module MavensMate
         end
                         
         def cleanup_tmp
-          FileUtils.rm_rf("#{Dir.tmpdir}/mmzip")
+          FileUtils.rm_r("#{Dir.tmpdir}/mmzip") if File.exists?("#{Dir.tmpdir}/mmzip")
           Dir.mkdir("#{Dir.tmpdir}/mmzip")
           Dir.mkdir("#{Dir.tmpdir}/mmzip/unpackaged")
           Dir.chdir("#{Dir.tmpdir}/mmzip/unpackaged")
@@ -398,6 +402,7 @@ module MavensMate
               )
               end
             end
+            Dir.chdir(Dir.tmpdir)
           }
         end
       
@@ -425,7 +430,7 @@ module MavensMate
             end
           end
           #Dir.chdir("#{tmp_dir}/mmzip")
-          file_contents = File.read("#{tmp_dir}/mmzip/deploy.zip")
+          file_contents = File.open("#{tmp_dir}/mmzip/deploy.zip", "rb"){ |f| f.read }
           return Base64.encode64(file_contents)
         end
         

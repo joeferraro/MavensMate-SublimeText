@@ -177,6 +177,10 @@
 	     	{
 	     		"caption": "About MavensMate",
 	     		"command": "show_version"
+	     	},
+	     	{
+	     		"caption": "Run Self Test",
+	     		"command": "run_self_test"
 	     	}
 	    ]  
 	}  

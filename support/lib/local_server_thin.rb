@@ -7,6 +7,7 @@ include Constants
 require File.dirname(__FILE__) + '/keychain.rb'
 require File.dirname(__FILE__) + '/lsof.rb'
 require File.dirname(__FILE__) + '/object.rb'
+require File.dirname(__FILE__) + '/os.rb'
 require File.dirname(__FILE__) + '/mavensmate.rb'
 
 module MavensMate
@@ -41,22 +42,15 @@ module MavensMate
         def start
           stop
           MavensMate::logger.debug 'thin server starting on port 7777'
-          exit if fork            # Parent exits, child continues.
-          Process.setsid          # Become session leader.
-          exit if fork            # Zap session leader.
-
-          pid = fork do
-            server = MavensMate::LocalServerThin.get_server_config 
-            Thin::Server.new('0.0.0.0', 7777, server).start!
-          end
-          Process.detach(pid)
+          server = MavensMate::LocalServerThin.get_server_config 
+          Thin::Server.new('0.0.0.0', 7777, server).start! 
         end
 
         def respond(body, type)
           MavensMate::logger.debug 'responding from localhost:7777\n'+body
           [
             200,
-            { 'Content-Type' => type, 'Access-Control-Allow-Origin' => "*" },
+            { 'Content-Type' => type, 'Access-Control-Allow-Origin' => "*", 'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE' },
             body
           ]
         end
@@ -461,8 +455,14 @@ module MavensMate
               result = MavensMate.new_project_from_existing_directory(params)
               if result[:success] == true
                 project_file = File.join(ENV['MM_WORKSPACE'], params[:pn], params[:pn]+".sublime-project")
-                `killAll MavensMate` 
-                # `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
+                if OS.mac? then
+                  `killAll MavensMate`
+                  # `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{ENV["MM_WORKSPACE"]}/#{params[:pn]}/#{params[:pn]}.sublime-project'` if result[:success]
+                elsif OS.linux? then
+                  %x{subl --project '#{project_file}'}
+                elsif OS.windows? then
+                  %x{sublime_text.exe --project #{project_file}}
+                end
               else
                 body = result.to_json
               end
@@ -511,8 +511,14 @@ module MavensMate
                   }
                   body = res.to_json
                   project_file = File.join(ENV['MM_WORKSPACE'], params[:pn], params[:pn]+".sublime-project")
-                  `killAll MavensMate` 
-                  `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{project_file}'`
+                  if OS.mac? then
+                    `killAll MavensMate`
+                    `'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '#{project_file}'`
+                  elsif OS.linux? then
+                    %x{subl --project '#{project_file}'}
+                  elsif OS.windows? then
+                    %x{sublime_text.exe --project #{project_file}}
+                  end
                 else
                   body = result.to_json
                 end
@@ -556,10 +562,10 @@ module MavensMate
                 if yml["org_connections"]
                   connections = yml["org_connections"]
                   keychain_name = project_name + "-mm-"
-                  %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U}         
+                  KeyChain::add_generic_password("#{project_name}-mm-#{un}", "#{project_name}-mm-#{un}", pw)
                   connections.push({ "username" => un, "environment" => environment })
                 else
-                  %x{security add-generic-password -a '#{project_name}-mm-#{un}' -s \"#{project_name}-mm-#{un}\" -w #{pw} -U} 
+                  KeyChain::add_generic_password("#{project_name}-mm-#{un}", "#{project_name}-mm-#{un}", pw)
                   yml["org_connections"] = [{ "username" => un, "environment" => environment }]
                   connections.push({ "username" => un, "environment" => environment })
                 end  
@@ -629,7 +635,9 @@ module MavensMate
                 tree = eval(req["tree"])  
                 result = MavensMate.clean_project({ :update_sobjects => false, :update_package => true, :package => tree, :force_return => true })
                 if result[:success] == true
-                  `killAll MavensMate`
+                  if OS.mac? then
+                    `killAll MavensMate`
+                  end
                 end
                 result = {
                   :success => true
