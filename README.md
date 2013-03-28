@@ -25,15 +25,12 @@ MavensMate for Linux has not yet been built.
 
 ##Install
 
-Beta:
-```
-$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install_beta.py)
-```
+To install the Sublime Text Plugin for MavensMate, go to the "Plugins" menu in MavensMate and install the plugin.
 
-Stable:
-```
-$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.py)
-```
+<img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
+ 
+<img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
+
 
 ##Setup
 <img src="http://wearemavens.com/images/mm/menu3.png" width="400"/>

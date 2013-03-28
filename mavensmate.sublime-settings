@@ -29,8 +29,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will check for updates when Sublime Text starts
 	"mm_check_for_updates" : true,
 
-	//possible values: FATAL(logs unhandleable errors), ERROR (logs handleable runtime errors), INFO (logs generic high-level information), DEBUG (logs method calls, detailed soap calls, and other low-level information)
-	"mm_log_level" : "FATAL",
+	//possible values: EXCEPTION, CRITICAL, ERROR, WARNING, DEBUG, INFO
+	"mm_log_level" : "EXCEPTION",
 
 	//if true AND mm_log_level is set to "DEBUG", then mavensmate will log detailed soap calls
 	"mm_soap_log" : false,
