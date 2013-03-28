@@ -40,16 +40,9 @@ Go to "MavensMate --> Settings --> User" and modify `mm_workspace` with the EXIS
 	"mm_workspace": "/Users/your_username/Projects"
 
 ##Update
-If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If you do not want to subscribe to automatic updates:
+If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, you can update the plugin through the "Plugins" panel in MavensMate.app.
 
-Run "Update MavensMate" command
-
-<img src="http://wearemavens.com/images/mm/mmupdate3.png"/>
-
-OR run the following terminal command:
-```
-$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/install.py -b 2.0)
-```
+<img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
 
 ##Wiki
 <a href="https://github.com/joeferraro/MavensMate-SublimeText/wiki">https://github.com/joeferraro/MavensMate-SublimeText/wiki</a>
