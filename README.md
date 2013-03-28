@@ -3,13 +3,14 @@
 MavensMate is a SublimeText plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.
 
 * Create & Edit Salesforce.com projects with specific package metadata
-* SVN & Git support
 * Create & compile Apex Classes, Apex Trigger, Visualforce Pages, and Visualforce Components
 * Compile and retrieve other Salesforce.com metadata
 * Run Apex test methods and visualize test successes/failures & coverage
-* Play Pacman while your Apex unit tests run
+* Play Pacman, Tetris, and Donkey Kong while your Apex unit tests and deploys run
 * Deploy metadata to other Salesforce.com orgs
 * Apex Execute Anonymous
+* Create Apex Execution Overlay Actions (tooling API)
+* Download Apex Logs (tooling API)
 * Apex Code Assist (beta!!)
 
 ##Prerequisites
@@ -18,14 +19,14 @@ MavensMate is a SublimeText plugin that aims to replicate the functionality of t
 You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
 
 ###Windows
-MavensMate.exe for Windows has not yet been built.
+TODO: We're looking for talented Windows developers to own MavensMate for Windows. Please visit the MavensMate project on GitHub for more information: https://github.com/joeferraro/MavensMate
 
 ###Linux
-MavensMate for Linux has not yet been built.
+TODO: We're looking for talented Linux developers to own MavensMate for Linux. Please visit the MavensMate project on GitHub for more information: https://github.com/joeferraro/MavensMate
 
 ##Install
 
-To install the Sublime Text Plugin for MavensMate, go to the "Plugins" menu in MavensMate and install the plugin.
+To install the Sublime Text Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
 <img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
  
