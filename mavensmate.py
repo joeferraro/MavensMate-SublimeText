@@ -32,6 +32,7 @@ except:
     mm_dir = os.path.dirname(__file__)
 
 settings = sublime.load_settings('mavensmate.sublime-settings')
+sublime_version = int(float(sublime.version()))
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
@@ -135,7 +136,8 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
 
         import os
         self.dir_map = {}
-        dirs = []
+        dirs = [] 
+        print(util.mm_workspace())
         for dirname in os.listdir(util.mm_workspace()):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
             if dirname in open_projects : continue
@@ -158,7 +160,10 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         print('opening project: ' + self.picked_project)
         project_file = self.dir_map[self.picked_project][1]
         if os.path.isfile(util.mm_workspace()+"/"+self.picked_project+"/"+project_file):
-            p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            if sublime_version >= 3000:
+                p = subprocess.Popen("'/Applications/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            else:
+                p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             sublime.message_dialog("Cannot find: "+util.mm_workspace()+"/"+self.picked_project+"/"+project_file)
 
@@ -245,10 +250,14 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
 # if src is refreshed, project is "cleaned"
 class RefreshFromServerCommand(sublime_plugin.WindowCommand):
     def run (self, dirs, files):
-        params = {
-            "files"         : files,
-            "directories"   : dirs
-        }
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            params = {
+                "directories"   : dirs
+            }
+        elif files != None and type(files) is list and len(files) > 0:
+            params = {
+                "files"         : files
+            }
         util.mm_call('refresh', context=self, params=params)
         util.send_usage_statistics('Refresh Selected From Server')  
 
@@ -417,6 +426,26 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
         util.mm_call('new_project_from_existing_directory', params=params)
         util.send_usage_statistics('New Project From Existing Directory')  
 
+
+
+#generic handler for writing text to an output panel (sublime text 3 requirement)
+class MavensMateOutputText(sublime_plugin.TextCommand):
+    def run(self, edit, text, *args, **kwargs):
+        size = self.view.size()
+        self.view.set_read_only(False)
+        self.view.insert(edit, size, text)
+        self.view.set_read_only(True)
+        # TODO: this scrolling is lame and centers text :/
+        self.view.show(size)
+
+    def is_visible(self):
+        return False
+
+    def is_enabled(self):
+        return True
+
+    def description(self):
+        return
 
 ####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
 

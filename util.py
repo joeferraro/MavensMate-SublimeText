@@ -31,11 +31,15 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 hide_panel = settings.get('mm_hide_panel_on_success', 1)
 hide_time = settings.get('mm_hide_panel_time', 1)
 packages_path = sublime.packages_path()
+sublime_version = int(float(sublime.version()))
 
 def package_check():
     #ensure user settings are installed
-    if not os.path.exists(packages_path+"/User/mavensmate.sublime-settings"):
-        shutil.copyfile(mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
+    try:
+        if not os.path.exists(packages_path+"/User/mavensmate.sublime-settings"):
+            shutil.copyfile(mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
+    except:
+        pass
 
 def mm_call(operation, mm_debug_panel=True, **kwargs):
     settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -151,6 +155,31 @@ def thread_progress_handler(operation, threads, printer, i=0):
         return
     handle_result(operation, printer, result)
 
+#handles the result of the mm script
+def handle_result(operation, printer, result):
+    try:
+        result = json.loads(result)
+        print_result_message(operation, result, printer) 
+        if operation == 'new_metadata' and to_bool(result['success']) == True:
+            if 'messages' in result:
+                if type(result['messages']) is not list:
+                    result['messages'] = [result['messages']]
+                for m in result['messages']:
+                    if 'package.xml' not in m['fileName']:
+                        file_name = m['fileName']
+                        location = mm_project_directory() + "/" + file_name.replace('unpackaged/', 'src/')
+                        sublime.active_window().open_file(location)
+                        break
+        if to_bool(result['success']) == True:
+            if printer != None:
+                printer.hide()  
+        if operation == 'refresh':            
+            sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
+            clear_marked_line_numbers()
+    except:   
+        if printer != None:
+            printer.hide()  
+
 def parse_json_from_file(location):
     try:
         json_data = open(location)
@@ -179,29 +208,6 @@ def get_execution_overlays(file_path):
         return response
     except:
         return []
-
-#handles the result of the mm script
-def handle_result(operation, printer, result):
-    try:
-        #print result
-        result = json.loads(result)
-        print_result_message(operation, result, printer) 
-        if operation == 'new_metadata' and to_bool(result['success']) == True:
-            if 'messages' in result:
-                if type(result['messages']) is not list:
-                    result['messages'] = [result['messages']]
-                for m in result['messages']:
-                    if 'package.xml' not in m['fileName']:
-                        file_name = m['fileName']
-                        location = mm_project_directory() + "/" + file_name.replace('unpackaged/', 'src/')
-                        sublime.active_window().open_file(location)
-                        break
-        if to_bool(result['success']) == True and hide_panel == True:
-            if printer != None:
-                printer.hide()  
-    except:   
-        if printer != None:
-            printer.hide()  
 
 #creates resource-bundles for the static resource(s) selected        
 def create_resource_bundle(self, files):
@@ -296,6 +302,7 @@ def get_project_name():
         return None
 
 def check_for_workspace():
+    settings = sublime.load_settings('mavensmate.sublime-settings')
     if not os.path.exists(settings.get('mm_workspace')):
         #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
         msg = 'Your mm_workspace directory does not exist. Please create the directory then try your operation again. Thx!'
@@ -328,6 +335,7 @@ def mm_project_directory():
     return sublime.active_window().folders()[0]
 
 def mm_workspace():
+    settings = sublime.load_settings('mavensmate.sublime-settings')
     workspace = ""
     if settings.get('mm_workspace') != None:
         workspace = settings.get('mm_workspace')
@@ -406,6 +414,7 @@ def get_tab_file_names():
     return tabs 
 
 def send_usage_statistics(action):
+    settings = sublime.load_settings('mavensmate.sublime-settings')
     if settings.get('mm_send_usage_statistics') == True:
         sublime.set_timeout(lambda: UsageReporter(action).start(), 3000)
 
@@ -413,6 +422,7 @@ def refresh_active_view():
     sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
 
 def check_for_updates():
+    settings = sublime.load_settings('mavensmate.sublime-settings')
     if settings.get('mm_check_for_updates') == True:
         sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
 
@@ -580,6 +590,10 @@ class MavensMateTerminalCall(threading.Thread):
             '-o'        : self.operation,
             '--html'    : html
         }
+        if sublime_version >= 3000:
+            args['-c'] = 'SUBLIME_TEXT_3'
+        else:
+            args['-c'] = 'SUBLIME_TEXT_2'
         ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project', 'new_project_from_existing_directory']
         if self.operation in ui_operations:
             args['--ui'] = True
@@ -633,11 +647,22 @@ class MavensMateTerminalCall(threading.Thread):
                 'project_name'  : self.project_name
             }
         elif self.operation == 'refresh':
-            payload = {
-                'project_name'  : self.project_name,
-                'files'         : self.params.get('files', []),
-                'directories'   : self.params.get('directories', [])
-            }
+            if 'files' in self.params:
+                payload = {
+                    'project_name'  : self.project_name,
+                    'files'         : self.params.get('files', []),
+                }
+            elif 'directories' in self.params:
+                payload = {
+                    'project_name'  : self.project_name,
+                    'directories'   : self.params.get('directories', [])
+                }
+            else:
+                payload = {
+                    'project_name'  : self.project_name,
+                    'directories'   : self.params.get('directories', []),
+                    'files'         : self.params.get('files', [])
+                }
         elif self.operation == 'delete':
             payload = {
                 'project_name'  : self.project_name,
@@ -790,12 +815,25 @@ class PanelPrinter(object):
         return key
 
     def write_callback(self):
-        try:
+        if sublime_version >= 3000:
             found = False
             for key in self.strings.keys():
                 if len(self.strings[key]):
                     found = True
+            if not found:
+                return
+            string = self.strings[key].pop(0)
+            self.panel.run_command('mavens_mate_output_text', {'text': string})
+            
+            size = self.panel.size()
+            sublime.set_timeout(lambda : self.panel.show(size, True), 2)
 
+            return
+        else:
+            found = False
+            for key in self.strings.keys():
+                if len(self.strings[key]):
+                    found = True
             if not found:
                 return
             read_only = self.panel.is_read_only()
@@ -826,20 +864,18 @@ class PanelPrinter(object):
                         point = point + len(string) - 1
                         region = sublime.Region(point, point)
                         self.panel.add_regions(key, [region], '')
-        except:
-            pass #probably a sublime text 3 issue
-
-        for key in keys_to_erase:
-            if key in self.strings:
-                del self.strings[key]
-            try:
-                self.queue.remove(key)
-            except ValueError:
-                pass
-
-        self.panel.end_edit(edit)
-        if read_only:
-            self.panel.set_read_only(True)
-        size = self.panel.size()
-        sublime.set_timeout(lambda : self.panel.show(size, True), 2)
+        
+            for key in keys_to_erase:
+                if key in self.strings:
+                    del self.strings[key]
+                try:
+                    self.queue.remove(key)
+                except ValueError:
+                    pass
+            
+            self.panel.end_edit(edit)
+            if read_only:
+                self.panel.set_read_only(True)
+            size = self.panel.size()
+            sublime.set_timeout(lambda : self.panel.show(size, True), 2)
 

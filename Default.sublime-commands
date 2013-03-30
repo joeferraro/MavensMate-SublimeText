@@ -84,7 +84,7 @@
     "command": "delete_overlays"
   },
   {
-    "caption": "MavensMate: Fetch Apex Logs",          
-    "command": "fetch_logs"
+    "caption": "MavensMate: Refresh Current File From Server",          
+    "command": "refresh_active_file"
   }
 ]
