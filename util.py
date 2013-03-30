@@ -563,7 +563,7 @@ class AutomaticUpgrader(threading.Thread):
             if needs_update == True:
                 #if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. "+release_notes+"Would you like to update?", "Update"):
                     #sublime.set_timeout(lambda: sublime.run_command("update_me"), 1)
-                sublime.message_dialog("A new version of MavensMate ("+latest_version+") is available. To update, select 'Plugins' from the MavensMate.app status bar menu.")
+                sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available. To update, select 'Plugins' from the MavensMate.app status bar menu.")
         
         except:
             print('skipping MavensMate update check')
