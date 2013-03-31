@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "2.0.7",
-						"release_notes": "Fixed refresh from server functionality, including forced buffer refresh",
+						"version": "2.0.8",
+						"release_notes": "Minor text updates to about/update commands.",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/2.0"
 					}
 				]

@@ -244,7 +244,7 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
         data = json.load(json_data)
         json_data.close()
         version = data["packages"][0]["platforms"]["osx"][0]["version"]
-        sublime.message_dialog("MavensMate v"+version+"\n\nMavensMate is an open source Sublime Text package for Force.com\n\nmavens.io/mm")
+        sublime.message_dialog("MavensMate for Sublime Text v"+version+"\n\nMavensMate for Sublime Text is an open source Sublime Text package for Force.com development.\n\nhttp://mavens.io/mm")
 
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
@@ -452,22 +452,7 @@ class MavensMateOutputText(sublime_plugin.TextCommand):
 #updates MavensMate plugin
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(self):
-        from functools import partial
-        printer = PanelPrinter.get(sublime.active_window().id())
-        printer.show()
-        printer.write('\nUpdating MavensMate, please wait...\n')
-        import shutil
-        tmp_dir = tempfile.gettempdir()
-        shutil.copyfile(mm_dir+"/install.rb", tmp_dir+"/install.rb")
-        thread = threading.Thread(target=self.updatePackage)
-        thread.start()       
-        ThreadProgress(thread, 'Updating MavensMate', 'MavensMate has been updated successfully', util.finish_update)
-    def updatePackage(self):       
-        tmp_dir = tempfile.gettempdir()
-        os.chdir(tmp_dir)
-        time.sleep(3)
-        os.system(ruby+" install.rb")    
-        #sublime.set_timeout(partial(self.notify), 1)
+        sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):
