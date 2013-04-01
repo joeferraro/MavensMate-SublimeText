@@ -12,6 +12,12 @@ try:
     import urllib, urllib2
 except:
     pass
+
+try:
+    import apex_extensions
+except:
+    import MavensMate.apex_extensions as apex_extensions
+
 import traceback
 from operator import itemgetter
 from datetime import datetime
@@ -403,14 +409,16 @@ def get_tab_file_names():
     tabs = []
     win = sublime.active_window()
     for vw in win.views():
-       if vw.file_name() is not None:
-          #_, tail = path.split(vw.file_name())
-          #modified = path.getmtime(vw.file_name())
-          #tabs.append((tail, vw, modified))
-          #tabs.append('"'+vw.file_name()+'"')
-          tabs.append(vw.file_name())
-       else:
-          pass      # leave new/untitled files (for the moment)
+        if vw.file_name() is not None:
+            try:
+                extension = os.path.splitext(vw.file_name())[1]
+                extension = extension.replace(".","")
+                if extension in apex_extensions.valid_extensions:
+                    tabs.append(vw.file_name())
+            except:
+                pass
+        else:
+            pass      # leave new/untitled files (for the moment)
     return tabs 
 
 def send_usage_statistics(action):
