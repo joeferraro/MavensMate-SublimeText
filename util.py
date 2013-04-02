@@ -58,7 +58,7 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
-        message = 'Could not find MavensMate.app. Please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
+        message = '[OPERATION FAILED]: Could not find MavensMate.app. Download MavensMate.app from http://www.joe-ferraro.com/mavensmate/MavensMate.app and place in /Applications. Also, please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
         printer.write('\n'+message+'\n')
         return
 
@@ -76,7 +76,7 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
         printer = PanelPrinter.get(active_window_id)
         printer.show()
 
-    message = 'Operating ever so gracefully...'
+    message = 'Handling requested operation...'
     if operation == 'new_metadata':
         message = 'Creating New '+params['metadata_type']+' => ' + params['metadata_name']
     elif operation == 'compile':
@@ -186,9 +186,67 @@ def handle_result(operation, printer, result):
         if operation == 'refresh':            
             sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
             clear_marked_line_numbers()
-    except:   
+    except AttributeError:   
         if printer != None:
-            printer.hide()  
+            printer.write('\n[OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
+            printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
+    except Exception:
+        if printer != None:
+            printer.write('\n[OPERATION FAILED]: Whoops, you found a bug. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
+            printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
+
+#prints the result of the mm operation, can be a string or a dict
+def print_result_message(operation, res, printer):
+    #print 'result of operation ', res
+    if to_bool(res['success']) == False and 'messages' in res:
+        #here we're parsing a response from the metadata endpoint
+        line_col = ""
+        msg = None
+        failures = None
+        if type( res['messages'] ) == list:
+            for m in res['messages']:
+                if 'problem' in m:
+                    msg = m
+                    break
+            if msg == None: #must not have been a compile error, must be a test run error
+                if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
+                    failures = res['run_test_result']['failures']
+                elif 'failures' in res['run_test_result']:
+                    failures = [res['run_test_result']['failures']]
+            #print(failures)
+        else:
+            msg = res['messages']
+        if msg != None:
+            if 'lineNumber' in msg:
+                line_col = ' (Line: '+msg['lineNumber']
+                mark_line_numbers([int(float(msg['lineNumber']))], "bookmark")
+            if 'columnNumber' in msg:
+                line_col += ', Column: '+msg['columnNumber']
+            if len(line_col) > 0:
+                line_col += ')'
+            printer.write('\n[DEPLOYMENT FAILED]: ' + msg['fileName'] + ': ' + msg['problem'] + line_col + '\n')
+        elif failures != None:
+            for f in failures: 
+                printer.write('\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n')
+    elif 'success' in res and res["success"] == False and 'line' in res:
+        #this is a response from the apex compile api
+        line_col = ""
+        if 'line' in res:
+            line_col = ' (Line: '+res['line']
+            mark_line_numbers([int(float(res['line']))], "bookmark")
+        if 'column' in res:
+            line_col += ', Column: '+res['column']
+        if len(line_col) > 0:
+            line_col += ')'
+        printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
+    elif 'success' in res and to_bool(res['success']) == True:     
+        printer.write('\n[Operation completed Successfully]' + '\n')
+    elif to_bool(res['success']) == False and 'body' in res:
+        printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
+    elif to_bool(res['success']) == False:
+        printer.write('\n[OPERATION FAILED]' + '\n')
+    else:
+        printer.write('\n[Operation Completed Successfully]' + '\n')    
 
 def parse_json_from_file(location):
     try:
@@ -245,59 +303,6 @@ def create_resource_bundle(self, files):
     printer.write('[Resource bundle creation complete]\n')
     printer.hide()
     send_usage_statistics('Create Resource Bundle') 
-
-#prints the result of the mm operation, can be a string or a dict
-def print_result_message(operation, res, printer):
-    #print 'result of operation ', res
-    if to_bool(res['success']) == False and 'messages' in res:
-        #here we're parsing a response from the metadata endpoint
-        line_col = ""
-        msg = None
-        failures = None
-        if type( res['messages'] ) == list:
-            for m in res['messages']:
-                if 'problem' in m:
-                    msg = m
-                    break
-            if msg == None: #must not have been a compile error, must be a test run error
-                if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
-                    failures = res['run_test_result']['failures']
-                elif 'failures' in res['run_test_result']:
-                    failures = [res['run_test_result']['failures']]
-            #print(failures)
-        else:
-            msg = res['messages']
-        if msg != None:
-            if 'lineNumber' in msg:
-                line_col = ' (Line: '+msg['lineNumber']
-                mark_line_numbers([int(float(msg['lineNumber']))], "bookmark")
-            if 'columnNumber' in msg:
-                line_col += ', Column: '+msg['columnNumber']
-            if len(line_col) > 0:
-                line_col += ')'
-            printer.write('\n[DEPLOYMENT FAILED]: ' + msg['fileName'] + ': ' + msg['problem'] + line_col + '\n')
-        elif failures != None:
-            for f in failures: 
-                printer.write('\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n')
-    elif 'success' in res and res["success"] == False and 'line' in res:
-        #this is a response from the apex compile api
-        line_col = ""
-        if 'line' in res:
-            line_col = ' (Line: '+res['line']
-            mark_line_numbers([int(float(res['line']))], "bookmark")
-        if 'column' in res:
-            line_col += ', Column: '+res['column']
-        if len(line_col) > 0:
-            line_col += ')'
-        printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
-    elif 'success' in res and to_bool(res['success']) == True:     
-        printer.write('\n[Operation completed Successfully]' + '\n')
-    elif to_bool(res['success']) == False and 'body' in res:
-        printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
-    elif to_bool(res['success']) == False:
-        printer.write('\n[OPERATION FAILED]' + '\n')
-    else:
-        printer.write('\n[Operation Completed Successfully]' + '\n')    
 
 def get_active_file():
     try:
@@ -358,7 +363,7 @@ def mark_overlays(lines):
 
 def write_overlays(overlay_result):
     #print 'writing overlays >>>'
-    print(overlay_result)
+    #print(overlay_result)
     result = json.loads(overlay_result)
     if result["totalSize"] > 0:
         for r in result["records"]:
@@ -378,10 +383,12 @@ def clear_marked_line_numbers(mark_type="compile_issue"):
         print('no regions to clean up')
 
 def compile_callback(result):
-    #print 'compile result: ',result
-    result = json.loads(result)
-    if result['success'] == True:
-        clear_marked_line_numbers()
+    try:
+        result = json.loads(result)
+        if result['success'] == True:
+            clear_marked_line_numbers()
+    except:
+        print('[MAVENSMATE] Issue handling compile result')
 
 def print_debug_panel_message(message):
     printer = PanelPrinter.get(sublime.active_window().id())
@@ -491,7 +498,7 @@ class UsageReporter(threading.Thread):
             #print response
         except: 
             traceback.print_exc(file=sys.stdout)
-            print('failed to send usage statistic')
+            print('[MAVENSMATE] failed to send usage statistic')
 
 class ThreadProgress():
     """
@@ -588,7 +595,7 @@ class AutomaticUpgrader(threading.Thread):
                 sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available. To update, select 'Plugins' from the MavensMate.app status bar menu.")
         
         except:
-            print('skipping MavensMate update check')
+            print('[MAVENSMATE] skipping update check')
 
 #calls out to the ruby scripts that interact with the metadata api
 #pushes them to background threads and reads the piped response
@@ -712,7 +719,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.process.stdin.close()
 
     def run(self):
-        print('executing mm terminal call')
+        print('[MAVENSMATE] executing mm terminal call')
         print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
         self.process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload()
@@ -728,7 +735,7 @@ class MavensMateTerminalCall(threading.Thread):
                 strs.append(line.decode('utf-8'))   
             response_body = '\n'.join(strs)
 
-        print('response from mm: ' + response_body)
+        print('[MAVENSMATE] response from mm: ' + response_body)
         self.result = response_body
         if self.operation == 'compile':
             compile_callback(response_body)
@@ -765,7 +772,7 @@ class PanelPrinter(object):
             printer.init()
             cls.printers[window_id] = printer
             printer.write('==============================================\n')
-            printer.write('=---- MavensMate for Sublime Text v'+get_version_number()+' ----=\n')
+            printer.write('<---- MavensMate for Sublime Text v'+get_version_number()+' ---->\n')
             printer.write('==============================================\n')
         return printer
 
