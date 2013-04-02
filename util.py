@@ -541,6 +541,13 @@ def finish_update():
     printer = PanelPrinter.get(sublime.active_window().id())
     printer.hide()    
 
+def get_version_number():
+    json_data = open(mm_dir+"/packages.json")
+    data = json.load(json_data)
+    json_data.close()
+    version = data["packages"][0]["platforms"]["osx"][0]["version"]
+    return version
+
 class AutomaticUpgrader(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)

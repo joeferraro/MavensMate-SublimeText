@@ -240,10 +240,7 @@ class HideDebugPanelCommand(sublime_plugin.WindowCommand):
 #shows mavensmate info modal
 class ShowVersionCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        json_data = open(mm_dir+"/packages.json")
-        data = json.load(json_data)
-        json_data.close()
-        version = data["packages"][0]["platforms"]["osx"][0]["version"]
+        version = util.get_version_number()
         sublime.message_dialog("MavensMate for Sublime Text v"+version+"\n\nMavensMate for Sublime Text is an open source Sublime Text package for Force.com development.\n\nhttp://mavens.io/mm")
 
 #refreshes selected directory (or directories)
@@ -426,8 +423,6 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
         util.mm_call('new_project_from_existing_directory', params=params)
         util.send_usage_statistics('New Project From Existing Directory')  
 
-
-
 #generic handler for writing text to an output panel (sublime text 3 requirement)
 class MavensMateOutputText(sublime_plugin.TextCommand):
     def run(self, edit, text, *args, **kwargs):
@@ -435,7 +430,6 @@ class MavensMateOutputText(sublime_plugin.TextCommand):
         self.view.set_read_only(False)
         self.view.insert(edit, size, text)
         self.view.set_read_only(True)
-        # TODO: this scrolling is lame and centers text :/
         self.view.show(size)
 
     def is_visible(self):
