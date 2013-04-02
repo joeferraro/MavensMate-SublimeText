@@ -12,7 +12,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_workspace" : "",
 
 	//set to desired Salesforce.com API version
-	"mm_api_version" : "26.0",
+	"mm_api_version" : "27.0",
 
 	//if true, MavensMate will automatically hide the debug panel upon a successful operation
 	"mm_hide_panel_on_success" : true,
@@ -29,13 +29,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will check for updates when Sublime Text starts
 	"mm_check_for_updates" : true,
 
-	//possible values: EXCEPTION, CRITICAL, ERROR, WARNING, DEBUG, INFO
-	"mm_log_level" : "EXCEPTION",
+	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
+	"mm_log_level" : "INFO",
 
-	//if true AND mm_log_level is set to "DEBUG", then mavensmate will log detailed soap calls
-	"mm_soap_log" : false,
-
-	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see mavensmate.py for source of the call)
+	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
 	"mm_send_usage_statistics" : true,
 
 	//the location of MavensMate.app
