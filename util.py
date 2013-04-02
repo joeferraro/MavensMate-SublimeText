@@ -8,6 +8,9 @@ import re
 import time
 import pipes
 import shutil
+# import string
+# import random
+# from datetime import datetime, date, time
 try:
     import urllib, urllib2
 except:
@@ -159,6 +162,7 @@ def thread_progress_handler(operation, threads, printer, i=0):
     if len(threads):
         sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 200)
         return
+
     handle_result(operation, printer, result)
 
 #handles the result of the mm script
@@ -542,11 +546,14 @@ def finish_update():
     printer.hide()    
 
 def get_version_number():
-    json_data = open(mm_dir+"/packages.json")
-    data = json.load(json_data)
-    json_data.close()
-    version = data["packages"][0]["platforms"]["osx"][0]["version"]
-    return version
+    try:
+        json_data = open(mm_dir+"/packages.json")
+        data = json.load(json_data)
+        json_data.close()
+        version = data["packages"][0]["platforms"]["osx"][0]["version"]
+        return version
+    except:
+        return ''
 
 class AutomaticUpgrader(threading.Thread):
     def __init__(self):
@@ -595,7 +602,6 @@ class MavensMateTerminalCall(threading.Thread):
         self.process        = None
         self.result         = None
         self.callback       = None
-
         if self.params != None:
             self.callback   = self.params.get('callback', None)
         threading.Thread.__init__(self)
@@ -758,6 +764,9 @@ class PanelPrinter(object):
             printer.window_id = window_id
             printer.init()
             cls.printers[window_id] = printer
+            printer.write('==============================================\n')
+            printer.write('=---- MavensMate for Sublime Text v'+get_version_number()+' ----=\n')
+            printer.write('==============================================\n')
         return printer
 
     def error(self, string):
@@ -796,6 +805,8 @@ class PanelPrinter(object):
             self.panel.settings().set('syntax', 'Packages/MavensMate/themes/MavensMate.hidden-tmLanguage')
             self.panel.settings().set('color_scheme', 'Packages/MavensMate/themes/MavensMate.hidden-tmTheme')
             self.panel.settings().set('word_wrap', True)
+            self.panel.settings().set('gutter', True)
+            self.panel.settings().set('line_numbers', True)
 
     def reset_hide(self):
         self.hide_time = None

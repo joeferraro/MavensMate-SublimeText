@@ -20,6 +20,18 @@
     </dict>
     <dict>
         <key>match</key>
+        <string>==============================================</string>
+        <key>name</key>
+        <string>neonblue</string>
+    </dict>
+    <dict>
+        <key>match</key>
+        <string>.*MavensMate.*</string>
+        <key>name</key>
+        <string>gray</string>
+    </dict>
+    <dict>
+        <key>match</key>
         <string>^\[COMPILE FAILED\]?</string>
         <key>name</key>
         <string>operation.fail</string>
