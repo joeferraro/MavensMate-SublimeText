@@ -20,15 +20,27 @@
     </dict>
     <dict>
         <key>match</key>
+        <string>^\[OPERATION FAILED\]?</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
+        <string>^\[RESPONSE FROM MAVENSMATE\]?</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
         <string>==============================================</string>
         <key>name</key>
         <string>neonblue</string>
     </dict>
     <dict>
         <key>match</key>
-        <string>.*MavensMate.*</string>
+        <string>.*MavensMate for Sublime Text.*</string>
         <key>name</key>
-        <string>gray</string>
+        <string>neonblue</string>
     </dict>
     <dict>
         <key>match</key>
