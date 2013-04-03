@@ -12,9 +12,10 @@ import shutil
 # import string
 # import random
 # from datetime import datetime, date, time
-#import urllib, urllib2
+
 try: 
-    import urllib2 as urllib
+    import urllib, urllib2
+    #import urllib2 as urllib
 except ImportError:
     import urllib.request as urllib
 
