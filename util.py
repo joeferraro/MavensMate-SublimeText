@@ -499,7 +499,7 @@ class UsageReporter(threading.Thread):
             response = opener.open(req).read()
             #print response
         except: 
-            traceback.print_exc(file=sys.stdout)
+            #traceback.print_exc(file=sys.stdout)
             print('[MAVENSMATE] failed to send usage statistic')
 
 class ThreadProgress():
