@@ -11,10 +11,11 @@ import shutil
 # import string
 # import random
 # from datetime import datetime, date, time
-try:
-    import urllib, urllib2
-except:
-    pass
+#import urllib, urllib2
+try: 
+    import urllib2 as urllib
+except ImportError:
+    import urllib.request as urllib
 
 try:
     import apex_extensions
@@ -30,7 +31,7 @@ if os.name != 'nt':
 #PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 #for future reference (windows/linux support)
 #sublime.packages_path()
-
+ 
 try:
     mm_dir = os.getcwdu()
 except:
@@ -52,7 +53,7 @@ def package_check():
 
 def mm_call(operation, mm_debug_panel=True, **kwargs):
     settings = sublime.load_settings('mavensmate.sublime-settings')
-    if operation != 'new_project' and is_project_legacy() == True:
+    if operation != 'new_project' and operation != 'new_project_from_existing_directory' and is_project_legacy() == True:
         operation = 'upgrade_project'
     if not os.path.exists(settings.get('mm_location')):
         active_window_id = sublime.active_window().id()
