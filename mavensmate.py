@@ -181,6 +181,9 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
 
 #launches the org connections UI
 class OrgConnectionsCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("deployment_connections", "'"+mm_project_directory()+"'")
@@ -209,6 +212,9 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
 class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run (self, dirs):
         printer = PanelPrinter.get(self.window.id())
         printer.show()
@@ -269,6 +275,9 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
 
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("execute_anonymous", "'"+mm_project_directory()+"'")
@@ -277,6 +286,9 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
 
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("edit_project", "'"+mm_project_directory()+"'")
@@ -293,6 +305,9 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
 
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("deploy_to_server", "'"+mm_project_directory()+"'")
@@ -309,6 +324,9 @@ class CheckoutProjectCommand(sublime_plugin.ApplicationCommand):
 
 #displays unit test dialog
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(command):
         start_local_server()
         temp_file_name = generate_ui("run_apex_tests", "'"+mm_project_directory()+"'")
@@ -325,6 +343,9 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
 
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
             printer = PanelPrinter.get(self.window.id())
@@ -339,6 +360,9 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
 
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to compile the entire project?", "Compile Project"):
             printer = PanelPrinter.get(self.window.id())
@@ -353,6 +377,9 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, files):
         if sublime.ok_cancel_dialog("Are you sure you want to delete the selected files from Salesforce?", "Delete"):
             printer = PanelPrinter.get(self.window.id())
@@ -420,6 +447,9 @@ def new_metadata(self, opts={}):
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Apex Class')
         sublime.active_window().show_input_panel("Apex Class Name, Template (base, test, batch, sched, email, exception, empty)", "MyClass, base", self.on_input, None, None)
@@ -435,6 +465,9 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
 
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Apex Trigger')
         sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name", "MyAccountTrigger, Account", self.on_input, None, None)
@@ -450,6 +483,9 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Visualforce Page')
         sublime.active_window().show_input_panel("Visualforce Page Name", "", self.on_input, None, None)
@@ -464,6 +500,9 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, edit): 
         send_usage_statistics('New Visualforce Component')
         sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
@@ -478,6 +517,9 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         printer = PanelPrinter.get(self.window.id())
         printer.show()
@@ -491,6 +533,9 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
 
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         printer = PanelPrinter.get(self.window.id())
         printer.show()
@@ -740,6 +785,9 @@ class MavensMateCompletions(sublime_plugin.EventListener):
 
 #uses doxygen to generate xml-based documentation which assists in code completion/suggest functionality in MavensMate
 class GenerateApexClassDocs(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         dinput = mm_project_directory() + "/src/classes"
         doutput = mm_project_directory() + "/config/.class_docs"
@@ -789,24 +837,36 @@ class RemoteEdit(sublime_plugin.EventListener):
 
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self): 
         if is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(True)
 
 #hides mavensmate panel
 class HideDebugPanelCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         if is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(False)
 
 #right click context menu support for resource bundle creation
 class NewResourceBundleCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self, files):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
             create_resource_bundle(self, files) 
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         srs = []
         for dirname in os.listdir(mm_project_directory()+"/src/staticresources"):
@@ -825,6 +885,9 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return is_mm_project()
+
     def run(self):
         self.rbs_map = {}
         rbs = []
