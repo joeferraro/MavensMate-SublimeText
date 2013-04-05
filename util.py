@@ -15,7 +15,6 @@ import shutil
 
 try: 
     import urllib, urllib2
-    #import urllib2 as urllib
 except ImportError:
     import urllib.request as urllib
 
@@ -83,7 +82,7 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     if operation == 'new_metadata':
         message = 'Creating New '+params['metadata_type']+' => ' + params['metadata_name']
     elif operation == 'compile':
-        if len(params['files']) == 1:
+        if 'files' in params and len(params['files']) == 1:
             message = 'Compiling => ' + params['files'][0]
         else:
             message = 'Compiling Selected Metadata'
@@ -104,12 +103,12 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     elif operation == 'index_apex_overlays':
         message = 'Indexing Apex Overlays'  
     elif operation == 'delete':
-        if len(params['files']) == 1:
+        if 'files' in params and len(params['files']) == 1:
             message = 'Deleting => ' + get_active_file()
         else:
             message = 'Deleting Selected Metadata'
     elif operation == 'refresh':
-        if len(params['files']) == 1:
+        if 'files' in params and len(params['files']) == 1:
             message = 'Refreshing => ' + get_active_file()
         else:
             message = 'Refreshing Selected Metadata'
@@ -575,7 +574,6 @@ class AutomaticUpgrader(threading.Thread):
             data = json.load(json_data)
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
-            import urllib
             #j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
             j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/packages.json"))
             latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
