@@ -150,7 +150,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             dirs.append(dirname)
             self.dir_map[dirname] = [dirname, sublime_project_file]
         self.results = dirs
-        print self.results
+        print(self.results)
         self.window.show_quick_panel(dirs, self.panel_done,
             sublime.MONOSPACE_FONT)
 
