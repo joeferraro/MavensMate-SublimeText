@@ -93,8 +93,7 @@ module MavensMate
           src = File.open(project_folder+project_name+"/config/settings.yaml", "w") 
           src.puts("project_name: " + project_name)
           src.puts("username: " + username)
-          environment = (server_url.include? "test") ? "sandbox" : "production"           
-          src.puts("environment: " + environment)
+          src.puts("environment: " + MavensMate::Util.get_endpoint_type_by_url(endpoint))
           src.puts("namespace: " + namespace) if namespace
           src.close
         end
