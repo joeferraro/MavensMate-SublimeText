@@ -45,26 +45,26 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.mm_call('edit_project', True)
+        util.mm_call('edit_project', False)
         util.send_usage_statistics('Edit Project')
 
 #displays unit test dialog
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.mm_call('unit_test', True)
+        util.mm_call('unit_test', False)
         util.send_usage_statistics('Apex Unit Testing')
 
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.mm_call('execute_apex', True)
+        util.mm_call('execute_apex', False)
         util.send_usage_statistics('Execute Anonymous')
 
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         #TODO check for org connections before allowing deploy ui to open
-        util.mm_call('deploy', True)
+        util.mm_call('deploy', False)
         util.send_usage_statistics('Deploy to Server')
 
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
@@ -131,7 +131,6 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 project_name = root.split("/")[-1]
                 open_projects.append(project_name)
         except:
-            #print 'ok'
             pass
 
         import os
@@ -141,6 +140,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         for dirname in os.listdir(util.mm_workspace()):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
             if dirname in open_projects : continue
+            if not os.path.isdir(util.mm_workspace()+"/"+dirname) : continue
             sublime_project_file = dirname+'.sublime-project'
             for project_content in os.listdir(util.mm_workspace()+"/"+dirname):
                 if '.' not in project_content: continue
@@ -150,6 +150,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             dirs.append(dirname)
             self.dir_map[dirname] = [dirname, sublime_project_file]
         self.results = dirs
+        print self.results
         self.window.show_quick_panel(dirs, self.panel_done,
             sublime.MONOSPACE_FONT)
 
