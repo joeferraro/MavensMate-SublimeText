@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "2.1.3",
-						"release_notes": "Slowly but surely handling exceptions more gracefully",
+						"version": "2.1.4",
+						"release_notes": "small bug fix affecting Sublime Text 3",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/2.0"
 					}
 				]
