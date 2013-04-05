@@ -10,6 +10,10 @@
 	         	"children":
 	         	[
 	         		{
+	         		  "caption": "Open Project",          
+	         		  "command": "open_project"
+	         		},
+	         		{
 	         			"caption": "New Project",
 	         			"command": "new_project"
 	         		},
@@ -24,11 +28,7 @@
 	         		{
 	         			"caption": "Compile Project",
 	         			"command": "compile_project"
-	         		},
-	         		{
-			    		"caption": "Index Apex Code",  
-			         	"command": "generate_apex_class_docs"
-			     	}
+	         		}
 	         	]
 	     	},
 			{
