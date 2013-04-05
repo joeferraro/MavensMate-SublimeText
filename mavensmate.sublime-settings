@@ -32,6 +32,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
 	"mm_log_level" : "INFO",
 
+	//must be existing path
+	"mm_log_location" : "",
+
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
 	"mm_send_usage_statistics" : true,
 
