@@ -359,14 +359,9 @@ def get_file_extension():
 def is_mm_file():
     try :
         if not is_mm_project(): return False
-        extension = get_file_extension()
-        if extension == "cls": return True
-        elif extension == "page": return True
-        elif extension == "trigger": return True
-        elif extension == "component": return True
+        return os.path.isfile(get_active_file()+"-meta.xml")
     except:
-        pass
-    return False
+        return False
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
