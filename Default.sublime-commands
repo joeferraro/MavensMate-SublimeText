@@ -86,5 +86,13 @@
   {
     "caption": "MavensMate: Refresh Current File From Server",          
     "command": "refresh_active_file"
+  },
+  {
+    "caption": "MavensMate: Open Current File On Server",          
+    "command": "open_sfdc_url"
+  },
+  {
+    "caption": "MavensMate: Open Current File WSDL On Server",          
+    "command": "open_sfdc_wsdl_url"
   }
 ]

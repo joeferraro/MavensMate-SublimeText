@@ -277,6 +277,49 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
     def is_enabled(self):
         return util.is_mm_project()
 
+#refreshes the currently active file from the server
+class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        params = {
+            "files"         : [util.get_active_file()]
+        }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Active File On Server')
+
+    def is_visible(self):
+        return util.is_mm_project()
+
+#refreshes the currently active file from the server
+class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        params = {
+            "files"         : [util.get_active_file()],
+            "type"          : "wsdl"
+        }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Active WSDL File On Server')
+
+    def is_visible(self):
+        is_visible = util.is_mm_project()
+        if not is_visible: return False
+        return self.is_apex_class()
+
+    def is_enabled(self):
+        is_enabled = self.is_apex_class()
+        if not is_enabled: return False
+        with open(util.get_active_file(), 'r') as content_file:
+            content = content_file.read()
+            p = re.compile("\swebservice\s", re.I + re.M)
+            if p.search(content): return True
+        return False
+        
+    def is_apex_class(self):
+        active_file = util.get_active_file()
+        if not active_file: return False
+        extension = active_file.split(".")[-1]
+        if extension == "cls": return True
+        return False
+
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
     def run(self, files):

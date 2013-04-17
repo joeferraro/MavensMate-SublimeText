@@ -112,6 +112,8 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
             message = 'Refreshing => ' + get_active_file()
         else:
             message = 'Refreshing Selected Metadata'
+    elif operation == 'open_sfdc_url':
+        message = 'Opening Selected Metadata'
     elif operation == 'new_apex_overlay':
         message = 'Creating Apex Overlay' 
     elif operation == 'delete_apex_overlay':
@@ -690,6 +692,12 @@ class MavensMateTerminalCall(threading.Thread):
                     'project_name'  : self.project_name,
                     'directories'   : self.params.get('directories', []),
                     'files'         : self.params.get('files', [])
+                }
+        elif self.operation == 'open_sfdc_url':
+                payload = {
+                    'project_name'  : self.project_name,
+                    'files'         : self.params.get('files', []),
+                    'type'          : self.params.get('type', "edit")
                 }
         elif self.operation == 'delete':
             payload = {
