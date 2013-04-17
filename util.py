@@ -358,7 +358,7 @@ def get_file_extension():
 
 def is_mm_file():
     try :
-        if not is_mm_project() return False
+        if not is_mm_project(): return False
         extension = get_file_extension()
         if extension == "cls": return True
         elif extension == "page": return True
