@@ -337,9 +337,8 @@ def sublime_project_file_path():
     else:
         return None 
 
+# check for mavensmate .settings file
 def is_mm_project():
-    #return sublime.active_window().active_view().settings().get('mm_project_directory') != None #<= bug
-    is_mm_project = None
     try:
         json_data = open(sublime_project_file_path())
         data = json.load(json_data)
@@ -347,6 +346,27 @@ def is_mm_project():
         return os.path.isfile(pd+"/config/.settings")
     except:
         return False
+
+def get_file_extension():
+    try :
+        active_file = get_active_file()
+        if not active_file: return None
+        return active_file.split(".")[-1]
+    except:
+        pass
+    return None
+
+def is_mm_file():
+    try :
+        if not is_mm_project() return False
+        extension = get_file_extension()
+        if extension == "cls": return True
+        elif extension == "page": return True
+        elif extension == "trigger": return True
+        elif extension == "component": return True
+    except:
+        pass
+    return False
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug

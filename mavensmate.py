@@ -101,7 +101,7 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Compile Selected Files')
 
     def is_visible(self):
-        return util.is_mm_project()
+        return util.is_mm_file()
 
 
 #deploys the currently open tabs
@@ -263,7 +263,7 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Refresh Selected From Server')
 
     def is_visible(self):
-        return util.is_mm_project()
+        return util.is_mm_file()
 
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
@@ -275,9 +275,9 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Refresh Active File From Server')
 
     def is_enabled(self):
-        return util.is_mm_project()
+        return util.is_mm_file()
 
-#refreshes the currently active file from the server
+#opens the apex class, trigger, component or page on the server
 class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
@@ -287,9 +287,9 @@ class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Open Active File On Server')
 
     def is_visible(self):
-        return util.is_mm_project()
+        return util.is_mm_file()
 
-#refreshes the currently active file from the server
+#opens the WSDL file for apex webservice classes
 class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
@@ -300,24 +300,20 @@ class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Open Active WSDL File On Server')
 
     def is_visible(self):
-        is_visible = util.is_mm_project()
-        if not is_visible: return False
-        return self.is_apex_class()
+        return util.is_mm_file() and self.is_apex_class()
 
     def is_enabled(self):
-        is_enabled = self.is_apex_class()
-        if not is_enabled: return False
+        if not self.is_apex_class(): return False
         with open(util.get_active_file(), 'r') as content_file:
             content = content_file.read()
+            p = re.compile("global\s+class\s", re.I + re.M)
+            if not p.search(content): return False
             p = re.compile("\swebservice\s", re.I + re.M)
             if p.search(content): return True
         return False
         
     def is_apex_class(self):
-        active_file = util.get_active_file()
-        if not active_file: return False
-        extension = active_file.split(".")[-1]
-        if extension == "cls": return True
+        if util.get_file_extension() == "cls": return True
         return False
 
 #deletes selected metadata
