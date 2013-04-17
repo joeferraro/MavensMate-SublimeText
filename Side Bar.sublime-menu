@@ -7,6 +7,7 @@
 				{ "caption": "Create MavensMate Project", "command": "create_mavens_mate_project", "args": {"dirs": []} },
 				{ "caption": "Compile Selected Files", "command": "compile_selected_files", "args": {"files": []} },
 				{ "caption": "Refresh From Server", "command": "refresh_from_server", "args": {"dirs": [], "files": []} },
+				{ "caption": "Open On Server", "command": "open_sfdc_url" },
 				{ "caption": "Create Resource Bundle(s)", "command": "new_resource_bundle", "args": {"files": []} },
 				{ "caption": "Delete Selected Files from Salesforce Server", "command": "delete_metadata", "args": {"files": []} }
 	    	]

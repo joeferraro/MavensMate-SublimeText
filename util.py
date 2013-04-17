@@ -112,6 +112,8 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
             message = 'Refreshing => ' + get_active_file()
         else:
             message = 'Refreshing Selected Metadata'
+    elif operation == 'open_sfdc_url':
+        message = 'Opening Selected Metadata'
     elif operation == 'new_apex_overlay':
         message = 'Creating Apex Overlay' 
     elif operation == 'delete_apex_overlay':
@@ -335,17 +337,31 @@ def sublime_project_file_path():
     else:
         return None 
 
+# check for mavensmate .settings file
 def is_mm_project():
-    #return sublime.active_window().active_view().settings().get('mm_project_directory') != None #<= bug
-    is_mm_project = None
     try:
         json_data = open(sublime_project_file_path())
         data = json.load(json_data)
         pd = data["folders"][0]["path"]
-        is_mm_project = True
-    except BaseException as e:
-        is_mm_project = False
-    return is_mm_project
+        return os.path.isfile(pd+"/config/.settings")
+    except:
+        return False
+
+def get_file_extension():
+    try :
+        active_file = get_active_file()
+        if not active_file: return None
+        return active_file.split(".")[-1]
+    except:
+        pass
+    return None
+
+def is_mm_file():
+    try :
+        if not is_mm_project(): return False
+        return os.path.isfile(get_active_file()+"-meta.xml")
+    except:
+        return False
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
@@ -691,6 +707,12 @@ class MavensMateTerminalCall(threading.Thread):
                     'project_name'  : self.project_name,
                     'directories'   : self.params.get('directories', []),
                     'files'         : self.params.get('files', [])
+                }
+        elif self.operation == 'open_sfdc_url':
+                payload = {
+                    'project_name'  : self.project_name,
+                    'files'         : self.params.get('files', []),
+                    'type'          : self.params.get('type', "edit")
                 }
         elif self.operation == 'delete':
             payload = {
