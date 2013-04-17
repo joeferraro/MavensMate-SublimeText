@@ -342,10 +342,9 @@ def is_mm_project():
         json_data = open(sublime_project_file_path())
         data = json.load(json_data)
         pd = data["folders"][0]["path"]
-        is_mm_project = True
-    except BaseException as e:
-        is_mm_project = False
-    return is_mm_project
+        return os.path.isfile(pd+"/config/.settings")
+    except:
+        return False
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
