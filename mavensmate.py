@@ -100,6 +100,9 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
         util.mm_call('compile', context=self, params=params)
         util.send_usage_statistics('Compile Selected Files')
 
+    def is_visible(self):
+        return util.is_mm_project()
+
 
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
@@ -257,7 +260,10 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
                 "files"         : files
             }
         util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Selected From Server')  
+        util.send_usage_statistics('Refresh Selected From Server')
+
+    def is_visible(self):
+        return util.is_mm_project()
 
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
@@ -266,7 +272,10 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
             "files"         : [util.get_active_file()]
         }
         util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Active File From Server')  
+        util.send_usage_statistics('Refresh Active File From Server')
+
+    def is_enabled(self):
+        return util.is_mm_project()
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
@@ -277,6 +286,9 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             }
             util.mm_call('delete', context=self, params=params)
             util.send_usage_statistics('Delete Metadata')
+
+    def is_visible(self):
+        return util.is_mm_project()
 
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
@@ -380,6 +392,8 @@ class NewResourceBundleCommand(sublime_plugin.WindowCommand):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
             util.create_resource_bundle(self, files) 
             util.send_usage_statistics('New Resource Bundle (Sidebar)')
+    def is_visible(self):
+        return util.is_mm_project()
 
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
@@ -423,6 +437,9 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
         }
         util.mm_call('new_project_from_existing_directory', params=params)
         util.send_usage_statistics('New Project From Existing Directory')  
+
+    def is_visible(self):
+        return not util.is_mm_project()
 
 #generic handler for writing text to an output panel (sublime text 3 requirement)
 class MavensMateOutputText(sublime_plugin.TextCommand):
@@ -745,6 +762,8 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         self.results = srs
         self.window.show_quick_panel(srs, self.panel_done,
             sublime.MONOSPACE_FONT)
+    def is_visible(self):
+        return util.is_mm_project()
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
@@ -752,6 +771,7 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         ps = []
         ps.append(util.mm_project_directory()+"/src/staticresources/"+self.results[picked])
         util.create_resource_bundle(self, ps)
+
         
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
