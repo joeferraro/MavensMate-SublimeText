@@ -69,6 +69,14 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
 
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
+class MavensStubCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        return True
+    def is_enabled(self):
+        return False
+    def is_visible(self):
+        return not util.is_mm_file();
+
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):       
@@ -89,6 +97,10 @@ class RemoteEdit(sublime_plugin.EventListener):
                 "files" : [active_file]
             }
             util.mm_call('compile', context=view, params=params)
+
+class MenuModifier(sublime_plugin.EventListener):
+    def on_activated_async(self, view):
+        view.file_name()
 
 #compiles the selected files
 class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
@@ -274,7 +286,7 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         util.mm_call('refresh', context=self, params=params)
         util.send_usage_statistics('Refresh Active File From Server')
 
-    def is_enabled(self):
+    def is_visible(self):
         return util.is_mm_file()
 
 #opens the apex class, trigger, component or page on the server

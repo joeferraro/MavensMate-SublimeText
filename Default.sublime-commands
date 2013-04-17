@@ -1,5 +1,9 @@
 [
   {
+    "caption": "MavensMate: Stub",
+    "command": "mavens_stub"
+  },
+  {
     "caption": "MavensMate: New Project",
     "command": "new_project"
   },
