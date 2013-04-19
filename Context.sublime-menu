@@ -4,7 +4,10 @@
 		"caption": "MavensMate",
 		"children":
 		[
-			{ "caption": "Refresh File From Server", "command": "refresh_active_file" }
+			{ "caption": "Nothing available in this view", "command": "mavens_stub" },
+			{ "caption": "Refresh File From Server", "command": "refresh_active_file" },
+			{ "caption": "Open File On Server", "command": "open_active_sfdc_url" },
+			{ "caption": "Open WSDL On Server", "command": "open_active_sfdc_wsdl_url" }
 		]
 	}
 ]
