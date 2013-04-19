@@ -375,7 +375,8 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
                 if util.is_mm_file(f): 
-                    if util.get_file_extension(f) == "cls":
+                    fileName, ext = os.path.splitext(f)
+                    if ext == "cls":
                         return True
         return False
         
@@ -383,7 +384,8 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
                 if util.is_mm_file(f): 
-                    if util.get_file_extension(f) == "cls":
+                    fileName, ext = os.path.splitext(f)
+                    if ext == "cls":
                         with open(f, 'r') as content_file:
                             content = content_file.read()
                             p = re.compile("global\s+class\s", re.I + re.M)
