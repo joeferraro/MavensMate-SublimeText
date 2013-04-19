@@ -48,11 +48,17 @@ class EditProjectCommand(sublime_plugin.ApplicationCommand):
         util.mm_call('edit_project', False)
         util.send_usage_statistics('Edit Project')
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays unit test dialog
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         util.mm_call('unit_test', False)
         util.send_usage_statistics('Apex Unit Testing')
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
@@ -60,12 +66,18 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
         util.mm_call('execute_apex', False)
         util.send_usage_statistics('Execute Anonymous')
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         #TODO check for org connections before allowing deploy ui to open
         util.mm_call('deploy', False)
         util.send_usage_statistics('Deploy to Server')
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
@@ -84,6 +96,9 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
             "files" : [util.get_active_file()]
         }
         util.mm_call('compile', context=self, params=params)
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
@@ -130,7 +145,10 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
             util.mm_call('clean_project', context=self)
-            util.send_usage_statistics('Clean Project')  
+            util.send_usage_statistics('Clean Project')
+
+    def is_enabled(command):
+        return util.is_mm_project()  
 
 #opens a project in the current workspace
 class OpenProjectCommand(sublime_plugin.WindowCommand):
@@ -198,6 +216,9 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         }
         util.mm_call('new_metadata', params=options) 
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
@@ -213,6 +234,9 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         }
         util.mm_call('new_metadata', params=options) 
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
@@ -227,6 +251,9 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         }
         util.mm_call('new_metadata', params=options) 
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
@@ -240,6 +267,9 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
             'metadata_name'     : api_name
         }
         util.mm_call('new_metadata', params=options) 
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
@@ -275,10 +305,6 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Refresh Selected From Server')
 
     def is_visible(self, dirs, files):
-        if dirs: 
-            print(dirs)
-        if files: 
-            print(files)
         return util.is_mm_file()
 
 #refreshes the currently active file from the server
@@ -346,7 +372,6 @@ class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
         if not util.is_mm_project: return False
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                print(f)
                 if util.is_mm_file(f): return True
         return False
 
@@ -402,11 +427,17 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
             util.mm_call('compile_project', context=self)
             util.send_usage_statistics('Compile Project')
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #refreshes the currently active file from the server
 class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
     def run(self):
         util.mm_call('index_apex_overlays', False, context=self)
         util.send_usage_statistics('Index Apex Overlays')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #refreshes the currently active file from the server
 class FetchLogsCommand(sublime_plugin.WindowCommand):
