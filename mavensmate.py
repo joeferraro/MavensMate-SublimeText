@@ -81,6 +81,14 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
 
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
+class MavensStubCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        return True
+    def is_enabled(self):
+        return False
+    def is_visible(self):
+        return not util.is_mm_project();
+
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):       
@@ -90,6 +98,9 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         util.mm_call('compile', context=self, params=params)
 
     def is_enabled(command):
+        return util.is_mm_file()
+
+    def is_visible(command):
         return util.is_mm_project()
 
 #handles compiling to server on save
@@ -278,16 +289,17 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
 # if src is refreshed, project is "cleaned"
 class RefreshFromServerCommand(sublime_plugin.WindowCommand):
     def run (self, dirs, files):
-        if dirs != None and type(dirs) is list and len(dirs) > 0:
-            params = {
-                "directories"   : dirs
-            }
-        elif files != None and type(files) is list and len(files) > 0:
-            params = {
-                "files"         : files
-            }
-        util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Selected From Server')
+        if sublime.ok_cancel_dialog("Are you sure you want to overwrite the selected files' contents from Salesforce?", "Refresh"):
+            if dirs != None and type(dirs) is list and len(dirs) > 0:
+                params = {
+                    "directories"   : dirs
+                }
+            elif files != None and type(files) is list and len(files) > 0:
+                params = {
+                    "files"         : files
+                }
+            util.mm_call('refresh', context=self, params=params)
+            util.send_usage_statistics('Refresh Selected From Server')
 
     def is_visible(self, dirs, files):
         return util.is_mm_file()
@@ -295,11 +307,12 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
     def run(self):
-        params = {
-            "files"         : [util.get_active_file()]
-        }
-        util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Active File From Server')
+        if sublime.ok_cancel_dialog("Are you sure you want to overwrite this file's contents from Salesforce?", "Refresh"):
+            params = {
+                "files"         : [util.get_active_file()]
+            }
+            util.mm_call('refresh', context=self, params=params)
+            util.send_usage_statistics('Refresh Active File From Server')
 
     def is_visible(self):
         return util.is_mm_file()
@@ -327,7 +340,7 @@ class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Open Active WSDL File On Server')
 
     def is_visible(self):
-        return util.is_mm_file() and self.is_apex_class()
+        return util.is_mm_file()# and self.is_apex_class()
 
     def is_enabled(self):
         if not self.is_apex_class(): return False
@@ -340,7 +353,7 @@ class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         return False
         
     def is_apex_class(self):
-        if util.get_file_extension() == "cls": return True
+        if util.get_file_extension() == ".cls": return True
         return False
 
 #opens the apex class, trigger, component or page on the server
@@ -376,7 +389,7 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
             for f in files:
                 if util.is_mm_file(f): 
                     fileName, ext = os.path.splitext(f)
-                    if ext == "cls":
+                    if ext == ".cls":
                         return True
         return False
         
@@ -385,7 +398,7 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
             for f in files:
                 if util.is_mm_file(f): 
                     fileName, ext = os.path.splitext(f)
-                    if ext == "cls":
+                    if ext == ".cls":
                         with open(f, 'r') as content_file:
                             content = content_file.read()
                             p = re.compile("global\s+class\s", re.I + re.M)
@@ -403,6 +416,26 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             }
             util.mm_call('delete', context=self, params=params)
             util.send_usage_statistics('Delete Metadata')
+
+    def is_visible(self):
+        return util.is_mm_file()
+
+    def is_enabled(self):
+        return util.is_mm_file()
+
+#deletes selected metadata
+class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        active_file = util.get_active_file()
+        if sublime.ok_cancel_dialog("Are you sure you want to delete "+active_file+" file from Salesforce?", "Delete"):
+            params = {
+                "files" : [active_file]
+            }
+            util.mm_call('delete', context=self, params=params)
+            util.send_usage_statistics('Delete Metadata')
+
+    def is_visible(self):
+        return util.is_mm_project()
 
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
