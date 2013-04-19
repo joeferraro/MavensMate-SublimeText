@@ -274,7 +274,11 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
         util.mm_call('refresh', context=self, params=params)
         util.send_usage_statistics('Refresh Selected From Server')
 
-    def is_visible(self):
+    def is_visible(self, dirs, files):
+        if dirs: 
+            print(dirs)
+        if files: 
+            print(files)
         return util.is_mm_file()
 
 #refreshes the currently active file from the server
@@ -290,7 +294,7 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
         return util.is_mm_file()
 
 #opens the apex class, trigger, component or page on the server
-class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
+class OpenActiveSfdcUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
             "files"         : [util.get_active_file()]
@@ -302,7 +306,7 @@ class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
         return util.is_mm_file()
 
 #opens the WSDL file for apex webservice classes
-class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
+class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
             "files"         : [util.get_active_file()],
@@ -326,6 +330,56 @@ class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         
     def is_apex_class(self):
         if util.get_file_extension() == "cls": return True
+        return False
+
+#opens the apex class, trigger, component or page on the server
+class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
+    def run (self, dirs, files):
+        if files != None and type(files) is list and len(files) > 0:
+            params = {
+                "files"         : files
+            }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Selected File On Server')
+
+    def is_visible(self, dirs=None, files=None):
+        if not util.is_mm_project: return False
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                print(f)
+                if util.is_mm_file(f): return True
+        return False
+
+#opens the WSDL file for apex webservice classes
+class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
+    def run(self, dirs, files):
+        if files != None and type(files) is list and len(files) > 0:
+            params = {
+                "files"         : files,
+                "type"          : "wsdl"
+            }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Selected WSDL File On Server')
+
+    def is_visible(self, dirs, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f): 
+                    if util.get_file_extension(f) == "cls":
+                        return True
+        return False
+        
+    def is_enabled(self, dirs, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f): 
+                    if util.get_file_extension(f) == "cls":
+                        with open(f, 'r') as content_file:
+                            content = content_file.read()
+                            p = re.compile("global\s+class\s", re.I + re.M)
+                            if p.search(content):
+                                p = re.compile("\swebservice\s", re.I + re.M)
+                                if p.search(content): return True
         return False
 
 #deletes selected metadata

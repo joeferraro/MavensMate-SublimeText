@@ -347,19 +347,20 @@ def is_mm_project():
     except:
         return False
 
-def get_file_extension():
+def get_file_extension(filename=None):
     try :
-        active_file = get_active_file()
-        if not active_file: return None
-        return active_file.split(".")[-1]
+        if not filename: filename = get_active_file()
+        if not filename: return None
+        return filename.split(".")[-1]
     except:
         pass
     return None
 
-def is_mm_file():
+def is_mm_file(filename=None):
     try :
         if not is_mm_project(): return False
-        return os.path.isfile(get_active_file()+"-meta.xml")
+        if not filename: filename = get_active_file()
+        return os.path.isfile(filename+"-meta.xml")
     except:
         return False
 
