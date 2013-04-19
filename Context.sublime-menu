@@ -5,9 +5,11 @@
 		"children":
 		[
 			{ "caption": "No open projects", "command": "mavens_stub" },
-			{ "caption": "Refresh File From Server", "command": "refresh_active_file" },
+			{ "caption": "Compile File On Server", "command": "compile_active_file" },
 			{ "caption": "Open File On Server", "command": "open_active_sfdc_url" },
-			{ "caption": "Open WSDL On Server", "command": "open_active_sfdc_wsdl_url" }
+			{ "caption": "Open WSDL On Server", "command": "open_active_sfdc_wsdl_url" },
+			{ "caption": "Refresh File From Server...", "command": "refresh_active_file" },
+			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" },
 		]
 	}
 ]
