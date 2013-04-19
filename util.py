@@ -340,18 +340,15 @@ def sublime_project_file_path():
 # check for mavensmate .settings file
 def is_mm_project():
     try:
-        json_data = open(sublime_project_file_path())
-        data = json.load(json_data)
-        pd = data["folders"][0]["path"]
-        return os.path.isfile(pd+"/config/.settings")
+        return os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings")
     except:
         return False
 
 def get_file_extension(filename=None):
     try :
         if not filename: filename = get_active_file()
-        if not filename: return None
-        return filename.split(".")[-1]
+        fn, ext = os.path.splitext(filename)
+        return ext
     except:
         pass
     return None
