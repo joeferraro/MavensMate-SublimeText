@@ -69,6 +69,14 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
 
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
+class MavensStubCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        return True
+    def is_enabled(self):
+        return False
+    def is_visible(self):
+        return not util.is_mm_file();
+
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):       
@@ -90,6 +98,10 @@ class RemoteEdit(sublime_plugin.EventListener):
             }
             util.mm_call('compile', context=view, params=params)
 
+class MenuModifier(sublime_plugin.EventListener):
+    def on_activated_async(self, view):
+        view.file_name()
+
 #compiles the selected files
 class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
     def run (self, files):
@@ -99,6 +111,9 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
         }
         util.mm_call('compile', context=self, params=params)
         util.send_usage_statistics('Compile Selected Files')
+
+    def is_visible(self):
+        return util.is_mm_file()
 
 
 #deploys the currently open tabs
@@ -257,7 +272,10 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
                 "files"         : files
             }
         util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Selected From Server')  
+        util.send_usage_statistics('Refresh Selected From Server')
+
+    def is_visible(self):
+        return util.is_mm_file()
 
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
@@ -266,7 +284,49 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
             "files"         : [util.get_active_file()]
         }
         util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Active File From Server')  
+        util.send_usage_statistics('Refresh Active File From Server')
+
+    def is_visible(self):
+        return util.is_mm_file()
+
+#opens the apex class, trigger, component or page on the server
+class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        params = {
+            "files"         : [util.get_active_file()]
+        }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Active File On Server')
+
+    def is_visible(self):
+        return util.is_mm_file()
+
+#opens the WSDL file for apex webservice classes
+class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        params = {
+            "files"         : [util.get_active_file()],
+            "type"          : "wsdl"
+        }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Active WSDL File On Server')
+
+    def is_visible(self):
+        return util.is_mm_file() and self.is_apex_class()
+
+    def is_enabled(self):
+        if not self.is_apex_class(): return False
+        with open(util.get_active_file(), 'r') as content_file:
+            content = content_file.read()
+            p = re.compile("global\s+class\s", re.I + re.M)
+            if not p.search(content): return False
+            p = re.compile("\swebservice\s", re.I + re.M)
+            if p.search(content): return True
+        return False
+        
+    def is_apex_class(self):
+        if util.get_file_extension() == "cls": return True
+        return False
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
@@ -277,6 +337,9 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             }
             util.mm_call('delete', context=self, params=params)
             util.send_usage_statistics('Delete Metadata')
+
+    def is_visible(self):
+        return util.is_mm_project()
 
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
@@ -380,6 +443,8 @@ class NewResourceBundleCommand(sublime_plugin.WindowCommand):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
             util.create_resource_bundle(self, files) 
             util.send_usage_statistics('New Resource Bundle (Sidebar)')
+    def is_visible(self):
+        return util.is_mm_project()
 
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
@@ -423,6 +488,9 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
         }
         util.mm_call('new_project_from_existing_directory', params=params)
         util.send_usage_statistics('New Project From Existing Directory')  
+
+    def is_visible(self):
+        return not util.is_mm_project()
 
 #generic handler for writing text to an output panel (sublime text 3 requirement)
 class MavensMateOutputText(sublime_plugin.TextCommand):
@@ -745,6 +813,8 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         self.results = srs
         self.window.show_quick_panel(srs, self.panel_done,
             sublime.MONOSPACE_FONT)
+    def is_visible(self):
+        return util.is_mm_project()
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
@@ -752,6 +822,7 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         ps = []
         ps.append(util.mm_project_directory()+"/src/staticresources/"+self.results[picked])
         util.create_resource_bundle(self, ps)
+
         
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
