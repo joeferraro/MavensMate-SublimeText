@@ -10,15 +10,15 @@
 	         	"children":
 	         	[
 	         		{
-	         		  "caption": "Open Project",          
+	         		  "caption": "Open Project...",          
 	         		  "command": "open_project"
 	         		},
 	         		{
-	         			"caption": "New Project",
+	         			"caption": "New Project...",
 	         			"command": "new_project"
 	         		},
 	         		{
-	         			"caption": "Edit Project",
+	         			"caption": "Edit Project...",
 	         			"command": "edit_project"
 	         		},
 	         		{
@@ -71,7 +71,7 @@
 	         	"children":
 	         	[
 	         		{
-	         			"caption": "Deploy to Server",
+	         			"caption": "Deploy to Server...",
 	         			"command": "deploy_to_server"
 	         		}
 	         	]
@@ -90,11 +90,11 @@
 	     	{"caption":"-"},
 	     	{
 	        	"id": "run_tests", 
-	    		"caption": "Run Apex Tests",  
+	    		"caption": "Run Apex Tests...",  
 	         	"command": "run_apex_unit_tests"
 	     	},
 	     	{
-	    		"caption": "Execute Apex",  
+	    		"caption": "Execute Apex...",  
 	         	"command": "execute_anonymous"
 	     	},
 	     	// {

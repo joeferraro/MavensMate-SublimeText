@@ -91,7 +91,10 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     elif operation == 'edit_project':
         message = 'Opening Edit Project dialog'  
     elif operation == 'unit_test':
-        message = 'Opening Apex Test Runner'
+        if 'selected' in params and len(params['selected']) == 1:
+            message = "Running Apex Test for " + params['selected'][0]
+        else:
+            message = 'Opening Apex Test Runner'
     elif operation == 'clean_project':
         message = 'Cleaning Project'
     elif operation == 'deploy':
@@ -340,26 +343,24 @@ def sublime_project_file_path():
 # check for mavensmate .settings file
 def is_mm_project():
     try:
-        json_data = open(sublime_project_file_path())
-        data = json.load(json_data)
-        pd = data["folders"][0]["path"]
-        return os.path.isfile(pd+"/config/.settings")
+        return os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings")
     except:
         return False
 
-def get_file_extension():
+def get_file_extension(filename=None):
     try :
-        active_file = get_active_file()
-        if not active_file: return None
-        return active_file.split(".")[-1]
+        if not filename: filename = get_active_file()
+        fn, ext = os.path.splitext(filename)
+        return ext
     except:
         pass
     return None
 
-def is_mm_file():
+def is_mm_file(filename=None):
     try :
         if not is_mm_project(): return False
-        return os.path.isfile(get_active_file()+"-meta.xml")
+        if not filename: filename = get_active_file()
+        return os.path.isfile(filename+"-meta.xml")
     except:
         return False
 
@@ -653,29 +654,9 @@ class MavensMateTerminalCall(threading.Thread):
         return stripped_string
 
     def submit_payload(self):
-        payload = ''
-        if self.operation == 'edit_project':
-            payload = {
-                'project_name' : self.project_name
-            }
-        elif self.operation == 'upgrade_project':
-            payload = {
-                'project_name' : self.project_name
-            }
-        elif self.operation == 'unit_test' or self.operation == 'execute_apex' or self.operation == 'compile_project':
-            payload = {
-                'project_name' : self.project_name
-            }    
-        elif self.operation == 'compile':
-            payload = {
-                'project_name'  : self.project_name,
-                'files'         : self.params.get('files', [])
-            }
-        elif self.operation == 'index_apex_overlays':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'new_metadata':
+        o = self.operation
+        if o == 'new_metadata':
+            # unique payload parameters
             payload = {
                 'project_name'                  : self.project_name,
                 'api_name'                      : self.params.get('metadata_name', None),
@@ -683,54 +664,31 @@ class MavensMateTerminalCall(threading.Thread):
                 'apex_trigger_object_api_name'  : self.params.get('object_api_name', None),
                 'apex_class_type'               : self.params.get('apex_class_type', None)
             }
-        elif self.operation == 'clean_project':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'deploy':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'refresh':
-            if 'files' in self.params:
-                payload = {
-                    'project_name'  : self.project_name,
-                    'files'         : self.params.get('files', []),
-                }
-            elif 'directories' in self.params:
-                payload = {
-                    'project_name'  : self.project_name,
-                    'directories'   : self.params.get('directories', [])
-                }
+        elif o == 'new_project_from_existing_directory':
+            # no project name
+            payload = self.params
+        else:
+            # common parameters
+            if o == 'new_apex_overlay' or o == 'delete_apex_overlay':
+                payload = self.params
             else:
-                payload = {
-                    'project_name'  : self.project_name,
-                    'directories'   : self.params.get('directories', []),
-                    'files'         : self.params.get('files', [])
-                }
-        elif self.operation == 'open_sfdc_url':
-                payload = {
-                    'project_name'  : self.project_name,
-                    'files'         : self.params.get('files', []),
-                    'type'          : self.params.get('type', "edit")
-                }
-        elif self.operation == 'delete':
-            payload = {
-                'project_name'  : self.project_name,
-                'files'         : self.params.get('files', [])
-            }
-        elif self.operation == 'fetch_logs':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'new_apex_overlay':
-            payload = self.params
+                payload = {}
+
             payload['project_name'] = self.project_name
-        elif self.operation == 'delete_apex_overlay':
-            payload = self.params
-            payload['project_name'] = self.project_name
-        elif self.operation == 'new_project_from_existing_directory':
-            payload = self.params
+
+            #selected metadata
+            if o == 'unit_test':
+                payload['selected'] = self.params.get('selected', [])
+            #selected files
+            if o == 'compile' or o == 'refresh' or o == 'open_sfdc_url' or o == 'delete'
+                payload['files'] = self.params.get('files', [])
+            #directories
+            if o == 'refresh' and 
+                payload['directories'] = self.params.get('directories', [])
+
+            #open type
+            if o == 'open_sfdc_url':
+                payload['type'] = self.params.get('type', 'edit')
 
         if type(payload) is dict:
             payload = json.dumps(payload)  
