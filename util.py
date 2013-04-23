@@ -482,6 +482,7 @@ def start_mavensmate_app():
     elif p.stderr is not None:
         msg = p.stdout.readlines() 
     if msg == '' or len(msg) == 0:
+        settings = sublime.load_settings('mavensmate.sublime-settings')
         os.system("open '"+settings.get('mm_app_location')+"'")
 
 class UsageReporter(threading.Thread):
