@@ -654,6 +654,7 @@ class MavensMateTerminalCall(threading.Thread):
 
     def submit_payload(self):
         o = self.operation
+        
         if o == 'new_metadata':
             # unique payload parameters
             payload = {
@@ -679,10 +680,10 @@ class MavensMateTerminalCall(threading.Thread):
             if o == 'unit_test':
                 payload['selected'] = self.params.get('selected', [])
             #selected files
-            if o == 'compile' or o == 'refresh' or o == 'open_sfdc_url' or o == 'delete'
+            if o == 'compile' or o == 'refresh' or o == 'open_sfdc_url' or o == 'delete':
                 payload['files'] = self.params.get('files', [])
             #directories
-            if o == 'refresh' and 
+            if o == 'refresh': 
                 payload['directories'] = self.params.get('directories', [])
 
             #open type
