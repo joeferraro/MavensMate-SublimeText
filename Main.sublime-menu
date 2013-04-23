@@ -60,6 +60,10 @@
 	         	"children":
 	         	[
 	         		{
+	         			"caption": "Generate Apex Class Docs",
+	         			"command": "generate_apex_class_docs"
+ 	         		},
+ 	         		{
 	         			"caption": "Index Apex Execution Overlays",
 	         			"command": "index_apex_overlays"
 	         		}
