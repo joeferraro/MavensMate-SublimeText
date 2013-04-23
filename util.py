@@ -196,7 +196,6 @@ def handle_result(operation, printer, result):
             printer.write('\n[OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
     except Exception:
-        printer.write(Exception)
         if printer != None:
             printer.write('\n[OPERATION FAILED]: Whoops, you found a bug. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
