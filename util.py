@@ -196,6 +196,7 @@ def handle_result(operation, printer, result):
             printer.write('\n[OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
     except Exception:
+        printer.write(Exception)
         if printer != None:
             printer.write('\n[OPERATION FAILED]: Whoops, you found a bug. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
@@ -244,7 +245,12 @@ def print_result_message(operation, res, printer):
         if len(line_col) > 0:
             line_col += ')'
         printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
-    elif 'success' in res and to_bool(res['success']) == True:     
+    elif 'success' in res and to_bool(res['success']) == True and 'Messages' in res:
+        printer.write('\n[Operation completed Successfully - With Compile Errors]' + '\n')
+        printer.write('\n[COMPILE ERRORS] - Count:' )
+        for m in res['Messages']:
+            printer.write('\n' + 'FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber'] + '\n')
+    elif 'success' in res and to_bool(res['success']) == True:
         printer.write('\n[Operation completed Successfully]' + '\n')
     elif to_bool(res['success']) == False and 'body' in res:
         printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
