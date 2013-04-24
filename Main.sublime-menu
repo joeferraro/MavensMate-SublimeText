@@ -22,12 +22,12 @@
 	         			"command": "edit_project"
 	         		},
 	         		{
-	         			"caption": "Clean Project",
-	         			"command": "clean_project"
-	         		},
-	         		{
 	         			"caption": "Compile Project",
 	         			"command": "compile_project"
+	         		},
+	         		{
+	         			"caption": "Clean Project",
+	         			"command": "clean_project"
 	         		}
 	         	]
 	     	},
@@ -51,7 +51,15 @@
 	         		{
 	         			"caption": "New Visualforce Component",
 	         			"command": "new_apex_component"
-	         		}
+	         		},
+ 	         		{
+	         			"caption": "Index Metadata",
+	         			"command": "index_metadata"
+	         		},
+	         		{
+	         			"caption": "Generate Apex Class Docs",
+	         			"command": "generate_apex_class_docs"
+ 	         		}
 	         	]
 	     	},
 	     	{
@@ -59,10 +67,6 @@
 	    		"caption": "Debug",  
 	         	"children":
 	         	[
-	         		{
-	         			"caption": "Generate Apex Class Docs",
-	         			"command": "generate_apex_class_docs"
- 	         		},
  	         		{
 	         			"caption": "Index Apex Execution Overlays",
 	         			"command": "index_apex_overlays"

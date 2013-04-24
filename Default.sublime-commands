@@ -20,8 +20,12 @@
     "command": "compile_project"
   },
   {
-    "caption": "MavensMate: Open Active File in Web Browser",  
+    "caption": "MavensMate: Open in Web Browser",  
     "command": "open_active_sfdc_url"
+  },
+  {
+    "caption": "MavensMate: Open WSDL in Web Browser",  
+    "command": "open_active_sfdc_wsdl_url"
   },
   {
     "caption": "MavensMate: Run Apex Tests",  
