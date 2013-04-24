@@ -105,6 +105,8 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
         message = 'Your MavensMate project needs to be upgraded. Opening the upgrade UI.'    
     elif operation == 'index_apex_overlays':
         message = 'Indexing Apex Overlays'  
+    elif operation == 'index_metadata':
+        message = 'Indexing Metadata'  
     elif operation == 'delete':
         if 'files' in params and len(params['files']) == 1:
             message = 'Deleting => ' + get_active_file()
@@ -364,6 +366,7 @@ def is_mm_file(filename=None):
     try :
         if not is_mm_project(): return False
         if not filename: filename = get_active_file()
+        if get_file_extension(filename) == ".object": return True
         return os.path.isfile(filename+"-meta.xml")
     except:
         return False
