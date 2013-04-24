@@ -47,6 +47,32 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//the location of the mm command line tool (must be inside MavensMate.app)
 	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
 
+	"mm_default_apex_templates_map" : {
+        "ApexClass"     : 
+	        {
+	            "test"          : "UnitTestApexClass.html",
+	            "batch"         : "BatchApexClass.html",
+	            "schedulable"   : "SchedulableApexClass.html",
+	            "email"         : "EmailServiceApexClass.html",
+	            "url"           : "UrlRewriterApexClass.html",
+	            "webservice"    : "WebserviceClass.html",
+	            "empty"         : "ApexClassNoConstructor.html",
+	            "default"       : "ApexClass.html"
+	        },
+        "ApexTrigger"   : 
+	        {
+	            "default"       : "ApexTrigger.html"
+	        },
+        "ApexComponent" :  
+	        {
+	            "default"       : "ApexComponent.html"
+	        },
+        "ApexPage"      : 
+	        {
+	            "default"       : "ApexPage.html"
+	        }
+    },
+
 	//if true, MavensMate.app will start when Sublime Text starts
 	"mm_start_app_on_st_startup" : true
 }

@@ -207,12 +207,15 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="MyClass", class_type="default"): 
+        templates = get_merged_apex_templates("ApexClass")
+        sublime.active_window().show_input_panel("Apex Class Name, Template "+str(sorted(templates.keys())), api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Apex Class')
-        sublime.active_window().show_input_panel("Apex Class Name, Template (base, test, batch, sched, email, exception, empty)", "MyClass, base", self.on_input, None, None)
-    
+
     def on_input(self, input): 
-        api_name, class_type = util.parse_new_metadata_input(input)
+        api_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexClass"), { "api_name":api_name, "class_type":class_type }, "new_apex_class"):
+            return
         options = {
             'metadata_type'     : 'ApexClass',
             'metadata_name'     : api_name,
@@ -220,21 +223,25 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         }
         util.mm_call('new_metadata', params=options) 
 
-    def is_enabled(command):
+    def is_enabled(self):
         return util.is_mm_project()
 
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"): 
+        templates = get_merged_apex_templates("ApexTrigger")
+        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), triggername+", "+sobject+", "+template, self.on_input, None, None)
         util.send_usage_statistics('New Apex Trigger')
-        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name", "MyAccountTrigger, Account", self.on_input, None, None)
-    
-    def on_input(self, input): 
-        api_name, sobject_name = util.parse_new_metadata_input(input)
+
+    def on_input(self, input):
+        api_name, sobject_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexTrigger"), { "api_name":api_name, "sobject_name":sobject_name, "class_type":class_type }, "new_apex_trigger"):
+            return
         options = {
             'metadata_type'     : 'ApexTrigger',
             'metadata_name'     : api_name,
-            'object_api_name'   : sobject_name
+            'object_api_name'   : sobject_name,
+            'apex_class_type'   : class_type
         }
         util.mm_call('new_metadata', params=options) 
 
@@ -243,15 +250,19 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="ApexPage", class_type="default"): 
+        templates = get_merged_apex_templates("ApexPage")
+        sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Page')
-        sublime.active_window().show_input_panel("Visualforce Page Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        api_name = util.parse_new_metadata_input(input)
+        api_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexPage"), { "api_name":api_name, "class_type":class_type }, "new_apex_page"):
+            return
         options = {
             'metadata_type'     : 'ApexPage',
-            'metadata_name'     : api_name
+            'metadata_name'     : api_name,
+            'apex_class_type'   : class_type
         }
         util.mm_call('new_metadata', params=options) 
 
@@ -260,20 +271,41 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="ApexComponent", class_type="default"): 
+        templates = get_merged_apex_templates("ApexComponent")
+        sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Component')
-        sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        api_name = util.parse_new_metadata_input(input)
+        api_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexComponent"), { "api_name":api_name, "class_type":class_type }, "new_apex_component"):
+            return
         options = {
             'metadata_type'     : 'ApexComponent',
-            'metadata_name'     : api_name
+            'metadata_name'     : api_name,
+            'apex_class_type'   : class_type
         }
         util.mm_call('new_metadata', params=options) 
 
     def is_enabled(command):
         return util.is_mm_project()
+
+def check_apex_templates(templates, args, command):
+    if "class_type" not in args or args["class_type"] not in templates:
+        sublime.error_message(str(args["class_type"])+" is not a valid template, please choose one of: "+str(sorted(templates.keys())))
+        sublime.active_window().run_command(command, args)
+        return False
+    return True
+
+def get_merged_apex_templates(apex_type):
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+    template_map = settings.get('mm_default_apex_templates_map', {})
+    custom_templates = settings.get('mm_apex_templates_map', {})
+    if apex_type not in template_map:
+        return {}
+    if apex_type in custom_templates:
+        template_map[apex_type] = dict(template_map[apex_type], **custom_templates[apex_type])
+    return template_map[apex_type]
 
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
@@ -310,7 +342,21 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
             util.send_usage_statistics('Refresh Selected From Server')
 
     def is_visible(self, dirs, files):
-        return util.is_mm_file()
+        return util.is_mm_project()
+
+    def is_visible(self, dirs, files):
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            for d in dirs:
+                basename = os.path.basename(d)
+                if basename == util.get_project_name() or basename == "src":
+                    return True
+                elif os.path.basename(os.path.abspath(os.path.join(d, os.pardir))) == "src":
+                    return True
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f):
+                    return True
+        return False
 
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
@@ -523,6 +569,15 @@ class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
     def run(self):
         util.mm_call('index_apex_overlays', False, context=self)
         util.send_usage_statistics('Index Apex Overlays')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+#indexes the meta data based on packages.xml
+class IndexMetadataCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        util.mm_call('index_metadata', True, context=self)
+        util.send_usage_statistics('Index Metadata')  
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -972,7 +1027,10 @@ class GenerateApexClassDocsCommand(sublime_plugin.WindowCommand):
         thread = ExecuteDoxygen(dinput, doutput)
         threads.append(thread)
         thread.start()
-        handle_doxygen_threads(threads, printer) 
+        handle_doxygen_threads(threads, printer)   
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
