@@ -115,12 +115,9 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
 class RemoteEdit(sublime_plugin.EventListener):
     def on_post_save(self, view):
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        active_file = util.get_active_file()
-        fileName, ext = os.path.splitext(active_file)
-        valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger', '.tab', '.layout', '.resource', '.remoteSite', '.labels', '.app', '.dashboard']
-        if settings.get('mm_compile_on_save') == True and util.is_mm_project() == True and ext in valid_file_extensions:
+        if settings.get('mm_compile_on_save') == True and util.is_mm_file() == True:
             params = {
-                "files" : [active_file]
+                "files" : [util.get_active_file()]
             }
             util.mm_call('compile', context=view, params=params)
 
@@ -134,6 +131,15 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
         util.mm_call('compile', context=self, params=params)
         util.send_usage_statistics('Compile Selected Files')
 
+    def is_visible(self, files):
+        return util.is_mm_project()
+
+    def is_enabled(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f):
+                    return True
+        return False
 
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
@@ -381,20 +387,11 @@ class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
         util.mm_call('unit_test', context=self, params=params)
         util.send_usage_statistics('Run Apex Tests in Active File')
 
-    def is_enabled(self):
-        if not util.get_file_extension() == ".cls": return False
-        active_file = util.get_active_file();
-        if os.path.exists(active_file):
-            with open(active_file, 'r') as content_file:
-                content = content_file.read()
-                p = re.compile("@isTest\s", re.I + re.M)
-                if not p.search(content): return False
-                p = re.compile("\stestMethod\s", re.I + re.M)
-                if p.search(content): return True
-        return False
-
     def is_visible(self):
-        return util.is_mm_file() and util.get_file_extension() == ".cls"
+        return util.is_apex_class_file()
+
+    def is_enabled(self):
+        return util.is_apex_test_file()
 
 
 #opens the apex class, trigger, component or page on the server
@@ -414,24 +411,14 @@ class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
     def is_visible(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f): 
-                    fileName, ext = os.path.splitext(f)
-                    if ext == ".cls":
-                        return True
+                if util.is_apex_class_file(f): 
+                    return True
         return False
         
     def is_enabled(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f): 
-                    fileName, ext = os.path.splitext(f)
-                    if ext == ".cls":
-                        with open(f, 'r') as content_file:
-                            content = content_file.read()
-                            p = re.compile("@isTest\s", re.I + re.M)
-                            if p.search(content):
-                                p = re.compile("\stestMethod\s", re.I + re.M)
-                                if p.search(content): return True
+                if util.is_apex_test_file(f): return True
         return False
 
 #opens the apex class, trigger, component or page on the server
@@ -446,6 +433,9 @@ class OpenActiveSfdcUrlCommand(sublime_plugin.WindowCommand):
     def is_visible(self):
         return util.is_mm_file()
 
+    def is_enabled(self):
+        return util.is_browsable_file()
+
 #opens the WSDL file for apex webservice classes
 class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -457,18 +447,11 @@ class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Open Active WSDL File On Server')
 
     def is_visible(self):
-        return util.is_mm_file() and util.get_file_extension() == ".cls"
+        return util.is_apex_class_file()
 
     def is_enabled(self):
-        if not util.get_file_extension() == ".cls": return False
-        active_file = util.get_active_file();
-        if os.path.exists(active_file):
-            with open(active_file, 'r') as content_file:
-                content = content_file.read()
-                p = re.compile("global\s+class\s", re.I + re.M)
-                if not p.search(content): return False
-                p = re.compile("\swebservice\s", re.I + re.M)
-                if p.search(content): return True
+        if util.is_apex_webservice_file(): 
+            return True
         return False
 
 #opens the apex class, trigger, component or page on the server
@@ -485,7 +468,7 @@ class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
         if not util.is_mm_project: return False
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f): return True
+                if util.is_browsable_file(f): return True
         return False
 
 #opens the WSDL file for apex webservice classes
@@ -502,24 +485,15 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
     def is_visible(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f): 
-                    fileName, ext = os.path.splitext(f)
-                    if ext == ".cls":
-                        return True
+                if util.is_apex_class_file(f): 
+                    return True
         return False
         
     def is_enabled(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f): 
-                    fileName, ext = os.path.splitext(f)
-                    if ext == ".cls":
-                        with open(f, 'r') as content_file:
-                            content = content_file.read()
-                            p = re.compile("global\s+class\s", re.I + re.M)
-                            if p.search(content):
-                                p = re.compile("\swebservice\s", re.I + re.M)
-                                if p.search(content): return True
+                if util.is_apex_webservice_file(f): 
+                    return True
         return False
 
 #deletes selected metadata
@@ -550,6 +524,9 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
             result = util.mm_call('delete', context=self, params=params)
             self.window.run_command("close")
             util.send_usage_statistics('Delete Metadata')
+
+    def is_enabled(self):
+        return util.is_mm_file()
 
     def is_visible(self):
         return util.is_mm_project()
@@ -604,7 +581,6 @@ class ExecutionOverlayLoader(sublime_plugin.EventListener):
                 sublime.set_timeout(lambda: util.mark_overlays(lines), 100)
         except Exception as e:
             print('execution overlay loader error')
-            print(e.message)
 
 #deletes overlays
 class DeleteOverlaysCommand(sublime_plugin.WindowCommand):

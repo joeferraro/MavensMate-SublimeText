@@ -9,6 +9,7 @@ import re
 import time
 import pipes
 import shutil
+import codecs
 # import string
 # import random
 # from datetime import datetime, date, time
@@ -366,10 +367,52 @@ def is_mm_file(filename=None):
     try :
         if not is_mm_project(): return False
         if not filename: filename = get_active_file()
-        if get_file_extension(filename) == ".object": return True
+        if not os.path.exists(filename): return False
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        valid_file_extensions = settings.get("mm_apex_file_extensions", [])
+        if get_file_extension(filename) in valid_file_extensions: return True
         return os.path.isfile(filename+"-meta.xml")
     except:
         return False
+
+def is_browsable_file(filename=None):
+    try :
+        if not is_mm_project() or not is_mm_file(): return False
+        if not filename: filename = get_active_file()
+        if not is_mm_file(filename): return False
+        return os.path.isfile(filename+"-meta.xml")
+    except:
+        return False
+
+def is_apex_class_file(filename=None):
+    if not filename: filename = get_active_file()
+    if is_mm_file(filename): 
+        f, ext = os.path.splitext(filename)
+        if ext == ".cls":
+            return True
+    return False
+
+def is_apex_test_file(filename=None):
+    if not filename: filename = get_active_file()
+    if not is_apex_class_file(filename): return False
+    with codecs.open(filename, "r", "utf-8") as content_file:
+        content = content_file.read()
+        p = re.compile("@isTest\s", re.I + re.M)
+        if p.search(content):
+            p = re.compile("\stestMethod\s", re.I + re.M)
+            if p.search(content): return True
+    return False
+
+def is_apex_webservice_file(filename=None):
+    if not filename: filename = get_active_file()
+    if not is_apex_class_file(filename): return False
+    with codecs.open(filename, "r", "utf-8") as content_file:
+        content = content_file.read()
+        p = re.compile("global\s+class\s", re.I + re.M)
+        if p.search(content):
+            p = re.compile("\swebservice\s", re.I + re.M)
+            if p.search(content): return True
+    return False
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
