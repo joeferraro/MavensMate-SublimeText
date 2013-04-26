@@ -15,7 +15,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ##Prerequisites
 
-###Mac OSX
+###Mac OSX (OSX 10.7+ only)
 You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
 
 ###Windows

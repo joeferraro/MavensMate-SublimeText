@@ -10,7 +10,7 @@
 			{ "caption": "Open WSDL in Web Browser", "command": "open_active_sfdc_wsdl_url" },
 			{ "caption": "Run Apex Tests...", "command": "run_active_apex_tests" },
 			{ "caption": "Refresh File From Server...", "command": "refresh_active_file" },
-			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" },
+			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" }
 		]
 	}
 ]
