@@ -354,13 +354,10 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
     def is_visible(self, dirs, files):
         return util.is_mm_project()
 
-    def is_visible(self, dirs, files):
+    def is_enabled(self, dirs, files):
         if dirs != None and type(dirs) is list and len(dirs) > 0:
             for d in dirs:
-                basename = os.path.basename(d)
-                if basename == util.get_project_name() or basename == "src":
-                    return True
-                elif os.path.basename(os.path.abspath(os.path.join(d, os.pardir))) == "src":
+                if util.is_mm_dir(d):
                     return True
         if files != None and type(files) is list and len(files) > 0:
             for f in files:

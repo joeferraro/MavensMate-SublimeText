@@ -366,24 +366,34 @@ def get_file_extension(filename=None):
 
 def is_mm_file(filename=None):
     try :
-        if not is_mm_project(): return False
-        if not filename: filename = get_active_file()
-        if not os.path.exists(filename): return False
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        valid_file_extensions = settings.get("mm_apex_file_extensions", [])
-        if get_file_extension(filename) in valid_file_extensions: return True
-        return os.path.isfile(filename+"-meta.xml")
+        if is_mm_project():
+            if not filename: 
+                filename = get_active_file()
+            if os.path.exists(filename):
+                settings = sublime.load_settings('mavensmate.sublime-settings')
+                valid_file_extensions = settings.get("mm_apex_file_extensions", [])
+                return get_file_extension(filename) in valid_file_extensions or os.path.isfile(filename+"-meta.xml")
     except:
-        return False
+        pass
+    return False
+
+def is_mm_dir(directory):
+    if is_mm_project():
+        if os.path.isdir(directory):
+            if os.path.basename(directory) == "src" or os.path.basename(directory) == get_project_name() or os.path.basename(os.path.abspath(os.path.join(directory, os.pardir))) == "src":
+                return True
+    return False
 
 def is_browsable_file(filename=None):
     try :
-        if not is_mm_project() or not is_mm_file(): return False
-        if not filename: filename = get_active_file()
-        if not is_mm_file(filename): return False
-        return os.path.isfile(filename+"-meta.xml")
+        if is_mm_project():
+            if not filename: 
+                filename = get_active_file()
+            if is_mm_file(filename):
+                return os.path.isfile(filename+"-meta.xml")
     except:
-        return False
+        pass
+    return False
 
 def is_apex_class_file(filename=None):
     if not filename: filename = get_active_file()
@@ -527,7 +537,7 @@ def prep_for_search(name):
     return name.replace('_', '')
 
 def start_mavensmate_app():
-    p = subprocess.Popen("pgrep -fl MavensMate", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    p = subprocess.Popen("pgrep -fl \"MavensMate \"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     msg = None
     if p.stdout is not None: 
         msg = p.stdout.readlines()
