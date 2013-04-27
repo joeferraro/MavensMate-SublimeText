@@ -23,6 +23,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
 	"mm_compile_on_save" : true,
 
+	//if true, MavensMate will scroll to the line of a reported exception when there is a compilation error
+	"mm_compile_scroll_to_error": true,
+
 	//if true, MavensMate will rollback compiles when an error is encountered
 	"mm_compile_rollback_on_error": true,
 

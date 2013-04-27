@@ -156,6 +156,7 @@ def is_project_legacy():
 #monitors thread for activity, passes to the result handler when thread is complete
 def thread_progress_handler(operation, threads, printer, i=0):
     result = None
+    this_thread = None
     next_threads = []
     for thread in threads:
         if printer != None:
@@ -165,6 +166,7 @@ def thread_progress_handler(operation, threads, printer, i=0):
             continue
         if thread.result == None:
             continue
+        this_thread = thread
         result = thread.result
 
     threads = next_threads
@@ -173,13 +175,13 @@ def thread_progress_handler(operation, threads, printer, i=0):
         sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 200)
         return
 
-    handle_result(operation, printer, result)
+    handle_result(operation, printer, result, this_thread)
 
 #handles the result of the mm script
-def handle_result(operation, printer, result):
+def handle_result(operation, printer, result, thread):
     try:
         result = json.loads(result)
-        print_result_message(operation, result, printer) 
+        print_result_message(operation, result, printer, thread) 
         if operation == 'new_metadata' and to_bool(result['success']) == True:
             if 'messages' in result:
                 if type(result['messages']) is not list:
@@ -206,7 +208,7 @@ def handle_result(operation, printer, result):
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
 
 #prints the result of the mm operation, can be a string or a dict
-def print_result_message(operation, res, printer):
+def print_result_message(operation, res, printer, thread):
     #print 'result of operation ', res
     if to_bool(res['success']) == False and 'messages' in res:
         #here we're parsing a response from the metadata endpoint
@@ -248,6 +250,16 @@ def print_result_message(operation, res, printer):
             line_col += ', Column: '+res['column']
         if len(line_col) > 0:
             line_col += ')'
+
+        #scroll to the line and column of the exception
+        if settings.get('mm_compile_scroll_to_error', True) and not thread == None and os.path.exists(thread.active_file):
+            #open file, if already open it will bring it to focus
+            view = sublime.active_window().open_file(thread.active_file)
+            pt = view.text_point(int(res['line']), int(res['column']))
+            view.sel().clear()
+            view.sel().add(sublime.Region(pt))
+            view.show(pt)
+
         printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
     elif 'success' in res and to_bool(res['success']) == True and 'Messages' in res:
         printer.write('\n[Operation completed Successfully - With Compile Errors]' + '\n')
