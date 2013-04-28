@@ -255,7 +255,7 @@ def print_result_message(operation, res, printer, thread):
         if settings.get('mm_compile_scroll_to_error', True) and not thread == None and os.path.exists(thread.active_file):
             #open file, if already open it will bring it to focus
             view = sublime.active_window().open_file(thread.active_file)
-            pt = view.text_point(int(res['line']), int(res['column']))
+            pt = view.text_point(int(res['line'])-1, int(res['column'])-1)
             view.sel().clear()
             view.sel().add(sublime.Region(pt))
             view.show(pt)
