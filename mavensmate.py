@@ -48,11 +48,25 @@ class EditProjectCommand(sublime_plugin.ApplicationCommand):
         util.mm_call('edit_project', False)
         util.send_usage_statistics('Edit Project')
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays unit test dialog
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.mm_call('unit_test', False)
+        active_file = util.get_active_file()
+        if os.path.exists(active_file):
+            filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
+            params = {
+                "selected"         : [filename]
+            }
+        else:
+            params = {}
+        util.mm_call('unit_test', context=command, params=params)
         util.send_usage_statistics('Apex Unit Testing')
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
@@ -60,12 +74,18 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
         util.mm_call('execute_apex', False)
         util.send_usage_statistics('Execute Anonymous')
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         #TODO check for org connections before allowing deploy ui to open
         util.mm_call('deploy', False)
         util.send_usage_statistics('Deploy to Server')
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
@@ -75,7 +95,7 @@ class MavensStubCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
         return False
     def is_visible(self):
-        return not util.is_mm_file();
+        return not util.is_mm_project();
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
@@ -85,16 +105,19 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         }
         util.mm_call('compile', context=self, params=params)
 
+    def is_enabled(command):
+        return util.is_mm_file()
+
+    def is_visible(command):
+        return util.is_mm_project()
+
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
     def on_post_save(self, view):
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        active_file = util.get_active_file()
-        fileName, ext = os.path.splitext(active_file)
-        valid_file_extensions = ['.page', '.component', '.cls', '.object', '.page', '.trigger', '.tab', '.layout', '.resource', '.remoteSite', '.labels', '.app', '.dashboard']
-        if settings.get('mm_compile_on_save') == True and util.is_mm_project() == True and ext in valid_file_extensions:
+        if settings.get('mm_compile_on_save') == True and util.is_mm_file() == True:
             params = {
-                "files" : [active_file]
+                "files" : [util.get_active_file()]
             }
             util.mm_call('compile', context=view, params=params)
 
@@ -112,9 +135,15 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
         util.mm_call('compile', context=self, params=params)
         util.send_usage_statistics('Compile Selected Files')
 
-    def is_visible(self):
-        return util.is_mm_file()
+    def is_visible(self, files):
+        return util.is_mm_project()
 
+    def is_enabled(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f):
+                    return True
+        return False
 
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
@@ -130,7 +159,10 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
             util.mm_call('clean_project', context=self)
-            util.send_usage_statistics('Clean Project')  
+            util.send_usage_statistics('Clean Project')
+
+    def is_enabled(command):
+        return util.is_mm_project()  
 
 #opens a project in the current workspace
 class OpenProjectCommand(sublime_plugin.WindowCommand):
@@ -185,12 +217,15 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="MyClass", class_type="default"): 
+        templates = get_merged_apex_templates("ApexClass")
+        sublime.active_window().show_input_panel("Apex Class Name, Template "+str(sorted(templates.keys())), api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Apex Class')
-        sublime.active_window().show_input_panel("Apex Class Name, Template (base, test, batch, sched, email, exception, empty)", "MyClass, base", self.on_input, None, None)
-    
+
     def on_input(self, input): 
-        api_name, class_type = util.parse_new_metadata_input(input)
+        api_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexClass"), { "api_name":api_name, "class_type":class_type }, "new_apex_class"):
+            return
         options = {
             'metadata_type'     : 'ApexClass',
             'metadata_name'     : api_name,
@@ -198,48 +233,89 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         }
         util.mm_call('new_metadata', params=options) 
 
+    def is_enabled(self):
+        return util.is_mm_project()
+
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"): 
+        templates = get_merged_apex_templates("ApexTrigger")
+        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject+", "+template, self.on_input, None, None)
         util.send_usage_statistics('New Apex Trigger')
-        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name", "MyAccountTrigger, Account", self.on_input, None, None)
-    
-    def on_input(self, input): 
-        api_name, sobject_name = util.parse_new_metadata_input(input)
+
+    def on_input(self, input):
+        api_name, sobject_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexTrigger"), { "api_name":api_name, "sobject_name":sobject_name, "class_type":class_type }, "new_apex_trigger"):
+            return
         options = {
             'metadata_type'     : 'ApexTrigger',
             'metadata_name'     : api_name,
-            'object_api_name'   : sobject_name
+            'object_api_name'   : sobject_name,
+            'apex_class_type'   : class_type
         }
         util.mm_call('new_metadata', params=options) 
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="ApexPage", class_type="default"): 
+        templates = get_merged_apex_templates("ApexPage")
+        sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Page')
-        sublime.active_window().show_input_panel("Visualforce Page Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        api_name = util.parse_new_metadata_input(input)
+        api_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexPage"), { "api_name":api_name, "class_type":class_type }, "new_apex_page"):
+            return
         options = {
             'metadata_type'     : 'ApexPage',
-            'metadata_name'     : api_name
+            'metadata_name'     : api_name,
+            'apex_class_type'   : class_type
         }
         util.mm_call('new_metadata', params=options) 
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit, api_name="ApexComponent", class_type="default"): 
+        templates = get_merged_apex_templates("ApexComponent")
+        sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Component')
-        sublime.active_window().show_input_panel("Visualforce Component Name", "", self.on_input, None, None)
     
     def on_input(self, input): 
-        api_name = util.parse_new_metadata_input(input)
+        api_name, class_type = [x.strip() for x in input.split(',')]
+        if not check_apex_templates(get_merged_apex_templates("ApexComponent"), { "api_name":api_name, "class_type":class_type }, "new_apex_component"):
+            return
         options = {
             'metadata_type'     : 'ApexComponent',
-            'metadata_name'     : api_name
+            'metadata_name'     : api_name,
+            'apex_class_type'   : class_type
         }
         util.mm_call('new_metadata', params=options) 
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+def check_apex_templates(templates, args, command):
+    if "class_type" not in args or args["class_type"] not in templates:
+        sublime.error_message(str(args["class_type"])+" is not a valid template, please choose one of: "+str(sorted(templates.keys())))
+        sublime.active_window().run_command(command, args)
+        return False
+    return True
+
+def get_merged_apex_templates(apex_type):
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+    template_map = settings.get('mm_default_apex_templates_map', {})
+    custom_templates = settings.get('mm_apex_templates_map', {})
+    if apex_type not in template_map:
+        return {}
+    if apex_type in custom_templates:
+        template_map[apex_type] = dict(template_map[apex_type], **custom_templates[apex_type])
+    return template_map[apex_type]
 
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
@@ -263,34 +339,91 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
 # if src is refreshed, project is "cleaned"
 class RefreshFromServerCommand(sublime_plugin.WindowCommand):
     def run (self, dirs, files):
-        if dirs != None and type(dirs) is list and len(dirs) > 0:
-            params = {
-                "directories"   : dirs
-            }
-        elif files != None and type(files) is list and len(files) > 0:
-            params = {
-                "files"         : files
-            }
-        util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Selected From Server')
+        if sublime.ok_cancel_dialog("Are you sure you want to overwrite the selected files' contents from Salesforce?", "Refresh"):
+            if dirs != None and type(dirs) is list and len(dirs) > 0:
+                params = {
+                    "directories"   : dirs
+                }
+            elif files != None and type(files) is list and len(files) > 0:
+                params = {
+                    "files"         : files
+                }
+            util.mm_call('refresh', context=self, params=params)
+            util.send_usage_statistics('Refresh Selected From Server')
 
-    def is_visible(self):
-        return util.is_mm_file()
+    def is_visible(self, dirs, files):
+        return util.is_mm_project()
+
+    def is_enabled(self, dirs, files):
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            for d in dirs:
+                if util.is_mm_dir(d):
+                    return True
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f):
+                    return True
+        return False
 
 #refreshes the currently active file from the server
 class RefreshActiveFile(sublime_plugin.WindowCommand):
     def run(self):
-        params = {
-            "files"         : [util.get_active_file()]
-        }
-        util.mm_call('refresh', context=self, params=params)
-        util.send_usage_statistics('Refresh Active File From Server')
+        if sublime.ok_cancel_dialog("Are you sure you want to overwrite this file's contents from Salesforce?", "Refresh"):
+            params = {
+                "files"         : [util.get_active_file()]
+            }
+            util.mm_call('refresh', context=self, params=params)
+            util.send_usage_statistics('Refresh Active File From Server')
 
     def is_visible(self):
         return util.is_mm_file()
 
 #opens the apex class, trigger, component or page on the server
-class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
+class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
+        params = {
+            "selected"         : [filename]
+        }
+        util.mm_call('unit_test', context=self, params=params)
+        util.send_usage_statistics('Run Apex Tests in Active File')
+
+    def is_visible(self):
+        return util.is_apex_class_file()
+
+    def is_enabled(self):
+        return util.is_apex_test_file()
+
+
+#opens the apex class, trigger, component or page on the server
+class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
+    def run(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            params = {
+                "selected"         : []
+            }
+            for f in files:
+                filename, ext = os.path.splitext(os.path.basename(f))
+                params['selected'].append(filename)
+
+            util.mm_call('unit_test', context=self, params=params)
+            util.send_usage_statistics('Run Apex Tests in Active File')
+
+    def is_visible(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_apex_class_file(f): 
+                    return True
+        return False
+        
+    def is_enabled(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_apex_test_file(f): return True
+        return False
+
+#opens the apex class, trigger, component or page on the server
+class OpenActiveSfdcUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
             "files"         : [util.get_active_file()]
@@ -301,8 +434,11 @@ class OpenSfdcUrlCommand(sublime_plugin.WindowCommand):
     def is_visible(self):
         return util.is_mm_file()
 
+    def is_enabled(self):
+        return util.is_browsable_file()
+
 #opens the WSDL file for apex webservice classes
-class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
+class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
             "files"         : [util.get_active_file()],
@@ -312,20 +448,53 @@ class OpenSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Open Active WSDL File On Server')
 
     def is_visible(self):
-        return util.is_mm_file() and self.is_apex_class()
+        return util.is_apex_class_file()
 
     def is_enabled(self):
-        if not self.is_apex_class(): return False
-        with open(util.get_active_file(), 'r') as content_file:
-            content = content_file.read()
-            p = re.compile("global\s+class\s", re.I + re.M)
-            if not p.search(content): return False
-            p = re.compile("\swebservice\s", re.I + re.M)
-            if p.search(content): return True
+        if util.is_apex_webservice_file(): 
+            return True
+        return False
+
+#opens the apex class, trigger, component or page on the server
+class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
+    def run (self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            params = {
+                "files"         : files
+            }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Selected File On Server')
+
+    def is_visible(self, files):
+        if not util.is_mm_project: return False
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_browsable_file(f): return True
+        return False
+
+#opens the WSDL file for apex webservice classes
+class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
+    def run(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            params = {
+                "files"         : files,
+                "type"          : "wsdl"
+            }
+        util.mm_call('open_sfdc_url', context=self, params=params)
+        util.send_usage_statistics('Open Selected WSDL File On Server')
+
+    def is_visible(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_apex_class_file(f): 
+                    return True
         return False
         
-    def is_apex_class(self):
-        if util.get_file_extension() == "cls": return True
+    def is_enabled(self, files):
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_apex_webservice_file(f): 
+                    return True
         return False
 
 #deletes selected metadata
@@ -339,6 +508,28 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             util.send_usage_statistics('Delete Metadata')
 
     def is_visible(self):
+        return util.is_mm_file()
+
+    def is_enabled(self):
+        return util.is_mm_file()
+
+#deletes selected metadata
+class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        active_path = util.get_active_file()
+        active_file = os.path.basename(active_path)
+        if sublime.ok_cancel_dialog("Are you sure you want to delete "+active_file+" file from Salesforce?", "Delete"):
+            params = {
+                "files" : [active_file]
+            }
+            result = util.mm_call('delete', context=self, params=params)
+            self.window.run_command("close")
+            util.send_usage_statistics('Delete Metadata')
+
+    def is_enabled(self):
+        return util.is_mm_file()
+
+    def is_visible(self):
         return util.is_mm_project()
 
 #attempts to compile the entire project
@@ -348,11 +539,26 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
             util.mm_call('compile_project', context=self)
             util.send_usage_statistics('Compile Project')
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #refreshes the currently active file from the server
 class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
     def run(self):
         util.mm_call('index_apex_overlays', False, context=self)
         util.send_usage_statistics('Index Apex Overlays')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+#indexes the meta data based on packages.xml
+class IndexMetadataCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        util.mm_call('index_metadata', True, context=self)
+        util.send_usage_statistics('Index Metadata')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #refreshes the currently active file from the server
 class FetchLogsCommand(sublime_plugin.WindowCommand):
@@ -376,7 +582,6 @@ class ExecutionOverlayLoader(sublime_plugin.EventListener):
                 sublime.set_timeout(lambda: util.mark_overlays(lines), 100)
         except Exception as e:
             print('execution overlay loader error')
-            print(e.message)
 
 #deletes overlays
 class DeleteOverlaysCommand(sublime_plugin.WindowCommand):
@@ -574,12 +779,12 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 for method in pd:
                     _completions.append((method, method))
                 return sorted(_completions)
-            elif os.path.isfile(mm_project_directory()+"/src/classes/"+word+".cls"): #=> custom apex class static methods
+            elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+word+".cls"): #=> custom apex class static methods
                 search_name = util.prep_for_search(word)
                 #print search_name
-                #print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
-                if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
-                    object_dom = parse(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
+                #print 'looking for class def in: ' + util.mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
+                if os.path.isfile(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
+                    object_dom = parse(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
                     for node in object_dom.getElementsByTagName('memberdef'):
                         #print node.getAttribute("static")
                         if node.getAttribute("static") == "No": continue
@@ -733,8 +938,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     for method in pd:
                         _completions.append((method, method))
                     return sorted(_completions)
-                elif os.path.isfile(mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
-                    object_dom = parse(mm_project_directory()+"/config/objects/"+object_name_lower+".object")
+                elif os.path.isfile(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
+                    object_dom = parse(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object")
                     for node in object_dom.getElementsByTagName('fields'):
                         field_name = ''
                         field_type = ''
@@ -746,8 +951,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                 field_type = child.firstChild.nodeValue
                         _completions.append((field_name+" \t"+field_type, field_name))
                     return sorted(_completions)
-                elif os.path.isfile(mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
-                    object_dom = parse(mm_project_directory()+"/src/objects/"+object_name_lower+".object")
+                elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
+                    object_dom = parse(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object")
                     for node in object_dom.getElementsByTagName('fields'):
                         field_name = ''
                         field_type = ''
@@ -759,12 +964,12 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                                 field_type = child.firstChild.nodeValue
                         _completions.append((field_name+" \t"+field_type, field_name))
                     return sorted(_completions)
-                elif os.path.isfile(mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
+                elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
                     search_name = util.prep_for_search(object_name)
                     #print search_name
-                    #print 'looking for class def in: ' + mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
-                    if os.path.isfile(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
-                        object_dom = parse(mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
+                    #print 'looking for class def in: ' + util.mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
+                    if os.path.isfile(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
+                        object_dom = parse(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
                         for node in object_dom.getElementsByTagName('memberdef'):
                             if node.getAttribute("static") == "Yes": continue
                             member_type = ''
@@ -784,15 +989,18 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                         return sorted(_completions)
 
 #uses doxygen to generate xml-based documentation which assists in code completion/suggest functionality in MavensMate
-class GenerateApexClassDocs(sublime_plugin.WindowCommand):
+class GenerateApexClassDocsCommand(sublime_plugin.WindowCommand):
     def run(self):
-        dinput = mm_project_directory() + "/src/classes"
-        doutput = mm_project_directory() + "/config/.class_docs"
-        if os.path.exists(mm_project_directory() + "/config/.class_docs/xml"):
+        dinput = util.mm_project_directory() + "/src/classes"
+        doutput = util.mm_project_directory() + "/config/.class_docs"
+        if os.path.exists(util.mm_project_directory() + "/config/.class_docs/xml"):
             import shutil
-            shutil.rmtree(mm_project_directory() + "/config/.class_docs/xml")
-        if not os.path.exists(mm_project_directory() + "/config/.class_docs"):
-            os.makedirs(mm_project_directory() + "/config/.class_docs")
+            shutil.rmtree(util.mm_project_directory() + "/config/.class_docs/xml")
+        if not os.path.exists(util.mm_project_directory() + "/config/.class_docs"):
+            os.makedirs(util.mm_project_directory() + "/config/.class_docs")
+        if not os.path.exists(util.mm_project_directory() + "/config/.class_docs/xml"):
+            os.makedirs(util.mm_project_directory() + "/config/.class_docs/xml")
+
 
         printer = PanelPrinter.get(self.window.id())  
         printer.show() 
@@ -801,7 +1009,10 @@ class GenerateApexClassDocs(sublime_plugin.WindowCommand):
         thread = ExecuteDoxygen(dinput, doutput)
         threads.append(thread)
         thread.start()
-        handle_doxygen_threads(threads, printer) 
+        handle_doxygen_threads(threads, printer)   
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
@@ -822,7 +1033,6 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         ps = []
         ps.append(util.mm_project_directory()+"/src/staticresources/"+self.results[picked])
         util.create_resource_bundle(self, ps)
-
         
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
@@ -861,6 +1071,58 @@ def deploy_resource_bundle(bundle_name):
     }
     util.mm_call('compile', params=params)
     util.send_usage_statistics('Deploy Resource Bundle')
+
+#executes doxygen in the background
+class ExecuteDoxygen(threading.Thread):
+    def __init__(self, dinput, doutput):
+        self.result = None
+        self.dinput = dinput
+        self.doutput = doutput
+        threading.Thread.__init__(self)   
+
+    def run(self):
+        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ./doxygen -'
+        print(command)
+        os.chdir(mm_dir + "/bin")
+        os.system(command)
+
+#handles the completion of doxygen execution
+def handle_doxygen_threads(threads, printer):
+    next_threads = []
+    for thread in threads:
+        printer.write('.')
+        if thread.is_alive():
+            next_threads.append(thread)
+            continue
+        if thread.result == False:
+            continue
+        compile_result = thread.result
+
+    threads = next_threads
+    if len(threads):
+        sublime.set_timeout(lambda: handle_doxygen_threads(threads, printer), 200)
+        return
+
+    for filename in os.listdir(util.mm_project_directory() + "/config/.class_docs/xml"):
+        print(filename)
+        if filename.startswith('_') or filename.startswith('dir_'): 
+            os.remove(util.mm_project_directory() + "/config/.class_docs/xml/" + filename) 
+            continue
+        if filename == 'combine.xslt' or filename == 'compound.xsd': 
+            os.remove(util.mm_project_directory() + "/config/.class_docs/xml/" + filename)
+            continue
+        tempName = filename
+        if tempName.startswith('class_'):
+            tempName = tempName.replace('class_', '', 1)
+        elif tempName.startswith('enum_'):
+            tempName = tempName.replace('enum_', '', 1)
+        elif tempName.startswith('interface_'):
+            tempName = tempName.replace('interface_', '', 1)
+        tempName = tempName.replace('_', '')
+        os.rename(util.mm_project_directory() + "/config/.class_docs/xml/" + filename, util.mm_project_directory() + "/config/.class_docs/xml/" + tempName)
+
+    printer.write('\n[Indexing complete]' + '\n')
+    printer.hide() 
 
 util.package_check()
 util.start_mavensmate_app()  

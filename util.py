@@ -9,6 +9,7 @@ import re
 import time
 import pipes
 import shutil
+import codecs
 # import string
 # import random
 # from datetime import datetime, date, time
@@ -91,7 +92,10 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     elif operation == 'edit_project':
         message = 'Opening Edit Project dialog'  
     elif operation == 'unit_test':
-        message = 'Opening Apex Test Runner'
+        if 'selected' in params and len(params['selected']) == 1:
+            message = "Running Apex Test for " + params['selected'][0]
+        else:
+            message = 'Opening Apex Test Runner'
     elif operation == 'clean_project':
         message = 'Cleaning Project'
     elif operation == 'deploy':
@@ -102,6 +106,8 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
         message = 'Your MavensMate project needs to be upgraded. Opening the upgrade UI.'    
     elif operation == 'index_apex_overlays':
         message = 'Indexing Apex Overlays'  
+    elif operation == 'index_metadata':
+        message = 'Indexing Metadata'  
     elif operation == 'delete':
         if 'files' in params and len(params['files']) == 1:
             message = 'Deleting => ' + get_active_file()
@@ -150,6 +156,7 @@ def is_project_legacy():
 #monitors thread for activity, passes to the result handler when thread is complete
 def thread_progress_handler(operation, threads, printer, i=0):
     result = None
+    this_thread = None
     next_threads = []
     for thread in threads:
         if printer != None:
@@ -159,6 +166,7 @@ def thread_progress_handler(operation, threads, printer, i=0):
             continue
         if thread.result == None:
             continue
+        this_thread = thread
         result = thread.result
 
     threads = next_threads
@@ -167,13 +175,13 @@ def thread_progress_handler(operation, threads, printer, i=0):
         sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 200)
         return
 
-    handle_result(operation, printer, result)
+    handle_result(operation, printer, result, this_thread)
 
 #handles the result of the mm script
-def handle_result(operation, printer, result):
+def handle_result(operation, printer, result, thread):
     try:
         result = json.loads(result)
-        print_result_message(operation, result, printer) 
+        print_result_message(operation, result, printer, thread) 
         if operation == 'new_metadata' and to_bool(result['success']) == True:
             if 'messages' in result:
                 if type(result['messages']) is not list:
@@ -200,7 +208,7 @@ def handle_result(operation, printer, result):
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
 
 #prints the result of the mm operation, can be a string or a dict
-def print_result_message(operation, res, printer):
+def print_result_message(operation, res, printer, thread):
     #print 'result of operation ', res
     if to_bool(res['success']) == False and 'messages' in res:
         #here we're parsing a response from the metadata endpoint
@@ -242,8 +250,23 @@ def print_result_message(operation, res, printer):
             line_col += ', Column: '+res['column']
         if len(line_col) > 0:
             line_col += ')'
+
+        #scroll to the line and column of the exception
+        if settings.get('mm_compile_scroll_to_error', True) and not thread == None and os.path.exists(thread.active_file):
+            #open file, if already open it will bring it to focus
+            view = sublime.active_window().open_file(thread.active_file)
+            pt = view.text_point(int(res['line'])-1, int(res['column'])-1)
+            view.sel().clear()
+            view.sel().add(sublime.Region(pt))
+            view.show(pt)
+
         printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
-    elif 'success' in res and to_bool(res['success']) == True:     
+    elif 'success' in res and to_bool(res['success']) == True and 'Messages' in res:
+        printer.write('\n[Operation completed Successfully - With Compile Errors]' + '\n')
+        printer.write('\n[COMPILE ERRORS] - Count:' )
+        for m in res['Messages']:
+            printer.write('\n' + 'FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber'] + '\n')
+    elif 'success' in res and to_bool(res['success']) == True:
         printer.write('\n[Operation completed Successfully]' + '\n')
     elif to_bool(res['success']) == False and 'body' in res:
         printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
@@ -340,32 +363,87 @@ def sublime_project_file_path():
 # check for mavensmate .settings file
 def is_mm_project():
     try:
-        json_data = open(sublime_project_file_path())
-        data = json.load(json_data)
-        pd = data["folders"][0]["path"]
-        return os.path.isfile(pd+"/config/.settings")
+        return os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings")
     except:
         return False
 
-def get_file_extension():
+def get_file_extension(filename=None):
     try :
-        active_file = get_active_file()
-        if not active_file: return None
-        return active_file.split(".")[-1]
+        if not filename: filename = get_active_file()
+        fn, ext = os.path.splitext(filename)
+        return ext
     except:
         pass
     return None
 
-def is_mm_file():
+def is_mm_file(filename=None):
     try :
-        if not is_mm_project(): return False
-        return os.path.isfile(get_active_file()+"-meta.xml")
+        if is_mm_project():
+            if not filename: 
+                filename = get_active_file()
+            if os.path.exists(filename):
+                settings = sublime.load_settings('mavensmate.sublime-settings')
+                valid_file_extensions = settings.get("mm_apex_file_extensions", [])
+                return get_file_extension(filename) in valid_file_extensions or os.path.isfile(filename+"-meta.xml")
     except:
-        return False
+        pass
+    return False
+
+def is_mm_dir(directory):
+    if is_mm_project():
+        if os.path.isdir(directory):
+            if os.path.basename(directory) == "src" or os.path.basename(directory) == get_project_name() or os.path.basename(os.path.abspath(os.path.join(directory, os.pardir))) == "src":
+                return True
+    return False
+
+def is_browsable_file(filename=None):
+    try :
+        if is_mm_project():
+            if not filename: 
+                filename = get_active_file()
+            if is_mm_file(filename):
+                return os.path.isfile(filename+"-meta.xml")
+    except:
+        pass
+    return False
+
+def is_apex_class_file(filename=None):
+    if not filename: filename = get_active_file()
+    if is_mm_file(filename): 
+        f, ext = os.path.splitext(filename)
+        if ext == ".cls":
+            return True
+    return False
+
+def is_apex_test_file(filename=None):
+    if not filename: filename = get_active_file()
+    if not is_apex_class_file(filename): return False
+    with codecs.open(filename, "r", "utf-8") as content_file:
+        content = content_file.read()
+        p = re.compile("@isTest\s", re.I + re.M)
+        if p.search(content):
+            p = re.compile("\stestMethod\s", re.I + re.M)
+            if p.search(content): return True
+    return False
+
+def is_apex_webservice_file(filename=None):
+    if not filename: filename = get_active_file()
+    if not is_apex_class_file(filename): return False
+    with codecs.open(filename, "r", "utf-8") as content_file:
+        content = content_file.read()
+        p = re.compile("global\s+class\s", re.I + re.M)
+        if p.search(content):
+            p = re.compile("\swebservice\s", re.I + re.M)
+            if p.search(content): return True
+    return False
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
-    return sublime.active_window().folders()[0]
+    folders = sublime.active_window().folders()
+    if len(folders) > 0:
+        return sublime.active_window().folders()[0]
+    else:
+        return mm_workspace()
 
 def mm_workspace():
     settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -475,14 +553,18 @@ def prep_for_search(name):
     return name.replace('_', '')
 
 def start_mavensmate_app():
-    p = subprocess.Popen("pgrep -fl MavensMate", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    p = subprocess.Popen("pgrep -fl \"MavensMate \"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     msg = None
     if p.stdout is not None: 
         msg = p.stdout.readlines()
     elif p.stderr is not None:
         msg = p.stdout.readlines() 
     if msg == '' or len(msg) == 0:
-        os.system("open '"+settings.get('mm_app_location')+"'")
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        if settings != None and settings.get('mm_app_location') != None:
+            os.system("open '"+settings.get('mm_app_location')+"'")
+        else:
+            sublime.error_message("MavensMate is not running, please start it from your Applications folder.")
 
 class UsageReporter(threading.Thread):
     def __init__(self, action):
@@ -653,29 +735,10 @@ class MavensMateTerminalCall(threading.Thread):
         return stripped_string
 
     def submit_payload(self):
-        payload = ''
-        if self.operation == 'edit_project':
-            payload = {
-                'project_name' : self.project_name
-            }
-        elif self.operation == 'upgrade_project':
-            payload = {
-                'project_name' : self.project_name
-            }
-        elif self.operation == 'unit_test' or self.operation == 'execute_apex' or self.operation == 'compile_project':
-            payload = {
-                'project_name' : self.project_name
-            }    
-        elif self.operation == 'compile':
-            payload = {
-                'project_name'  : self.project_name,
-                'files'         : self.params.get('files', [])
-            }
-        elif self.operation == 'index_apex_overlays':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'new_metadata':
+        o = self.operation
+        
+        if o == 'new_metadata':
+            # unique payload parameters
             payload = {
                 'project_name'                  : self.project_name,
                 'api_name'                      : self.params.get('metadata_name', None),
@@ -683,54 +746,31 @@ class MavensMateTerminalCall(threading.Thread):
                 'apex_trigger_object_api_name'  : self.params.get('object_api_name', None),
                 'apex_class_type'               : self.params.get('apex_class_type', None)
             }
-        elif self.operation == 'clean_project':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'deploy':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'refresh':
-            if 'files' in self.params:
-                payload = {
-                    'project_name'  : self.project_name,
-                    'files'         : self.params.get('files', []),
-                }
-            elif 'directories' in self.params:
-                payload = {
-                    'project_name'  : self.project_name,
-                    'directories'   : self.params.get('directories', [])
-                }
+        elif o == 'new_project_from_existing_directory':
+            # no project name
+            payload = self.params
+        else:
+            # common parameters
+            if o == 'new_apex_overlay' or o == 'delete_apex_overlay':
+                payload = self.params
             else:
-                payload = {
-                    'project_name'  : self.project_name,
-                    'directories'   : self.params.get('directories', []),
-                    'files'         : self.params.get('files', [])
-                }
-        elif self.operation == 'open_sfdc_url':
-                payload = {
-                    'project_name'  : self.project_name,
-                    'files'         : self.params.get('files', []),
-                    'type'          : self.params.get('type', "edit")
-                }
-        elif self.operation == 'delete':
-            payload = {
-                'project_name'  : self.project_name,
-                'files'         : self.params.get('files', [])
-            }
-        elif self.operation == 'fetch_logs':
-            payload = {
-                'project_name'  : self.project_name
-            }
-        elif self.operation == 'new_apex_overlay':
-            payload = self.params
+                payload = {}
+
             payload['project_name'] = self.project_name
-        elif self.operation == 'delete_apex_overlay':
-            payload = self.params
-            payload['project_name'] = self.project_name
-        elif self.operation == 'new_project_from_existing_directory':
-            payload = self.params
+
+            #selected metadata
+            if o == 'unit_test':
+                payload['selected'] = self.params.get('selected', [])
+            #selected files
+            if o == 'compile' or o == 'refresh' or o == 'open_sfdc_url' or o == 'delete':
+                payload['files'] = self.params.get('files', [])
+            #directories
+            if o == 'refresh': 
+                payload['directories'] = self.params.get('directories', [])
+
+            #open type
+            if o == 'open_sfdc_url':
+                payload['type'] = self.params.get('type', 'edit')
 
         if type(payload) is dict:
             payload = json.dumps(payload)  
