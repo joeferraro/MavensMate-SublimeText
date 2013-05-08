@@ -439,7 +439,11 @@ def is_apex_webservice_file(filename=None):
 
 def mm_project_directory():
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
-    return sublime.active_window().folders()[0]
+    folders = sublime.active_window().folders()
+    if len(folders) > 0:
+        return sublime.active_window().folders()[0]
+    else:
+        return mm_workspace()
 
 def mm_workspace():
     settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -557,7 +561,10 @@ def start_mavensmate_app():
         msg = p.stdout.readlines() 
     if msg == '' or len(msg) == 0:
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        os.system("open '"+settings.get('mm_app_location')+"'")
+        if settings != None and settings.get('mm_app_location') != None:
+            os.system("open '"+settings.get('mm_app_location')+"'")
+        else:
+            sublime.error_message("MavensMate is not running, please start it from your Applications folder.")
 
 class UsageReporter(threading.Thread):
     def __init__(self, action):
