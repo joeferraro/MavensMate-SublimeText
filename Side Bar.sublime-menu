@@ -6,10 +6,12 @@
 	    	[
 				{ "caption": "Create MavensMate Project", "command": "create_mavens_mate_project", "args": {"dirs": []} },
 				{ "caption": "Compile Selected Files", "command": "compile_selected_files", "args": {"files": []} },
-				{ "caption": "Refresh From Server", "command": "refresh_from_server", "args": {"dirs": [], "files": []} },
-				{ "caption": "Open On Server", "command": "open_sfdc_url" },
+				{ "caption": "Open Files in Web Browser", "command": "open_selected_sfdc_url", "args": {"files": []} },
+				{ "caption": "Open WSDLs in Web Browser", "command": "open_selected_sfdc_wsdl_url", "args": {"files": []} },
+				{ "caption": "Run Apex Tests...", "command": "run_selected_apex_tests", "args": {"files": []} },
 				{ "caption": "Create Resource Bundle(s)", "command": "new_resource_bundle", "args": {"files": []} },
-				{ "caption": "Delete Selected Files from Salesforce Server", "command": "delete_metadata", "args": {"files": []} }
+				{ "caption": "Refresh From Server...", "command": "refresh_from_server", "args": {"dirs": [], "files": []} },
+				{ "caption": "Delete Selected Files from Salesforce Server...", "command": "delete_metadata", "args": {"files": []} }
 	    	]
 	 }
 ]
