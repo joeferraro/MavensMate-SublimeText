@@ -344,11 +344,17 @@ def get_project_name():
         return None
 
 def check_for_workspace():
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if not os.path.exists(settings.get('mm_workspace')):
+    workspace = mm_workspace()
+    if workspace == None or workspace == "":
         #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
-        msg = 'Your mm_workspace directory does not exist. Please create the directory then try your operation again. Thx!'
-        sublime.message_dialog(msg)  
+        msg = 'Your [mm_workspace] property is not set. Open \'MavensMate > Settings > User\' or press \'Cmd+Shift+,\' and set this property to the full path of your workspace. Thx!'
+        sublime.error_message(msg)  
+        raise BaseException
+
+    if not os.path.exists(workspace):
+        #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
+        msg = 'Your [mm_workspace] directory \''+workspace+'\' does not exist. Please create the directory then try your operation again. Thx!'
+        sublime.error_message(msg)  
         raise BaseException
 
 def sublime_project_file_path():
@@ -362,6 +368,9 @@ def sublime_project_file_path():
 
 # check for mavensmate .settings file
 def is_mm_project():
+    workspace = mm_workspace();
+    if workspace == "" or workspace == None or not os.path.exists(workspace):
+        return False
     try:
         return os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings")
     except:
@@ -447,7 +456,6 @@ def mm_project_directory():
 
 def mm_workspace():
     settings = sublime.load_settings('mavensmate.sublime-settings')
-    workspace = ""
     if settings.get('mm_workspace') != None:
         workspace = settings.get('mm_workspace')
     else:
