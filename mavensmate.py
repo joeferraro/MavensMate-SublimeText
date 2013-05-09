@@ -39,6 +39,7 @@ sublime_version = int(float(sublime.version()))
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
+        util.check_for_workspace()
         util.mm_call('new_project', False)
         util.send_usage_statistics('New Project')
 
@@ -167,6 +168,7 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
 #opens a project in the current workspace
 class OpenProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
+        util.check_for_workspace()
         open_projects = []
         try:
             for w in sublime.windows():
