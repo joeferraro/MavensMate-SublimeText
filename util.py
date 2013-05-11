@@ -82,6 +82,14 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     message = 'Handling requested operation...'
     if operation == 'new_metadata':
         message = 'Creating New '+params['metadata_type']+' => ' + params['metadata_name']
+    elif operation == 'synchronize':
+        if 'files' in params and len(params['files'])>0:
+            kind = params['files'][0]
+        elif 'directories' in params and len(params['directories'])>0:
+            kind = params['directories'][0]
+        else:
+            kind = '???'
+        message = 'Synchronizing to Server => ' + kind
     elif operation == 'compile':
         if 'files' in params and len(params['files']) == 1:
             message = 'Compiling => ' + params['files'][0]
@@ -243,19 +251,22 @@ def print_result_message(operation, res, printer, thread):
     elif 'success' in res and res["success"] == False and 'line' in res:
         #this is a response from the apex compile api
         line_col = ""
+        line, col = 1, 1
         if 'line' in res:
-            line_col = ' (Line: '+res['line']
-            mark_line_numbers([int(float(res['line']))], "bookmark")
+            line = int(res['line'])
+            line_col = ' (Line: '+str(line)
+            mark_line_numbers([line], "bookmark")
         if 'column' in res:
-            line_col += ', Column: '+res['column']
-        if len(line_col) > 0:
+            col = int(res['column'])
+            line_col += ', Column: '+str(col)
+        if len(line_col):
             line_col += ')'
 
         #scroll to the line and column of the exception
         if settings.get('mm_compile_scroll_to_error', True) and not thread == None and os.path.exists(thread.active_file):
             #open file, if already open it will bring it to focus
             view = sublime.active_window().open_file(thread.active_file)
-            pt = view.text_point(int(res['line'])-1, int(res['column'])-1)
+            pt = view.text_point(line-1, col-1)
             view.sel().clear()
             view.sel().add(sublime.Region(pt))
             view.show(pt)
@@ -376,6 +387,9 @@ def get_file_extension(filename=None):
         pass
     return None
 
+def get_apex_file_properties():
+    return parse_json_from_file(mm_project_directory()+"/config/.apex_file_properties")
+
 def is_mm_file(filename=None):
     try :
         if is_mm_project():
@@ -384,7 +398,8 @@ def is_mm_file(filename=None):
             if os.path.exists(filename):
                 settings = sublime.load_settings('mavensmate.sublime-settings')
                 valid_file_extensions = settings.get("mm_apex_file_extensions", [])
-                return get_file_extension(filename) in valid_file_extensions or os.path.isfile(filename+"-meta.xml")
+                val = get_file_extension(filename) in valid_file_extensions or os.path.isfile(filename+"-meta.xml")
+                return val
     except:
         pass
     return False
@@ -402,6 +417,10 @@ def is_browsable_file(filename=None):
             if not filename: 
                 filename = get_active_file()
             if is_mm_file(filename):
+                basename = os.path.basename(filename)
+                data = get_apex_file_properties()
+                if basename in data:
+                    return True
                 return os.path.isfile(filename+"-meta.xml")
     except:
         pass
@@ -750,6 +769,30 @@ class MavensMateTerminalCall(threading.Thread):
             # no project name
             payload = self.params
         else:
+
+            params = {
+                'selected': [
+                    'unit_test',
+                    'deploy'
+                ],
+                'files': [
+                    'compile',
+                    'synchronize',
+                    'refresh',
+                    'refresh_properties',
+                    'open_sfdc_url',
+                    'delete'
+                ],
+                'directories': [
+                    'refresh',
+                    'synchronize',
+                    'refresh_properties'
+                ],
+                'type': [
+                    'open_sfdc_url'
+                ]
+            }
+
             # common parameters
             if o == 'new_apex_overlay' or o == 'delete_apex_overlay':
                 payload = self.params
@@ -758,18 +801,17 @@ class MavensMateTerminalCall(threading.Thread):
 
             payload['project_name'] = self.project_name
 
-            #selected metadata
-            if o == 'unit_test':
-                payload['selected'] = self.params.get('selected', [])
             #selected files
-            if o == 'compile' or o == 'refresh' or o == 'open_sfdc_url' or o == 'delete':
+            if o in params['files']:
                 payload['files'] = self.params.get('files', [])
             #directories
-            if o == 'refresh': 
+            if o in params['directories']: 
                 payload['directories'] = self.params.get('directories', [])
-
+            #selected metadata
+            if o in params['selected']:
+                payload['selected'] = self.params.get('selected', [])
             #open type
-            if o == 'open_sfdc_url':
+            if o in params['type']:
                 payload['type'] = self.params.get('type', 'edit')
 
         if type(payload) is dict:

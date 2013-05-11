@@ -365,8 +365,70 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
                     return True
         return False
 
+class RefreshActivePropertiesFromServerCommand(sublime_plugin.WindowCommand):
+    def run (self):
+        if sublime.ok_cancel_dialog("Are you sure you want to overwrite the selected files' apex properties from Salesforce?", "Refresh Apex Properties"):
+            params = {
+                "files"         : [util.get_active_file()]
+            }
+            util.mm_call('refresh_properties', context=self, params=params)
+            util.send_usage_statistics('Refresh Active Properties From Server')
+
+    def is_visible(self):
+        if not util.is_mm_file():
+            return False
+        filename = util.get_active_file()
+        basename = os.path.basename(filename)
+        data = util.get_apex_file_properties()
+        if not basename in data:
+            return True
+        elif 'conflict' in data[basename] and data[basename]['conflict'] == True:
+            return True
+        else:
+            return False
+
+class RefreshPropertiesFromServerCommand(sublime_plugin.WindowCommand):
+    def run (self, dirs, files):
+        if sublime.ok_cancel_dialog("Are you sure you want to overwrite the selected files' apex properties from Salesforce?", "Refresh Apex Properties"):
+            if dirs != None and type(dirs) is list and len(dirs) > 0:
+                params = {
+                    "directories"   : dirs
+                }
+            elif files != None and type(files) is list and len(files) > 0:
+                params = {
+                    "files"         : files
+                }
+            util.mm_call('refresh_properties', context=self, params=params)
+            util.send_usage_statistics('Refresh Selected Properties From Server')
+
+    def is_visible(self, dirs, files):
+        if not util.is_mm_project():
+            return False
+        if files != None and type(files) is list and len(files) > 0:
+            filename = files[0]
+            basename = os.path.basename(filename)
+            data = util.get_apex_file_properties()
+            if not basename in data:
+                return True
+            elif 'conflict' in data[basename] and data[basename]['conflict'] == True:
+                return True
+            else:
+                return False
+        return True
+
+    def is_enabled(self, dirs, files):
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            for d in dirs:
+                if util.is_mm_dir(d):
+                    return True
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f):
+                    return True
+        return False
+
 #refreshes the currently active file from the server
-class RefreshActiveFile(sublime_plugin.WindowCommand):
+class RefreshActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to overwrite this file's contents from Salesforce?", "Refresh"):
             params = {
@@ -377,6 +439,44 @@ class RefreshActiveFile(sublime_plugin.WindowCommand):
 
     def is_visible(self):
         return util.is_mm_file()
+
+#refreshes the currently active file from the server
+class SynchronizeActiveMetadataCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        params = {
+            "files"         : [util.get_active_file()]
+        }
+        util.mm_call('synchronize', context=self, params=params)
+        util.send_usage_statistics('Synchronized Active File to Server')
+
+    def is_visible(self):
+        return util.is_mm_file()
+
+
+#opens the apex class, trigger, component or page on the server
+class SynchronizeSelectedMetadataCommand(sublime_plugin.WindowCommand):
+    def run (self, dirs, files):
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            params = {
+                "directories"   : dirs
+            }
+        elif files != None and type(files) is list and len(files) > 0:
+            params = {
+                "files"         : files
+            }
+        util.mm_call('synchronize', context=self, params=params)
+        util.send_usage_statistics('Synchronized Selected Metadata With Server')
+
+    def is_visible(self, dirs, files):
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            for d in dirs:
+                if util.is_mm_dir(d):
+                    return True
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                if util.is_mm_file(f):
+                    return True
+        return False
 
 #opens the apex class, trigger, component or page on the server
 class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
