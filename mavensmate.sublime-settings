@@ -53,6 +53,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//the location of the mm command line tool (must be inside MavensMate.app)
 	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
 
+	//the location of your Sublime Text install
+	"mm_plugin_client_location" : "/Applications",
+
 	"mm_apex_file_extensions": [
 		".page",
 		".component",
