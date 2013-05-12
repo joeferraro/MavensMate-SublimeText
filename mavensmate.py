@@ -262,7 +262,7 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
-    def run(self, edit, api_name="ApexPage", class_type="default"): 
+    def run(self, edit, api_name="MyPage", class_type="default"): 
         templates = get_merged_apex_templates("ApexPage")
         sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Page')
