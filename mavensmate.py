@@ -283,7 +283,7 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
-    def run(self, edit, api_name="ApexComponent", class_type="default"): 
+    def run(self, edit, api_name="MyComponent", class_type="default"): 
         templates = get_merged_apex_templates("ApexComponent")
         sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Component')
