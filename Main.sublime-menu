@@ -55,11 +55,7 @@
  	         		{
 	         			"caption": "Index Metadata",
 	         			"command": "index_metadata"
-	         		},
-	         		{
-	         			"caption": "Generate Apex Class Docs",
-	         			"command": "generate_apex_class_docs"
- 	         		}
+	         		}
 	         	]
 	     	},
 	     	{
