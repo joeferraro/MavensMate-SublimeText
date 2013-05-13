@@ -272,7 +272,7 @@ def print_result_message(operation, res, printer, thread):
             view.show(pt)
 
         printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
-    elif 'success' in res and to_bool(res['success']) == True and 'Messages' in res:
+    elif 'success' in res and to_bool(res['success']) == True and 'Messages' in res and len(res['Messages']) > 0:
         printer.write('\n[Operation completed Successfully - With Compile Errors]' + '\n')
         printer.write('\n[COMPILE ERRORS] - Count:' )
         for m in res['Messages']:
