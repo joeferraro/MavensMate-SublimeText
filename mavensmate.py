@@ -81,7 +81,6 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        #TODO check for org connections before allowing deploy ui to open
         util.mm_call('deploy', False)
         util.send_usage_statistics('Deploy to Server')
 
