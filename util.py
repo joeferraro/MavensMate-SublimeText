@@ -817,7 +817,8 @@ class MavensMateTerminalCall(threading.Thread):
                 payload['directories'] = self.params.get('directories', [])
             #selected metadata
             if o in params['selected']:
-                payload['selected'] = self.params.get('selected', [])
+                if self.params != None:
+                    payload['selected'] = self.params.get('selected', [])
             #open type
             if o in params['type']:
                 payload['type'] = self.params.get('type', 'edit')
