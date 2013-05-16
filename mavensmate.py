@@ -241,7 +241,7 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
     def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"): 
         templates = get_merged_apex_templates("ApexTrigger")
-        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject+", "+template, self.on_input, None, None)
+        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Apex Trigger')
 
     def on_input(self, input):
@@ -257,7 +257,7 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         util.mm_call('new_metadata', params=options) 
 
     def is_enabled(command):
-        return util.is_mm_project()
+        return util.is_mm_project() 
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
