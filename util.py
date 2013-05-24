@@ -190,7 +190,7 @@ def handle_result(operation, printer, result, thread):
     try:
         result = json.loads(result)
         print_result_message(operation, result, printer, thread) 
-        if operation == 'new_metadata' and to_bool(result['success']) == True:
+        if operation == 'new_metadata' and 'success' in result and to_bool(result['success']) == True:
             if 'messages' in result:
                 if type(result['messages']) is not list:
                     result['messages'] = [result['messages']]
@@ -200,9 +200,13 @@ def handle_result(operation, printer, result, thread):
                         location = mm_project_directory() + "/" + file_name.replace('unpackaged/', 'src/')
                         sublime.active_window().open_file(location)
                         break
-        if to_bool(result['success']) == True:
+        if 'success' in result and to_bool(result['success']) == True:
             if printer != None:
                 printer.hide()  
+        elif 'State' in result and result['State'] == 'Completed':
+            #tooling api
+            if printer != None:
+                printer.hide()
         if operation == 'refresh':            
             sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
             clear_marked_line_numbers()
@@ -217,8 +221,26 @@ def handle_result(operation, printer, result, thread):
 
 #prints the result of the mm operation, can be a string or a dict
 def print_result_message(operation, res, printer, thread):
-    #print 'result of operation ', res
-    if to_bool(res['success']) == False and 'messages' in res:
+    if 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
+        #here we're parsing a response from the tooling endpoint
+        errors = json.loads(res['CompilerErrors'])
+        if type(errors) is not list:
+            errors = [errors]
+        for e in errors:
+            line_col = ""
+            line, col = 1, 1
+            if 'line' in e:
+                line = int(e['line'])
+                line_col = ' (Line: '+str(line)
+                mark_line_numbers([line], "bookmark")
+            if 'column' in e:
+                col = int(e['column'])
+                line_col += ', Column: '+str(col)
+            if len(line_col):
+                line_col += ')'
+            printer.write('\n[COMPILE FAILED]: ' + e['problem'] + line_col + '\n')
+
+    elif 'success' in res and to_bool(res['success']) == False and 'messages' in res:
         #here we're parsing a response from the metadata endpoint
         line_col = ""
         msg = None
@@ -279,9 +301,9 @@ def print_result_message(operation, res, printer, thread):
             printer.write('\n' + 'FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber'] + '\n')
     elif 'success' in res and to_bool(res['success']) == True:
         printer.write('\n[Operation completed Successfully]' + '\n')
-    elif to_bool(res['success']) == False and 'body' in res:
+    elif 'success' in res and to_bool(res['success']) == False and 'body' in res:
         printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
-    elif to_bool(res['success']) == False:
+    elif 'success' in res and to_bool(res['success']) == False:
         printer.write('\n[OPERATION FAILED]' + '\n')
     else:
         printer.write('\n[Operation Completed Successfully]' + '\n')    
@@ -508,7 +530,9 @@ def clear_marked_line_numbers(mark_type="compile_issue"):
 def compile_callback(result):
     try:
         result = json.loads(result)
-        if result['success'] == True:
+        if 'success' in result and result['success'] == True:
+            clear_marked_line_numbers()
+        elif 'State' in result and result['State'] == 'Completed':
             clear_marked_line_numbers()
     except:
         print('[MAVENSMATE] Issue handling compile result')
