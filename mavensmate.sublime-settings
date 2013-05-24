@@ -53,8 +53,20 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//the location of the mm command line tool (must be inside MavensMate.app)
 	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
 
+	//specify a path for custom wsdl files here. wsdls must be named: apex.xml, partner.xml, metadata.xml, tooling.xml
+	"mm_wsdl_path" : "",
+
 	//the location of your Sublime Text install
 	"mm_plugin_client_location" : "/Applications",
+
+	//set to true to use the tooling api to compile apex metadata
+	"mm_use_tooling_api" : false,
+
+	//set to true if you want a history of your executed apex scripts in project/apex-scripts
+	"mm_log_anonymous_apex" : true,
+
+	//set to true to play sounds
+	"mm_play_sounds" : true,
 
 	"mm_apex_file_extensions": [
 		".page",
