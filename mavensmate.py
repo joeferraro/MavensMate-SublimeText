@@ -56,12 +56,18 @@ class EditProjectCommand(sublime_plugin.ApplicationCommand):
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         active_file = util.get_active_file()
-        if os.path.exists(active_file):
-            filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
-            params = {
-                "selected"         : [filename]
-            }
-        else:
+        try:
+            if os.path.exists(active_file):
+                filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
+                if ext == '.cls':
+                    params = {
+                        "selected"         : [filename]
+                    }
+                else:
+                    params = {}
+            else:
+                params = {}
+        except:
             params = {}
         util.mm_call('unit_test', context=command, params=params)
         util.send_usage_statistics('Apex Unit Testing')
