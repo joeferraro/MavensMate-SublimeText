@@ -7,7 +7,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 */
 
 {
-	//set to location where you wish your MavensMate project to reside (must be an existing directory)
+	//set to absolute location where you wish your MavensMate project to reside
+	//if the location does not exist, MavensMate will attempt to create it
 	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
 	"mm_workspace" : "",
 
@@ -59,13 +60,13 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//the location of your Sublime Text install
 	"mm_plugin_client_location" : "/Applications",
 
-	//set to true to use the tooling api to compile apex metadata
-	"mm_use_tooling_api" : false,
+	//set to true to use the tooling api to compile apex metadata (beta)
+	"mm_use_tooling_api" : true,
 
-	//set to true if you want a history of your executed apex scripts in project/apex-scripts
+	//set to true if you want a history of your executed apex scripts in project/apex-scripts (beta)
 	"mm_log_anonymous_apex" : true,
 
-	//set to true to play sounds
+	//set to true to play notification sounds
 	"mm_play_sounds" : true,
 
 	"mm_apex_file_extensions": [
