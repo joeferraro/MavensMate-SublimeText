@@ -405,7 +405,12 @@ def is_mm_project():
     if workspace == "" or workspace == None or not os.path.exists(workspace):
         return False
     try:
-        return os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings")
+        if os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings"):
+            return True
+        elif os.path.isfile(sublime.active_window().folders()[0]+"/config/settings.yaml"):
+            return True 
+        else:
+            return False
     except:
         return False
 
