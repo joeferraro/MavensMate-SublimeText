@@ -880,229 +880,201 @@ class MavensMateCompletions(sublime_plugin.EventListener):
         if not ch == '.': return []
 
         word = view.substr(view.word(pt))
-        #print '------'
-        #print "trying to find instantiation of: " + word
+
         fn, ext = os.path.splitext(view.file_name())
-        if (ext == '.cls' or ext == '.trigger') and word != None and word != '':
-            _completions = []
-            lower_prefix = word.lower()
-            if os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"): #=> apex static methods
-                prefix = prefix.lower()
-                json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
+        
+        if ext != '.cls' and ext != '.trigger' and (word == None or word == ''):
+            return []
+
+        ##OK START COMPLETIONS
+
+        _completions = []
+        lower_prefix = word.lower()
+        
+        ## HANDLE APEX STATIC METHODS (String.valueOf)
+        if os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"): 
+            prefix = prefix.lower()
+            json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
+            data = json.load(json_data)
+            json_data.close()
+            pd = data["static_methods"]
+            for method in pd:
+                _completions.append((method, method))
+            return sorted(_completions)
+        
+        ## HANDLE CUSTOM APEX CLASS STATIC METHODS (MyCustomClass.some_static_method)
+        elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+word+".cls"):
+            search_name = util.prep_for_search(word)
+            _completions = util.get_apex_completions(search_name) 
+            return sorted(_completions)  
+
+        ## HANDLE CUSTOM APEX INSTANCE METHOD ## 
+        else: 
+            current_line = view.rowcol(pt)
+            current_line_index = current_line[0]
+            current_object = None
+            region_from_top_to_current_word = sublime.Region(0, pt + 1)
+            lines = view.lines(region_from_top_to_current_word)
+            object_name_lower = ''
+            for line in reversed(lines):
+                line_contents = view.substr(line)
+                line_contents = line_contents.replace("\t", "").strip()
+                
+                #print 'examaning line: ' + line_contents
+
+                if line_contents.find(word) == -1: continue #skip the line if our word isn't in the line
+                if line_contents.strip().startswith('/*') and line_contents.strip().endswith('*/'): continue #skip the line if it's a comment
+                if line_contents.startswith('//'): continue #skip line line if it's a comment
+                if line_contents.startswith(word+"."): continue #skip line if the variable starts it with assignment
+
+                import re
+                pattern = "'(.* "+word+" .*)'"
+                m = re.search(pattern, line_contents)
+                if m != None: 
+                    #print 'skipping because word found inside string'
+                    continue #skip if we match our word inside of an Apex string
+
+                pattern = "'("+word+")'"
+                m = re.search(pattern, line_contents)
+                if m != None: 
+                    #print 'skipping because word found inside exact string'
+                    continue #skip if we match our word, in an exact Apex string
+
+                pattern = re.compile("(system.debug.*\(.*"+word+")", re.IGNORECASE)
+                m = re.search(pattern, line_contents)
+                if m != None: 
+                    #print 'skipping because word found inside system.debug'
+                    continue #skip if we match our word inside system.debug
+
+                #STILL NEED TO WORK ON THIS
+                #String bat;
+                #foo.bar(foo, bar, bat)
+                #bat. #=> this will be found in the parens above
+                #for (Opportunity o : opps)
+                pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
+                m = re.search(pattern, line_contents)
+                if m != None: 
+                    #print 'skipping because word found inside parens'
+                    continue #skip if we match our word inside parens                
+
+                #TODO: figure out a way to use word boundaries here to handle
+                #for (Opportunity o: opps) {
+                #
+                #}
+                #word boundary seemingly is only required on the left side
+                # pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
+                # m = re.search(pattern, line_contents)
+                # if m != None: continue #skip if we match our word inside parens TODO?
+
+                #pattern = "(.*:.*"+word+")"
+                pattern = "(\[.*:.*"+word+".*\])"
+                m = re.search(pattern, line_contents)
+                if m != None:
+                    #print 'skipping because word found inside query'
+                    continue #skip if being bound in a query
+
+                #print "contents of line before strip: " + line_contents
+
+                object_name = None
+                #object_name = line_contents[0:line_contents.find(word)]
+                try:
+                    #object_name = line_contents[0:re.search(r"\b%s\b" % word, line_contents).start()]
+                    object_name = line_contents[0:re.search(r"\b%s(\:)?\b" % word, line_contents).start()]
+                except: continue
+                object_name = object_name.strip()
+
+                #print "contents of line after strip: " + object_name
+
+                pattern = re.compile("^map\s*<", re.IGNORECASE)
+                m = re.search(pattern, line_contents)
+                if m != None:
+                    object_name_lower = "map"
+                    object_name = "Map"
+                    #print "our object: " + object_name
+                    break
+
+                pattern = re.compile("^list\s*<", re.IGNORECASE)
+                m = re.search(pattern, line_contents)
+                if m != None:
+                    object_name_lower = "list"
+                    object_name = "List"
+                    #print "our object: " + object_name
+                    break
+
+                pattern = re.compile("^set\s*<", re.IGNORECASE)
+                m = re.search(pattern, line_contents)
+                if m != None:
+                    object_name_lower = "set"
+                    object_name = "Set"
+                    #print "our object: " + object_name
+                    break                        
+
+                if object_name.endswith(","): continue #=> we're guessing the word is method argument
+                if object_name.endswith("("): continue #=> we're guessing the word is method argument
+                if len(object_name) == 0: continue
+
+                object_name_lower = object_name.lower()
+                object_name_lower = object_name_lower.strip()
+                object_name_lower = object_name_lower[::-1] #=> reverses line
+                parts = object_name_lower.split(" ")
+                object_name_lower = parts[0]
+                object_name_lower = object_name_lower[::-1] #=> reverses line
+                if "this." in object_name_lower: continue
+                object_name_lower = re.sub(r'\W+', '', object_name_lower) #remove non alphanumeric chars
+
+                #print "our object: " + object_name_lower
+
+                if object_name_lower in apex_reserved.keywords: continue
+
+                object_name = object_name.strip()
+                object_name = object_name[::-1] #=> reverses line
+                parts = object_name.split(" ")
+                object_name = parts[0]
+                object_name = object_name[::-1] #=> reverses line
+                object_name = re.sub(r'\W+', '', object_name) #remove non alphanumeric chars
+                #print "our object capped: " + object_name
+
+                if object_name_lower != None and object_name_lower != "": break
+                #need to handle with word is found within a multiline comment
+            if os.path.isfile(mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
+                json_data = open(mm_dir+"/support/lib/apex/"+object_name_lower+".json")
                 data = json.load(json_data)
                 json_data.close()
-                pd = data["static_methods"]
+                pd = data["instance_methods"]
                 for method in pd:
                     _completions.append((method, method))
                 return sorted(_completions)
-            elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+word+".cls"): #=> custom apex class static methods
-                search_name = util.prep_for_search(word)
-                #print search_name
-                #print 'looking for class def in: ' + util.mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
-                if os.path.isfile(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
-                    object_dom = parse(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
-                    for node in object_dom.getElementsByTagName('memberdef'):
-                        #print node.getAttribute("static")
-                        if node.getAttribute("static") == "No": continue
-                        member_type = ''
-                        member_name = ''
-                        member_args = ''
-                        for child in node.childNodes:                            
-                            if child.nodeName != 'name' and child.nodeName != 'type' and child.nodeName != 'argsstring': continue
-                            if child.nodeName == 'name':
-                                if child.firstChild != None: member_name = child.firstChild.nodeValue
-                            elif child.nodeName == 'type':
-                                if child.firstChild != None: member_type = child.firstChild.nodeValue
-                            elif child.nodeName == 'argsstring':
-                                if child.firstChild != None: member_args = child.firstChild.nodeValue   
-                            #print member_args 
-                            if member_name != '' and member_name != 'set' and member_name != 'get':
-                                _completions.append((member_name+member_args+" \t"+member_type, member_name + member_args))
-                    return sorted(_completions)            
-            else: 
-                current_line = view.rowcol(pt)
-                current_line_index = current_line[0]
-                current_object = None
-                region_from_top_to_current_word = sublime.Region(0, pt + 1)
-                lines = view.lines(region_from_top_to_current_word)
-                object_name_lower = ''
-                for line in reversed(lines):
-                    line_contents = view.substr(line)
-                    line_contents = line_contents.replace("\t", "").strip()
-                    
-                    #print 'examaning line: ' + line_contents
+            elif os.path.isfile(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
+                object_dom = parse(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object")
+                for node in object_dom.getElementsByTagName('fields'):
+                    field_name = ''
+                    field_type = ''
+                    for child in node.childNodes:                            
+                        if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                        if child.nodeName == 'fullName':
+                            field_name = child.firstChild.nodeValue
+                        elif child.nodeName == 'type':
+                            field_type = child.firstChild.nodeValue
+                    _completions.append((field_name+" \t"+field_type, field_name))
+                return sorted(_completions)
+            elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
+                object_dom = parse(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object")
+                for node in object_dom.getElementsByTagName('fields'):
+                    field_name = ''
+                    field_type = ''
+                    for child in node.childNodes:                            
+                        if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                        if child.nodeName == 'fullName':
+                            field_name = child.firstChild.nodeValue
+                        elif child.nodeName == 'type':
+                            field_type = child.firstChild.nodeValue
+                    _completions.append((field_name+" \t"+field_type, field_name))
+                return sorted(_completions)
+            
+            elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
+                search_name = util.prep_for_search(object_name)
+                util.get_apex_completions(search_name)
 
-                    if line_contents.find(word) == -1: continue #skip the line if our word isn't in the line
-                    if line_contents.strip().startswith('/*') and line_contents.strip().endswith('*/'): continue #skip the line if it's a comment
-                    if line_contents.startswith('//'): continue #skip line line if it's a comment
-                    if line_contents.startswith(word+"."): continue #skip line if the variable starts it with assignment
-
-                    import re
-                    pattern = "'(.* "+word+" .*)'"
-                    m = re.search(pattern, line_contents)
-                    if m != None: 
-                        #print 'skipping because word found inside string'
-                        continue #skip if we match our word inside of an Apex string
-
-                    pattern = "'("+word+")'"
-                    m = re.search(pattern, line_contents)
-                    if m != None: 
-                        #print 'skipping because word found inside exact string'
-                        continue #skip if we match our word, in an exact Apex string
-
-                    pattern = re.compile("(system.debug.*\(.*"+word+")", re.IGNORECASE)
-                    m = re.search(pattern, line_contents)
-                    if m != None: 
-                        #print 'skipping because word found inside system.debug'
-                        continue #skip if we match our word inside system.debug
-
-                    #STILL NEED TO WORK ON THIS
-                    #String bat;
-                    #foo.bar(foo, bar, bat)
-                    #bat. #=> this will be found in the parens above
-                    #for (Opportunity o : opps)
-                    pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
-                    m = re.search(pattern, line_contents)
-                    if m != None: 
-                        #print 'skipping because word found inside parens'
-                        continue #skip if we match our word inside parens                
-
-                    #TODO: figure out a way to use word boundaries here to handle
-                    #for (Opportunity o: opps) {
-                    #
-                    #}
-                    #word boundary seemingly is only required on the left side
-                    # pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
-                    # m = re.search(pattern, line_contents)
-                    # if m != None: continue #skip if we match our word inside parens TODO?
-
-                    #pattern = "(.*:.*"+word+")"
-                    pattern = "(\[.*:.*"+word+".*\])"
-                    m = re.search(pattern, line_contents)
-                    if m != None:
-                        #print 'skipping because word found inside query'
-                        continue #skip if being bound in a query
-
-                    #print "contents of line before strip: " + line_contents
-
-                    object_name = None
-                    #object_name = line_contents[0:line_contents.find(word)]
-                    try:
-                        #object_name = line_contents[0:re.search(r"\b%s\b" % word, line_contents).start()]
-                        object_name = line_contents[0:re.search(r"\b%s(\:)?\b" % word, line_contents).start()]
-                    except: continue
-                    object_name = object_name.strip()
-
-                    #print "contents of line after strip: " + object_name
-
-                    pattern = re.compile("^map\s*<", re.IGNORECASE)
-                    m = re.search(pattern, line_contents)
-                    if m != None:
-                        object_name_lower = "map"
-                        object_name = "Map"
-                        #print "our object: " + object_name
-                        break
-
-                    pattern = re.compile("^list\s*<", re.IGNORECASE)
-                    m = re.search(pattern, line_contents)
-                    if m != None:
-                        object_name_lower = "list"
-                        object_name = "List"
-                        #print "our object: " + object_name
-                        break
-
-                    pattern = re.compile("^set\s*<", re.IGNORECASE)
-                    m = re.search(pattern, line_contents)
-                    if m != None:
-                        object_name_lower = "set"
-                        object_name = "Set"
-                        #print "our object: " + object_name
-                        break                        
-
-                    if object_name.endswith(","): continue #=> we're guessing the word is method argument
-                    if object_name.endswith("("): continue #=> we're guessing the word is method argument
-                    if len(object_name) == 0: continue
-
-                    object_name_lower = object_name.lower()
-                    object_name_lower = object_name_lower.strip()
-                    object_name_lower = object_name_lower[::-1] #=> reverses line
-                    parts = object_name_lower.split(" ")
-                    object_name_lower = parts[0]
-                    object_name_lower = object_name_lower[::-1] #=> reverses line
-                    if "this." in object_name_lower: continue
-                    object_name_lower = re.sub(r'\W+', '', object_name_lower) #remove non alphanumeric chars
-
-                    #print "our object: " + object_name_lower
-
-                    if object_name_lower in apex_reserved.keywords: continue
-
-                    object_name = object_name.strip()
-                    object_name = object_name[::-1] #=> reverses line
-                    parts = object_name.split(" ")
-                    object_name = parts[0]
-                    object_name = object_name[::-1] #=> reverses line
-                    object_name = re.sub(r'\W+', '', object_name) #remove non alphanumeric chars
-                    #print "our object capped: " + object_name
-
-                    if object_name_lower != None and object_name_lower != "": break
-                    #need to handle with word is found within a multiline comment
-                if os.path.isfile(mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
-                    json_data = open(mm_dir+"/support/lib/apex/"+object_name_lower+".json")
-                    data = json.load(json_data)
-                    json_data.close()
-                    pd = data["instance_methods"]
-                    for method in pd:
-                        _completions.append((method, method))
-                    return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
-                    object_dom = parse(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object")
-                    for node in object_dom.getElementsByTagName('fields'):
-                        field_name = ''
-                        field_type = ''
-                        for child in node.childNodes:                            
-                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                            if child.nodeName == 'fullName':
-                                field_name = child.firstChild.nodeValue
-                            elif child.nodeName == 'type':
-                                field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" \t"+field_type, field_name))
-                    return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
-                    object_dom = parse(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object")
-                    for node in object_dom.getElementsByTagName('fields'):
-                        field_name = ''
-                        field_type = ''
-                        for child in node.childNodes:                            
-                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                            if child.nodeName == 'fullName':
-                                field_name = child.firstChild.nodeValue
-                            elif child.nodeName == 'type':
-                                field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" \t"+field_type, field_name))
-                    return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
-                    search_name = util.prep_for_search(object_name)
-                    #print search_name
-                    #print 'looking for class def in: ' + util.mm_project_directory()+"/config/.class_docs/xml/class_"+search_name+".xml"
-                    if os.path.isfile(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml"):
-                        object_dom = parse(util.mm_project_directory()+"/config/.class_docs/xml/"+search_name+".xml")
-                        for node in object_dom.getElementsByTagName('memberdef'):
-                            if node.getAttribute("static") == "Yes": continue
-                            member_type = ''
-                            member_name = ''
-                            member_args = ''
-                            for child in node.childNodes:                            
-                                if child.nodeName != 'name' and child.nodeName != 'type' and child.nodeName != 'argsstring': continue
-                                if child.nodeName == 'name':
-                                    if child.firstChild != None: member_name = child.firstChild.nodeValue
-                                elif child.nodeName == 'type':
-                                    if child.firstChild != None: member_type = child.firstChild.nodeValue
-                                elif child.nodeName == 'argsstring':
-                                    if child.firstChild != None: member_args = child.firstChild.nodeValue   
-                                #print member_args 
-                                if member_name != '' and member_name != 'set' and member_name != 'get':
-                                    _completions.append((member_name+member_args+" \t"+member_type, member_name + member_args))
-                        return sorted(_completions)
 
 #uses doxygen to generate xml-based documentation which assists in code completion/suggest functionality in MavensMate
 class GenerateApexClassDocsCommand(sublime_plugin.WindowCommand):
