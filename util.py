@@ -434,8 +434,10 @@ def is_mm_file(filename=None):
             if os.path.exists(filename):
                 settings = sublime.load_settings('mavensmate.sublime-settings')
                 valid_file_extensions = settings.get("mm_apex_file_extensions", [])
-                val = get_file_extension(filename) in valid_file_extensions or os.path.isfile(filename+"-meta.xml")
-                return val
+                if get_file_extension(filename) in valid_file_extensions:
+                    return True
+                elif "-meta.xml" in filename:
+                    return True
     except:
         pass
     return False
@@ -512,8 +514,6 @@ def mark_overlays(lines):
     mark_line_numbers(lines, "dot", "overlay")
 
 def write_overlays(overlay_result):
-    #print 'writing overlays >>>'
-    #print(overlay_result)
     result = json.loads(overlay_result)
     if result["totalSize"] > 0:
         for r in result["records"]:
