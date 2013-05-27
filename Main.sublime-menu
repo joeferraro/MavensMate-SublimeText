@@ -64,6 +64,10 @@
 	         	"children":
 	         	[
  	         		{
+	         			"caption": "Index Apex File Properties",
+	         			"command": "index_apex_file_properties"
+	         		},
+ 	         		{
 	         			"caption": "Index Apex Execution Overlays",
 	         			"command": "index_apex_overlays"
 	         		}

@@ -658,6 +658,15 @@ class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
+#refreshes the currently active file from the server
+class IndexApexFileProperties(sublime_plugin.WindowCommand):
+    def run(self):
+        util.mm_call('index_apex', False, context=self)
+        util.send_usage_statistics('Index Apex File Properties')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #indexes the meta data based on packages.xml
 class IndexMetadataCommand(sublime_plugin.WindowCommand):
     def run(self):
