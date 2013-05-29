@@ -135,7 +135,9 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     elif operation == 'fetch_logs':
         message = 'Fetching Apex Logs'  
     elif operation == 'project_from_existing_directory':
-        message = 'Opening New Project Dialog'   
+        message = 'Opening New Project Dialog'  
+    elif operation == 'index_apex':
+        message = 'Indexing Project Apex Metadata.'  
         
     if mm_debug_panel:
         printer.write('\n'+message+'\n')
@@ -549,10 +551,10 @@ def print_debug_panel_message(message):
 
 def get_apex_completions(search_name):
     completions = []
-    if not os.path.exists(os.path.join(util.mm_project_directory(), 'config', '.apex_file_properties')):
+    if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
         return []
 
-    apex_props = util.parse_json_from_file(os.path.join(util.mm_project_directory(), "config", ".apex_file_properties"))
+    apex_props = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".apex_file_properties"))
 
     for p in apex_props.keys():
         if p == search_name+".cls" and 'symbolTable' in apex_props[p]:
@@ -569,7 +571,7 @@ def get_apex_completions(search_name):
                     if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
                         for p in c['parameters']:
                             params += p['name'] + " (" + p["type"] + ")"
-                    completions.append((c["visibility"] + " " + c["name"] + " " + params, c["name"]))
+                    completions.append((c["visibility"] + " " + c["name"]+"("+params+") "+c['returnType'], c["name"]))
     return sorted(completions) 
 
 #parses the input from sublime text

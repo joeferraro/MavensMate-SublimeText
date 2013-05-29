@@ -890,9 +890,20 @@ class MavensMateCompletions(sublime_plugin.EventListener):
 
         _completions = []
         lower_prefix = word.lower()
-        
+
+        if lower_prefix == 'this':
+            full_file_path = os.path.splitext(util.get_active_file())[0]
+            base = os.path.basename(full_file_path)
+            file_name = os.path.splitext(base)[0]
+            if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",file_name+".cls")):
+                search_name = util.prep_for_search(file_name)
+                _completions = util.get_apex_completions(search_name) 
+                return sorted(_completions)
+            else:
+                return []
+
         ## HANDLE APEX STATIC METHODS (String.valueOf)
-        if os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"): 
+        elif os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"): 
             prefix = prefix.lower()
             json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
             data = json.load(json_data)
@@ -1073,7 +1084,8 @@ class MavensMateCompletions(sublime_plugin.EventListener):
             
             elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
                 search_name = util.prep_for_search(object_name)
-                util.get_apex_completions(search_name)
+                _completions = util.get_apex_completions(search_name)
+                return sorted(_completions)
 
 
 #uses doxygen to generate xml-based documentation which assists in code completion/suggest functionality in MavensMate
