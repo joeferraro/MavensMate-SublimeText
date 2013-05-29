@@ -1,0 +1,17 @@
+{
+  "static_methods": [
+    "toPdf(String_s)", 
+    "valueOf(String_s)",
+    "isRunningTest()",
+    "loadData(Schema.SObjectType_sObjectToken, String_resourceName)",
+    "setCurrentPage(PageReference_page)",
+    "setCurrentPageReference(PageReference_page)",
+    "setFixedSearchResults(ID[]_opt_set_search_results)",
+    "setMock(Type_interfaceType, Object_instance)",
+    "setReadOnlyApplicationMode(Boolean_applicationMode)",
+    "startTest()",
+    "stopTest()",
+    "testInstall(Install_HandlerinstallImp, Version_ver, Boolean_isPush)",
+    "testUninstall(UninstallHandler_uninstImp)"
+  ]
+}
