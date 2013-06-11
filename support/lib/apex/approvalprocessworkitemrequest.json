@@ -1,0 +1,12 @@
+{
+  "instance_methods": [
+    "getAction()",
+    "getWorkitemId()",
+    "setAction(String)",
+    "setWorkitemId(ID)",
+    "getComments()",
+    "getNextApproverIds()",
+    "setComments(String_comments)",
+    "setNextApproverIds(IDs[])"
+  ]
+}

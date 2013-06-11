@@ -1,0 +1,9 @@
+{
+  "instance_methods": [
+    "allowFieldTruncation = Boolean;",
+    "assignmentRuleHeader = Database_DmlOptions_Assignmentruleheader;",
+    "emailHeader = Database_DmlOptions_EmailHeader;",
+    "localeOptions = Database_DmlOptions_LocaleOptions;",
+    "optAllOrNone = Boolean;"
+  ]
+}

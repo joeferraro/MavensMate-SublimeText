@@ -1,0 +1,15 @@
+{
+  "static_methods": [
+    "addHeader(String_name, String_value)",
+    "addParameter(String_name, String_value)"
+  ],
+  "instance_methods": [
+    "headers",
+    "httpMethod",
+    "params",
+    "remoteAddress",
+    "requestBody",
+    "requestURI",
+    "resourcePath"
+  ]
+}

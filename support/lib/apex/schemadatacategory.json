@@ -1,0 +1,7 @@
+{
+  "instance_methods": [
+    "getChildCategories()",
+    "getLabel()",
+    "getName()"
+  ]
+}

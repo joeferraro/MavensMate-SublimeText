@@ -1,0 +1,9 @@
+{
+  "instance_methods": [
+    "getCategoryCount()",
+    "getDescription()",
+    "getLabel()",
+    "getName()",
+    "getSobject()"
+  ]
+}

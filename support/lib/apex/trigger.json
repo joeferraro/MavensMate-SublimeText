@@ -1,0 +1,16 @@
+{
+  "static_methods": [
+    "isExecuting",
+    "isInsert",
+    "isUpdate",
+    "isDelete",
+    "isBefore",
+    "isAfter",
+    "isUndelete",
+    "new",
+    "newMap",
+    "old",
+    "oldMap",
+    "size"
+  ]
+}

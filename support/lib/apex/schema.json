@@ -1,0 +1,17 @@
+{
+  "static_methods": [
+    "getGlobalDescribe()",
+    "describeDataCategoryGroups(List_sObjectNames)",
+    "describeDataCategoryGroupsStructures(List_Schema_DataCategoryGroupSobjectTypePair, Boolean_topCategoriesOnly)",
+    "DataCategoryGroupSobjectTypePair",
+    "DescribeDataCategoryGroupResult",
+    "DescribeDataCategoryGroupStructureResult",
+    "DataCategory",
+    "DescribeFieldResult",
+    "PicklistEntry",
+    "SOAPType",
+    "sObjectField",
+    "sObjectType",
+    "DisplayType"
+  ]
+}

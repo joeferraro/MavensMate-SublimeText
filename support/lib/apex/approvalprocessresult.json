@@ -1,0 +1,10 @@
+{
+  "instance_methods": [
+    "getEntityId()",
+    "getErrors()",
+    "getInstanceId()",
+    "getInstanceStatus()",
+    "getNewWorkitemIds()",
+    "isSuccess()"
+  ]
+}

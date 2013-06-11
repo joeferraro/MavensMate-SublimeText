@@ -1,0 +1,5 @@
+{
+  "static_methods": [
+    "getCaseIdFromEmailThreadId(String_id)"
+  ]
+}

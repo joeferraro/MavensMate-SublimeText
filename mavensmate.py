@@ -908,9 +908,10 @@ class MavensMateCompletions(sublime_plugin.EventListener):
             json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
             data = json.load(json_data)
             json_data.close()
-            pd = data["static_methods"]
-            for method in pd:
-                _completions.append((method, method))
+            if "static_methods" in data:
+                pd = data["static_methods"]
+                for method in pd:
+                    _completions.append((method, method))
             return sorted(_completions)
         
         ## HANDLE CUSTOM APEX CLASS STATIC METHODS (MyCustomClass.some_static_method)
@@ -939,7 +940,7 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 if line_contents.startswith(word+"."): continue #skip line if the variable starts it with assignment
 
                 import re
-                pattern = "'(.* "+word+" .*)'"
+                pattern = "'(.*? "+word+" .*?)'"
                 m = re.search(pattern, line_contents)
                 if m != None: 
                     #print 'skipping because word found inside string'
@@ -951,22 +952,38 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                     #print 'skipping because word found inside exact string'
                     continue #skip if we match our word, in an exact Apex string
 
-                pattern = re.compile("(system.debug.*\(.*"+word+")", re.IGNORECASE)
+                pattern = re.compile("(system.debug.*\(.*?"+word+")", re.IGNORECASE)
                 m = re.search(pattern, line_contents)
                 if m != None: 
                     #print 'skipping because word found inside system.debug'
                     continue #skip if we match our word inside system.debug
 
-                #STILL NEED TO WORK ON THIS
-                #String bat;
-                #foo.bar(foo, bar, bat)
-                #bat. #=> this will be found in the parens above
-                #for (Opportunity o : opps)
-                pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None: 
-                    #print 'skipping because word found inside parens'
-                    continue #skip if we match our word inside parens                
+                # skip where the variable is on the right side of the equals
+                pattern = re.compile("\=.*?\b%s\b" % word, re.IGNORECASE)
+                if re.search(pattern, line_contents) != None:
+                    continue;
+
+                # is this embedded in a SOQL statement?
+                pattern = re.compile("\:%s\b" % word, re.IGNORECASE)
+                if re.search(pattern, line_contents) != None:
+                    continue;
+
+                # don't check parens if it's the parent method
+                pattern = re.compile("^(public|protected|private|static|webservice) ", re.IGNORECASE)
+                if re.search(pattern, line_contents) == None:
+                    # is the work in parens?
+                    pattern = re.compile("\(.*?%s.*?\)" % word, re.IGNORECASE)
+                    if re.search(pattern, line_contents) != None:
+                        # only allow if the word is on the left of an equals or colon
+                        pattern = re.compile("%s.*?(\:|\=)" % word, re.IGNORECASE)
+                        if re.search(pattern, line_contents) == None:
+                            # final check to see if this is an exception
+                            pattern = re.compile("Exception\s*%s" % word, re.IGNORECASE)
+                            if re.search(pattern, line_contents) == None:
+                                continue
+                    else:
+                        # not in parens
+                        pass        
 
                 #TODO: figure out a way to use word boundaries here to handle
                 #for (Opportunity o: opps) {
@@ -996,29 +1013,31 @@ class MavensMateCompletions(sublime_plugin.EventListener):
 
                 #print "contents of line after strip: " + object_name
 
-                pattern = re.compile("^map\s*<", re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None:
+                if re.search(re.compile("^map\s*<", re.IGNORECASE), line_contents) != None:
                     object_name_lower = "map"
                     object_name = "Map"
-                    #print "our object: " + object_name
                     break
 
-                pattern = re.compile("^list\s*<", re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None:
+                if re.search(re.compile("^list\s*<", re.IGNORECASE), line_contents) != None:
                     object_name_lower = "list"
                     object_name = "List"
-                    #print "our object: " + object_name
                     break
 
-                pattern = re.compile("^set\s*<", re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None:
+                elif re.search(re.compile("^set\s*<", re.IGNORECASE), line_contents) != None:
                     object_name_lower = "set"
                     object_name = "Set"
-                    #print "our object: " + object_name
-                    break                        
+                    break
+
+                elif re.search(re.compile("Exception\s*%s" % word, re.IGNORECASE), line_contents) != None:
+                    m = re.search(re.compile("(Dml|Email)Exception\s*%s" % word, re.IGNORECASE), line_contents)
+                    if m != None:
+                        # call it a dmlexception so we dont have to copy the json
+                        object_name_lower = "dmlexception"
+                        object_name = m.group(1)+"Exception"
+                    else:
+                        object_name_lower = "exception"
+                        object_name = "Exception"
+                    break
 
                 if object_name.endswith(","): continue #=> we're guessing the word is method argument
                 if object_name.endswith("("): continue #=> we're guessing the word is method argument
@@ -1030,9 +1049,13 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 parts = object_name_lower.split(" ")
                 object_name_lower = parts[0]
                 object_name_lower = object_name_lower[::-1] #=> reverses line
-                if "this." in object_name_lower: continue
-                object_name_lower = re.sub(r'\W+', '', object_name_lower) #remove non alphanumeric chars
+                if object_name_lower.startswith("this."): continue
+                
+                if object_name_lower.startswith('system.'):
+                    object_name_lower = object_name_lower.replace('system.', '')
 
+                object_name_lower = re.sub(r'[^a-z0-9]', '', object_name_lower) #remove non alphanumeric chars
+                    
                 #print "our object: " + object_name_lower
 
                 if object_name_lower in apex_reserved.keywords: continue
@@ -1046,14 +1069,16 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 #print "our object capped: " + object_name
 
                 if object_name_lower != None and object_name_lower != "": break
+
                 #need to handle with word is found within a multiline comment
             if os.path.isfile(mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
                 json_data = open(mm_dir+"/support/lib/apex/"+object_name_lower+".json")
                 data = json.load(json_data)
                 json_data.close()
-                pd = data["instance_methods"]
-                for method in pd:
-                    _completions.append((method, method))
+                if 'instance_methods' in data:
+                    pd = data["instance_methods"]
+                    for method in pd:
+                        _completions.append((method, method))
                 return sorted(_completions)
             elif os.path.isfile(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
                 object_dom = parse(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object")

@@ -1,0 +1,6 @@
+{
+  "static_methods": [
+    "DEFAULT",
+    "READ_ONLY"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "instance_methods": [
+    "setHeader(String_name, String_value)",
+    "setStaticResource(String_resourceName)",
+    "setStaticResource(String_resourceName)",
+    "setStatus(String_httpStatus)",
+    "setStatusCode(Integer_httpStatusCode)"
+  ]
+}

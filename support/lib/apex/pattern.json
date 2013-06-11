@@ -1,0 +1,13 @@
+{
+  "static_methods": [
+    "compile(String_regex)",
+    "matches(String_regex, String_input)",
+    "quote(String_input)"
+  ],
+  "instance_methods": [
+  	"matcher(String_input)",
+  	"pattern()",
+  	"split(String_regex)",
+  	"split(String_regex, Integer_limit)"
+  ]
+}

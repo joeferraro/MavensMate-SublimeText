@@ -1,0 +1,10 @@
+{
+  "static_methods": [
+    "addHeader(String_name, String_value)"
+  ],
+  "instance_methods": [
+    "headers",
+    "responseBody",
+    "statusCode"
+  ]
+}

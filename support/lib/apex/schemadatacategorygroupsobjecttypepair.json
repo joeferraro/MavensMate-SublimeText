@@ -1,0 +1,8 @@
+{
+  "instance_methods": [
+    "getDataCategoryGroupName()",
+    "getSobject()",
+    "setDataCategoryGroupName()",
+    "setSobject(String_setSobject)"
+  ]
+}

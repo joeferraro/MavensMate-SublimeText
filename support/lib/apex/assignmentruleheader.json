@@ -1,0 +1,6 @@
+{
+  "static_methods": [
+    "assignmentRuleID = ID;",
+    "useDefaultRule = Boolean;"
+  ]
+}

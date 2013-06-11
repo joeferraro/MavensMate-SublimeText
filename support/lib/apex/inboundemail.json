@@ -1,0 +1,25 @@
+{
+  "instance_methods": [
+    "binaryAttachments", 
+    "ccAddresses", 
+    "fromAddress", 
+    "fromName", 
+    "headers", 
+    "htmlBody", 
+    "htmlBodyIsTruncated", 
+    "inReplyTo", 
+    "messageId", 
+    "plainTextBody", 
+    "plainTextBodyIsTruncated", 
+    "references", 
+    "replyTo", 
+    "subject", 
+    "textAttachments", 
+    "toAddresses"
+  ],
+  "static_methods": [
+  	"Header",
+  	"BinaryAttachment",
+  	"TextAttachment"
+  ]
+}

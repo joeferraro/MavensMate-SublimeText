@@ -1,0 +1,7 @@
+{
+  "static_methods": [
+    "getFields()",
+    "getMessage()",
+    "getStatusCode()"
+  ]
+}

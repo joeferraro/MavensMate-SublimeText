@@ -1,0 +1,15 @@
+{
+  "static_methods": [
+    "addMessage(sObject_message)",
+    "addMessages(Exception_ex)",
+    "currentPage()",
+    "getMessages()",
+    "hasMessages()",
+    "hasMessages(ApexPages.Severity)",
+
+    "Message",
+    "Message(ApexPages_Severity, String_summary)",
+    "Message(ApexPages_Severity, String_summary, String_detail)",
+    "Severity"
+  ]
+}

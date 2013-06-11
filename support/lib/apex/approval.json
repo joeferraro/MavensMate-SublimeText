@@ -1,0 +1,8 @@
+{
+  "static_methods": [
+    "process(Approval_ProcessRequest_req)",
+    "process(Approval_ProcessRequest_req, Boolean_opt_allOrNone)",
+    "process(Approval_ProcessRequest[]_reqs)",
+    "process(Approval_ProcessRequest[]_reqs, Boolean_opt_allOrNone)"
+  ]
+}

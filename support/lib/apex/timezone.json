@@ -1,0 +1,11 @@
+{
+  "static_methods": [
+    "getTimeZone(String_id)"
+  ],
+  "instance_methods": [
+    "getDisplayName()",
+    "getID()",
+    "getOffset(Datetime_date)",
+    "toString()"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "instance_methods": [
+    "getErrors()",
+    "getId()",
+    "isSuccess()"
+  ]
+}

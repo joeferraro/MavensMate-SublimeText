@@ -1,0 +1,11 @@
+{
+  "instance_methods": [
+    "getCause()", 
+    "getLineNumber()", 
+    "getMessage()", 
+    "getStackTraceString()", 
+    "getTypeName()", 
+    "initCause()", 
+    "setMessage()"
+  ]
+}

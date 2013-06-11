@@ -2,14 +2,14 @@
   "instance_methods": [
     "getAnchor()", 
     "getContent()",
- 	"getContentAsPDF()", 
+    "getContentAsPDF()", 
     "getCookies()",
-	"getHeaders()", 
+    "getHeaders()", 
     "getParameters()",
- 	"getRedirect()", 
+    "getRedirect()", 
     "getUrl()",
-	"setAnchor(String_anchor)", 
+    "setAnchor(String_anchor)", 
     "setCookies(Cookie[]_cookies)",
- 	"setRedirect(Boolean_redirect)"
+    "setRedirect(Boolean_redirect)"
   ]
 }

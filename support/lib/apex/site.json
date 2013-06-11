@@ -1,0 +1,26 @@
+{
+  "static_methods": [
+    "changePassword(String_newpassword, String_verifyNewpassword, String_opt_oldpassword)",
+    "createPersonAccountPortalUser(sObject_user, String_ownerId, String_password)",
+    "createPersonAccountPortalUser(sObject_user, String_ownerId, String_recordTypeId, String_password)",
+    "createPortalUser(Object_user, String_accountId, String_opt_password, Boolean_opt_sendEmailConfirmation)",
+    "forgotPassword(String_username)",
+    "getAdminEmail()",
+    "getAdminId()",
+    "getAnalyticsTrackingCode()",
+    "getCurrentSiteUrl()",
+    "getCustomWebAddress()",
+    "getDomain()",
+    "getErrorDescription()",
+    "getErrorMessage()",
+    "getName()",
+    "getOriginalUrl()",
+    "getPrefix()",
+    "getTemplate()",
+    "isLoginEnabled()",
+    "isPasswordExpired()",
+    "isRegistrationEnabled()",
+    "login(String_username, String_password, String_startUrl)",
+    "setPortalUserAsAuthProvider(sObject_user, String_contactId)"
+  ]
+}

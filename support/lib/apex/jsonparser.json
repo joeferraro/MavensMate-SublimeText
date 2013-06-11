@@ -1,0 +1,25 @@
+{
+  "instance_methods": [
+    "clearCurrentToken()",
+    "getBlobValue()",
+    "getBooleanValue()",
+    "getCurrentName()",
+    "getCurrentToken()",
+    "getDatetimeValue()",
+    "getDateValue()",
+    "getDecimalValue()",
+    "getDoubleValue()",
+    "getIdValue()",
+    "getIntegerValue()",
+    "getLastClearedToken()",
+    "getLongValue()",
+    "getText()",
+    "getTimeValue()",
+    "hasCurrentToken()",
+    "nextToken()",
+    "nextValue()",
+    "readValueAs(System_Type_apexType)",
+    "readValueAsStrict(System_Type_apexType)",
+    "skipChildren()"
+  ]
+}

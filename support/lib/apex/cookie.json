@@ -1,0 +1,10 @@
+{
+  "instance_methods": [
+    "getDomain()",
+    "getMaxAge()",
+    "getName()",
+    "getPath()",
+    "getValue()",
+    "isSecure()"
+  ]
+}

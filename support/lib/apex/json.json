@@ -1,0 +1,11 @@
+{
+  "static_methods": [
+    "createGenerator(Boolean_pretty)",
+    "createParser(String_jsonString)",
+    "deserialize(String_jsonString, System_Type_apexType)",
+    "deserializeStrict(String_jsonString, System_Type_apexType)",
+    "deserializeUntyped(String_jsonString)",
+    "serialize(Object)",
+    "serializePretty(Object)"
+  ]
+}

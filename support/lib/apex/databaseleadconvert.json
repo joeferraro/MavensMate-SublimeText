@@ -1,0 +1,22 @@
+{
+  "instance_methods": [
+    "getAccountId()",
+    "getContactId()",
+    "getConvertedStatus()",
+    "getLeadID()",
+    "getOpportunityName()",
+    "getOwnerID()",
+    "isDoNotCreateOpportunity()",
+    "isOverWriteLeadSource()",
+    "isSendNotificationEmail()",
+    "setAccountId(ID_id)",
+    "setContactId(ID_id)",
+    "setConvertedStatus(String_status)",
+    "setDoNotCreateOpportunity(Boolean_create)",
+    "setLeadId(ID_id)",
+    "setOpportunityName(String_name)",
+    "setOverwriteLeadSource(Boolean_overwrite)",
+    "setOwnerId(ID_id)",
+    "setSendNotificationEmail(Boolean_send)"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "static_methods": 
+  [
+    "anytype",
+    "base64",
+    "Boolean",
+    "Combobox",
+    "Currency",
+    "DataCategoryGroupReference",
+    "Date",
+    "DateTime",
+    "Double",
+    "Email",
+    "EncryptedString",
+    "ID",
+    "Integer",
+    "MultiPicklist",
+    "Percent",
+    "Phone",
+    "Picklist",
+    "Reference",
+    "String",
+    "TextArea",
+    "Time",
+    "URL"
+  ]
+}

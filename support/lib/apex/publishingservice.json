@@ -1,0 +1,22 @@
+{
+  "static_methods": [
+    "archiveOnlineArticle(String_articleId, Datetime_scheduledDate)",
+    "assignDraftArticleTask(String_articleId, String_assigneeID, String_instructions, Datetime_dueDate, Boolean_sendNotification)",
+    "assignDraftTranslationTask(String_articleVersionId, String_assigneeID, String_instructions, Datetime_dueDate, Boolean_sendNotification)",
+    "cancelScheduledArchivingOfArticle(String_articleId)",
+    "cancelScheduledPublicationOfArticle(String_articleId)",
+    "completeTranslation(String_articleId)",
+    "deleteArchivedArticle(String_articleId)",
+    "deleteArchivedArticleVersion(String_articleId, Integer_versionNumber)",
+    "deleteDraftArticle(String_articleId)",
+    "deleteDraftTranslation(String_articleVersionId)",
+    "editArchivedArticle(String_articleId)",
+    "editOnlineArticle(String_articleId, Boolean_unpublish)",
+    "editPublishedTranslation(String_articleId, String_language, Boolean_unpublish)",
+    "publishArticle(String_articleId, Boolean_flagAsNew)",
+    "restoreOldVersion(String_articleId, Integer_versionNumber)",
+    "scheduleForPublication(String_articleId, Datetime_scheduledDate)",
+    "setTranslationToIncomplete(String_articleId)",
+    "submitForTranslation(String_articleId, String_language, String_assigneeID, Datetime_dueDate)"
+  ]
+}

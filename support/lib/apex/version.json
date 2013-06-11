@@ -1,0 +1,8 @@
+{
+  "instance_methods": [
+    "compareTo(Version_version)",
+    "major()",
+    "minor()",
+    "patch()"
+  ]
+}

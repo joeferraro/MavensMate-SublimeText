@@ -1,0 +1,33 @@
+{
+	"static_methods": [
+		"quoteReplacement(String_s)"
+	],
+	"instance_methods": [
+		"end()",
+		"end(Integer_groupIndex)",
+		"find()",
+		"find(Integer_group)",
+		"group()",
+		"group(Integer_groupIndex)",
+		"groupCount()",
+		"hasAnchoringBounds()",
+		"hasTransparentBounds()",
+		"hitEnd()",
+		"lookingAt()",
+		"matches()",
+		"pattern()",
+		"region(Integer_start, Integer_end)",
+		"regionStart()",
+		"regionEnd()",
+		"replaceAll(String_s)",
+		"replaceFirst(String_s)",
+		"requireEnd()",
+		"reset()",
+		"reset(String_s)",
+		"start()",
+		"start(Integer_groupIndex)",
+		"useAnchoringBounds(Boolean_useAnchor)",
+		"usePattern(Pattern_pattern)",
+		"useTransparentBounds(Boolean_useTransparent)"
+	]
+}

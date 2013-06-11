@@ -1,0 +1,7 @@
+{
+  "static_methods": [
+    "add(String_id, Datetime_start, Long_interval)",
+    "addGmt(String_id, Datetime_start, Long_interval)",
+    "diff(String_id, Datetime_start, Datetime_end)"
+  ]
+}

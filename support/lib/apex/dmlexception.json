@@ -1,0 +1,19 @@
+{
+  "instance_methods": [
+    "getCause()", 
+    "getDmlFields()",
+    "getDmlFieldNames()",
+    "getDmlId()",
+    "getDmlIndex()",
+    "getDmlMessage()",
+    "getDmlStatusCode()",
+    "getDmlType()",
+    "getNumDml()",
+    "getLineNumber()", 
+    "getMessage()", 
+    "getStackTraceString()", 
+    "getTypeName()", 
+    "initCause()", 
+    "setMessage()"
+  ]
+}

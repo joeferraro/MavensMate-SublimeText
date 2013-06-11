@@ -1,0 +1,88 @@
+{
+  "static_methods": [
+    "abs(Decimal)",
+    "abs(Double)",
+    "abs(Integer)",
+    "abs(Long)",
+    
+    "acos(Decimal)",
+    "acos(Double)",
+    
+    "asin(Decimal)",
+    "asin(Double)",
+    
+    "atan(Decimal)",
+    "atan(Double)",
+    
+    "atan2(Decimal)",
+    "atan2(Double)",
+    
+    "cbrt(Decimal)",
+    "cbrt(Double)",
+    
+    "ceil(Decimal)",
+    "ceil(Double)",
+    
+    "cos(Decimal)",
+    "cos(Double)",
+    
+    "cosh(Decimal)",
+    "cosh(Double)",
+    
+    "exp(Decimal)",
+    "exp(Double)",
+    
+    "floor(Decimal)",
+    "floor(Double)",
+    
+    "log(Decimal)",
+    "log(Double)",
+    
+    "log10(Decimal)",
+    "log10(Double)",
+    
+    "max(Decimal_1, Decimal_2)",
+    "max(Double_2, Double_2)",
+    "max(Integer_1, Integer_2)",
+    "max(Long_1, Long_2)",
+    
+    "min(Decimal_1, Decimal_2)",
+    "min(Double_2, Double_2)",
+    "min(Integer_1, Integer_2)",
+    "min(Long_1, Long_2)",
+    
+    "mod(Integer)",
+    "mod(Long)",
+
+    "pow(Double)",
+
+    "random()",
+    
+    "rint(Decimal)",
+    "rint(Double)",
+    
+    "round(Decimal)",
+    "round(Double)",
+    
+    "roundToLong(Decimal)",
+    "roundToLong(Double)",
+    
+    "signum(Decimal)",
+    "signum(Double)",
+    
+    "sin(Decimal)",
+    "sin(Double)",
+    
+    "sinh(Decimal)",
+    "sinh(Double)",
+    
+    "sqrt(Decimal)",
+    "sqrt(Double)",
+    
+    "tan(Decimal)",
+    "tan(Double)",
+    
+    "tanh(Decimal)",
+    "tanh(Double)"
+  ]
+}

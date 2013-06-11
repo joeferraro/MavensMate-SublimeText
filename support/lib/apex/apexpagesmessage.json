@@ -1,0 +1,8 @@
+{
+  "instance_methods": [
+    "getComponentLabel()",
+    "getDetail()",
+    "getSeverity()",
+    "getSummary()"
+  ]
+}

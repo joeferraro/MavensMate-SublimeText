@@ -1,0 +1,9 @@
+{
+  "static_methods": [
+    "CONFIRM",
+    "ERROR",
+    "FATAL",
+    "INFO",
+    "WARNING"
+  ]
+}

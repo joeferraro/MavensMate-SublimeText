@@ -1,0 +1,13 @@
+{
+  "static_methods": [
+    "forName(String_fullyQualifiedName)",
+    "forName(String_namespace, String_name)"
+  ],
+  "instance_methods": [
+    "equals(Object)",
+    "getName()",
+    "hashCode()",
+    "newInstance()",
+    "toString()"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "static_methods": [
+    "ERROR",
+    "WARN",
+    "INFO",
+    "DEBUG",
+    "FINE",
+    "FINER",
+    "FINEST"
+  ]
+}
