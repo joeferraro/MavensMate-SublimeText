@@ -83,7 +83,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".app",
 		".dashboard",
 		".permissionset",
-		".workflow"
+		".workflow",
+		".email"
 	],
 
 	"mm_default_apex_templates_map" : {
