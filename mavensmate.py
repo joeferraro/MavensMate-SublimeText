@@ -259,7 +259,7 @@ class RefreshDirectoryCommand(sublime_plugin.WindowCommand):
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
     def run (self, dirs):
-        directory = dirs[0]
+        directory = dirs[0].replace("\\", "/")
 
         if directory.endswith("/src"):
             printer = PanelPrinter.get(self.window.id())
