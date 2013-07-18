@@ -139,8 +139,9 @@ def mm_call(operation, mm_debug_panel=True, **kwargs):
     elif operation == 'index_apex':
         message = 'Indexing Project Apex Metadata.'  
         
+    debugTimestamp = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
     if mm_debug_panel:
-        printer.write('\n'+message+'\n')
+        printer.write('\n'+debugTimestamp+':\n'+message+'\n')
 
     threads = []
     thread = MavensMateTerminalCall(
