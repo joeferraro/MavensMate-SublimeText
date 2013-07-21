@@ -24,19 +24,46 @@ class ThreadTracker(object):
 
     @classmethod
     def add(cls, thread):
-        cls.pending_threads[thread.window_id] = thread
+        #print('adding thread')
+        thread_window_id = thread.window.id()
+        if thread_window_id not in cls.pending_threads:
+            cls.pending_threads[thread_window_id] = [thread]
+        else:
+            cls.pending_threads[thread_window_id].append(thread)
+        print(cls.pending_threads)
 
     @classmethod
-    def get_last_added(cls, window_id):
-        return cls.pending_threads.get(window_id)
+    def remove(cls, thread):
+        #print('removing thread from:')
+        #print(cls.pending_threads)
+        thread_window_id = thread.window.id()
+        if thread_window_id in cls.pending_threads:
+            pending_window_threads = cls.pending_threads[thread_window_id]
+            if thread in pending_window_threads: pending_window_threads.remove(thread)
+        
+        print(cls.pending_threads)
 
     @classmethod
-    def set_current(cls, window_id, thread):
-        cls.current_thread[window_id] = thread
+    def get_last_added(cls, window):
+        try:
+            return cls.pending_threads.get(window.id())[0]
+        except:
+            return None
+            
+    @classmethod
+    def set_current(cls, window, thread):
+        cls.current_thread[window.id()] = thread
 
     @classmethod
-    def get_current(cls, window_id):
-        return cls.current_thread.get(window_id)
+    def get_current(cls, window):
+        return cls.current_thread.get(window.id())
+
+    @classmethod
+    def get_pending(cls, window):
+        if window.id() in cls.pending_threads:
+            return cls.pending_threads[window.id()]
+        else:
+            return []
 
 def unset_current_thread(fn):
 

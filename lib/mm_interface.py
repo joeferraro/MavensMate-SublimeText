@@ -201,7 +201,7 @@ class MavensMateTerminalCall(threading.Thread):
         process.stdin.close()
 
     def kill(self):
-        #need to do some cleanup here
+        #TODO: need to do some cleanup here
         ThreadTracker.set_current(self.window_id, None)
 
     def calculate_process_region(self):
@@ -212,15 +212,15 @@ class MavensMateTerminalCall(threading.Thread):
         self.calculate_process_region()
         PanelThreadProgress(self)
 
+        last_thread = ThreadTracker.get_last_added(self.window)
+        ThreadTracker.add(self)
+        if last_thread != None:
+            last_thread.join()
+
         mm_location = self.settings.get('mm_location')
 
         print('[MAVENSMATE] executing mm terminal call:')
         print("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()))
-        
-        last_thread = ThreadTracker.get_last_added(self.window_id)
-        ThreadTracker.add(self)
-        if last_thread != None:
-            last_thread.join()
         
         process = subprocess.Popen("{0} {1}".format(mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         #process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -257,6 +257,7 @@ class MavensMateTerminalCall(threading.Thread):
         #     "view"      : self.view
         # }
         self.calculate_process_region()
+        ThreadTracker.remove(self)
 
 #handles the result of the mm script
 def handle_result(operation, process_id, printer, result, thread):
@@ -287,9 +288,9 @@ def handle_result(operation, process_id, printer, result, thread):
                             sublime.active_window().open_file(location)
                             break
             if 'success' in result and util.to_bool(result['success']) == True:
-                if printer != None:
+                if printer != None and len(ThreadTracker.get_pending(thread.window)) == 0:
                     printer.hide()  
-            elif 'State' in result and result['State'] == 'Completed':
+            elif 'State' in result and result['State'] == 'Completed' and len(ThreadTracker.get_pending(thread.window)) == 0:
                 #tooling api
                 if printer != None:
                     printer.hide()
@@ -387,14 +388,14 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
             printer.write('\n' + 'FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber'] + '\n')
     elif 'success' in res and util.to_bool(res['success']) == True:
         #printer.write('\n[Operation completed Successfully]' + '\n')
-        printer.panel.run_command('write_operation_status', {'text': 'Success', 'region': [status_region.end(), status_region.end()+10] })
+        printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
 
     elif 'success' in res and util.to_bool(res['success']) == False and 'body' in res:
         printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
     elif 'success' in res and util.to_bool(res['success']) == False:
         printer.write('\n[OPERATION FAILED]' + '\n')
     else:
-        printer.panel.run_command('write_operation_status', {'text': 'Success', 'region': [status_region.end(), status_region.end()+10] })
+        printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
 
 def compile_callback(result):
     try:

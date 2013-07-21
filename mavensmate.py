@@ -862,7 +862,7 @@ class WriteOperationStatus(sublime_plugin.TextCommand):
     def run(self, edit, text, *args, **kwargs):
         kw_region = kwargs.get('region', [0,0])
         status_region = sublime.Region(kw_region[0],kw_region[1])
-        print(status_region)
+        #print(status_region)
         size = self.view.size()
         self.view.set_read_only(False)
         self.view.replace(edit, status_region, text)
