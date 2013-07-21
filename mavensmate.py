@@ -1,38 +1,65 @@
 # Written by Joe Ferraro (@joeferraro / www.joe-ferraro.com)
-import sublime
-import sublime_plugin
 import os
-import sys
-import subprocess
-import tempfile  
-#import ast
-import copy
-import threading
-if os.name != 'nt':
-    import unicodedata
-import unicodedata, re
-from xml.dom.minidom import parse, parseString
-try:
-    import util
-    from util import PanelPrinter
-    from util import ThreadProgress
-    import apex_reserved 
-    import command_helper 
-except:
-    import MavensMate.util as util
-    import MavensMate.apex_reserved as apex_reserved
-    import MavensMate.command_helper as command_helper
-    from MavensMate.util import PanelPrinter
-    from MavensMate.util import ThreadProgress
+import subprocess 
 import json
+import sys
+
+#dist_dir = os.path.dirname(os.path.abspath(__file__))
+#sys.path.insert(0, dist_dir)
 
 try:
-    mm_dir = os.getcwdu()
-except:
-    mm_dir = os.path.dirname(__file__)
+    # Python 3
+    import MavensMate.config as config
+    import MavensMate.util as util
+    from MavensMate.lib import command_helper
+    import MavensMate.lib.mm_interface as mm
+    #from lib.printer import PanelPrinter
+    from MavensMate.lib.printer import PanelPrinter
+except ValueError as e:
+    print(">>>>>> ", e.message)
+    # Python 2
+    import util 
+    import config
+    from lib.printer import PanelPrinter
+    from lib.threads import ThreadTracker
+    import command_helper 
+
+import sublime
+import sublime_plugin
 
 settings = sublime.load_settings('mavensmate.sublime-settings')
 sublime_version = int(float(sublime.version()))
+
+st_version = 2
+# Warn about out-dated versions of ST3
+if sublime.version() == '':
+    st_version = 3
+elif int(sublime.version()) > 3000:
+    st_version = 3
+
+if st_version == 3:
+    installed_dir, _ = __name__.split('.')
+elif st_version == 2:
+    installed_dir = os.path.basename(os.getcwd())
+
+reloader_name = 'lib.reloader'
+
+# ST3 loads each package as a module, so it needs an extra prefix
+if st_version == 3:
+    reloader_name = 'MavensMate.' + reloader_name
+    from imp import reload
+
+# Make sure all dependencies are reloaded on upgrade
+if reloader_name in sys.modules:
+    reload(sys.modules[reloader_name])
+
+try:
+    # Python 3
+    from .lib import reloader
+except (ValueError):
+    # Python 2
+    from lib import reloader
+
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
@@ -40,13 +67,13 @@ sublime_version = int(float(sublime.version()))
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         util.check_for_workspace()
-        util.mm_call('new_project', False)
+        mm.call('new_project', False)
         util.send_usage_statistics('New Project')
 
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.mm_call('edit_project', False)
+        mm.call('edit_project', False)
         util.send_usage_statistics('Edit Project')
 
     def is_enabled(command):
@@ -69,7 +96,7 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
                 params = {}
         except:
             params = {}
-        util.mm_call('unit_test', context=command, params=params)
+        mm.call('unit_test', context=command, params=params)
         util.send_usage_statistics('Apex Unit Testing')
 
     def is_enabled(command):
@@ -78,7 +105,7 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.mm_call('execute_apex', False)
+        mm.call('execute_apex', False)
         util.send_usage_statistics('Execute Anonymous')
 
     def is_enabled(command):
@@ -87,7 +114,7 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.mm_call('deploy', False)
+        mm.call('deploy', False)
         util.send_usage_statistics('Deploy to Server')
 
     def is_enabled(command):
@@ -109,7 +136,7 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
         params = {
             "files" : [util.get_active_file()]
         }
-        util.mm_call('compile', context=self, params=params)
+        mm.call('compile', context=self, params=params)
 
     def is_enabled(command):
         return util.is_mm_file()
@@ -125,7 +152,7 @@ class RemoteEdit(sublime_plugin.EventListener):
             params = {
                 "files" : [util.get_active_file()]
             }
-            util.mm_call('compile', context=view, params=params)
+            mm.call('compile', context=view, params=params)
 
 class MenuModifier(sublime_plugin.EventListener):
     def on_activated_async(self, view):
@@ -138,7 +165,7 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
         params = {
             "files"         : files
         }
-        util.mm_call('compile', context=self, params=params)
+        mm.call('compile', context=self, params=params)
         util.send_usage_statistics('Compile Selected Files')
 
     def is_visible(self, files):
@@ -147,7 +174,7 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
     def is_enabled(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f):
+                if util.util.is_mm_file(f):
                     return True
         return False
 
@@ -157,14 +184,14 @@ class CompileTabsCommand(sublime_plugin.WindowCommand):
         params = {
             "files"         : util.get_tab_file_names()
         }
-        util.mm_call('compile', context=self, params=params)
+        mm.call('compile', context=self, params=params)
         util.send_usage_statistics('Compile Tabs')
 
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
-            util.mm_call('clean_project', context=self)
+            mm.call('clean_project', context=self)
             util.send_usage_statistics('Clean Project')
 
     def is_enabled(command):
@@ -238,7 +265,7 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
             'metadata_name'     : api_name,
             'apex_class_type'   : class_type
         }
-        util.mm_call('new_metadata', params=options) 
+        mm.call('new_metadata', params=options) 
 
     def is_enabled(self):
         return util.is_mm_project()
@@ -260,7 +287,7 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
             'object_api_name'   : sobject_name,
             'apex_class_type'   : class_type
         }
-        util.mm_call('new_metadata', params=options) 
+        mm.call('new_metadata', params=options) 
 
     def is_enabled(command):
         return util.is_mm_project() 
@@ -281,7 +308,7 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
             'metadata_name'     : api_name,
             'apex_class_type'   : class_type
         }
-        util.mm_call('new_metadata', params=options) 
+        mm.call('new_metadata', params=options) 
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -302,7 +329,7 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
             'metadata_name'     : api_name,
             'apex_class_type'   : class_type
         }
-        util.mm_call('new_metadata', params=options) 
+        mm.call('new_metadata', params=options) 
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -355,7 +382,7 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
                 params = {
                     "files"         : files
                 }
-            util.mm_call('refresh', context=self, params=params)
+            mm.call('refresh', context=self, params=params)
             util.send_usage_statistics('Refresh Selected From Server')
 
     def is_visible(self, dirs, files):
@@ -364,11 +391,11 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
     def is_enabled(self, dirs, files):
         if dirs != None and type(dirs) is list and len(dirs) > 0:
             for d in dirs:
-                if util.is_mm_dir(d):
+                if util.is_config.mm_dir(d):
                     return True
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f):
+                if util.util.is_mm_file(f):
                     return True
         return False
 
@@ -378,7 +405,7 @@ class RefreshActivePropertiesFromServerCommand(sublime_plugin.WindowCommand):
             params = {
                 "files"         : [util.get_active_file()]
             }
-            util.mm_call('refresh_properties', context=self, params=params)
+            mm.call('refresh_properties', context=self, params=params)
             util.send_usage_statistics('Refresh Active Properties From Server')
 
     def is_visible(self):
@@ -405,7 +432,7 @@ class RefreshPropertiesFromServerCommand(sublime_plugin.WindowCommand):
                 params = {
                     "files"         : files
                 }
-            util.mm_call('refresh_properties', context=self, params=params)
+            mm.call('refresh_properties', context=self, params=params)
             util.send_usage_statistics('Refresh Selected Properties From Server')
 
     def is_visible(self, dirs, files):
@@ -426,11 +453,11 @@ class RefreshPropertiesFromServerCommand(sublime_plugin.WindowCommand):
     def is_enabled(self, dirs, files):
         if dirs != None and type(dirs) is list and len(dirs) > 0:
             for d in dirs:
-                if util.is_mm_dir(d):
+                if util.is_config.mm_dir(d):
                     return True
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f):
+                if util.util.is_mm_file(f):
                     return True
         return False
 
@@ -441,7 +468,7 @@ class RefreshActiveFileCommand(sublime_plugin.WindowCommand):
             params = {
                 "files"         : [util.get_active_file()]
             }
-            util.mm_call('refresh', context=self, params=params)
+            mm.call('refresh', context=self, params=params)
             util.send_usage_statistics('Refresh Active File From Server')
 
     def is_visible(self):
@@ -453,7 +480,7 @@ class SynchronizeActiveMetadataCommand(sublime_plugin.WindowCommand):
         params = {
             "files"         : [util.get_active_file()]
         }
-        util.mm_call('synchronize', context=self, params=params)
+        mm.call('synchronize', context=self, params=params)
         util.send_usage_statistics('Synchronized Active File to Server')
 
     def is_visible(self):
@@ -471,17 +498,17 @@ class SynchronizeSelectedMetadataCommand(sublime_plugin.WindowCommand):
             params = {
                 "files"         : files
             }
-        util.mm_call('synchronize', context=self, params=params)
+        mm.call('synchronize', context=self, params=params)
         util.send_usage_statistics('Synchronized Selected Metadata With Server')
 
     def is_visible(self, dirs, files):
         if dirs != None and type(dirs) is list and len(dirs) > 0:
             for d in dirs:
-                if util.is_mm_dir(d):
+                if util.is_config.mm_dir(d):
                     return True
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_mm_file(f):
+                if util.util.is_mm_file(f):
                     return True
         return False
 
@@ -492,7 +519,7 @@ class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
         params = {
             "selected"         : [filename]
         }
-        util.mm_call('unit_test', context=self, params=params)
+        mm.call('unit_test', context=self, params=params)
         util.send_usage_statistics('Run Apex Tests in Active File')
 
     def is_visible(self):
@@ -513,7 +540,7 @@ class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
                 filename, ext = os.path.splitext(os.path.basename(f))
                 params['selected'].append(filename)
 
-            util.mm_call('unit_test', context=self, params=params)
+            mm.call('unit_test', context=self, params=params)
             util.send_usage_statistics('Run Apex Tests in Active File')
 
     def is_visible(self, files):
@@ -535,7 +562,7 @@ class OpenActiveSfdcUrlCommand(sublime_plugin.WindowCommand):
         params = {
             "files"         : [util.get_active_file()]
         }
-        util.mm_call('open_sfdc_url', context=self, params=params)
+        mm.call('open_sfdc_url', context=self, params=params)
         util.send_usage_statistics('Open Active File On Server')
 
     def is_visible(self):
@@ -551,7 +578,7 @@ class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
             "files"         : [util.get_active_file()],
             "type"          : "wsdl"
         }
-        util.mm_call('open_sfdc_url', context=self, params=params)
+        mm.call('open_sfdc_url', context=self, params=params)
         util.send_usage_statistics('Open Active WSDL File On Server')
 
     def is_visible(self):
@@ -569,7 +596,7 @@ class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
             params = {
                 "files"         : files
             }
-        util.mm_call('open_sfdc_url', context=self, params=params)
+        mm.call('open_sfdc_url', context=self, params=params)
         util.send_usage_statistics('Open Selected File On Server')
 
     def is_visible(self, files):
@@ -587,7 +614,7 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
                 "files"         : files,
                 "type"          : "wsdl"
             }
-        util.mm_call('open_sfdc_url', context=self, params=params)
+        mm.call('open_sfdc_url', context=self, params=params)
         util.send_usage_statistics('Open Selected WSDL File On Server')
 
     def is_visible(self, files):
@@ -611,7 +638,7 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
             params = {
                 "files" : files
             }
-            util.mm_call('delete', context=self, params=params)
+            mm.call('delete', context=self, params=params)
             util.send_usage_statistics('Delete Metadata')
 
     def is_visible(self):
@@ -629,7 +656,7 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
             params = {
                 "files" : [active_file]
             }
-            result = util.mm_call('delete', context=self, params=params)
+            result = mm.call('delete', context=self, params=params)
             self.window.run_command("close")
             util.send_usage_statistics('Delete Metadata')
 
@@ -643,7 +670,7 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
 class CompileProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to compile the entire project?", "Compile Project"):
-            util.mm_call('compile_project', context=self)
+            mm.call('compile_project', context=self)
             util.send_usage_statistics('Compile Project')
 
     def is_enabled(command):
@@ -652,7 +679,7 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
 #refreshes the currently active file from the server
 class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
     def run(self):
-        util.mm_call('index_apex_overlays', False, context=self)
+        mm.call('index_apex_overlays', False, context=self)
         util.send_usage_statistics('Index Apex Overlays')  
 
     def is_enabled(command):
@@ -661,7 +688,7 @@ class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
 #refreshes the currently active file from the server
 class IndexApexFileProperties(sublime_plugin.WindowCommand):
     def run(self):
-        util.mm_call('index_apex', False, context=self)
+        mm.call('index_apex', False, context=self)
         util.send_usage_statistics('Index Apex File Properties')  
 
     def is_enabled(command):
@@ -670,7 +697,7 @@ class IndexApexFileProperties(sublime_plugin.WindowCommand):
 #indexes the meta data based on packages.xml
 class IndexMetadataCommand(sublime_plugin.WindowCommand):
     def run(self):
-        util.mm_call('index_metadata', True, context=self)
+        mm.call('index_metadata', True, context=self)
         util.send_usage_statistics('Index Metadata')  
 
     def is_enabled(command):
@@ -679,7 +706,7 @@ class IndexMetadataCommand(sublime_plugin.WindowCommand):
 #refreshes the currently active file from the server
 class FetchLogsCommand(sublime_plugin.WindowCommand):
     def run(self):
-        util.mm_call('fetch_logs', False)
+        mm.call('fetch_logs', False)
         util.send_usage_statistics('Fetch Apex Logs')  
 
 #when a class or trigger file is opened, adds execution overlay markers if applicable
@@ -719,7 +746,7 @@ class DeleteOverlaysCommand(sublime_plugin.WindowCommand):
         params = {
             "id" : self.overlay[1]
         }
-        util.mm_call('delete_apex_overlay', context=self, params=params)
+        mm.call('delete_apex_overlay', context=self, params=params)
         util.send_usage_statistics('New Apex Overlay') 
 
 #creates a new overlay
@@ -755,7 +782,7 @@ class NewOverlayCommand(sublime_plugin.WindowCommand):
             "Line"                  : int(self.line_number)
         }
         #util.mark_overlay(self.line_number) #cant do this here bc it removes the rest of them
-        util.mm_call('new_apex_overlay', context=self, params=params)
+        mm.call('new_apex_overlay', context=self, params=params)
         util.send_usage_statistics('New Apex Overlay')  
 
 #right click context menu support for resource bundle creation
@@ -807,7 +834,7 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
         params = {
             "directory" : directory
         }
-        util.mm_call('new_project_from_existing_directory', params=params)
+        mm.call('new_project_from_existing_directory', params=params)
         util.send_usage_statistics('New Project From Existing Directory')  
 
     def is_visible(self):
@@ -830,6 +857,36 @@ class MavensMateOutputText(sublime_plugin.TextCommand):
 
     def description(self):
         return
+
+class WriteOperationStatus(sublime_plugin.TextCommand):
+    def run(self, edit, text, *args, **kwargs):
+        kw_region = kwargs.get('region', [0,0])
+        status_region = sublime.Region(kw_region[0],kw_region[1])
+        print(status_region)
+        size = self.view.size()
+        self.view.set_read_only(False)
+        self.view.replace(edit, status_region, text)
+        self.view.set_read_only(True)
+        #self.view.show(size)
+
+    def is_visible(self):
+        return False
+
+    def is_enabled(self):
+        return True
+
+    def description(self):
+        return
+
+class CancelCurrentCommand(sublime_plugin.WindowCommand):
+    
+    def run(self):
+        current_thread = ThreadTracker.get_current(self.window.id())
+        if current_thread:
+            current_thread.kill()
+
+    #def is_visible(self, paths = None):
+    #    return ThreadTracker.get_current(self.window.id()) != None
 
 ####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
 
@@ -860,7 +917,7 @@ class NewShellCommand(sublime_plugin.TextCommand):
                     'object_api_name'   : object_name,
                     'apex_class_type'   : 'Base'
                 }
-                util.mm_call('new_metadata', params=options)
+                mm.call('new_metadata', params=options)
             elif ps[0] == 'bundle' or ps[0] == 'b':
                 deploy_resource_bundle(ps[1])
             else:
@@ -869,7 +926,7 @@ class NewShellCommand(sublime_plugin.TextCommand):
             util.print_debug_panel_message('Unrecognized command: ' + input + '\n')
 
 #completions for force.com-specific use cases
-class MavensMateCompletions(sublime_plugin.EventListener):
+class ApexCompletions(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
@@ -890,22 +947,21 @@ class MavensMateCompletions(sublime_plugin.EventListener):
 
         _completions = []
         lower_prefix = word.lower()
+        print(word)
+        #print(lower_prefix)
 
         if lower_prefix == 'this':
             full_file_path = os.path.splitext(util.get_active_file())[0]
             base = os.path.basename(full_file_path)
-            file_name = os.path.splitext(base)[0]
-            if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",file_name+".cls")):
-                search_name = util.prep_for_search(file_name)
-                _completions = util.get_apex_completions(search_name) 
-                return sorted(_completions)
-            else:
-                return []
+            file_name = os.path.splitext(base)[0]            
+            _completions = util.get_apex_completions(file_name) 
+            return sorted(_completions)
 
-        ## HANDLE APEX STATIC METHODS (String.valueOf)
-        elif os.path.isfile(mm_dir+"/support/lib/apex/"+lower_prefix+".json"): 
+        ## HANDLE APEX STATIC METHODS
+        ## String.valueOf, Double.toString(), etc.
+        elif os.path.isfile(config.mm_dir+"/support/lib/apex/"+lower_prefix+".json"): 
             prefix = prefix.lower()
-            json_data = open(mm_dir+"/support/lib/apex/"+lower_prefix+".json")
+            json_data = open(config.mm_dir+"/support/lib/apex/"+lower_prefix+".json")
             data = json.load(json_data)
             json_data.close()
             pd = data["static_methods"]
@@ -913,206 +969,157 @@ class MavensMateCompletions(sublime_plugin.EventListener):
                 _completions.append((method, method))
             return sorted(_completions)
         
-        ## HANDLE CUSTOM APEX CLASS STATIC METHODS (MyCustomClass.some_static_method)
+        ## HANDLE CUSTOM APEX CLASS STATIC METHODS 
+        ## MyCustomClass.some_static_method
         elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+word+".cls"):
-            search_name = util.prep_for_search(word)
-            _completions = util.get_apex_completions(search_name) 
+            _completions = util.get_apex_completions(word) 
             return sorted(_completions)  
 
         ## HANDLE CUSTOM APEX INSTANCE METHOD ## 
+        ## MyClass mc = new MyClass()
+        ## mc.??
         else: 
-            current_line = view.rowcol(pt)
-            current_line_index = current_line[0]
-            current_object = None
-            region_from_top_to_current_word = sublime.Region(0, pt + 1)
-            lines = view.lines(region_from_top_to_current_word)
-            object_name_lower = ''
-            for line in reversed(lines):
-                line_contents = view.substr(line)
-                line_contents = line_contents.replace("\t", "").strip()
+            #self.process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            object_name = None
+            object_name_lower = None
+            variables = util.get_variable_list(view)
+
+            print(variables)
+
+            for v in variables['result']:
+                #print(v)
+                if 'variableName' in v and v['variableName'].lower() == word.lower():
+                    object_name = v['type']
+                    if '.' in object_name:
+                        object_name = object_name.split('.')[-1]
+                    object_name_lower = object_name.lower()
+                    break
+
+            print('object_name: ', object_name)
+            print(os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"))
+
+            if object_name != None:
+                if os.path.isfile(config.mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
+                    json_data = open(config.mm_dir+"/support/lib/apex/"+object_name_lower+".json")
+                    data = json.load(json_data)
+                    json_data.close()
+                    pd = data["instance_methods"]
+                    for method in pd:
+                        _completions.append((method, method))
+                    return sorted(_completions)
+                elif os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"): #=> parse org metadata
+                    jsonData = util.parse_json_from_file(util.mm_project_directory()+"/config/.org_metadata")
+                    for metadata_type in jsonData:
+                        if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                            for object_type in metadata_type['children']:
+                                if 'text' in object_type and object_type['text'].lower() == object_name_lower:
+                                    for attr in object_type['children']:
+                                        if 'text' in attr and attr['text'] == 'fields':
+                                            for field in attr['children']:
+                                                _completions.append((field['text'], field['text']))
+                    return sorted(_completions)
+                elif os.path.isfile(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
+                    object_dom = parse(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object")
+                    for node in object_dom.getElementsByTagName('fields'):
+                        field_name = ''
+                        field_type = ''
+                        for child in node.childNodes:                            
+                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                            if child.nodeName == 'fullName':
+                                field_name = child.firstChild.nodeValue
+                            elif child.nodeName == 'type':
+                                field_type = child.firstChild.nodeValue
+                        _completions.append((field_name+" \t"+field_type, field_name))
+                    return sorted(_completions)
+                elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
+                    object_dom = parse(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object")
+                    for node in object_dom.getElementsByTagName('fields'):
+                        field_name = ''
+                        field_type = ''
+                        for child in node.childNodes:                            
+                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                            if child.nodeName == 'fullName':
+                                field_name = child.firstChild.nodeValue
+                            elif child.nodeName == 'type':
+                                field_type = child.firstChild.nodeValue
+                        _completions.append((field_name+" \t"+field_type, field_name))
+                    return sorted(_completions)
                 
-                #print 'examaning line: ' + line_contents
+                elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
+                    search_name = util.prep_for_search(object_name)
+                    _completions = util.get_apex_completions(search_name)
+                    return sorted(_completions)
 
-                if line_contents.find(word) == -1: continue #skip the line if our word isn't in the line
-                if line_contents.strip().startswith('/*') and line_contents.strip().endswith('*/'): continue #skip the line if it's a comment
-                if line_contents.startswith('//'): continue #skip line line if it's a comment
-                if line_contents.startswith(word+"."): continue #skip line if the variable starts it with assignment
+    def show_completions(self, view, completions):
+        if completions:
+            self.completions = completions
+            view.run_command("hide_auto_complete")
+            sublime.set_timeout(functools.partial(self.show, view), 0)
 
-                import re
-                pattern = "'(.* "+word+" .*)'"
-                m = re.search(pattern, line_contents)
-                if m != None: 
-                    #print 'skipping because word found inside string'
-                    continue #skip if we match our word inside of an Apex string
-
-                pattern = "'("+word+")'"
-                m = re.search(pattern, line_contents)
-                if m != None: 
-                    #print 'skipping because word found inside exact string'
-                    continue #skip if we match our word, in an exact Apex string
-
-                pattern = re.compile("(system.debug.*\(.*"+word+")", re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None: 
-                    #print 'skipping because word found inside system.debug'
-                    continue #skip if we match our word inside system.debug
-
-                #STILL NEED TO WORK ON THIS
-                #String bat;
-                #foo.bar(foo, bar, bat)
-                #bat. #=> this will be found in the parens above
-                #for (Opportunity o : opps)
-                pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None: 
-                    #print 'skipping because word found inside parens'
-                    continue #skip if we match our word inside parens                
-
-                #TODO: figure out a way to use word boundaries here to handle
-                #for (Opportunity o: opps) {
-                #
-                #}
-                #word boundary seemingly is only required on the left side
-                # pattern = re.compile("\(%s\)" % word, re.IGNORECASE)
-                # m = re.search(pattern, line_contents)
-                # if m != None: continue #skip if we match our word inside parens TODO?
-
-                #pattern = "(.*:.*"+word+")"
-                pattern = "(\[.*:.*"+word+".*\])"
-                m = re.search(pattern, line_contents)
-                if m != None:
-                    #print 'skipping because word found inside query'
-                    continue #skip if being bound in a query
-
-                #print "contents of line before strip: " + line_contents
-
-                object_name = None
-                #object_name = line_contents[0:line_contents.find(word)]
-                try:
-                    #object_name = line_contents[0:re.search(r"\b%s\b" % word, line_contents).start()]
-                    object_name = line_contents[0:re.search(r"\b%s(\:)?\b" % word, line_contents).start()]
-                except: continue
-                object_name = object_name.strip()
-
-                #print "contents of line after strip: " + object_name
-
-                pattern = re.compile("^map\s*<", re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None:
-                    object_name_lower = "map"
-                    object_name = "Map"
-                    #print "our object: " + object_name
-                    break
-
-                pattern = re.compile("^list\s*<", re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None:
-                    object_name_lower = "list"
-                    object_name = "List"
-                    #print "our object: " + object_name
-                    break
-
-                pattern = re.compile("^set\s*<", re.IGNORECASE)
-                m = re.search(pattern, line_contents)
-                if m != None:
-                    object_name_lower = "set"
-                    object_name = "Set"
-                    #print "our object: " + object_name
-                    break                        
-
-                if object_name.endswith(","): continue #=> we're guessing the word is method argument
-                if object_name.endswith("("): continue #=> we're guessing the word is method argument
-                if len(object_name) == 0: continue
-
-                object_name_lower = object_name.lower()
-                object_name_lower = object_name_lower.strip()
-                object_name_lower = object_name_lower[::-1] #=> reverses line
-                parts = object_name_lower.split(" ")
-                object_name_lower = parts[0]
-                object_name_lower = object_name_lower[::-1] #=> reverses line
-                if "this." in object_name_lower: continue
-                object_name_lower = re.sub(r'\W+', '', object_name_lower) #remove non alphanumeric chars
-
-                #print "our object: " + object_name_lower
-
-                if object_name_lower in apex_reserved.keywords: continue
-
-                object_name = object_name.strip()
-                object_name = object_name[::-1] #=> reverses line
-                parts = object_name.split(" ")
-                object_name = parts[0]
-                object_name = object_name[::-1] #=> reverses line
-                object_name = re.sub(r'\W+', '', object_name) #remove non alphanumeric chars
-                #print "our object capped: " + object_name
-
-                if object_name_lower != None and object_name_lower != "": break
-                #need to handle with word is found within a multiline comment
-            if os.path.isfile(mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
-                json_data = open(mm_dir+"/support/lib/apex/"+object_name_lower+".json")
-                data = json.load(json_data)
-                json_data.close()
-                pd = data["instance_methods"]
-                for method in pd:
-                    _completions.append((method, method))
-                return sorted(_completions)
-            elif os.path.isfile(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
-                object_dom = parse(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object")
-                for node in object_dom.getElementsByTagName('fields'):
-                    field_name = ''
-                    field_type = ''
-                    for child in node.childNodes:                            
-                        if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                        if child.nodeName == 'fullName':
-                            field_name = child.firstChild.nodeValue
-                        elif child.nodeName == 'type':
-                            field_type = child.firstChild.nodeValue
-                    _completions.append((field_name+" \t"+field_type, field_name))
-                return sorted(_completions)
-            elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
-                object_dom = parse(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object")
-                for node in object_dom.getElementsByTagName('fields'):
-                    field_name = ''
-                    field_type = ''
-                    for child in node.childNodes:                            
-                        if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                        if child.nodeName == 'fullName':
-                            field_name = child.firstChild.nodeValue
-                        elif child.nodeName == 'type':
-                            field_type = child.firstChild.nodeValue
-                    _completions.append((field_name+" \t"+field_type, field_name))
-                return sorted(_completions)
-            
-            elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
-                search_name = util.prep_for_search(object_name)
-                _completions = util.get_apex_completions(search_name)
-                return sorted(_completions)
+    def show(self, view):
+        view.run_command("auto_complete", {
+            'disable_auto_insert': True,
+            'api_completions_only': True,
+            'next_completion_if_showing': False,
+            'auto_complete_commit_on_tab': True,
+        })
 
 
-#uses doxygen to generate xml-based documentation which assists in code completion/suggest functionality in MavensMate
-class GenerateApexClassDocsCommand(sublime_plugin.WindowCommand):
-    def run(self):
-        dinput = util.mm_project_directory() + "/src/classes"
-        doutput = util.mm_project_directory() + "/config/.class_docs"
-        if os.path.exists(util.mm_project_directory() + "/config/.class_docs/xml"):
-            import shutil
-            shutil.rmtree(util.mm_project_directory() + "/config/.class_docs/xml")
-        if not os.path.exists(util.mm_project_directory() + "/config/.class_docs"):
-            os.makedirs(util.mm_project_directory() + "/config/.class_docs")
-        if not os.path.exists(util.mm_project_directory() + "/config/.class_docs/xml"):
-            os.makedirs(util.mm_project_directory() + "/config/.class_docs/xml")
+class Autocomplete(sublime_plugin.EventListener):
+    """
+    Sublime Text autocompletion integration
+    """
 
+    completions = []
+    cplns_ready = None
 
-        printer = PanelPrinter.get(self.window.id())  
-        printer.show() 
-        printer.write('\nIndexing Apex class definitions...\n')
-        threads = []
-        thread = ExecuteDoxygen(dinput, doutput)
-        threads.append(thread)
-        thread.start()
-        handle_doxygen_threads(threads, printer)   
+    def on_query_completions(self, view, prefix, locations):
+        """ Sublime autocomplete event handler
 
-    def is_enabled(command):
-        return util.is_mm_project()
+            Get completions depends on current cursor position and return
+            them as list of ('possible completion', 'completion type')
+
+            :param view: `sublime.View` object
+            :type view: sublime.View
+            :param prefix: string for completions
+            :type prefix: basestring
+            :param locations: offset from beginning
+            :type locations: int
+
+            :return: list
+        """
+        if self.cplns_ready:
+            self.cplns_ready = None
+            if self.completions:
+                cplns, self.completions = self.completions, []
+                return [tuple(i) for i in cplns]
+            return
+
+        # nothing to do with non-python code
+        if not util.is_mm_project():
+            return
+
+        # get completions list
+        if self.cplns_ready is None:
+            ask_daemon(view, self.show_completions, 'autocomplete', locations[0])
+            self.cplns_ready = False
+        return
+
+    def show_completions(self, view, completions):
+        # XXX check position
+        self.cplns_ready = True
+        if completions:
+            self.completions = completions
+            view.run_command("hide_auto_complete")
+            sublime.set_timeout(functools.partial(self.show, view), 0)
+
+    def show(self, view):
+        view.run_command("auto_complete", {
+            'disable_auto_insert': True,
+            'api_completions_only': True,
+            'next_completion_if_showing': False,
+            'auto_complete_commit_on_tab': True,
+        })
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
@@ -1169,62 +1176,12 @@ def deploy_resource_bundle(bundle_name):
     params = {
         "files" : [file_path]
     }
-    util.mm_call('compile', params=params)
+    mm.call('compile', params=params)
     util.send_usage_statistics('Deploy Resource Bundle')
 
-#executes doxygen in the background
-class ExecuteDoxygen(threading.Thread):
-    def __init__(self, dinput, doutput):
-        self.result = None
-        self.dinput = dinput
-        self.doutput = doutput
-        threading.Thread.__init__(self)   
 
-    def run(self):
-        command = '( cat Doxyfile ; echo "INPUT=\\"'+self.dinput+'\\"" ; echo "EXTENSION_MAPPING=cls=Java" ; echo "OUTPUT_DIRECTORY=\\"'+self.doutput+'\\"" ; echo "OPTIMIZE_OUTPUT_JAVA = YES" ; echo "FILE_PATTERNS += *.cls" ; echo "GENERATE_LATEX = NO" ; echo "GENERATE_HTML = NO" ; echo "GENERATE_XML = YES" ) | ./doxygen -'
-        print(command)
-        os.chdir(mm_dir + "/bin")
-        os.system(command)
-
-#handles the completion of doxygen execution
-def handle_doxygen_threads(threads, printer):
-    next_threads = []
-    for thread in threads:
-        printer.write('.')
-        if thread.is_alive():
-            next_threads.append(thread)
-            continue
-        if thread.result == False:
-            continue
-        compile_result = thread.result
-
-    threads = next_threads
-    if len(threads):
-        sublime.set_timeout(lambda: handle_doxygen_threads(threads, printer), 200)
-        return
-
-    for filename in os.listdir(util.mm_project_directory() + "/config/.class_docs/xml"):
-        print(filename)
-        if filename.startswith('_') or filename.startswith('dir_'): 
-            os.remove(util.mm_project_directory() + "/config/.class_docs/xml/" + filename) 
-            continue
-        if filename == 'combine.xslt' or filename == 'compound.xsd': 
-            os.remove(util.mm_project_directory() + "/config/.class_docs/xml/" + filename)
-            continue
-        tempName = filename
-        if tempName.startswith('class_'):
-            tempName = tempName.replace('class_', '', 1)
-        elif tempName.startswith('enum_'):
-            tempName = tempName.replace('enum_', '', 1)
-        elif tempName.startswith('interface_'):
-            tempName = tempName.replace('interface_', '', 1)
-        tempName = tempName.replace('_', '')
-        os.rename(util.mm_project_directory() + "/config/.class_docs/xml/" + filename, util.mm_project_directory() + "/config/.class_docs/xml/" + tempName)
-
-    printer.write('\n[Indexing complete]' + '\n')
-    printer.hide() 
-
-util.package_check()
-util.start_mavensmate_app()  
-util.check_for_updates()
-util.send_usage_statistics('Startup')
+#TODO: this is not longer OK in ST3 from what i understand
+#util.package_check()
+#util.start_mavensmate_app()  
+#util.check_for_updates()
+#util.send_usage_statistics('Startup')

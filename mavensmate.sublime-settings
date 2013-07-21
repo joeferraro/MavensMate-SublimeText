@@ -91,6 +91,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
         "ApexClass"     : 
 	        {
 	            "test"          : "UnitTestApexClass.html",
+	            "exception"     : "ExceptionApexClass.html",
 	            "batch"         : "BatchApexClass.html",
 	            "schedulable"   : "SchedulableApexClass.html",
 	            "email"         : "EmailServiceApexClass.html",
@@ -114,5 +115,15 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
     },
 
 	//if true, MavensMate.app will start when Sublime Text starts
-	"mm_start_app_on_st_startup" : true
+	"mm_start_app_on_st_startup" : true,
+
+	"mm_default_subscription" : [
+		"ApexClass",
+		"ApexComponent",
+		"ApexPage",
+		"ApexTrigger",
+		"StaticResource"
+	],
+
+	"mm_ignore_managed_metadata" : true
 }

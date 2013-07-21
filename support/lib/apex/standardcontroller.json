@@ -1,0 +1,13 @@
+{
+  "instance_methods": [
+    "addFields(List<String>_fieldNames)", 
+    "cancel()", 
+    "delete()", 
+    "edit()", 
+    "getId()", 
+    "getRecord()", 
+    "reset()", 
+    "save()",
+    "view()"
+  ]
+}

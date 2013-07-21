@@ -1,47 +1,43 @@
-import sublime
-import sublime_plugin
-import sys
+#import sys 
 import os
 import subprocess
 import json
 import threading 
 import re
-import time
-import pipes
+#import pipes
 import shutil
 import codecs
-# import string
-# import random
+import string
+import random
 # from datetime import datetime, date, time
 
-try: 
-    import urllib, urllib2
-except ImportError:
-    import urllib.request as urllib
-
 try:
-    import apex_extensions
-except:
-    import MavensMate.apex_extensions as apex_extensions
+    #python 3
+    import MavensMate.config as config
+    import MavensMate.lib.apex_extensions as apex_extensions
+    from MavensMate.lib.usage_reporter import UsageReporter
+    from MavensMate.lib.upgrader import AutomaticUpgrader
+    #from MavensMate.lib.printer import PanelPrinter
+except BaseException as e:
+    print(e)
+    #python 2
+    import config
+    import lib.apex_extensions as apex_extensions
+    from lib.usage_reporter import UsageReporter
+    from lib.upgrader import AutomaticUpgrader
+    #from lib.printer import PanelPrinter
 
-import traceback
-from operator import itemgetter
-from datetime import datetime
-if os.name != 'nt':
-    import unicodedata
+#if os.name != 'nt':
+#    import unicodedata
 
 #PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 #for future reference (windows/linux support)
 #sublime.packages_path()
- 
-try:
-    mm_dir = os.getcwdu()
-except:
-    mm_dir = os.path.dirname(__file__)
+
+import sublime
+
 
 settings = sublime.load_settings('mavensmate.sublime-settings')
-hide_panel = settings.get('mm_hide_panel_on_success', 1)
-hide_time = settings.get('mm_hide_panel_time', 1)
 packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
 
@@ -49,266 +45,54 @@ def package_check():
     #ensure user settings are installed
     try:
         if not os.path.exists(packages_path+"/User/mavensmate.sublime-settings"):
-            shutil.copyfile(mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
+            shutil.copyfile(config.mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
     except:
         pass
-
-def mm_call(operation, mm_debug_panel=True, **kwargs):
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if operation != 'new_project' and operation != 'new_project_from_existing_directory' and is_project_legacy() == True:
-        operation = 'upgrade_project'
-    if not os.path.exists(settings.get('mm_location')):
-        active_window_id = sublime.active_window().id()
-        printer = PanelPrinter.get(active_window_id)
-        printer.show()
-        message = '[OPERATION FAILED]: Could not find MavensMate.app. Download MavensMate.app from http://www.joe-ferraro.com/mavensmate/MavensMate.app and place in /Applications. Also, please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
-        printer.write('\n'+message+'\n')
-        return
-
-    printer = None
-    context = kwargs.get('context', None)
-    params  = kwargs.get('params', None)
-    if mm_debug_panel:
-        try:
-            if isinstance(context, sublime.View):
-                active_window_id = sublime.active_window().id()
-            else:
-                active_window_id = context.window.id()
-        except:
-            active_window_id = sublime.active_window().id()
-        printer = PanelPrinter.get(active_window_id)
-        printer.show()
-
-    message = 'Handling requested operation...'
-    if operation == 'new_metadata':
-        message = 'Creating New '+params['metadata_type']+' => ' + params['metadata_name']
-    elif operation == 'synchronize':
-        if 'files' in params and len(params['files'])>0:
-            kind = params['files'][0]
-        elif 'directories' in params and len(params['directories'])>0:
-            kind = params['directories'][0]
-        else:
-            kind = '???'
-        message = 'Synchronizing to Server => ' + kind
-    elif operation == 'compile':
-        if 'files' in params and len(params['files']) == 1:
-            message = 'Compiling => ' + params['files'][0]
-        else:
-            message = 'Compiling Selected Metadata'
-    elif operation == 'compile_project':
-        message = 'Compiling Project' 
-    elif operation == 'edit_project':
-        message = 'Opening Edit Project dialog'  
-    elif operation == 'unit_test':
-        if 'selected' in params and len(params['selected']) == 1:
-            message = "Running Apex Test for " + params['selected'][0]
-        else:
-            message = 'Opening Apex Test Runner'
-    elif operation == 'clean_project':
-        message = 'Cleaning Project'
-    elif operation == 'deploy':
-        message = 'Opening Deploy dialog'
-    elif operation == 'execute_apex':
-        message = 'Opening Execute Apex dialog'
-    elif operation == 'upgrade_project':
-        message = 'Your MavensMate project needs to be upgraded. Opening the upgrade UI.'    
-    elif operation == 'index_apex_overlays':
-        message = 'Indexing Apex Overlays'  
-    elif operation == 'index_metadata':
-        message = 'Indexing Metadata'  
-    elif operation == 'delete':
-        if 'files' in params and len(params['files']) == 1:
-            message = 'Deleting => ' + get_active_file()
-        else:
-            message = 'Deleting Selected Metadata'
-    elif operation == 'refresh':
-        if 'files' in params and len(params['files']) == 1:
-            message = 'Refreshing => ' + get_active_file()
-        else:
-            message = 'Refreshing Selected Metadata'
-    elif operation == 'open_sfdc_url':
-        message = 'Opening Selected Metadata'
-    elif operation == 'new_apex_overlay':
-        message = 'Creating Apex Overlay' 
-    elif operation == 'delete_apex_overlay':
-        message = 'Deleting Apex Overlay'  
-    elif operation == 'fetch_logs':
-        message = 'Fetching Apex Logs'  
-    elif operation == 'project_from_existing_directory':
-        message = 'Opening New Project Dialog'  
-    elif operation == 'index_apex':
-        message = 'Indexing Project Apex Metadata.'  
-        
-    if mm_debug_panel:
-        printer.write('\n'+message+'\n')
-
-    threads = []
-    thread = MavensMateTerminalCall(
-        operation, 
-        project_name=get_project_name(), 
-        active_file=get_active_file(), 
-        mm_location=settings.get('mm_location'),
-        params=params
-    )
-
-    threads.append(thread)
-    thread.start()
-    if mm_debug_panel == False:
-        ThreadProgress(thread, message, 'Operation complete')
-    thread_progress_handler(operation, threads, printer, 0)
 
 def is_project_legacy():
     if os.path.exists(mm_project_directory()+"/config/settings.yaml"):
         return True
+    elif os.path.exists(mm_project_directory()+"/config/.settings"):
+        current_settings = parse_json_from_file(mm_project_directory()+"/config/.settings")
+        if 'subscription' not in current_settings:
+            return True
+        else:
+            return False
+
     else:
         return False
 
-#monitors thread for activity, passes to the result handler when thread is complete
-def thread_progress_handler(operation, threads, printer, i=0):
-    result = None
-    this_thread = None
-    next_threads = []
-    for thread in threads:
-        if printer != None:
-            printer.write('.')
-        if thread.is_alive():
-            next_threads.append(thread)
-            continue
-        if thread.result == None:
-            continue
-        this_thread = thread
-        result = thread.result
-
-    threads = next_threads
-
-    if len(threads):
-        sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 200)
+def generic_thread_progress_handler(thread, callback, i=0):
+    if thread.is_alive():
+        sublime.set_timeout(lambda: generic_thread_progress_handler(thread, callback, i), 200)
         return
-
-    handle_result(operation, printer, result, this_thread)
-
-#handles the result of the mm script
-def handle_result(operation, printer, result, thread):
-    try:
-        result = json.loads(result)
-        print_result_message(operation, result, printer, thread) 
-        if operation == 'new_metadata' and 'success' in result and to_bool(result['success']) == True:
-            if 'messages' in result:
-                if type(result['messages']) is not list:
-                    result['messages'] = [result['messages']]
-                for m in result['messages']:
-                    if 'package.xml' not in m['fileName']:
-                        file_name = m['fileName']
-                        location = mm_project_directory() + "/" + file_name.replace('unpackaged/', 'src/')
-                        sublime.active_window().open_file(location)
-                        break
-        if 'success' in result and to_bool(result['success']) == True:
-            if printer != None:
-                printer.hide()  
-        elif 'State' in result and result['State'] == 'Completed':
-            #tooling api
-            if printer != None:
-                printer.hide()
-        if operation == 'refresh':            
-            sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
-            clear_marked_line_numbers()
-    except AttributeError:   
-        if printer != None:
-            printer.write('\n[OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
-            printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
-    except Exception:
-        if printer != None:
-            printer.write('\n[OPERATION FAILED]: Whoops, you found a bug. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
-            printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
-
-#prints the result of the mm operation, can be a string or a dict
-def print_result_message(operation, res, printer, thread):
-    if 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
-        #here we're parsing a response from the tooling endpoint
-        errors = json.loads(res['CompilerErrors'])
-        if type(errors) is not list:
-            errors = [errors]
-        for e in errors:
-            line_col = ""
-            line, col = 1, 1
-            if 'line' in e:
-                line = int(e['line'])
-                line_col = ' (Line: '+str(line)
-                mark_line_numbers([line], "bookmark")
-            if 'column' in e:
-                col = int(e['column'])
-                line_col += ', Column: '+str(col)
-            if len(line_col):
-                line_col += ')'
-            printer.write('\n[COMPILE FAILED]: ' + e['problem'] + line_col + '\n')
-
-    elif 'success' in res and to_bool(res['success']) == False and 'messages' in res:
-        #here we're parsing a response from the metadata endpoint
-        line_col = ""
-        msg = None
-        failures = None
-        if type( res['messages'] ) == list:
-            for m in res['messages']:
-                if 'problem' in m:
-                    msg = m
-                    break
-            if msg == None: #must not have been a compile error, must be a test run error
-                if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
-                    failures = res['run_test_result']['failures']
-                elif 'failures' in res['run_test_result']:
-                    failures = [res['run_test_result']['failures']]
-            #print(failures)
-        else:
-            msg = res['messages']
-        if msg != None:
-            if 'lineNumber' in msg:
-                line_col = ' (Line: '+msg['lineNumber']
-                mark_line_numbers([int(float(msg['lineNumber']))], "bookmark")
-            if 'columnNumber' in msg:
-                line_col += ', Column: '+msg['columnNumber']
-            if len(line_col) > 0:
-                line_col += ')'
-            printer.write('\n[DEPLOYMENT FAILED]: ' + msg['fileName'] + ': ' + msg['problem'] + line_col + '\n')
-        elif failures != None:
-            for f in failures: 
-                printer.write('\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n')
-    elif 'success' in res and res["success"] == False and 'line' in res:
-        #this is a response from the apex compile api
-        line_col = ""
-        line, col = 1, 1
-        if 'line' in res:
-            line = int(res['line'])
-            line_col = ' (Line: '+str(line)
-            mark_line_numbers([line], "bookmark")
-        if 'column' in res:
-            col = int(res['column'])
-            line_col += ', Column: '+str(col)
-        if len(line_col):
-            line_col += ')'
-
-        #scroll to the line and column of the exception
-        if settings.get('mm_compile_scroll_to_error', True) and not thread == None and os.path.exists(thread.active_file):
-            #open file, if already open it will bring it to focus
-            view = sublime.active_window().open_file(thread.active_file)
-            pt = view.text_point(line-1, col-1)
-            view.sel().clear()
-            view.sel().add(sublime.Region(pt))
-            view.show(pt)
-
-        printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
-    elif 'success' in res and to_bool(res['success']) == True and 'Messages' in res and len(res['Messages']) > 0:
-        printer.write('\n[Operation completed Successfully - With Compile Errors]' + '\n')
-        printer.write('\n[COMPILE ERRORS] - Count:' )
-        for m in res['Messages']:
-            printer.write('\n' + 'FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber'] + '\n')
-    elif 'success' in res and to_bool(res['success']) == True:
-        printer.write('\n[Operation completed Successfully]' + '\n')
-    elif 'success' in res and to_bool(res['success']) == False and 'body' in res:
-        printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
-    elif 'success' in res and to_bool(res['success']) == False:
-        printer.write('\n[OPERATION FAILED]' + '\n')
     else:
-        printer.write('\n[Operation Completed Successfully]' + '\n')    
+        callback(thread.result)
+        return
+ 
+# #monitors thread for activity, passes to the result handler when thread is complete
+# def thread_progress_handler(operation, threads, printer, i=0):
+#     result = None
+#     this_thread = None
+#     next_threads = []
+#     for thread in threads:
+#         if printer != None:
+#             printer.write('.')
+#         if thread.is_alive():
+#             next_threads.append(thread)
+#             continue
+#         if thread.result == None:
+#             continue
+#         this_thread = thread
+#         result = thread.result
+
+#     threads = next_threads
+
+#     if len(threads):
+#         sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 200)
+#         return
+
+#     #handle_result(operation, printer, result, this_thread)
 
 def parse_json_from_file(location):
     try:
@@ -341,30 +125,34 @@ def get_execution_overlays(file_path):
 
 #creates resource-bundles for the static resource(s) selected        
 def create_resource_bundle(self, files):
-    for file in files:
-        fileName, fileExtension = os.path.splitext(file)
-        if fileExtension != '.resource':
-            sublime.message_dialog("You can only create resource bundles for static resources")
-            return
-    printer = PanelPrinter.get(self.window.id())
-    printer.show()
-    printer.write('\nCreating Resource Bundle(s)\n')
+    # for file in files:
+    #     fileName, fileExtension = os.path.splitext(file)
+    #     if fileExtension != '.resource':
+    #         sublime.message_dialog("You can only create resource bundles for static resources")
+    #         return
+    # printer = PanelPrinter.get(self.window.id())
+    # printer.show()
+    # printer.write('\nCreating Resource Bundle(s)\n')
 
-    if not os.path.exists(mm_project_directory()+'/resource-bundles'):
-        os.makedirs(mm_project_directory()+'/resource-bundles')
+    # if not os.path.exists(mm_project_directory()+'/resource-bundles'):
+    #     os.makedirs(mm_project_directory()+'/resource-bundles')
 
-    for file in files:
-        fileName, fileExtension = os.path.splitext(file)
-        baseFileName = fileName.split("/")[-1]
-        if os.path.exists(mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension):
-            printer.write('[OPERATION FAILED]: The resource bundle already exists\n')
-            return
-        cmd = 'unzip \''+file+'\' -d \''+mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension+'\''
-        res = os.system(cmd)
+    # for file in files:
+    #     fileName, fileExtension = os.path.splitext(file)
+    #     baseFileName = fileName.split("/")[-1]
+    #     if os.path.exists(mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension):
+    #         printer.write('[OPERATION FAILED]: The resource bundle already exists\n')
+    #         return
+    #     cmd = 'unzip \''+file+'\' -d \''+mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension+'\''
+    #     res = os.system(cmd)
 
-    printer.write('[Resource bundle creation complete]\n')
-    printer.hide()
-    send_usage_statistics('Create Resource Bundle') 
+    # printer.write('[Resource bundle creation complete]\n')
+    # printer.hide()
+    # send_usage_statistics('Create Resource Bundle') 
+    pass
+
+def get_random_string(size=8, chars=string.ascii_lowercase + string.digits):
+    return ''.join(random.choice(chars) for x in range(size))
 
 def get_active_file():
     try:
@@ -485,6 +273,29 @@ def is_apex_test_file(filename=None):
             if p.search(content): return True
     return False
 
+def mark_overlays(lines):
+    mark_line_numbers(lines, "dot", "overlay")
+
+def write_overlays(overlay_result):
+    result = json.loads(overlay_result)
+    if result["totalSize"] > 0:
+        for r in result["records"]:
+            sublime.set_timeout(lambda: mark_line_numbers([int(r["Line"])], "dot", "overlay"), 100)
+
+def mark_line_numbers(lines, icon="dot", mark_type="compile_issue"):
+    points = [sublime.active_window().active_view().text_point(l - 1, 0) for l in lines]
+    regions = [sublime.Region(p, p) for p in points]
+    sublime.active_window().active_view().add_regions(mark_type, regions, "operation.fail",
+        icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
+
+def clear_marked_line_numbers(mark_type="compile_issue"):
+    try:
+        sublime.set_timeout(lambda: sublime.active_window().active_view().erase_regions(mark_type), 100)
+    except Exception as e:
+        print(e.message)
+        print('no regions to clean up')
+
+
 def is_apex_webservice_file(filename=None):
     if not filename: filename = get_active_file()
     if not is_apex_class_file(filename): return False
@@ -512,42 +323,18 @@ def mm_workspace():
         workspace = sublime.active_window().active_view().settings().get('mm_workspace')
     return workspace
 
-def mark_overlays(lines):
-    mark_line_numbers(lines, "dot", "overlay")
-
-def write_overlays(overlay_result):
-    result = json.loads(overlay_result)
-    if result["totalSize"] > 0:
-        for r in result["records"]:
-            sublime.set_timeout(lambda: mark_line_numbers([int(r["Line"])], "dot", "overlay"), 100)
-
-def mark_line_numbers(lines, icon="dot", mark_type="compile_issue"):
-    points = [sublime.active_window().active_view().text_point(l - 1, 0) for l in lines]
-    regions = [sublime.Region(p, p) for p in points]
-    sublime.active_window().active_view().add_regions(mark_type, regions, "operation.fail",
-        icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
-
-def clear_marked_line_numbers(mark_type="compile_issue"):
-    try:
-        sublime.set_timeout(lambda: sublime.active_window().active_view().erase_regions(mark_type), 100)
-    except Exception as e:
-        print(e.message)
-        print('no regions to clean up')
-
-def compile_callback(result):
-    try:
-        result = json.loads(result)
-        if 'success' in result and result['success'] == True:
-            clear_marked_line_numbers()
-        elif 'State' in result and result['State'] == 'Completed':
-            clear_marked_line_numbers()
-    except:
-        print('[MAVENSMATE] Issue handling compile result')
-
 def print_debug_panel_message(message):
-    printer = PanelPrinter.get(sublime.active_window().id())
-    printer.show()
-    printer.write(message)
+    # printer = PanelPrinter.get(sublime.active_window().id())
+    # printer.show()
+    # printer.write(message)
+    pass
+
+#preps code completion object for search
+def prep_for_search(name): 
+    #s1 = re.sub('(.)([A-Z]+)', r'\1_\2', name).strip()
+    #return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    #return re.sub('([A-Z])', r'\1_', name)
+    return name.replace('_', '')
 
 def get_apex_completions(search_name):
     completions = []
@@ -573,6 +360,47 @@ def get_apex_completions(search_name):
                             params += p['name'] + " (" + p["type"] + ")"
                     completions.append((c["visibility"] + " " + c["name"]+"("+params+") "+c['returnType'], c["name"]))
     return sorted(completions) 
+
+def get_variable_list(view):
+    # #print(view.substr(sublime.Region(0,10000000)))
+    # if (view.is_dirty()):
+    #     view.file_name();
+        
+    #     thread = MavensMateParserCall(view=view)
+
+    #     #p = subprocess.Popen("java -jar {0} {1}".format(pipes.quote(config.mm_dir+"/bin/parser.jar"), pipes.quote(file_path)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True) 
+    #     msg = None
+    #     if p.stdout is not None: 
+    #         msg = p.stdout.readlines()
+    #     elif p.stderr is not None:
+    #         msg = p.stdout.readlines() 
+    #     if msg == '' or len(msg) == 0:
+    #         return_dict = {
+    #             "result" : []
+    #         }
+    #         return json.dumps(return_dict)
+    #     else:
+    #         result = msg[0].decode("utf-8")
+    #         result = result.replace(",]}","]}")
+    #         return json.loads(result)
+    # else:
+    #     view.file_name();
+    #     p = subprocess.Popen("java -jar {0} {1}".format(pipes.quote(config.mm_dir+"/bin/parser.jar"), pipes.quote(file_path)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True) 
+    #     msg = None
+    #     if p.stdout is not None: 
+    #         msg = p.stdout.readlines()
+    #     elif p.stderr is not None:
+    #         msg = p.stdout.readlines() 
+    #     if msg == '' or len(msg) == 0:
+    #         return_dict = {
+    #             "result" : []
+    #         }
+    #         return json.dumps(return_dict)
+    #     else:
+    #         result = msg[0].decode("utf-8")
+    #         result = result.replace(",]}","]}")
+    #         return json.loads(result)
+    pass
 
 #parses the input from sublime text
 def parse_new_metadata_input(input):
@@ -624,17 +452,6 @@ def check_for_updates():
     if settings.get('mm_check_for_updates') == True:
         sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
 
-def index_overlays():
-    mm_call('index_apex_overlays', False)
-    send_usage_statistics('Index Apex Overlays')  
-
-#preps code completion object for search in doxygen documentation
-def prep_for_search(name): 
-    #s1 = re.sub('(.)([A-Z]+)', r'\1_\2', name).strip()
-    #return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-    #return re.sub('([A-Z])', r'\1_', name)
-    return name.replace('_', '')
-
 def start_mavensmate_app():
     p = subprocess.Popen("pgrep -fl \"MavensMate \"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
     msg = None
@@ -649,95 +466,15 @@ def start_mavensmate_app():
         else:
             sublime.error_message("MavensMate is not running, please start it from your Applications folder.")
 
-class UsageReporter(threading.Thread):
-    def __init__(self, action):
-        self.action = action
-        threading.Thread.__init__(self)
-
-    def run(self):
-        try:
-            ip_address = ''
-            try:
-                #get ip address
-                ip_address = urllib2.urlopen('http://ip.42.pl/raw').read()
-            except:
-                ip_address = 'unknown'
-
-            #get current version of mavensmate
-            json_data = open(mm_dir+"/packages.json")
-            data = json.load(json_data)
-            json_data.close()
-            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
-
-            #post to usage servlet
-            url = "https://mavensmate.appspot.com/usage"
-            headers = { "Content-Type":"application/x-www-form-urlencoded" }
-
-            handler = urllib2.HTTPSHandler(debuglevel=0)
-            opener = urllib2.build_opener(handler)
-
-            req = urllib2.Request("https://mavensmate.appspot.com/usage", data='version='+current_version+'&ip_address='+ip_address+'&action='+self.action+'', headers=headers)
-            response = opener.open(req).read()
-            #print response
-        except: 
-            #traceback.print_exc(file=sys.stdout)
-            print('[MAVENSMATE] failed to send usage statistic')
-
-class ThreadProgress():
-    """
-    Animates an indicator, [=   ], in the status area while a thread runs
-
-    :param thread:
-        The thread to track for activity
-
-    :param message:
-        The message to display next to the activity indicator
-
-    :param success_message:
-        The message to display once the thread is complete
-    """
-
-    def __init__(self, thread, message, success_message, callback=None):
-        self.thread = thread
-        self.message = message
-        self.success_message = success_message
-        self.addend = 1
-        self.size = 8
-        self.callback = None
-        sublime.set_timeout(lambda: self.run(0), 100)
-
-    def run(self, i):
-        if not self.thread.is_alive():
-            if hasattr(self.thread, 'result') and not self.thread.result:
-                sublime.status_message('')
-                return
-            sublime.status_message(self.success_message)
-            if self.callback != None:
-                self.callback()
-            return
-
-        before = i % self.size
-        after = (self.size - 1) - before
-
-        sublime.status_message('%s [%s=%s]' % \
-            (self.message, ' ' * before, ' ' * after))
-
-        if not after:
-            self.addend = -1
-        if not before:
-            self.addend = 1
-        i += self.addend
-
-        sublime.set_timeout(lambda: self.run(i), 100)
-
 def finish_update():
-    sublime.message_dialog("MavensMate has been updated successfully!")
-    printer = PanelPrinter.get(sublime.active_window().id())
-    printer.hide()    
+    # sublime.message_dialog("MavensMate has been updated successfully!")
+    # printer = PanelPrinter.get(sublime.active_window().id())
+    # printer.hide()  
+    pass  
 
 def get_version_number():
     try:
-        json_data = open(mm_dir+"/packages.json")
+        json_data = open(config.mm_dir+"/packages.json")
         data = json.load(json_data)
         json_data.close()
         version = data["packages"][0]["platforms"]["osx"][0]["version"]
@@ -745,340 +482,11 @@ def get_version_number():
     except:
         return ''
 
-class AutomaticUpgrader(threading.Thread):
+class MavensMateParserCall(threading.Thread):
     def __init__(self):
-        threading.Thread.__init__(self)
+        self.foo = 'bar';
 
     def run(self):
-        try:
-            json_data = open(mm_dir+"/packages.json")
-            data = json.load(json_data)
-            json_data.close()
-            current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
-            #j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
-            j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/packages.json"))
-            latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
-            release_notes = "\n\nRelease Notes: "
-            try:
-                release_notes += j["packages"][0]["platforms"]["osx"][0]["release_notes"] + "\n\n"
-            except:
-                release_notes = ""
+        pass
 
-            installed_version_int = int(float(current_version.replace(".", "")))
-            server_version_int = int(float(latest_version.replace(".", "")))
-
-            needs_update = False
-            if server_version_int > installed_version_int:
-                needs_update = True
-            
-            if needs_update == True:
-                #if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. "+release_notes+"Would you like to update?", "Update"):
-                    #sublime.set_timeout(lambda: sublime.run_command("update_me"), 1)
-                sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available. To update, select 'Plugins' from the MavensMate.app status bar menu.")
-        
-        except:
-            print('[MAVENSMATE] skipping update check')
-
-#calls out to the ruby scripts that interact with the metadata api
-#pushes them to background threads and reads the piped response
-class MavensMateTerminalCall(threading.Thread):
-    def __init__(self, operation, **kwargs):
-        self.operation      = operation
-        self.project_name   = kwargs.get('project_name', None)
-        self.active_file    = kwargs.get('active_file', None)
-        self.mm_location    = kwargs.get('mm_location', None)
-        self.params         = kwargs.get('params', None)
-        self.process        = None
-        self.result         = None
-        self.callback       = None
-        if self.params != None:
-            self.callback   = self.params.get('callback', None)
-        threading.Thread.__init__(self)
-
-    def get_arguments(self, ui=False, html=False):
-        args = {
-            '-o'        : self.operation,
-            '--html'    : html
-        }
-        if sublime_version >= 3000:
-            args['-c'] = 'SUBLIME_TEXT_3'
-        else:
-            args['-c'] = 'SUBLIME_TEXT_2'
-        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project', 'new_project_from_existing_directory']
-        if self.operation in ui_operations:
-            args['--ui'] = True
-
-        arg_string = []
-        for x in args.keys():
-            if args[x] != None and args[x] != True and args[x] != False:
-                arg_string.append(x + ' ' + args[x] + ' ')
-            elif args[x] == True or args[x] == None:
-                arg_string.append(x + ' ')
-        stripped_string = ''.join(arg_string).strip()
-        return stripped_string
-
-    def submit_payload(self):
-        o = self.operation
-        
-        if o == 'new_metadata':
-            # unique payload parameters
-            payload = {
-                'project_name'                  : self.project_name,
-                'api_name'                      : self.params.get('metadata_name', None),
-                'metadata_type'                 : self.params.get('metadata_type', None),
-                'apex_trigger_object_api_name'  : self.params.get('object_api_name', None),
-                'apex_class_type'               : self.params.get('apex_class_type', None)
-            }
-        elif o == 'new_project_from_existing_directory':
-            # no project name
-            payload = self.params
-        else:
-
-            params = {
-                'selected': [
-                    'unit_test',
-                    'deploy'
-                ],
-                'files': [
-                    'compile',
-                    'synchronize',
-                    'refresh',
-                    'refresh_properties',
-                    'open_sfdc_url',
-                    'delete'
-                ],
-                'directories': [
-                    'refresh',
-                    'synchronize',
-                    'refresh_properties'
-                ],
-                'type': [
-                    'open_sfdc_url'
-                ]
-            }
-
-            # common parameters
-            if o == 'new_apex_overlay' or o == 'delete_apex_overlay':
-                payload = self.params
-            else:
-                payload = {}
-
-            payload['project_name'] = self.project_name
-
-            #selected files
-            if o in params['files']:
-                payload['files'] = self.params.get('files', [])
-            #directories
-            if o in params['directories']: 
-                payload['directories'] = self.params.get('directories', [])
-            #selected metadata
-            if o in params['selected']:
-                if self.params != None:
-                    payload['selected'] = self.params.get('selected', [])
-            #open type
-            if o in params['type']:
-                payload['type'] = self.params.get('type', 'edit')
-
-        if type(payload) is dict:
-            payload = json.dumps(payload)  
-        print(payload)  
-        try:
-            self.process.stdin.write(payload)
-        except:
-            self.process.stdin.write(payload.encode('utf-8'))
-        self.process.stdin.close()
-
-    def run(self):
-        print('[MAVENSMATE] executing mm terminal call')
-        print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
-        self.process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        self.submit_payload()
-        if self.process.stdout is not None: 
-            mm_response = self.process.stdout.readlines()
-        elif self.process.stderr is not None:
-            mm_response = self.process.stderr.readlines()
-        try:
-            response_body = '\n'.join(mm_response)
-        except:
-            strs = []
-            for line in mm_response:
-                strs.append(line.decode('utf-8'))   
-            response_body = '\n'.join(strs)
-
-        print('[MAVENSMATE] response from mm: ' + response_body)
-        self.result = response_body
-        if self.operation == 'compile':
-            compile_callback(response_body)
-        if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
-            sublime.set_timeout(lambda : index_overlays(), 100)
-        if self.callback != None:
-            print(self.callback)
-            self.callback(response_body)
-
-
-#class representing the MavensMate activity/debug panel in Sublime Text
-class PanelPrinter(object):
-    printers = {}
-
-    def __init__(self):
-        self.name = 'MavensMate-OutputPanel'
-        self.visible = False
-        self.hide_time = hide_time
-        self.queue = []
-        self.strings = {}
-        self.just_error = False
-        self.capture = False
-        self.input = None
-        self.input_start = None
-        self.on_input_complete = None
-        self.original_view = None
-
-    @classmethod
-    def get(cls, window_id):
-        printer = cls.printers.get(window_id)
-        if not printer:
-            printer = PanelPrinter()
-            printer.window_id = window_id
-            printer.init()
-            cls.printers[window_id] = printer
-            printer.write('==============================================\n')
-            printer.write('<---- MavensMate for Sublime Text v'+get_version_number()+' ---->\n')
-            printer.write('==============================================\n')
-        return printer
-
-    def error(self, string):
-        callback = lambda : self.error_callback(string)
-        sublime.set_timeout(callback, 1)
-
-    def error_callback(self, string):
-        string = str(string)
-        self.reset_hide()
-        self.just_error = True
-        sublime.error_message('MavensMate: ' + string)
-
-    def hide(self, thread = None):
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        hide = settings.get('mm_hide_panel_on_success', True)
-        if hide == True:
-            hide_time = time.time() + float(hide)
-            self.hide_time = hide_time
-            sublime.set_timeout(lambda : self.hide_callback(hide_time, thread), int(hide * 300))
-
-    def hide_callback(self, hide_time, thread):
-        if thread:
-            last_added = ThreadTracker.get_last_added(self.window_id)
-            if thread != last_added:
-                return
-        if self.visible and self.hide_time and hide_time == self.hide_time:
-            if not self.just_error:
-                self.window.run_command('hide_panel')
-            self.just_error = False
-
-    def init(self):
-        if not hasattr(self, 'panel'):
-            self.window = sublime.active_window()
-            self.panel = self.window.get_output_panel(self.name)
-            self.panel.set_read_only(True)
-            self.panel.settings().set('syntax', 'Packages/MavensMate/themes/MavensMate.hidden-tmLanguage')
-            self.panel.settings().set('color_scheme', 'Packages/MavensMate/themes/MavensMate.hidden-tmTheme')
-            self.panel.settings().set('word_wrap', True)
-            self.panel.settings().set('gutter', True)
-            self.panel.settings().set('line_numbers', True)
-
-    def reset_hide(self):
-        self.hide_time = None
-
-    def show(self, force = False):
-        self.init()
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        hide = settings.get('hide_output_panel', 1)
-        if force or hide != True or not isinstance(hide, bool):
-            self.visible = True
-            self.window.run_command('show_panel', {'panel': 'output.' + self.name})
-
-    def write(self, string, key = 'sublime_mm', finish = False):
-        if not len(string) and not finish:
-            return
-        if key not in self.strings:
-            self.strings[key] = []
-            self.queue.append(key)
-        if len(string):
-            try:
-                if not isinstance(string, unicode):
-                    string = unicode(string, 'UTF-8', errors='strict')
-            except:
-                if type(string) is not str:
-                    string = str(string, 'utf-8')
-            if os.name != 'nt':
-                string = unicodedata.normalize('NFC', string)
-            self.strings[key].append(string)
-        if finish:
-            self.strings[key].append(None)
-        sublime.set_timeout(self.write_callback, 0)
-        return key
-
-    def write_callback(self):
-        if sublime_version >= 3000:
-            found = False
-            for key in self.strings.keys():
-                if len(self.strings[key]):
-                    found = True
-            if not found:
-                return
-            string = self.strings[key].pop(0)
-            self.panel.run_command('mavens_mate_output_text', {'text': string})
-            
-            size = self.panel.size()
-            sublime.set_timeout(lambda : self.panel.show(size, True), 2)
-
-            return
-        else:
-            found = False
-            for key in self.strings.keys():
-                if len(self.strings[key]):
-                    found = True
-            if not found:
-                return
-            read_only = self.panel.is_read_only()
-            if read_only:
-                self.panel.set_read_only(False)
-            edit = self.panel.begin_edit()
-            keys_to_erase = []
-            for key in list(self.queue):
-                while len(self.strings[key]):
-                    string = self.strings[key].pop(0)
-                    if string == None:
-                        self.panel.erase_regions(key)
-                        keys_to_erase.append(key)
-                        continue
-                    if key == 'sublime_mm':
-                        point = self.panel.size()
-                    else:
-                        regions = self.panel.get_regions(key)
-                        if not len(regions):
-                            point = self.panel.size()
-                        else:
-                            region = regions[0]
-                            point = region.b + 1
-                    if point == 0 and string[0] == '\n':
-                        string = string[1:]
-                    self.panel.insert(edit, point, string)
-                    if key != 'sublime_mm':
-                        point = point + len(string) - 1
-                        region = sublime.Region(point, point)
-                        self.panel.add_regions(key, [region], '')
-        
-            for key in keys_to_erase:
-                if key in self.strings:
-                    del self.strings[key]
-                try:
-                    self.queue.remove(key)
-                except ValueError:
-                    pass
-            
-            self.panel.end_edit(edit)
-            if read_only:
-                self.panel.set_read_only(True)
-            size = self.panel.size()
-            sublime.set_timeout(lambda : self.panel.show(size, True), 2)
 

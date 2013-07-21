@@ -16,6 +16,10 @@
     "command": "edit_project"
   },
   {
+    "caption": "MavensMate: Cancel Current Command",
+    "command": "cancel_current"
+  }, 
+  {
     "caption": "MavensMate: Clean Project",
     "command": "clean_project"
   },
