@@ -6,6 +6,7 @@ import unicodedata
 import time
 from .threads import ThreadTracker
 settings = sublime.load_settings('mavensmate.sublime-settings')
+import MavensMate.util as util
 
 #class representing the MavensMate activity/debug panel in Sublime Text
 class PanelPrinter(object):
@@ -34,7 +35,7 @@ class PanelPrinter(object):
             printer.init()
             cls.printers[window_id] = printer
             printer.write('==============================================\n')
-            #printer.write('<---- MavensMate for Sublime Text v'+util.get_version_number()+' ---->\n')
+            printer.write('<---- MavensMate for Sublime Text v'+util.get_version_number()+' ---->\n')
             printer.write('==============================================\n')
         return printer
 

@@ -11,7 +11,7 @@ try:
     # Python 3
     import MavensMate.config as config
     import MavensMate.util as util
-    from MavensMate.lib import command_helper
+    import MavensMate.lib.command_helper as command_helper
     import MavensMate.lib.mm_interface as mm
     #from lib.printer import PanelPrinter
     from MavensMate.lib.printer import PanelPrinter
@@ -20,9 +20,9 @@ except ValueError as e:
     # Python 2
     import util 
     import config
+    import lib.command_helper as command_helper
     from lib.printer import PanelPrinter
     from lib.threads import ThreadTracker
-    import command_helper 
 
 import sublime
 import sublime_plugin
@@ -862,7 +862,6 @@ class WriteOperationStatus(sublime_plugin.TextCommand):
     def run(self, edit, text, *args, **kwargs):
         kw_region = kwargs.get('region', [0,0])
         status_region = sublime.Region(kw_region[0],kw_region[1])
-        #print(status_region)
         size = self.view.size()
         self.view.set_read_only(False)
         self.view.replace(edit, status_region, text)
@@ -1180,8 +1179,7 @@ def deploy_resource_bundle(bundle_name):
     util.send_usage_statistics('Deploy Resource Bundle')
 
 
-#TODO: this is not longer OK in ST3 from what i understand
-#util.package_check()
-#util.start_mavensmate_app()  
-#util.check_for_updates()
-#util.send_usage_statistics('Startup')
+util.package_check()
+util.start_mavensmate_app()  
+util.check_for_updates()
+util.send_usage_statistics('Startup')

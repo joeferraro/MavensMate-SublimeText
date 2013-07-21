@@ -61,39 +61,7 @@ def is_project_legacy():
 
     else:
         return False
-
-def generic_thread_progress_handler(thread, callback, i=0):
-    if thread.is_alive():
-        sublime.set_timeout(lambda: generic_thread_progress_handler(thread, callback, i), 200)
-        return
-    else:
-        callback(thread.result)
-        return
  
-# #monitors thread for activity, passes to the result handler when thread is complete
-# def thread_progress_handler(operation, threads, printer, i=0):
-#     result = None
-#     this_thread = None
-#     next_threads = []
-#     for thread in threads:
-#         if printer != None:
-#             printer.write('.')
-#         if thread.is_alive():
-#             next_threads.append(thread)
-#             continue
-#         if thread.result == None:
-#             continue
-#         this_thread = thread
-#         result = thread.result
-
-#     threads = next_threads
-
-#     if len(threads):
-#         sublime.set_timeout(lambda: thread_progress_handler(operation, threads, printer, i), 200)
-#         return
-
-#     #handle_result(operation, printer, result, this_thread)
-
 def parse_json_from_file(location):
     try:
         json_data = open(location)
@@ -157,7 +125,7 @@ def get_random_string(size=8, chars=string.ascii_lowercase + string.digits):
 def get_active_file():
     try:
         return sublime.active_window().active_view().file_name()
-    except Exception as e:
+    except Exception:
         return ''
 
 def get_project_name():
@@ -273,24 +241,23 @@ def is_apex_test_file(filename=None):
             if p.search(content): return True
     return False
 
-def mark_overlays(lines):
-    mark_line_numbers(lines, "dot", "overlay")
+def mark_overlays(view, lines):
+    mark_line_numbers(view, lines, "dot", "overlay")
 
-def write_overlays(overlay_result):
+def write_overlays(view, overlay_result):
     result = json.loads(overlay_result)
     if result["totalSize"] > 0:
         for r in result["records"]:
-            sublime.set_timeout(lambda: mark_line_numbers([int(r["Line"])], "dot", "overlay"), 100)
+            sublime.set_timeout(lambda: mark_line_numbers(view, [int(r["Line"])], "dot", "overlay"), 100)
 
-def mark_line_numbers(lines, icon="dot", mark_type="compile_issue"):
-    points = [sublime.active_window().active_view().text_point(l - 1, 0) for l in lines]
+def mark_line_numbers(view, lines, icon="dot", mark_type="compile_issue"):
+    points = [view.text_point(l - 1, 0) for l in lines]
     regions = [sublime.Region(p, p) for p in points]
-    sublime.active_window().active_view().add_regions(mark_type, regions, "operation.fail",
-        icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
+    view.add_regions(mark_type, regions, "operation.fail", icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
 
-def clear_marked_line_numbers(mark_type="compile_issue"):
+def clear_marked_line_numbers(view, mark_type="compile_issue"):
     try:
-        sublime.set_timeout(lambda: sublime.active_window().active_view().erase_regions(mark_type), 100)
+        sublime.set_timeout(lambda: view.erase_regions(mark_type), 100)
     except Exception as e:
         print(e.message)
         print('no regions to clean up')
@@ -448,9 +415,9 @@ def refresh_active_view():
     sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
 
 def check_for_updates():
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if settings.get('mm_check_for_updates') == True:
-        sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
+    #settings = sublime.load_settings('mavensmate.sublime-settings')
+    #if settings.get('mm_check_for_updates') == True:
+    sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
 
 def start_mavensmate_app():
     p = subprocess.Popen("pgrep -fl \"MavensMate \"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -462,15 +429,10 @@ def start_mavensmate_app():
     if msg == '' or len(msg) == 0:
         settings = sublime.load_settings('mavensmate.sublime-settings')
         if settings != None and settings.get('mm_app_location') != None:
-            os.system("open '"+settings.get('mm_app_location')+"'")
+           os.system("open '"+settings.get('mm_app_location')+"'")
         else:
-            sublime.error_message("MavensMate is not running, please start it from your Applications folder.")
-
-def finish_update():
-    # sublime.message_dialog("MavensMate has been updated successfully!")
-    # printer = PanelPrinter.get(sublime.active_window().id())
-    # printer.hide()  
-    pass  
+           #sublime.error_message("MavensMate.app is not running, please start it from your Applications folder.")
+           print('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
 
 def get_version_number():
     try:

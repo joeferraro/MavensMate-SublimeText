@@ -14,6 +14,18 @@
     </dict>
     <dict>
         <key>match</key>
+        <string>.*Result: Success*.</string>
+        <key>name</key>
+        <string>operation.success</string>
+    </dict>
+    <dict>
+        <key>match</key>
+        <string>\[COMPILE FAILED\]*.</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
         <string>^\[DEPLOYMENT FAILED\]?</string>
         <key>name</key>
         <string>operation.fail</string>
