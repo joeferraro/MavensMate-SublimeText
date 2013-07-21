@@ -65,6 +65,17 @@ class ThreadTracker(object):
         else:
             return []
 
+    @classmethod
+    def get_pending_mm_panel_threads(cls, window):
+        if window.id() in cls.pending_threads:
+            ts = []
+            for t in cls.pending_threads[window.id()]:
+                if t.use_mm_panel:
+                    ts.append(t)
+            return ts
+        else:
+            return []
+
 def unset_current_thread(fn):
 
     def handler(self, *args, **kwargs):

@@ -218,14 +218,12 @@ class MavensMateTerminalCall(threading.Thread):
         if self.use_mm_panel:
             if sys.version_info >= (3, 0):
                 self.calculate_process_region()
-            #else:
-            #    sublime.set_timeout(self.calculate_process_region(), 10)
             PanelThreadProgress(self)
 
-            last_thread = ThreadTracker.get_last_added(self.window)
-            ThreadTracker.add(self)
-            if last_thread != None:
-                last_thread.join()
+        last_thread = ThreadTracker.get_last_added(self.window)
+        ThreadTracker.add(self)
+        if last_thread != None:
+            last_thread.join()
 
         #mm_location = self.settings.get('mm_location')
 
@@ -253,7 +251,7 @@ class MavensMateTerminalCall(threading.Thread):
         if self.operation == 'compile':
             compile_callback(self, response_body)
         if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
-            sublime.set_timeout(lambda : index_overlays(), 100)
+            sublime.set_timeout(lambda : index_overlays(self.window), 100)
         #if self.callback != None:
         #    print(self.callback)
         #    self.callback(response_body)
@@ -299,9 +297,9 @@ def handle_result(operation, process_id, printer, result, thread):
                             sublime.active_window().open_file(location)
                             break
             if 'success' in result and util.to_bool(result['success']) == True:
-                if printer != None and len(ThreadTracker.get_pending(thread.window)) == 0:
+                if printer != None and len(ThreadTracker.get_pending_mm_panel_threads(thread.window)) == 0:
                     printer.hide()  
-            elif 'State' in result and result['State'] == 'Completed' and len(ThreadTracker.get_pending(thread.window)) == 0:
+            elif 'State' in result and result['State'] == 'Completed' and len(ThreadTracker.get_pending_mm_panel_threads(thread.window)) == 0:
                 #tooling api
                 if printer != None:
                     printer.hide()
@@ -431,21 +429,33 @@ def compile_callback(thread, result):
         if 'success' in result and result['success'] == True:
             util.clear_marked_line_numbers(thread.view)
             #if settings.get('mm_autocomplete') == True: 
-            sublime.set_timeout(lambda: index_apex_code(), 100)
+            sublime.set_timeout(lambda: index_apex_code(thread.window), 100)
         elif 'State' in result and result['State'] == 'Completed':
             util.clear_marked_line_numbers(thread.view)
             #if settings.get('mm_autocomplete') == True: 
-            sublime.set_timeout(lambda: index_apex_code(), 100)
+            sublime.set_timeout(lambda: index_apex_code(thread.window), 100)
     except BaseException as e:
         print('[MAVENSMATE] Issue handling compile result')
         print(e.message) 
 
-def index_overlays():
-    call('index_apex_overlays', False)
-    util.send_usage_statistics('Index Apex Overlays')  
+def index_overlays(window):
+    pending_threads = ThreadTracker.get_pending(window)
+    run_index_thread = True
+    for t in pending_threads:
+        if t.operation == 'index_apex_overlays':
+            run_index_thread = False
+            break
+    if run_index_thread:
+        call('index_apex_overlays', False)
 
-def index_apex_code():
-    call('index_apex', False)
-    util.send_usage_statistics('Index Apex Code')     
+def index_apex_code(window):
+    pending_threads = ThreadTracker.get_pending(window)
+    run_index_thread = True
+    for t in pending_threads:
+        if t.operation == 'index_apex':
+            run_index_thread = False
+            break
+    if run_index_thread:
+        call('index_apex', False)   
 
 
