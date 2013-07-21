@@ -1,7 +1,16 @@
+import MavensMate.util as util
+
+dict = {
+    'class'     : ['ApexClass',     'Apex Class'],
+    'trigger'   : ['ApexTrigger',   'Apex Trigger'],
+    'page'      : ['ApexPage',      'Visualforce Page'],
+    'component' : ['ApexComponent', 'Visualforce Component']
+}
+
 def get_message(params, operation):
     message = 'Handling requested operation...'
     if operation == 'new_metadata':
-        message = 'Creating New '+params['metadata_type']+' => ' + params['metadata_name']
+        message = 'Creating New '+params['metadata_type']+': ' + params['metadata_name']
     elif operation == 'synchronize':
         if 'files' in params and len(params['files'])>0:
             kind = params['files'][0]
@@ -9,10 +18,10 @@ def get_message(params, operation):
             kind = params['directories'][0]
         else:
             kind = '???'
-        message = 'Synchronizing to Server => ' + kind
+        message = 'Synchronizing to Server: ' + kind
     elif operation == 'compile':
         if 'files' in params and len(params['files']) == 1:
-            message = 'Compiling => ' + params['files'][0]
+            message = 'Compiling: ' + params['files'][0]
         else:
             message = 'Compiling Selected Metadata'
     elif operation == 'compile_project':
@@ -38,14 +47,12 @@ def get_message(params, operation):
         message = 'Indexing Metadata'  
     elif operation == 'delete':
         if 'files' in params and len(params['files']) == 1:
-            #message = 'Deleting => ' + get_active_file()
-            message = ""
+            message = 'Deleting: ' + util.get_active_file()
         else:
             message = 'Deleting Selected Metadata'
     elif operation == 'refresh':
         if 'files' in params and len(params['files']) == 1:
-            message = ""
-            #message = 'Refreshing => ' + get_active_file()
+            message = 'Refreshing: ' + util.get_active_file()
         else:
             message = 'Refreshing Selected Metadata'
     elif operation == 'open_sfdc_url':
