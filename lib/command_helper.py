@@ -1,5 +1,8 @@
-import MavensMate.util as util
-
+try:
+    import MavensMate.util as util
+except:
+    import util
+    
 dict = {
     'class'     : ['ApexClass',     'Apex Class'],
     'trigger'   : ['ApexTrigger',   'Apex Trigger'],

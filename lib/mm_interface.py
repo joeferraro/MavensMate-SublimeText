@@ -4,12 +4,21 @@ import json
 import pipes 
 import subprocess
 import os
-from .threads import ThreadTracker
-from .threads import ThreadProgress
-from .threads import PanelThreadProgress
-from .printer import PanelPrinter
-import MavensMate.lib.command_helper as command_helper
-import MavensMate.util as util
+import sys
+try:
+    from .threads import ThreadTracker
+    from .threads import ThreadProgress
+    from .threads import PanelThreadProgress
+    from .printer import PanelPrinter
+    import MavensMate.lib.command_helper as command_helper
+    import MavensMate.util as util
+except:
+    from lib.threads import ThreadTracker
+    from lib.threads import ThreadProgress
+    from lib.threads import PanelThreadProgress
+    from lib.printer import PanelPrinter
+    import lib.command_helper as command_helper
+    import util
 
 sublime_version = int(float(sublime.version()))
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -40,7 +49,8 @@ def call(operation, use_mm_panel=True, **kwargs):
         params=kwargs.get('params', None),
         context=kwargs.get('context', None),
         use_mm_panel=use_mm_panel,
-        process_id=util.get_random_string(10)
+        process_id=util.get_random_string(10),
+        mm_location=settings.get('mm_location')
     )
     threads.append(thread)
     thread.start()
@@ -54,6 +64,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.active_file    = kwargs.get('active_file', None)
         self.params         = kwargs.get('params', None)
         self.context        = kwargs.get('context', None)
+        self.mm_location    = kwargs.get('mm_location', None)
         self.view           = None
         self.window         = None
         self.printer        = None
@@ -205,7 +216,10 @@ class MavensMateTerminalCall(threading.Thread):
 
     def run(self):
         if self.use_mm_panel:
-            self.calculate_process_region()
+            if sys.version_info >= (3, 0):
+                self.calculate_process_region()
+            #else:
+            #    sublime.set_timeout(self.calculate_process_region(), 10)
             PanelThreadProgress(self)
 
             last_thread = ThreadTracker.get_last_added(self.window)
@@ -213,12 +227,12 @@ class MavensMateTerminalCall(threading.Thread):
             if last_thread != None:
                 last_thread.join()
 
-        mm_location = self.settings.get('mm_location')
+        #mm_location = self.settings.get('mm_location')
 
         print('[MAVENSMATE] executing mm terminal call:')
-        print("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()))
+        print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
         
-        process = subprocess.Popen("{0} {1}".format(mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         #process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         #process = subprocess.Popen("/Users/josephferraro/Development/joey2/bin/python /Users/josephferraro/Development/Python/mavensmate/mm/mm.py {0}".format(self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload(process)
@@ -250,7 +264,10 @@ class MavensMateTerminalCall(threading.Thread):
         #     "window"    : self.window,
         #     "view"      : self.view
         # }
-        self.calculate_process_region()
+        if sys.version_info >= (3, 0):
+            self.calculate_process_region()
+        #else:
+        #    sublime.set_timeout(self.calculate_process_region(), 10)
         ThreadTracker.remove(self)
 
 #handles the result of the mm script

@@ -1,12 +1,18 @@
 import sublime
 import os
-#import MavensMate.util as util
-import MavensMate.config as config
 import unicodedata
 import time
-from .threads import ThreadTracker
+
+try:
+    import MavensMate.config as config
+    import MavensMate.util as util
+    from .threads import ThreadTracker
+except:
+    import config
+    import util
+    from lib.threads import ThreadTracker
+
 settings = sublime.load_settings('mavensmate.sublime-settings')
-import MavensMate.util as util
 
 #class representing the MavensMate activity/debug panel in Sublime Text
 class PanelPrinter(object):

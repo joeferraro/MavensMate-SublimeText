@@ -1,6 +1,9 @@
 import threading
 import json
-import MavensMate.config as config
+try:
+    import MavensMate.config as config
+except:
+    import config
 try: 
     import urllib, urllib2
 except ImportError:

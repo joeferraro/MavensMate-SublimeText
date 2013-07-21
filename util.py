@@ -1,4 +1,4 @@
-#import sys 
+import sys 
 import os
 import subprocess
 import json
@@ -11,15 +11,14 @@ import string
 import random
 # from datetime import datetime, date, time
 
-try:
+if sys.version_info >= (3, 0):
     #python 3
     import MavensMate.config as config
     import MavensMate.lib.apex_extensions as apex_extensions
     from MavensMate.lib.usage_reporter import UsageReporter
     from MavensMate.lib.upgrader import AutomaticUpgrader
     #from MavensMate.lib.printer import PanelPrinter
-except BaseException as e:
-    print(e)
+else:
     #python 2
     import config
     import lib.apex_extensions as apex_extensions

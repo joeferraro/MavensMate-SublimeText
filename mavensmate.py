@@ -7,7 +7,7 @@ import sys
 #dist_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.insert(0, dist_dir)
 
-try:
+if sys.version_info >= (3, 0):
     # Python 3
     import MavensMate.config as config
     import MavensMate.util as util
@@ -15,12 +15,13 @@ try:
     import MavensMate.lib.mm_interface as mm
     #from lib.printer import PanelPrinter
     from MavensMate.lib.printer import PanelPrinter
-except ValueError as e:
-    print(">>>>>> ", e.message)
+    from MavensMate.lib.threads import ThreadTracker
+else:
     # Python 2
-    import util 
     import config
+    import util 
     import lib.command_helper as command_helper
+    import lib.mm_interface as mm
     from lib.printer import PanelPrinter
     from lib.threads import ThreadTracker
 
@@ -50,15 +51,16 @@ if st_version == 3:
     from imp import reload
 
 # Make sure all dependencies are reloaded on upgrade
-if reloader_name in sys.modules:
+if reloader_name in sys.modules and sys.version_info >= (3, 0):
     reload(sys.modules[reloader_name])
-
-try:
-    # Python 3
     from .lib import reloader
-except (ValueError):
-    # Python 2
-    from lib import reloader
+
+# try:
+#     # Python 3
+#     from .lib import reloader
+# except (ValueError):
+#     # Python 2
+#     from lib import reloader
 
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
