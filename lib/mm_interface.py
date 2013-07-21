@@ -32,8 +32,6 @@ def call(operation, use_mm_panel=True, **kwargs):
     if operation != 'new_project' and operation != 'new_project_from_existing_directory' and util.is_project_legacy() == True:
         operation = 'upgrade_project'
     
-    printer = None
-
     threads = []
     thread = MavensMateTerminalCall(
         operation, 
@@ -46,10 +44,6 @@ def call(operation, use_mm_panel=True, **kwargs):
     )
     threads.append(thread)
     thread.start()
-
-    #if use_mm_panel == False:
-    #    ThreadProgress(thread, message, 'Operation complete')
-    #thread_progress_handler(operation, threads, printer, 0)
 
 #thread that calls out to the mm tool
 #pushes to background threads and reads the piped response
@@ -83,8 +77,8 @@ class MavensMateTerminalCall(threading.Thread):
             self.printer.writeln(' ')
             self.printer.writeln('==============================================')
             self.printer.writeln('Request Id: '+self.process_id)
-            self.printer.writeln('Operation: '+self.operation)
-            self.printer.writeln('Target: myclass.cls')
+            #self.printer.writeln('Operation: '+self.operation)
+            #self.printer.writeln('Target: myclass.cls')
             self.printer.writeln(message)
             self.printer.writeln('Result:          ')
         else:
@@ -92,6 +86,7 @@ class MavensMateTerminalCall(threading.Thread):
 
         threading.Thread.__init__(self)
 
+    #ensures the thread has proper context (related to a specific window and/or view)
     def define_sublime_context(self):
         try:
             if isinstance(self.context, sublime.View):
@@ -209,13 +204,14 @@ class MavensMateTerminalCall(threading.Thread):
         self.status_region = self.printer.panel.find('Result:',process_region.begin())
 
     def run(self):
-        self.calculate_process_region()
-        PanelThreadProgress(self)
+        if self.use_mm_panel:
+            self.calculate_process_region()
+            PanelThreadProgress(self)
 
-        last_thread = ThreadTracker.get_last_added(self.window)
-        ThreadTracker.add(self)
-        if last_thread != None:
-            last_thread.join()
+            last_thread = ThreadTracker.get_last_added(self.window)
+            ThreadTracker.add(self)
+            if last_thread != None:
+                last_thread.join()
 
         mm_location = self.settings.get('mm_location')
 
@@ -241,11 +237,9 @@ class MavensMateTerminalCall(threading.Thread):
         print('[MAVENSMATE] response from mm: ' + response_body)
         self.result = response_body
         if self.operation == 'compile':
-            pass
-            #util.compile_callback(response_body)
+            compile_callback(self, response_body)
         if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
-            pass
-            #sublime.set_timeout(lambda : util.index_overlays(), 100)
+            sublime.set_timeout(lambda : index_overlays(), 100)
         #if self.callback != None:
         #    print(self.callback)
         #    self.callback(response_body)
@@ -299,12 +293,16 @@ def handle_result(operation, process_id, printer, result, thread):
                 util.clear_marked_line_numbers()
     except AttributeError:   
         if printer != None:
-            printer.write('\n[OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
+            msg = ' [OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
+            msg += '[RESPONSE FROM MAVENSMATE]: '+result
+            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
     except Exception:
         if printer != None:
-            printer.write('\n[OPERATION FAILED]: Whoops, you found a bug. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText')
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
+            msg = ' [OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
+            msg += '[RESPONSE FROM MAVENSMATE]: '+result
+            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
 
 #prints the result of the mm operation, can be a string or a dict
 def print_result_message(operation, process_id, status_region, res, printer, thread):
@@ -319,13 +317,25 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
             if 'line' in e:
                 line = int(e['line'])
                 line_col = ' (Line: '+str(line)
-                util.mark_line_numbers([line], "bookmark")
+                util.mark_line_numbers(thread.view, [line], "bookmark")
             if 'column' in e:
                 col = int(e['column'])
                 line_col += ', Column: '+str(col)
             if len(line_col):
                 line_col += ')'
-            printer.write('\n[COMPILE FAILED]: ' + e['problem'] + line_col + '\n')
+
+            #scroll to the line and column of the exception
+            #if settings.get('mm_compile_scroll_to_error', True):
+            #open file, if already open it will bring it to focus
+            #view = sublime.active_window().open_file(thread.active_file)
+            view = thread.view
+            pt = view.text_point(line-1, col-1)
+            view.sel().clear()
+            view.sel().add(sublime.Region(pt))
+            view.show(pt)
+
+            printer.panel.run_command('write_operation_status', {'text': ' [COMPILE FAILED]: ' + e['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
+        
 
     elif 'success' in res and util.to_bool(res['success']) == False and 'messages' in res:
         #here we're parsing a response from the metadata endpoint
@@ -342,21 +352,22 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
                     failures = res['run_test_result']['failures']
                 elif 'failures' in res['run_test_result']:
                     failures = [res['run_test_result']['failures']]
-            #print(failures)
         else:
             msg = res['messages']
         if msg != None:
             if 'lineNumber' in msg:
                 line_col = ' (Line: '+msg['lineNumber']
-                util.mark_line_numbers([int(float(msg['lineNumber']))], "bookmark")
+                util.mark_line_numbers(thread.view, [int(float(msg['lineNumber']))], "bookmark")
             if 'columnNumber' in msg:
                 line_col += ', Column: '+msg['columnNumber']
             if len(line_col) > 0:
                 line_col += ')'
-            printer.write('\n[DEPLOYMENT FAILED]: ' + msg['fileName'] + ': ' + msg['problem'] + line_col + '\n')
+            printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg['fileName'] + ': ' + msg['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
         elif failures != None:
+            msg = ' [DEPLOYMENT FAILED]:'
             for f in failures: 
-                printer.write('\n[DEPLOYMENT FAILED]: ' + f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n')
+                msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
+            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
     elif 'success' in res and res["success"] == False and 'line' in res:
         #this is a response from the apex compile api
         line_col = ""
@@ -364,7 +375,7 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
         if 'line' in res:
             line = int(res['line'])
             line_col = ' (Line: '+str(line)
-            util.mark_line_numbers([line], "bookmark")
+            util.mark_line_numbers(thread.view, [line], "bookmark")
         if 'column' in res:
             col = int(res['column'])
             line_col += ', Column: '+str(col)
@@ -372,40 +383,40 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
             line_col += ')'
 
         #scroll to the line and column of the exception
-        if settings.get('mm_compile_scroll_to_error', True) and not thread == None and os.path.exists(thread.active_file):
+        if settings.get('mm_compile_scroll_to_error', True):
             #open file, if already open it will bring it to focus
-            view = sublime.active_window().open_file(thread.active_file)
+            #view = sublime.active_window().open_file(thread.active_file)
+            view = thread.view
             pt = view.text_point(line-1, col-1)
             view.sel().clear()
             view.sel().add(sublime.Region(pt))
             view.show(pt)
 
-        printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
+        printer.panel.run_command('write_operation_status', {'text': ' [COMPILE FAILED]: ' + res['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
     elif 'success' in res and util.to_bool(res['success']) == True and 'Messages' in res and len(res['Messages']) > 0:
-        printer.write('\n[Operation completed Successfully - With Compile Errors]' + '\n')
-        printer.write('\n[COMPILE ERRORS] - Count:' )
+        msg = ' [Operation completed Successfully - With Compile Errors]\n'
+        msg += '[COMPILE ERRORS] - Count:\n'
         for m in res['Messages']:
-            printer.write('\n' + 'FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber'] + '\n')
+            msg += ' FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber']
+        printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
     elif 'success' in res and util.to_bool(res['success']) == True:
-        #printer.write('\n[Operation completed Successfully]' + '\n')
         printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
-
     elif 'success' in res and util.to_bool(res['success']) == False and 'body' in res:
-        printer.write('\n[OPERATION FAILED]:' + res['body'] + '\n')
+        printer.panel.run_command('write_operation_status', {'text': ' [OPERATION FAILED]:' + res['body'], 'region': [status_region.end(), status_region.end()+10] })
     elif 'success' in res and util.to_bool(res['success']) == False:
-        printer.write('\n[OPERATION FAILED]' + '\n')
+        printer.panel.run_command('write_operation_status', {'text': ' [OPERATION FAILED]', 'region': [status_region.end(), status_region.end()+10] })
     else:
         printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
 
-def compile_callback(result):
+def compile_callback(thread, result):
     try:
         result = json.loads(result)
         if 'success' in result and result['success'] == True:
-            util.clear_marked_line_numbers()
+            util.clear_marked_line_numbers(thread.view)
             #if settings.get('mm_autocomplete') == True: 
             sublime.set_timeout(lambda: index_apex_code(), 100)
         elif 'State' in result and result['State'] == 'Completed':
-            util.clear_marked_line_numbers()
+            util.clear_marked_line_numbers(thread.view)
             #if settings.get('mm_autocomplete') == True: 
             sublime.set_timeout(lambda: index_apex_code(), 100)
     except BaseException as e:
