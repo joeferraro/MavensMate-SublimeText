@@ -1172,9 +1172,7 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
 def deploy_resource_bundle(bundle_name):
     if '.resource' not in bundle_name:
         bundle_name = bundle_name + '.resource'
-    printer = PanelPrinter.get(sublime.active_window().id())
-    printer.show()
-    printer.write('\nBundling and deploying to server => ' + bundle_name + '\n') 
+    message = 'Bundling and deploying to server: ' + bundle_name
     # delete existing sr
     if os.path.exists(util.mm_project_directory()+"/src/staticresources/"+bundle_name):
         os.remove(util.mm_project_directory()+"/src/staticresources/"+bundle_name)
@@ -1187,7 +1185,7 @@ def deploy_resource_bundle(bundle_name):
     params = {
         "files" : [file_path]
     }
-    mm.call('compile', params=params)
+    mm.call('compile', params=params, message=message)
     util.send_usage_statistics('Deploy Resource Bundle')
 
 
