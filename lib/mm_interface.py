@@ -5,6 +5,7 @@ import pipes
 import subprocess
 import os
 import sys
+import time
 try:
     from .threads import ThreadTracker
     from .threads import ThreadProgress
@@ -92,6 +93,7 @@ class MavensMateTerminalCall(threading.Thread):
             self.printer.writeln(' ')
             self.printer.writeln('==============================================')
             self.printer.writeln('Request Id: '+self.process_id)
+            self.printer.writeln('Timestamp: '+time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
             #self.printer.writeln('Operation: '+self.operation)
             #self.printer.writeln('Target: myclass.cls')
             self.printer.writeln(self.message)
