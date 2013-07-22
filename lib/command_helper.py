@@ -24,7 +24,10 @@ def get_message(params, operation):
         message = 'Synchronizing to Server: ' + kind
     elif operation == 'compile':
         if 'files' in params and len(params['files']) == 1:
-            message = 'Compiling: ' + params['files'][0]
+            what = params['files'][0]
+            if '/' in what:
+                what = what.split('/')[-1]
+            message = 'Compiling: ' + what
         else:
             message = 'Compiling Selected Metadata'
     elif operation == 'compile_project':
