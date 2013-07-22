@@ -13,6 +13,8 @@ if sys.version_info >= (3, 0):
     import MavensMate.util as util
     import MavensMate.lib.command_helper as command_helper
     import MavensMate.lib.mm_interface as mm
+    import MavensMate.lib.resource_bundle as resource_bundle
+    import MavensMate.lib.completions as completions
     #from lib.printer import PanelPrinter
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
@@ -22,6 +24,8 @@ else:
     import util 
     import lib.command_helper as command_helper
     import lib.mm_interface as mm
+    import lib.resource_bundle as resource_bundle
+    import lib.completions as completions
     from lib.printer import PanelPrinter
     from lib.threads import ThreadTracker
 
@@ -791,7 +795,7 @@ class NewOverlayCommand(sublime_plugin.WindowCommand):
 class NewResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, files):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
-            util.create_resource_bundle(self, files) 
+            resource_bundle.create(self, files) 
             util.send_usage_statistics('New Resource Bundle (Sidebar)')
     def is_visible(self):
         return util.is_mm_project()
@@ -933,6 +937,11 @@ class ApexCompletions(sublime_plugin.EventListener):
         if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
             return []
 
+        ext = util.get_file_extension(view.file_name())
+        if ext != 'cls' and ext != 'trigger':
+            return []
+
+
         pt = locations[0] - len(prefix) - 1
         ch = view.substr(sublime.Region(pt, pt + 1))
         if not ch == '.': return []
@@ -983,7 +992,8 @@ class ApexCompletions(sublime_plugin.EventListener):
             #self.process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             object_name = None
             object_name_lower = None
-            variables = util.get_variable_list(view)
+            
+            variables = completions.get_variable_list(view)
 
             print(variables)
 
@@ -1051,76 +1061,76 @@ class ApexCompletions(sublime_plugin.EventListener):
                     _completions = util.get_apex_completions(search_name)
                     return sorted(_completions)
 
-    def show_completions(self, view, completions):
-        if completions:
-            self.completions = completions
-            view.run_command("hide_auto_complete")
-            sublime.set_timeout(functools.partial(self.show, view), 0)
+    # def show_completions(self, view, completions):
+    #     if completions:
+    #         self.completions = completions
+    #         view.run_command("hide_auto_complete")
+    #         sublime.set_timeout(functools.partial(self.show, view), 0)
 
-    def show(self, view):
-        view.run_command("auto_complete", {
-            'disable_auto_insert': True,
-            'api_completions_only': True,
-            'next_completion_if_showing': False,
-            'auto_complete_commit_on_tab': True,
-        })
+    # def show(self, view):
+    #     view.run_command("auto_complete", {
+    #         'disable_auto_insert': True,
+    #         'api_completions_only': True,
+    #         'next_completion_if_showing': False,
+    #         'auto_complete_commit_on_tab': True,
+    #     })
 
 
-class Autocomplete(sublime_plugin.EventListener):
-    """
-    Sublime Text autocompletion integration
-    """
+# class Autocomplete(sublime_plugin.EventListener):
+#     """
+#     Sublime Text autocompletion integration
+#     """
 
-    completions = []
-    cplns_ready = None
+#     completions = []
+#     cplns_ready = None
 
-    def on_query_completions(self, view, prefix, locations):
-        """ Sublime autocomplete event handler
+#     def on_query_completions(self, view, prefix, locations):
+#         """ Sublime autocomplete event handler
 
-            Get completions depends on current cursor position and return
-            them as list of ('possible completion', 'completion type')
+#             Get completions depends on current cursor position and return
+#             them as list of ('possible completion', 'completion type')
 
-            :param view: `sublime.View` object
-            :type view: sublime.View
-            :param prefix: string for completions
-            :type prefix: basestring
-            :param locations: offset from beginning
-            :type locations: int
+#             :param view: `sublime.View` object
+#             :type view: sublime.View
+#             :param prefix: string for completions
+#             :type prefix: basestring
+#             :param locations: offset from beginning
+#             :type locations: int
 
-            :return: list
-        """
-        if self.cplns_ready:
-            self.cplns_ready = None
-            if self.completions:
-                cplns, self.completions = self.completions, []
-                return [tuple(i) for i in cplns]
-            return
+#             :return: list
+#         """
+#         if self.cplns_ready:
+#             self.cplns_ready = None
+#             if self.completions:
+#                 cplns, self.completions = self.completions, []
+#                 return [tuple(i) for i in cplns]
+#             return
 
-        # nothing to do with non-python code
-        if not util.is_mm_project():
-            return
+#         # nothing to do with non-python code
+#         if not util.is_mm_project():
+#             return
 
-        # get completions list
-        if self.cplns_ready is None:
-            ask_daemon(view, self.show_completions, 'autocomplete', locations[0])
-            self.cplns_ready = False
-        return
+#         # get completions list
+#         if self.cplns_ready is None:
+#             ask_daemon(view, self.show_completions, 'autocomplete', locations[0])
+#             self.cplns_ready = False
+#         return
 
-    def show_completions(self, view, completions):
-        # XXX check position
-        self.cplns_ready = True
-        if completions:
-            self.completions = completions
-            view.run_command("hide_auto_complete")
-            sublime.set_timeout(functools.partial(self.show, view), 0)
+#     def show_completions(self, view, completions):
+#         # XXX check position
+#         self.cplns_ready = True
+#         if completions:
+#             self.completions = completions
+#             view.run_command("hide_auto_complete")
+#             sublime.set_timeout(functools.partial(self.show, view), 0)
 
-    def show(self, view):
-        view.run_command("auto_complete", {
-            'disable_auto_insert': True,
-            'api_completions_only': True,
-            'next_completion_if_showing': False,
-            'auto_complete_commit_on_tab': True,
-        })
+#     def show(self, view):
+#         view.run_command("auto_complete", {
+#             'disable_auto_insert': True,
+#             'api_completions_only': True,
+#             'next_completion_if_showing': False,
+#             'auto_complete_commit_on_tab': True,
+#         })
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
@@ -1140,7 +1150,7 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
             return
         ps = []
         ps.append(util.mm_project_directory()+"/src/staticresources/"+self.results[picked])
-        util.create_resource_bundle(self, ps)
+        resource_bundle.create(self, ps)
         
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):

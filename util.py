@@ -90,34 +90,6 @@ def get_execution_overlays(file_path):
     except:
         return []
 
-#creates resource-bundles for the static resource(s) selected        
-def create_resource_bundle(self, files):
-    # for file in files:
-    #     fileName, fileExtension = os.path.splitext(file)
-    #     if fileExtension != '.resource':
-    #         sublime.message_dialog("You can only create resource bundles for static resources")
-    #         return
-    # printer = PanelPrinter.get(self.window.id())
-    # printer.show()
-    # printer.write('\nCreating Resource Bundle(s)\n')
-
-    # if not os.path.exists(mm_project_directory()+'/resource-bundles'):
-    #     os.makedirs(mm_project_directory()+'/resource-bundles')
-
-    # for file in files:
-    #     fileName, fileExtension = os.path.splitext(file)
-    #     baseFileName = fileName.split("/")[-1]
-    #     if os.path.exists(mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension):
-    #         printer.write('[OPERATION FAILED]: The resource bundle already exists\n')
-    #         return
-    #     cmd = 'unzip \''+file+'\' -d \''+mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension+'\''
-    #     res = os.system(cmd)
-
-    # printer.write('[Resource bundle creation complete]\n')
-    # printer.hide()
-    # send_usage_statistics('Create Resource Bundle') 
-    pass
-
 def get_random_string(size=8, chars=string.ascii_lowercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
@@ -295,79 +267,6 @@ def print_debug_panel_message(message):
     # printer.write(message)
     pass
 
-#preps code completion object for search
-def prep_for_search(name): 
-    #s1 = re.sub('(.)([A-Z]+)', r'\1_\2', name).strip()
-    #return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-    #return re.sub('([A-Z])', r'\1_', name)
-    return name.replace('_', '')
-
-def get_apex_completions(search_name):
-    completions = []
-    if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
-        return []
-
-    apex_props = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".apex_file_properties"))
-
-    for p in apex_props.keys():
-        if p == search_name+".cls" and 'symbolTable' in apex_props[p]:
-            symbol_table = apex_props[p]['symbolTable']
-            if 'constructors' in symbol_table:
-                for c in symbol_table['constructors']:
-                    completions.append((c["visibility"] + " " + c["name"], c["name"]))
-            if 'properties' in symbol_table:
-                for c in symbol_table['properties']:
-                    completions.append((c["visibility"] + " " + c["name"], c["name"]))
-            if 'methods' in symbol_table:
-                for c in symbol_table['methods']:
-                    params = ''
-                    if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
-                        for p in c['parameters']:
-                            params += p['name'] + " (" + p["type"] + ")"
-                    completions.append((c["visibility"] + " " + c["name"]+"("+params+") "+c['returnType'], c["name"]))
-    return sorted(completions) 
-
-def get_variable_list(view):
-    # #print(view.substr(sublime.Region(0,10000000)))
-    # if (view.is_dirty()):
-    #     view.file_name();
-        
-    #     thread = MavensMateParserCall(view=view)
-
-    #     #p = subprocess.Popen("java -jar {0} {1}".format(pipes.quote(config.mm_dir+"/bin/parser.jar"), pipes.quote(file_path)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True) 
-    #     msg = None
-    #     if p.stdout is not None: 
-    #         msg = p.stdout.readlines()
-    #     elif p.stderr is not None:
-    #         msg = p.stdout.readlines() 
-    #     if msg == '' or len(msg) == 0:
-    #         return_dict = {
-    #             "result" : []
-    #         }
-    #         return json.dumps(return_dict)
-    #     else:
-    #         result = msg[0].decode("utf-8")
-    #         result = result.replace(",]}","]}")
-    #         return json.loads(result)
-    # else:
-    #     view.file_name();
-    #     p = subprocess.Popen("java -jar {0} {1}".format(pipes.quote(config.mm_dir+"/bin/parser.jar"), pipes.quote(file_path)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True) 
-    #     msg = None
-    #     if p.stdout is not None: 
-    #         msg = p.stdout.readlines()
-    #     elif p.stderr is not None:
-    #         msg = p.stdout.readlines() 
-    #     if msg == '' or len(msg) == 0:
-    #         return_dict = {
-    #             "result" : []
-    #         }
-    #         return json.dumps(return_dict)
-    #     else:
-    #         result = msg[0].decode("utf-8")
-    #         result = result.replace(",]}","]}")
-    #         return json.loads(result)
-    pass
-
 #parses the input from sublime text
 def parse_new_metadata_input(input):
     input = input.replace(" ", "")
@@ -405,6 +304,18 @@ def get_tab_file_names():
             pass      # leave new/untitled files (for the moment)
     return tabs 
 
+def get_file_as_string(file_path):
+    print(file_path)
+    try:
+        f = codecs.open(file_path, "r", "utf8")
+        file_body = f.read()
+        f.close()
+        return file_body
+    except Exception:
+        #print "Couldn't open "+str(file_path)+" because: "+e.message
+        pass
+    return ""
+    
 def send_usage_statistics(action):
     settings = sublime.load_settings('mavensmate.sublime-settings')
     if settings.get('mm_send_usage_statistics') == True:
