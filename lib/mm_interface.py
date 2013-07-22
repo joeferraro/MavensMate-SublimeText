@@ -48,6 +48,7 @@ def call(operation, use_mm_panel=True, **kwargs):
         active_file=util.get_active_file(), 
         params=kwargs.get('params', None),
         context=kwargs.get('context', None),
+        message=kwargs.get('message', None),
         use_mm_panel=use_mm_panel,
         process_id=util.get_random_string(10),
         mm_location=settings.get('mm_location')
@@ -65,6 +66,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.params         = kwargs.get('params', None)
         self.context        = kwargs.get('context', None)
         self.mm_location    = kwargs.get('mm_location', None)
+        self.message        = kwargs.get('message', None)
         self.view           = None
         self.window         = None
         self.printer        = None
@@ -82,7 +84,9 @@ class MavensMateTerminalCall(threading.Thread):
         self.define_sublime_context()
         self.printer = PanelPrinter.get(self.window.id())
 
-        message = command_helper.get_message(self.params, self.operation)
+        if self.message == None:
+            self.message = command_helper.get_message(self.params, self.operation)
+        
         if self.use_mm_panel:
             self.printer.show()
             self.printer.writeln(' ')
@@ -90,10 +94,10 @@ class MavensMateTerminalCall(threading.Thread):
             self.printer.writeln('Request Id: '+self.process_id)
             #self.printer.writeln('Operation: '+self.operation)
             #self.printer.writeln('Target: myclass.cls')
-            self.printer.writeln(message)
+            self.printer.writeln(self.message)
             self.printer.writeln('Result:          ')
         else:
-            ThreadProgress(self, message, 'Operation complete')
+            ThreadProgress(self, self.message, 'Operation complete')
 
         threading.Thread.__init__(self)
 
