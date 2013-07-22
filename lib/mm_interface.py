@@ -71,7 +71,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.view           = None
         self.window         = None
         self.printer        = None
-        self.process_id     = kwargs.get('process_id')
+        self.process_id     = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         self.use_mm_panel   = kwargs.get('use_mm_panel', False)
         self.result         = None #result of operation
         self.callback       = None
@@ -92,11 +92,8 @@ class MavensMateTerminalCall(threading.Thread):
             self.printer.show()
             self.printer.writeln(' ')
             self.printer.writeln('==============================================')
-            self.printer.writeln('Request Id: '+self.process_id)
-            self.printer.writeln('Timestamp: '+time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
-            #self.printer.writeln('Operation: '+self.operation)
-            #self.printer.writeln('Target: myclass.cls')
             self.printer.writeln(self.message)
+            self.printer.writeln('Timestamp: '+self.process_id)
             self.printer.writeln('Result:          ')
         else:
             ThreadProgress(self, self.message, 'Operation complete')
