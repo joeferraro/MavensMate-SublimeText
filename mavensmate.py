@@ -15,7 +15,7 @@ if sys.version_info >= (3, 0):
     import MavensMate.lib.mm_interface as mm
     import MavensMate.lib.resource_bundle as resource_bundle
     import MavensMate.lib.completions as completions
-    #from lib.printer import PanelPrinter
+    import MavensMate.lib.server.lib.server_threaded as server
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
 else:
@@ -59,13 +59,18 @@ if reloader_name in sys.modules and sys.version_info >= (3, 0):
     reload(sys.modules[reloader_name])
     from .lib import reloader
 
-# try:
-#     # Python 3
-#     from .lib import reloader
-# except (ValueError):
-#     # Python 2
-#     from lib import reloader
 
+def plugin_loaded():
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+    try:
+        server.run(port=settings.get('mm_server_port'))
+    except Exception as e:
+        print(e)
+
+    util.package_check()
+    util.start_mavensmate_app()  
+    util.check_for_updates()
+    util.send_usage_statistics('Startup')
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
@@ -122,6 +127,15 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('deploy', False)
         util.send_usage_statistics('Deploy to Server')
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+#displays deploy dialog
+class NewDebugLogCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('debug_log', False)
+        util.send_usage_statistics('New Debug Log')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -223,7 +237,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         import os
         self.dir_map = {}
         dirs = [] 
-        print(util.mm_workspace())
+        #print(util.mm_workspace())
         for dirname in os.listdir(util.mm_workspace()):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
             if dirname in open_projects : continue
@@ -237,7 +251,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             dirs.append(dirname)
             self.dir_map[dirname] = [dirname, sublime_project_file]
         self.results = dirs
-        print(self.results)
+        #print(self.results)
         self.window.show_quick_panel(dirs, self.panel_done,
             sublime.MONOSPACE_FONT)
 
@@ -245,7 +259,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.picked_project = self.results[picked]
-        print('opening project: ' + self.picked_project)
+        #print('opening project: ' + self.picked_project)
         project_file = self.dir_map[self.picked_project][1]
         if os.path.isfile(util.mm_workspace()+"/"+self.picked_project+"/"+project_file):
             if sublime_version >= 3000:
@@ -683,15 +697,6 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
         return util.is_mm_project()
 
 #refreshes the currently active file from the server
-class IndexApexOverlaysCommand(sublime_plugin.WindowCommand):
-    def run(self):
-        mm.call('index_apex_overlays', False, context=self)
-        util.send_usage_statistics('Index Apex Overlays')  
-
-    def is_enabled(command):
-        return util.is_mm_project()
-
-#refreshes the currently active file from the server
 class IndexApexFileProperties(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('index_apex', False, context=self)
@@ -716,11 +721,25 @@ class FetchLogsCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Fetch Apex Logs')  
 
 #when a class or trigger file is opened, adds execution overlay markers if applicable
-class ExecutionOverlayLoader(sublime_plugin.EventListener):
-    def on_load(self, view):
-        print('attempting to load apex overlays for current file')
+class HideApexCheckpoints(sublime_plugin.WindowCommand):
+    def run(self):
         try:
-            fileName, ext = os.path.splitext(view.file_name())
+            util.clear_marked_line_numbers(self.window.active_view(), "overlay")
+        except Exception:
+            print('[MAVENSMATE]: error hidding checkpoints')
+
+    def is_enabled(self):
+        return util.is_apex_class_file() 
+
+#when a class or trigger file is opened, adds execution overlay markers if applicable
+class ShowApexCheckpoints(sublime_plugin.WindowCommand):
+    def run(self):
+        print('[MAVENSMATE]: attempting to load apex overlays for current file')
+        try:
+            active_view = self.window.active_view()
+            fileName, ext = os.path.splitext(active_view.file_name())
+            print(fileName)
+            print(ext)
             if ext == ".cls" or ext == ".trigger":
                 api_name = fileName.split("/")[-1] 
                 overlays = util.parse_json_from_file(util.mm_project_directory()+"/config/.overlays")
@@ -728,14 +747,19 @@ class ExecutionOverlayLoader(sublime_plugin.EventListener):
                 for o in overlays:
                     if o['API_Name'] == api_name:
                         lines.append(int(o["Line"]))
-                sublime.set_timeout(lambda: util.mark_overlays(lines), 100)
+                sublime.set_timeout(lambda: util.mark_overlays(active_view, lines), 10)
         except Exception as e:
-            print('execution overlay loader error')
+            print('[MAVENSMATE]: execution overlay loader error')
+            print('[MAVENSMATE]: ', e)
+
+    def is_enabled(self):
+        return util.is_apex_class_file() 
 
 #deletes overlays
-class DeleteOverlaysCommand(sublime_plugin.WindowCommand):
+class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
     def run(self):
-        options = [['Delete All In This File', '*']]
+        #options = [['Delete All In This File', '*']]
+        options = []
         fileName, ext = os.path.splitext(util.get_active_file())
         if ext == ".cls" or ext == ".trigger":
             self.api_name = fileName.split("/")[-1] 
@@ -752,11 +776,32 @@ class DeleteOverlaysCommand(sublime_plugin.WindowCommand):
         params = {
             "id" : self.overlay[1]
         }
-        mm.call('delete_apex_overlay', context=self, params=params)
-        util.send_usage_statistics('New Apex Overlay') 
+        mm.call('delete_apex_overlay', context=self, params=params, message="Deleting checkpoint...", callback=self.reload)
+        util.send_usage_statistics('Delete Apex Checkpoint') 
+
+    def reload(self, cmd=None):
+        print("[MAVENSMATE]: Reloading Apex Checkpoints")
+        cmd.window.run_command("show_apex_checkpoints") 
+
+    def is_enabled(self):
+        return util.is_apex_class_file()  
+
+
+#refreshes the currently active file from the server
+class IndexApexCheckpointsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('index_apex_overlays', False, context=self, callback=self.reload)
+        util.send_usage_statistics('Index Apex Overlays')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+    def reload(self, cmd=None):
+        print("[MAVENSMATE]: Reloading Apex Checkpoints")
+        cmd.window.run_command("show_apex_checkpoints")
 
 #creates a new overlay
-class NewOverlayCommand(sublime_plugin.WindowCommand):
+class NewApexCheckpoint(sublime_plugin.WindowCommand):
     def run(self):
         fileName, ext = os.path.splitext(util.get_active_file())
         if ext == ".cls" or ext == ".trigger":
@@ -766,7 +811,7 @@ class NewOverlayCommand(sublime_plugin.WindowCommand):
                 self.object_type = 'ApexTrigger'
             self.api_name = fileName.split("/")[-1] 
             number_of_lines = util.get_number_of_lines_in_file(util.get_active_file())
-            lines = list(xrange(number_of_lines))
+            lines = list(range(number_of_lines))
             options = []
             lines.pop(0)
             for l in lines:
@@ -788,8 +833,15 @@ class NewOverlayCommand(sublime_plugin.WindowCommand):
             "Line"                  : int(self.line_number)
         }
         #util.mark_overlay(self.line_number) #cant do this here bc it removes the rest of them
-        mm.call('new_apex_overlay', context=self, params=params)
+        mm.call('new_apex_overlay', context=self, params=params, message="Creating new checkpoint at line "+self.line_number+"...", callback=self.reload)
         util.send_usage_statistics('New Apex Overlay')  
+
+    def reload(self, cmd=None):
+        print("[MAVENSMATE]: Reloading Apex Checkpoints")
+        cmd.window.run_command("show_apex_checkpoints")
+
+    def is_enabled(self):
+        return util.is_apex_class_file() 
 
 #right click context menu support for resource bundle creation
 class NewResourceBundleCommand(sublime_plugin.WindowCommand):
@@ -1187,9 +1239,3 @@ def deploy_resource_bundle(bundle_name):
     }
     mm.call('compile', params=params, message=message)
     util.send_usage_statistics('Deploy Resource Bundle')
-
-
-util.package_check()
-util.start_mavensmate_app()  
-util.check_for_updates()
-util.send_usage_statistics('Startup')

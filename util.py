@@ -305,7 +305,7 @@ def get_tab_file_names():
     return tabs 
 
 def get_file_as_string(file_path):
-    print(file_path)
+    #print(file_path)
     try:
         f = codecs.open(file_path, "r", "utf8")
         file_body = f.read()
@@ -325,9 +325,9 @@ def refresh_active_view():
     sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
 
 def check_for_updates():
-    #settings = sublime.load_settings('mavensmate.sublime-settings')
-    #if settings.get('mm_check_for_updates') == True:
-    sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+    if settings.get('mm_check_for_updates') == True:
+        sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
 
 def start_mavensmate_app():
     p = subprocess.Popen("pgrep -fl \"MavensMate \"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)

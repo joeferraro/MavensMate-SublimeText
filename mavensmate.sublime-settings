@@ -13,7 +13,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_workspace" : "",
 
 	//set to desired Salesforce.com API version
-	"mm_api_version" : "27.0",
+	"mm_api_version" : "28.0",
 
 	//if true, MavensMate will automatically hide the debug panel upon a successful operation
 	"mm_hide_panel_on_success" : true,
@@ -61,7 +61,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_plugin_client_location" : "/Applications",
 
 	//set to true to use the tooling api to compile apex metadata (beta)
-	"mm_use_tooling_api" : true,
+	"mm_compile_with_tooling_api" : true,
 
 	//set to true if you want a history of your executed apex scripts in project/apex-scripts (beta)
 	"mm_log_anonymous_apex" : true,
@@ -69,13 +69,16 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to true to play notification sounds
 	"mm_play_sounds" : true,
 
+	//local server port
+	"mm_server_port" : 9876,
+
+	//mavensmate will attempt to compile when savings files with the following extensions
 	"mm_apex_file_extensions": [
 		".page",
 		".component",
 		".cls",
 		".object",
 		".trigger",
-		".tab",
 		".layout",
 		".resource",
 		".remoteSite",
@@ -84,7 +87,25 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".dashboard",
 		".permissionset",
 		".workflow",
-		".email"
+		".email",
+		".profile",
+		".scf",
+		".queue",
+		".reportType",
+		".report",
+		".weblink",
+		".tab",
+		".letter",
+		".role",
+		".homePageComponent",
+		".homePageLayout",
+		".objectTranslation",
+		".flow",
+		".datacategorygroup",
+		".snapshot",
+		".site",
+		".sharingRules",
+		".settings"
 	],
 
 	"mm_default_apex_templates_map" : {
@@ -122,8 +143,12 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		"ApexComponent",
 		"ApexPage",
 		"ApexTrigger",
-		"StaticResource"
+		"StaticResource",
+		"CustomObject",
+		"Profile"
 	],
 
-	"mm_ignore_managed_metadata" : true
+	"mm_ignore_managed_metadata" : true,
+
+	"mm_debug_mode" : false
 }

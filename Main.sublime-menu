@@ -64,12 +64,32 @@
 	         	"children":
 	         	[
  	         		{
+	         			"caption": "New Debug Log...",
+	         			"command": "new_debug_log"
+	         		},
+ 	         		{
+	         			"caption": "Fetch Logs and Checkpoint Results",
+	         			"command": "fetch_logs"
+	         		},
+ 	         		{
 	         			"caption": "Index Apex File Properties",
 	         			"command": "index_apex_file_properties"
 	         		},
+	         		{
+	         			"caption": "New Apex Checkpoint...",
+	         			"command": "new_apex_checkpoint"
+	         		},
+	         		{
+	         			"caption": "Delete Apex Checkpoint...",
+	         			"command": "delete_apex_checkpoint"
+	         		},
  	         		{
-	         			"caption": "Index Apex Execution Overlays",
-	         			"command": "index_apex_overlays"
+	         			"caption": "Show Apex Checkpoints For This File",
+	         			"command": "show_apex_checkpoints"
+	         		},
+	         		{
+	         			"caption": "Hide Apex Checkpoints For This File",
+	         			"command": "hide_apex_checkpoints"
 	         		}
 	         	]
 	     	},

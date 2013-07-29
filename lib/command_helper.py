@@ -53,12 +53,18 @@ def get_message(params, operation):
         message = 'Indexing Metadata'  
     elif operation == 'delete':
         if 'files' in params and len(params['files']) == 1:
-            message = 'Deleting: ' + util.get_active_file()
+            what = params['files'][0]
+            if '/' in what:
+                what = what.split('/')[-1]
+            message = 'Deleting: ' + what
         else:
             message = 'Deleting Selected Metadata'
     elif operation == 'refresh':
         if 'files' in params and len(params['files']) == 1:
-            message = 'Refreshing: ' + util.get_active_file()
+            what = params['files'][0]
+            if '/' in what:
+                what = what.split('/')[-1]
+            message = 'Refreshing: ' + what
         else:
             message = 'Refreshing Selected Metadata'
     elif operation == 'open_sfdc_url':

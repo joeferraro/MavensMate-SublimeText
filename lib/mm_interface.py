@@ -13,6 +13,7 @@ try:
     from .printer import PanelPrinter
     import MavensMate.lib.command_helper as command_helper
     import MavensMate.util as util
+    import MavensMate.lib.server.lib.server_threaded as server
 except:
     from lib.threads import ThreadTracker
     from lib.threads import ThreadProgress
@@ -27,7 +28,6 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 #prepares and submits a threaded call to the mm executable
 def call(operation, use_mm_panel=True, **kwargs):
     settings = sublime.load_settings('mavensmate.sublime-settings')
-    
     #if the mm tool is missing, we can't do anything
     if not os.path.exists(settings.get('mm_location')) and settings.get('mm_development_mode') == False:
         active_window_id = sublime.active_window().id()
@@ -52,7 +52,8 @@ def call(operation, use_mm_panel=True, **kwargs):
         message=kwargs.get('message', None),
         use_mm_panel=use_mm_panel,
         process_id=util.get_random_string(10),
-        mm_location=settings.get('mm_location')
+        mm_location=settings.get('mm_location'),
+        callback=kwargs.get('callback', None)
     )
     threads.append(thread)
     thread.start()
@@ -74,12 +75,10 @@ class MavensMateTerminalCall(threading.Thread):
         self.process_id     = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         self.use_mm_panel   = kwargs.get('use_mm_panel', False)
         self.result         = None #result of operation
-        self.callback       = None
+        self.callback       = handle_result
+        self.alt_callback   = kwargs.get('callback', None) #this is a callback requested by a command
         self.window_id      = None
         self.status_region  = None
-        #if self.params != None:
-        #    self.callback   = self.params.get('callback', None)
-        self.callback = handle_result
 
         self.settings = sublime.load_settings('mavensmate.sublime-settings')
         self.define_sublime_context()
@@ -125,7 +124,7 @@ class MavensMateTerminalCall(threading.Thread):
             args['-c'] = 'SUBLIME_TEXT_3'
         else:
             args['-c'] = 'SUBLIME_TEXT_2'
-        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project', 'new_project_from_existing_directory']
+        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project', 'new_project_from_existing_directory', 'debug_log']
         if self.operation in ui_operations:
             args['--ui'] = True
 
@@ -199,6 +198,9 @@ class MavensMateTerminalCall(threading.Thread):
             #open type
             if o in params['type']:
                 payload['type'] = self.params.get('type', 'edit')
+            
+            if self.params != None and 'action' in self.params:
+                payload['action'] = self.params.get('action', None)
 
         if type(payload) is dict:
             payload = json.dumps(payload)  
@@ -230,10 +232,16 @@ class MavensMateTerminalCall(threading.Thread):
 
         #mm_location = self.settings.get('mm_location')
 
-        print('[MAVENSMATE] executing mm terminal call:')
-        print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
-        
-        process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        if self.settings.get('mm_debug_mode'):
+            python_path = self.settings.get('mm_python_location')
+            mm_loc = self.settings.get('mm_debug_location')
+            print('[MAVENSMATE] executing DEBUG mm terminal call:')
+            print("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
+            process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        else:
+            print('[MAVENSMATE] executing mm terminal call:')
+            print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
+            process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         #process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         #process = subprocess.Popen("/Users/josephferraro/Development/joey2/bin/python /Users/josephferraro/Development/Python/mavensmate/mm/mm.py {0}".format(self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload(process)
@@ -253,8 +261,10 @@ class MavensMateTerminalCall(threading.Thread):
         self.result = response_body
         if self.operation == 'compile':
             compile_callback(self, response_body)
-        if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
-            sublime.set_timeout(lambda : index_overlays(self.window), 100)
+        
+        #if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
+        #    sublime.set_timeout(lambda : index_overlays(self.window), 100)
+        
         #if self.callback != None:
         #    print(self.callback)
         #    self.callback(response_body)
@@ -280,13 +290,13 @@ def handle_result(operation, process_id, printer, result, thread):
 
     try:
         result = json.loads(result)
-        if operation == 'compile' and 'conflict' in result and util.to_bool(result['conflict']) == True:
-            if sublime.ok_cancel_dialog(result["problem"], "That's OK, overwrite the server copy."):
-                printer.write('\n[MAVENSMATE]: Overwriting server copy')
-                thread.params['override'] = True
+        if operation == 'compile' and 'actions' in result and util.to_bool(result['success']) == False:
+            if sublime.ok_cancel_dialog(result["body"], result["actions"][0].title()):
+                printer.panel.run_command('write_operation_status', {"text": " Overwriting server copy", 'region': [status_region.end(), status_region.end()+10] })
+                thread.params['action'] = 'overwrite'
                 sublime.set_timeout(lambda: call('compile', params=thread.params), 100)
             else:
-                printer.write('\n[MAVENSMATE]: Operation canceled.')
+                printer.panel.run_command('write_operation_status', {"text": " "+result["actions"][1].title(), 'region': [status_region.end(), status_region.end()+10] })
         else:
             print_result_message(operation, process_id, status_region, result, printer, thread) 
             if operation == 'new_metadata' and 'success' in result and util.to_bool(result['success']) == True:
@@ -352,7 +362,7 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
             view.sel().add(sublime.Region(pt))
             view.show(pt)
 
-            printer.panel.run_command('write_operation_status', {'text': ' [COMPILE FAILED]: ' + e['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
+            printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], e['problem'],line_col), 'region': [status_region.end(), status_region.end()+10] })
         
 
     elif 'success' in res and util.to_bool(res['success']) == False and 'messages' in res:

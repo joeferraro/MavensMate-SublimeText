@@ -58,9 +58,13 @@ class ThreadTracker(object):
     def get_current(cls, window):
         return cls.current_thread.get(window.id())
 
+    #TODO: sometimes dead threads get stuck. thread.is_alive() will be false for those
     @classmethod
     def get_pending(cls, window):
         if window.id() in cls.pending_threads:
+            threads_pending_in_window = cls.pending_threads[window.id()]
+            threads_pending_in_window = [x for x in threads_pending_in_window if x.is_alive()]
+            cls.pending_threads[window.id()] = threads_pending_in_window
             return cls.pending_threads[window.id()]
         else:
             return []
@@ -70,7 +74,7 @@ class ThreadTracker(object):
         if window.id() in cls.pending_threads:
             ts = []
             for t in cls.pending_threads[window.id()]:
-                if t.use_mm_panel:
+                if t.use_mm_panel and t.is_alive():
                     ts.append(t)
             return ts
         else:
@@ -112,6 +116,8 @@ class PanelThreadProgress():
             if hasattr(self.thread, 'result'):
                 #thread is done, we need to handle the result
                 self.thread.callback(self.thread.operation, self.thread.process_id, self.thread.printer, self.thread.result, self.thread)
+                if self.thread.alt_callback != None:
+                    self.thread.alt_callback(self.thread.context)
                 #self.thread.printer.panel.run_command('write_operation_status', {'text': self.thread.result, 'region': [self.thread.status_region.end(), self.thread.status_region.end()+10] })
                 return
             if self.callback != None:
