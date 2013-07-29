@@ -4,23 +4,35 @@
     "command": "mavens_stub"
   },
   {
-    "caption": "MavensMate: New Project",
+    "caption": "MavensMate: New Project...",
     "command": "new_project"
   },
   {
-    "caption": "MavensMate: Checkout Project",
+    "caption": "MavensMate: Checkout Project...",
     "command": "checkout_project"
   },
   {
-    "caption": "MavensMate: Edit Project",
+    "caption": "MavensMate: Edit Project...",
     "command": "edit_project"
   },
+  { 
+    "caption": "MavensMate: Delete File From Server...", 
+    "command": "delete_active_metadata" 
+  },
+  //{
+  //   "caption": "MavensMate: Cancel Current Command",
+  //   "command": "cancel_current"
+  // },
   {
-    "caption": "MavensMate: Cancel Current Command",
-    "command": "cancel_current"
-  }, 
+    "caption": "MavensMate: New Debug Log...",
+    "command": "new_debug_log"
+  },
   {
-    "caption": "MavensMate: Clean Project",
+    "caption": "MavensMate: Fetch Logs",
+    "command": "fetch_logs"
+  },
+  {
+    "caption": "MavensMate: Clean Project...",
     "command": "clean_project"
   },
   {
@@ -36,11 +48,11 @@
     "command": "open_active_sfdc_wsdl_url"
   },
   {
-    "caption": "MavensMate: Run Apex Tests",  
+    "caption": "MavensMate: Run Apex Tests...",  
     "command": "run_apex_unit_tests"
   },
   {
-    "caption": "MavensMate: Execute Apex",   
+    "caption": "MavensMate: Execute Apex...",   
     "command": "execute_anonymous"
   },
   {
@@ -60,23 +72,19 @@
     "command": "new_apex_component"
   },
   {
-    "caption": "MavensMate: Deploy To Server",          
+    "caption": "MavensMate: Deploy To Server...",          
     "command": "deploy_to_server"
   },
   {
-    "caption": "MavensMate: Deployment Connections",          
-    "command": "org_connections"
-  },
-  {
-    "caption": "MavensMate: Open Project",          
+    "caption": "MavensMate: Open Project...",          
     "command": "open_project"
   },
   {
-    "caption": "MavensMate: Deploy Resource Bundle",          
+    "caption": "MavensMate: Deploy Resource Bundle...",          
     "command": "deploy_resource_bundle"
   },
   {
-    "caption": "MavensMate: Create Resource Bundle",          
+    "caption": "MavensMate: Create Resource Bundle...",          
     "command": "create_resource_bundle"
   },
   {
@@ -84,20 +92,24 @@
     "command": "compile_tabs"
   },
   {
-    "caption": "MavensMate: Index Apex Execution Overlays",          
-    "command": "index_apex_overlays"
+    "caption": "MavensMate: Index Apex Checkpoints",          
+    "command": "index_apex_checkpoints"
   },
   {
-    "caption": "MavensMate: List Apex Execution Overlays",          
-    "command": "list_overlays"
+    "caption": "MavensMate: Show Apex Checkpoints For This File",          
+    "command": "show_apex_checkpoints"
   },
   {
-    "caption": "MavensMate: New Apex Execution Overlay",          
-    "command": "new_overlay"
+    "caption": "MavensMate: Hide Apex Checkpoints For This File",          
+    "command": "hide_apex_checkpoints"
   },
   {
-    "caption": "MavensMate: Delete Apex Execution Overlays",          
-    "command": "delete_overlays"
+    "caption": "MavensMate: New Apex Checkpoint",          
+    "command": "new_apex_checkpoint"
+  },
+  {
+    "caption": "MavensMate: Delete Apex Checkpoint",          
+    "command": "delete_apex_checkpoint"
   },
   {
     "caption": "MavensMate: Refresh Current File From Server",          
