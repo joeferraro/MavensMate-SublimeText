@@ -99,11 +99,26 @@ def get_active_file():
     except Exception:
         return ''
 
-def get_project_name():
-    try:
-        return os.path.basename(sublime.active_window().folders()[0])
-    except:
-        return None
+def get_project_name(context=None):
+    if context == None:
+        try:
+            return os.path.basename(sublime.active_window().folders()[0])
+        except:
+            return None
+    else:
+        if isinstance(context, sublime.View):
+            view = context
+            window = view.window()
+        elif isinstance(context, sublime.Window):
+            window = context
+            view = window.active_view()
+        else:
+            window = sublime.active_window()
+            view = window.active_view()
+        try:
+            return os.path.basename(window.folders()[0])
+        except:
+            return None
 
 def check_for_workspace():
     workspace = mm_workspace()
@@ -343,6 +358,32 @@ def start_mavensmate_app():
         else:
            #sublime.error_message("MavensMate.app is not running, please start it from your Applications folder.")
            print('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
+
+#returns suggestions based on tooling api symbol table
+def get_apex_completions(search_name):
+    completions = []
+    if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
+        return []
+
+    apex_props = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".apex_file_properties"))
+
+    for p in apex_props.keys():
+        if p == search_name+".cls" and 'symbolTable' in apex_props[p]:
+            symbol_table = apex_props[p]['symbolTable']
+            if 'constructors' in symbol_table:
+                for c in symbol_table['constructors']:
+                    completions.append((c["visibility"] + " " + c["name"], c["name"]))
+            if 'properties' in symbol_table:
+                for c in symbol_table['properties']:
+                    completions.append((c["visibility"] + " " + c["name"], c["name"]))
+            if 'methods' in symbol_table:
+                for c in symbol_table['methods']:
+                    params = ''
+                    if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
+                        for p in c['parameters']:
+                            params += p['name'] + " (" + p["type"] + ")"
+                    completions.append((c["visibility"] + " " + c["name"]+"("+params+") "+c['returnType'], c["name"]))
+    return sorted(completions) 
 
 def get_version_number():
     try:

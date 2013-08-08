@@ -12,7 +12,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
 	"mm_workspace" : "",
 
-	//set to desired Salesforce.com API version
+	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
 	"mm_api_version" : "28.0",
 
 	//if true, MavensMate will automatically hide the debug panel upon a successful operation
@@ -24,8 +24,11 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
 	"mm_compile_on_save" : true,
 
-	//if true, MavensMate will compare the lastModifiedDate of your Apex file properties cache to the server before compiling
+	//if true, MavensMate will check if the lastmodifiedbyid of apex metadata is different than running user
 	"mm_compile_check_conflicts": false,
+
+	//if true, MavensMate will present local/server diff view when conflict is found for the purposes of merging changes (beta)
+	"mm_diff_server_conflicts": true,
 
 	//if true, MavensMate will scroll to the line of a reported exception when there is a compilation error
 	"mm_compile_scroll_to_error": true,
@@ -42,7 +45,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
 	"mm_log_level" : "INFO",
 
-	//must be existing path
+	//location where mm log should be placed (must be existing path)
 	"mm_log_location" : "",
 
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
@@ -60,10 +63,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//the location of your Sublime Text install
 	"mm_plugin_client_location" : "/Applications",
 
-	//set to true to use the tooling api to compile apex metadata (beta)
+	//set to true to use the tooling api to compile apex metadata
 	"mm_compile_with_tooling_api" : true,
 
-	//set to true if you want a history of your executed apex scripts in project/apex-scripts (beta)
+	//set to true if you want a history of your executed apex scripts in project/apex-scripts
 	"mm_log_anonymous_apex" : true,
 
 	//set to true to play notification sounds
@@ -105,7 +108,13 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".snapshot",
 		".site",
 		".sharingRules",
-		".settings"
+		".settings",
+		".callCenter",
+		".community",
+		".authProvider",
+		".customApplicationComponent",
+		".quickAction",
+		".approvalProcess"
 	],
 
 	"mm_default_apex_templates_map" : {
@@ -138,6 +147,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate.app will start when Sublime Text starts
 	"mm_start_app_on_st_startup" : true,
 
+	//the default metadata available in a project (may be set on a per-project basis in the "advanced" tab of the new and edit project UIs)
 	"mm_default_subscription" : [
 		"ApexClass",
 		"ApexComponent",
@@ -148,7 +158,17 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		"Profile"
 	],
 
+	//ignore metadata from managed packages (highly recommended)
 	"mm_ignore_managed_metadata" : true,
 
-	"mm_debug_mode" : false
+	//internal only
+	"mm_debug_mode" : false,
+
+	//the number of the most recent apex debug logs to download during the "fetch logs" command
+	"mm_number_of_logs_limit" : 10,
+
+	//choices: "metadata" or "apex". "metadata" is recommended, however if your tests are taking forever to run, try switching to "apex"
+	//we're working on async testing api support in 0.36
+	"mm_test_api" : "metadata"
+	
 }

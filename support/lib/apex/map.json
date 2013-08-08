@@ -1,19 +1,19 @@
 {
-  "instance_methods": 
-  [
-  	"clear()",
-  	"clone()",
-  	"containsKey(KeyType_key)",
-  	"deepClone()",
-  	"get(KeyType_key)",
-  	"getSObjectType()",
-  	"isEmpty()",
-  	"keySet()",
-  	"put(Key_key, Value_value)",
-  	"putAll(Map_m)",
-  	"putAll(sObject[]_list)",
-    "remove(Key_key)",
-    "size()",
-    "values()"
-  ]
+    "instance_methods": [
+        "clear()", 
+        "clone()", 
+        "containsKey(Keytype_key)", 
+        "deepClone()", 
+        "get(Keytype_key)", 
+        "getSObjectType()", 
+        "isEmpty()", 
+        "keySet()", 
+        "put()", 
+        "putAll(Map_m)", 
+        "putAll(sObject[]_l)", 
+        "remove(Key_key)", 
+        "size()", 
+        "values()"
+    ], 
+    "static_methods": []
 }

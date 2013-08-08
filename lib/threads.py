@@ -30,7 +30,6 @@ class ThreadTracker(object):
             cls.pending_threads[thread_window_id] = [thread]
         else:
             cls.pending_threads[thread_window_id].append(thread)
-        print(cls.pending_threads)
 
     @classmethod
     def remove(cls, thread):
@@ -41,8 +40,6 @@ class ThreadTracker(object):
             pending_window_threads = cls.pending_threads[thread_window_id]
             if thread in pending_window_threads: pending_window_threads.remove(thread)
         
-        print(cls.pending_threads)
-
     @classmethod
     def get_last_added(cls, window):
         try:

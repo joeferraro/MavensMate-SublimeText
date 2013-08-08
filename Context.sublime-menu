@@ -15,5 +15,51 @@
 			{ "caption": "Refresh File From Server...", "command": "refresh_active_file" },
 			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" }
 		]
-	}
+	},
+	{
+		"caption": "MavensMate Diff",
+		"children": [
+			{
+				"caption": "Compare to...",
+				"command": "mavens_mate_diff"
+			},
+			{
+	            "caption": "Overwrite Server Copy",
+	            "command": "mavens_mate_diff_overwrite_server_copy"
+	        },
+	        {
+	            "caption": "Go to previous difference",
+	            "command": "mavens_mate_diff_go_up"
+	        },
+	        {
+	            "caption": "Go to next difference",
+	            "command": "mavens_mate_diff_go_down"
+	        },
+	        {
+	            "caption": "-"
+	        }, 
+	        {
+	            "caption": "Merge change from right (server) to left (local)",
+	            "command": "mavens_mate_diff_merge_left"
+	        },
+	        {
+	            "caption": "Merge change from left (local) to right (server)",
+	            "command": "mavens_mate_diff_merge_right"
+	        },
+	        {
+	            "caption": "-"
+	        },
+	        {
+	            "caption": "Merge all from right (server) to left (local)",
+	            "command": "mavens_mate_diff_merge_left",
+	            "args": {"mergeAll": true}
+	        }, 
+	        {
+	            "caption": "Merge all from left (local) to right (server)",
+	            "command": "mavens_mate_diff_merge_right",
+	            "args": {"mergeAll": true}
+	        }
+        ]
+	},
+	{ "caption": "-" }
 ]

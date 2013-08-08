@@ -26,7 +26,7 @@
     </dict>
     <dict>
         <key>match</key>
-        <string>^\[DEPLOYMENT FAILED\]?</string>
+        <string>^\[COMPILE FAILED\]?</string>
         <key>name</key>
         <string>operation.fail</string>
     </dict>

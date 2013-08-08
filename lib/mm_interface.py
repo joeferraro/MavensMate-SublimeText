@@ -11,14 +11,16 @@ try:
     from .threads import ThreadProgress
     from .threads import PanelThreadProgress
     from .printer import PanelPrinter
+    from .mm_merge import MavensMateDiffThread
     import MavensMate.lib.command_helper as command_helper
     import MavensMate.util as util
-    import MavensMate.lib.server.lib.server_threaded as server
+    import MavensMate.config as config
 except:
     from lib.threads import ThreadTracker
     from lib.threads import ThreadProgress
     from lib.threads import PanelThreadProgress
     from lib.printer import PanelPrinter
+    from lib.mm_merge import MavensMateDiffThread
     import lib.command_helper as command_helper
     import util
 
@@ -45,7 +47,7 @@ def call(operation, use_mm_panel=True, **kwargs):
     threads = []
     thread = MavensMateTerminalCall(
         operation, 
-        project_name=util.get_project_name(), 
+        project_name=util.get_project_name(kwargs.get('context', None)), 
         active_file=util.get_active_file(), 
         params=kwargs.get('params', None),
         context=kwargs.get('context', None),
@@ -55,7 +57,9 @@ def call(operation, use_mm_panel=True, **kwargs):
         mm_location=settings.get('mm_location'),
         callback=kwargs.get('callback', None)
     )
-    threads.append(thread)
+    if operation == 'index_apex':
+        thread.daemon = True
+    threads.append(thread)        
     thread.start()
 
 #thread that calls out to the mm tool
@@ -94,7 +98,7 @@ class MavensMateTerminalCall(threading.Thread):
             self.printer.writeln(self.message)
             self.printer.writeln('Timestamp: '+self.process_id)
             self.printer.writeln('Result:          ')
-        else:
+        elif 'index' not in self.operation:
             ThreadProgress(self, self.message, 'Operation complete')
 
         threading.Thread.__init__(self)
@@ -225,12 +229,8 @@ class MavensMateTerminalCall(threading.Thread):
                 self.calculate_process_region()
             PanelThreadProgress(self)
 
-        last_thread = ThreadTracker.get_last_added(self.window)
+        #last_thread = ThreadTracker.get_last_added(self.window)
         ThreadTracker.add(self)
-        if last_thread != None:
-            last_thread.join()
-
-        #mm_location = self.settings.get('mm_location')
 
         if self.settings.get('mm_debug_mode'):
             python_path = self.settings.get('mm_python_location')
@@ -242,8 +242,6 @@ class MavensMateTerminalCall(threading.Thread):
             print('[MAVENSMATE] executing mm terminal call:')
             print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
             process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        #process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        #process = subprocess.Popen("/Users/josephferraro/Development/joey2/bin/python /Users/josephferraro/Development/Python/mavensmate/mm/mm.py {0}".format(self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload(process)
         if process.stdout is not None: 
             mm_response = process.stdout.readlines()
@@ -269,16 +267,9 @@ class MavensMateTerminalCall(threading.Thread):
         #    print(self.callback)
         #    self.callback(response_body)
 
-        # result = {
-        #     "body"      : response_body,
-        #     "operation" : self.operation,
-        #     "window"    : self.window,
-        #     "view"      : self.view
-        # }
         if sys.version_info >= (3, 0):
             self.calculate_process_region()
-        #else:
-        #    sublime.set_timeout(self.calculate_process_region(), 10)
+            
         ThreadTracker.remove(self)
 
 #handles the result of the mm script
@@ -291,12 +282,23 @@ def handle_result(operation, process_id, printer, result, thread):
     try:
         result = json.loads(result)
         if operation == 'compile' and 'actions' in result and util.to_bool(result['success']) == False:
-            if sublime.ok_cancel_dialog(result["body"], result["actions"][0].title()):
-                printer.panel.run_command('write_operation_status', {"text": " Overwriting server copy", 'region': [status_region.end(), status_region.end()+10] })
-                thread.params['action'] = 'overwrite'
-                sublime.set_timeout(lambda: call('compile', params=thread.params), 100)
+            diff_merge_settings = config.settings.get('mm_diff_server_conflicts', False)
+            if diff_merge_settings:
+                if sublime.ok_cancel_dialog(result["body"], result["actions"][0].title()):
+                    printer.panel.run_command('write_operation_status', {"text": " Diffing with server", 'region': [status_region.end(), status_region.end()+10] })
+                    th = MavensMateDiffThread(thread.window, thread.view, result['tmp_file_path'])
+                    th.start()
+                    
+                else:
+                    printer.panel.run_command('write_operation_status', {"text": " "+result["actions"][1].title(), 'region': [status_region.end(), status_region.end()+10] })
             else:
-                printer.panel.run_command('write_operation_status', {"text": " "+result["actions"][1].title(), 'region': [status_region.end(), status_region.end()+10] })
+                if sublime.ok_cancel_dialog(result["body"], "Overwrite Server Copy"):
+                    printer.panel.run_command('write_operation_status', {"text": " Overwriting server copy", 'region': [status_region.end(), status_region.end()+10] })
+                    thread.params['action'] = 'overwrite'
+                    sublime.set_timeout(lambda: call('compile', params=thread.params), 100)   
+                else:
+                    printer.panel.run_command('write_operation_status', {"text": " "+result["actions"][1].title(), 'region': [status_region.end(), status_region.end()+10] })
+   
         else:
             print_result_message(operation, process_id, status_region, result, printer, thread) 
             if operation == 'new_metadata' and 'success' in result and util.to_bool(result['success']) == True:

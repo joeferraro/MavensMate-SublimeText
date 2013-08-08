@@ -1,5 +1,7 @@
 {
-  "static_methods": [
-    "valueOf(anyType_x)"
-  ]
+    "instance_methods": [
+        "valueOf(String_s)", 
+        "valueOf(Object_fieldValue)"
+    ], 
+    "static_methods": []
 }

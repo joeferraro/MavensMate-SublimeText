@@ -15,6 +15,10 @@
     "caption": "MavensMate: Edit Project...",
     "command": "edit_project"
   },
+  {
+    "caption": "MavensMate: Diff",
+    "command": "mavens_mate_diff"
+  },
   { 
     "caption": "MavensMate: Delete File From Server...", 
     "command": "delete_active_metadata" 
@@ -30,6 +34,10 @@
   {
     "caption": "MavensMate: Fetch Logs",
     "command": "fetch_logs"
+  },
+  {
+    "caption": "MavensMate: Fetch Checkpoints",
+    "command": "fetch_checkpoints"
   },
   {
     "caption": "MavensMate: Clean Project...",
@@ -90,6 +98,10 @@
   {
     "caption": "MavensMate: Compile Tabs",          
     "command": "compile_tabs"
+  },
+  {
+    "caption": "MavensMate: Force Save Current File",          
+    "command": "force_compile_file"
   },
   {
     "caption": "MavensMate: Index Apex Checkpoints",          

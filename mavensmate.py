@@ -18,6 +18,9 @@ if sys.version_info >= (3, 0):
     import MavensMate.lib.server.lib.server_threaded as server
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
+    import MavensMate.lib.parsehelp as parsehelp
+    from MavensMate.lib.mm_merge import *
+    from MavensMate.lib.completioncommon import *
 else:
     # Python 2
     import config
@@ -28,12 +31,16 @@ else:
     import lib.completions as completions
     from lib.printer import PanelPrinter
     from lib.threads import ThreadTracker
+    from lib.mm_merge import *
 
 import sublime
 import sublime_plugin
 
 settings = sublime.load_settings('mavensmate.sublime-settings')
 sublime_version = int(float(sublime.version()))
+
+completioncommon = imp.load_source("completioncommon", os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib/completioncommon.py"))
+
 
 st_version = 2
 # Warn about out-dated versions of ST3
@@ -62,11 +69,13 @@ if reloader_name in sys.modules and sys.version_info >= (3, 0):
 
 def plugin_loaded():
     settings = sublime.load_settings('mavensmate.sublime-settings')
+    merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
     try:
         server.run(port=settings.get('mm_server_port'))
     except Exception as e:
         print(e)
-
+    config.settings = settings
+    config.merge_settings = merge_settings
     util.package_check()
     util.start_mavensmate_app()  
     util.check_for_updates()
@@ -149,6 +158,18 @@ class MavensStubCommand(sublime_plugin.WindowCommand):
         return False
     def is_visible(self):
         return not util.is_mm_project();
+
+#deploys the currently active file
+class ForceCompileFileCommand(sublime_plugin.WindowCommand):
+    def run(self, files=None):       
+        print('FORCE COMPILING!')
+        if files == None:
+            files = [util.get_active_file()]
+        params = {
+            "files"     : files,
+            "action"    : "overwrite"
+        }
+        mm.call('compile', context=self.window, params=params)
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
@@ -408,16 +429,16 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
     def is_visible(self, dirs, files):
         return util.is_mm_project()
 
-    def is_enabled(self, dirs, files):
-        if dirs != None and type(dirs) is list and len(dirs) > 0:
-            for d in dirs:
-                if util.is_config.mm_dir(d):
-                    return True
-        if files != None and type(files) is list and len(files) > 0:
-            for f in files:
-                if util.util.is_mm_file(f):
-                    return True
-        return False
+    # def is_enabled(self, dirs, files):
+    #     if dirs != None and type(dirs) is list and len(dirs) > 0:
+    #         for d in dirs:
+    #             if util.is_config.mm_dir(d):
+    #                 return True
+    #     if files != None and type(files) is list and len(files) > 0:
+    #         for f in files:
+    #             if util.util.is_mm_file(f):
+    #                 return True
+    #     return False
 
 class RefreshActivePropertiesFromServerCommand(sublime_plugin.WindowCommand):
     def run (self):
@@ -720,6 +741,13 @@ class FetchLogsCommand(sublime_plugin.WindowCommand):
         mm.call('fetch_logs', False)
         util.send_usage_statistics('Fetch Apex Logs')  
 
+#refreshes the currently active file from the server
+class FetchCheckpointsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('fetch_checkpoints', False)
+        util.send_usage_statistics('Fetch Apex Checkpoints')  
+
+
 #when a class or trigger file is opened, adds execution overlay markers if applicable
 class HideApexCheckpoints(sublime_plugin.WindowCommand):
     def run(self):
@@ -985,34 +1013,41 @@ class NewShellCommand(sublime_plugin.TextCommand):
 #completions for force.com-specific use cases
 class ApexCompletions(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
-        settings = sublime.load_settings('mavensmate.sublime-settings')
+        #if user has opted out of autocomplete or this isnt a mm project, ignore it
         if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
             return []
 
+        #only run completions for Apex Triggers and Classes
         ext = util.get_file_extension(view.file_name())
-        if ext != 'cls' and ext != 'trigger':
+        if ext != '.cls' and ext != '.trigger':
             return []
 
-
+        #now get the autocomplete context
+        #if not dot notation, ignore
         pt = locations[0] - len(prefix) - 1
         ch = view.substr(sublime.Region(pt, pt + 1))
         if not ch == '.': return []
 
-        word = view.substr(view.word(pt))
-
-        fn, ext = os.path.splitext(view.file_name())
-        
-        if ext != '.cls' and ext != '.trigger' and (word == None or word == ''):
+        #myVariable.
+        #if we cant find myVariable properly, exit out
+        word = view.substr(view.word(pt))        
+        if word == None or word == '':
             return []
 
+
         ##OK START COMPLETIONS
-
         _completions = []
-        lower_prefix = word.lower()
-        print(word)
-        #print(lower_prefix)
+        lower_word = word.lower()
 
-        if lower_prefix == 'this':
+        data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
+        #full_data = view.substr(sublime.Region(0, view.size()))
+        typedef = parsehelp.get_type_definition(data)
+        print('[MAVENSMATE] autocomplete type definition: ', typedef)
+
+        typedef_class = typedef[2]
+        typedef_class_lower = typedef_class.lower()
+
+        if lower_word == 'this':
             full_file_path = os.path.splitext(util.get_active_file())[0]
             base = os.path.basename(full_file_path)
             file_name = os.path.splitext(base)[0]            
@@ -1021,15 +1056,18 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         ## HANDLE APEX STATIC METHODS
         ## String.valueOf, Double.toString(), etc.
-        elif os.path.isfile(config.mm_dir+"/support/lib/apex/"+lower_prefix+".json"): 
+        elif os.path.isfile(config.mm_dir+"/support/lib/apex/"+lower_word+".json"): 
             prefix = prefix.lower()
-            json_data = open(config.mm_dir+"/support/lib/apex/"+lower_prefix+".json")
+            json_data = open(config.mm_dir+"/support/lib/apex/"+lower_word+".json")
             data = json.load(json_data)
             json_data.close()
-            pd = data["static_methods"]
-            for method in pd:
-                _completions.append((method, method))
-            return sorted(_completions)
+            if 'static_methods' in data:
+                pd = data["static_methods"]
+                for method in pd:
+                    _completions.append((method, method))
+                return sorted(_completions)
+            else:
+                return []
         
         ## HANDLE CUSTOM APEX CLASS STATIC METHODS 
         ## MyCustomClass.some_static_method
@@ -1038,151 +1076,57 @@ class ApexCompletions(sublime_plugin.EventListener):
             return sorted(_completions)  
 
         ## HANDLE CUSTOM APEX INSTANCE METHOD ## 
-        ## MyClass mc = new MyClass()
-        ## mc.??
+        ## MyClass foo = new MyClass()
+        ## foo.??
         else: 
-            #self.process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            object_name = None
-            object_name_lower = None
-            
-            variables = completions.get_variable_list(view)
+            if typedef_class_lower != None:
+                if '<' in typedef_class:
+                    typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
+                    typedef_class       = re.sub('\<.*?\>', '', typedef_class)
+                if '[' in typedef_class:
+                    typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
+                    typedef_class       = re.sub('\[.*?\]', '', typedef_class)
 
-            print(variables)
-
-            for v in variables['result']:
-                #print(v)
-                if 'variableName' in v and v['variableName'].lower() == word.lower():
-                    object_name = v['type']
-                    if '.' in object_name:
-                        object_name = object_name.split('.')[-1]
-                    object_name_lower = object_name.lower()
-                    break
-
-            print('object_name: ', object_name)
-            print(os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"))
-
-            if object_name != None:
-                if os.path.isfile(config.mm_dir+"/support/lib/apex/"+object_name_lower+".json"): #=> apex instance methods
-                    json_data = open(config.mm_dir+"/support/lib/apex/"+object_name_lower+".json")
+                
+                if os.path.isfile(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json"): #=> apex instance methods
+                    json_data = open(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json")
                     data = json.load(json_data)
                     json_data.close()
                     pd = data["instance_methods"]
                     for method in pd:
                         _completions.append((method, method))
                     return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"): #=> parse org metadata
+                elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+typedef_class+".cls"): #=> apex classes
+                    _completions = util.get_apex_completions(typedef_class)
+                    return sorted(_completions)
+                elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
+                    object_dom = parse(util.mm_project_directory()+"/src/objects/"+typedef_class+".object")
+                    for node in object_dom.getElementsByTagName('fields'):
+                        field_name = ''
+                        field_type = ''
+                        for child in node.childNodes:                            
+                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                            if child.nodeName == 'fullName':
+                                field_name = child.firstChild.nodeValue
+                            elif child.nodeName == 'type':
+                                field_type = child.firstChild.nodeValue
+                        _completions.append((field_name+" \t"+field_type, field_name))
+                    return sorted(_completions)
+                elif os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"): #=> parse org metadata, looking for object fields
                     jsonData = util.parse_json_from_file(util.mm_project_directory()+"/config/.org_metadata")
                     for metadata_type in jsonData:
                         if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
                             for object_type in metadata_type['children']:
-                                if 'text' in object_type and object_type['text'].lower() == object_name_lower:
+                                if 'text' in object_type and object_type['text'].lower() == typedef_class_lower:
                                     for attr in object_type['children']:
                                         if 'text' in attr and attr['text'] == 'fields':
                                             for field in attr['children']:
                                                 _completions.append((field['text'], field['text']))
                     return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object"): #=> object fields
-                    object_dom = parse(util.mm_project_directory()+"/config/objects/"+object_name_lower+".object")
-                    for node in object_dom.getElementsByTagName('fields'):
-                        field_name = ''
-                        field_type = ''
-                        for child in node.childNodes:                            
-                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                            if child.nodeName == 'fullName':
-                                field_name = child.firstChild.nodeValue
-                            elif child.nodeName == 'type':
-                                field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" \t"+field_type, field_name))
-                    return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object"): #=> object fields
-                    object_dom = parse(util.mm_project_directory()+"/src/objects/"+object_name_lower+".object")
-                    for node in object_dom.getElementsByTagName('fields'):
-                        field_name = ''
-                        field_type = ''
-                        for child in node.childNodes:                            
-                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                            if child.nodeName == 'fullName':
-                                field_name = child.firstChild.nodeValue
-                            elif child.nodeName == 'type':
-                                field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" \t"+field_type, field_name))
-                    return sorted(_completions)
-                
-                elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+object_name_lower+".cls"): #=> apex classes
-                    search_name = util.prep_for_search(object_name)
-                    _completions = util.get_apex_completions(search_name)
-                    return sorted(_completions)
-
-    # def show_completions(self, view, completions):
-    #     if completions:
-    #         self.completions = completions
-    #         view.run_command("hide_auto_complete")
-    #         sublime.set_timeout(functools.partial(self.show, view), 0)
-
-    # def show(self, view):
-    #     view.run_command("auto_complete", {
-    #         'disable_auto_insert': True,
-    #         'api_completions_only': True,
-    #         'next_completion_if_showing': False,
-    #         'auto_complete_commit_on_tab': True,
-    #     })
-
-
-# class Autocomplete(sublime_plugin.EventListener):
-#     """
-#     Sublime Text autocompletion integration
-#     """
-
-#     completions = []
-#     cplns_ready = None
-
-#     def on_query_completions(self, view, prefix, locations):
-#         """ Sublime autocomplete event handler
-
-#             Get completions depends on current cursor position and return
-#             them as list of ('possible completion', 'completion type')
-
-#             :param view: `sublime.View` object
-#             :type view: sublime.View
-#             :param prefix: string for completions
-#             :type prefix: basestring
-#             :param locations: offset from beginning
-#             :type locations: int
-
-#             :return: list
-#         """
-#         if self.cplns_ready:
-#             self.cplns_ready = None
-#             if self.completions:
-#                 cplns, self.completions = self.completions, []
-#                 return [tuple(i) for i in cplns]
-#             return
-
-#         # nothing to do with non-python code
-#         if not util.is_mm_project():
-#             return
-
-#         # get completions list
-#         if self.cplns_ready is None:
-#             ask_daemon(view, self.show_completions, 'autocomplete', locations[0])
-#             self.cplns_ready = False
-#         return
-
-#     def show_completions(self, view, completions):
-#         # XXX check position
-#         self.cplns_ready = True
-#         if completions:
-#             self.completions = completions
-#             view.run_command("hide_auto_complete")
-#             sublime.set_timeout(functools.partial(self.show, view), 0)
-
-#     def show(self, view):
-#         view.run_command("auto_complete", {
-#             'disable_auto_insert': True,
-#             'api_completions_only': True,
-#             'next_completion_if_showing': False,
-#             'auto_complete_commit_on_tab': True,
-#         })
+                else:
+                    return []
+            else:
+                return []
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
