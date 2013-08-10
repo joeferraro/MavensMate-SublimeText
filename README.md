@@ -1,4 +1,4 @@
-#MavensMate for Sublime Text plugin (2.0 beta)
+#MavensMate for Sublime Text plugin (3.0.0)
 
 MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE. Its goal is to allow developers to work inside Sublime Text for all their Force.com-related tasks.
 
@@ -64,4 +64,4 @@ If `mm_check_for_updates` is set to `true`, MavensMate will check for updates wh
 ###Pacman
 <img src="http://wearemavens.com/images/mm/pacman.png"/>
 
-[mm_download]: http://joe-ferraro.com/mavensmate/MavensMate.zip
+[mm_download]: http://cdn.mavensconsulting.com/mavensmate/builds/MavensMate.zip
