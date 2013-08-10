@@ -204,13 +204,13 @@
 	         	[
 					{ 
 						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText"}, 
-						"caption": "Project Home" 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Overview"}, 
+						"caption": "Overview" 
 					},
 					{ 
 						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki"}, 
-						"caption": "Project Wiki" 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Installation"}, 
+						"caption": "Installation" 
 					},
 					{ 
 						"command": "open_url", 
@@ -219,17 +219,17 @@
 					},
 					{ 
 						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Apex-Code-Assist-(beta)"}, 
-						"caption": "Code Assist" 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Code_Completion"}, 
+						"caption": "Code Completion" 
 					},
 					{ 
 						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Shortcut-Keys"}, 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Shortcuts"}, 
 						"caption": "Shortcut Keys" 
 					},
 					{ 
 						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Logging"}, 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging"}, 
 						"caption": "Logging" 
 					},
 					{ 
