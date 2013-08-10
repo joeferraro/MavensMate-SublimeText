@@ -40,7 +40,7 @@ To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in
 ###Prerequisites
 
 ####Mac OSX (OSX 10.7+ only)
-You must have **MavensMate.app 0.34** installed. Download MavensMate.app [here][mm_034_download] and place in /Applications
+You must have **MavensMate.app 0.34** installed. Download [MavensMate.app v0.34][mm_034_download] and place in /Applications
 
 ##Install
 To install the Sublime Text 2 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
