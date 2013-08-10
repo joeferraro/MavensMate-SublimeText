@@ -9,34 +9,49 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 * Play Pacman, Tetris, and Donkey Kong while your Apex unit tests and deploys run
 * Deploy metadata to other Salesforce.com orgs
 * Apex Execute Anonymous
-* Create Apex Execution Overlay Actions (tooling API)
+* Create Apex Execution Overlay Actions "checkpoints" (tooling API)
 * Download Apex Logs (tooling API)
-* Apex Code Assist (beta!!)
+* Apex & Visualforce Code Assist
 
-##Prerequisites
 
-###Mac OSX (OSX 10.7+ only)
+##Sublime Text 3 plugin (current stable version)
+
+###Prerequisites
+
+####Mac OSX (OSX 10.7+ only)
 You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
 
-###Windows
+####Windows
 TODO: We're looking for talented Windows developers to own MavensMate for Windows. Please visit the MavensMate project on GitHub for more information: https://github.com/joeferraro/MavensMate
 
-###Linux
+####Linux
 TODO: We're looking for talented Linux developers to own MavensMate for Linux. Please visit the MavensMate project on GitHub for more information: https://github.com/joeferraro/MavensMate
 
-##Install
-
-To install the Sublime Text Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
+###Install
+To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
 <img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
- 
+<img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
+
+
+##Sublime Text 2 plugin (no longer supported)
+
+###Prerequisites
+
+####Mac OSX (OSX 10.7+ only)
+You must have **MavensMate.app 0.34** installed. Download MavensMate.app [here][mm_034_download] and place in /Applications
+
+##Install
+To install the Sublime Text 2 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
+
+<img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
 
 
 ##Setup
 <img src="http://wearemavens.com/images/mm/menu3.png" width="400"/>
 
-Go to "MavensMate --> Settings --> User" and modify `mm_workspace` with the EXISTING location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
+Go to "MavensMate > Settings > User" and modify `mm_workspace` with the EXISTING location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
 
 	"mm_workspace": "/Users/your_username/Projects"
 
@@ -65,3 +80,4 @@ If `mm_check_for_updates` is set to `true`, MavensMate will check for updates wh
 <img src="http://wearemavens.com/images/mm/pacman.png"/>
 
 [mm_download]: http://cdn.mavensconsulting.com/mavensmate/builds/MavensMate.zip
+[mm_034_download]: http://cdn.mavensconsulting.com/mavensmate/builds/0.34/MavensMate.zip
