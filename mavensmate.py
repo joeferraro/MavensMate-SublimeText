@@ -19,6 +19,7 @@ if sys.version_info >= (3, 0):
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
     import MavensMate.lib.parsehelp as parsehelp
+    import MavensMate.lib.vf as vf
     from MavensMate.lib.mm_merge import *
     from MavensMate.lib.completioncommon import *
 else:
@@ -28,6 +29,7 @@ else:
     import lib.command_helper as command_helper
     import lib.mm_interface as mm
     import lib.resource_bundle as resource_bundle
+    import lib.vf as vf
     import lib.completions as completions
     from lib.printer import PanelPrinter
     from lib.threads import ThreadTracker
@@ -1009,6 +1011,60 @@ class NewShellCommand(sublime_plugin.TextCommand):
                 util.print_debug_panel_message('Unrecognized command: ' + input + '\n')
         except:
             util.print_debug_panel_message('Unrecognized command: ' + input + '\n')
+
+#completions for visualforce
+class VisualforceCompletions(sublime_plugin.EventListener):
+    def on_query_completions(self, view, prefix, locations):
+        #if user has opted out of autocomplete or this isnt a mm project, ignore it
+        if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
+            return []
+
+        #only run completions for Apex Pages and Components
+        ext = util.get_file_extension(view.file_name())
+        if ext != '.page' and ext != '.component':
+            return []
+
+        pt = locations[0] - len(prefix) - 1
+        ch = view.substr(sublime.Region(pt, pt + 1))
+        
+        if ch == '<':
+            _completions = []
+            for t in vf.tag_list:
+                 _completions.append((t, t))
+            return _completions
+
+        elif ch == ':':
+            word = view.substr(view.word(pt))        
+            _completions = []
+            for t in vf.tag_list:
+                if word in t:
+                    _completions.append((t, t))
+
+            return _completions
+
+        elif ch == ' ':
+            _completions = []
+            tag_def = None
+            region_from_top_to_current_word = sublime.Region(0, pt + 1)
+            lines = view.lines(region_from_top_to_current_word)
+            for line in reversed(lines):
+                line_contents = view.substr(line)
+                line_contents = line_contents.replace("\t", "").strip()
+                if line_contents.find('<') == -1: continue #skip the line if the opening bracket isn't in the line
+                tag_def = line_contents.split('<')[-1].split(' ')[0]
+                break
+
+            print(tag_def)
+            if tag_def in vf.tag_defs:
+                def_entry = vf.tag_defs[tag_def]
+
+                for key, value in def_entry['attribs'].items():
+                    _completions.append((key + '\t(' + value['type'] + ')', key+'=""'))
+
+                return sorted(_completions)
+
+        else:
+            return []
 
 #completions for force.com-specific use cases
 class ApexCompletions(sublime_plugin.EventListener):
