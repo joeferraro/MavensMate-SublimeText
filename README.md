@@ -53,7 +53,7 @@ To install the Sublime Text 2 Plugin for MavensMate, go to the "Plugins" menu in
 ##Setup
 <img src="http://wearemavens.com/images/mm/menu3.png" width="400"/>
 
-Go to "MavensMate > Settings > User" and modify `mm_workspace` with the EXISTING location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
+Go to `MavensMate > Settings > User` and modify `mm_workspace` with the EXISTING location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
 
 	"mm_workspace": "/Users/your_username/Projects"
 
