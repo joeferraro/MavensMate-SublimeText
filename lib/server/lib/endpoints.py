@@ -121,6 +121,17 @@ def new_log_request(request_handler):
     '''
     run_async_operation(request_handler, 'new_log')
 
+def metadata_list_request_async(request_handler):
+    '''
+        GET /metadata/list
+        {
+            "sid"             : "",
+            "metadata_type"   : "",
+            "murl"            : ""
+        }
+        call to get a list of metadata of a certain type
+    '''
+    run_async_operation(request_handler, 'list_metadata')
 
 ##########################
 ## SYNCHRONOUS REQUESTS ##
@@ -401,5 +412,6 @@ mappings = {
     '/project/new_log'          : { 'POST'  : new_log_request },
     '/session'                  : { 'GET'   : get_active_session_request },
     '/apex/execute'             : { 'POST'  : execute_apex_request },
-    '/metadata/list'            : { 'GET'   : metadata_list_request }
+    '/metadata/list'            : { 'GET'   : metadata_list_request },
+    '/metadata/list/async'      : { 'GET'   : metadata_list_request_async }
 }
