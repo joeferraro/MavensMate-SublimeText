@@ -13,6 +13,8 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 * Download Apex Logs (tooling API)
 * Apex & Visualforce Code Assist
 
+####For detailed information and documentation, please visit [mavensmate.com][mmcom]
+
 
 ##Sublime Text 3 plugin (current stable version)
 
@@ -83,3 +85,4 @@ If `mm_check_for_updates` is set to `true`, MavensMate will check for updates wh
 
 [mm_download]: http://cdn.mavensconsulting.com/mavensmate/builds/MavensMate.zip
 [mm_034_download]: http://cdn.mavensconsulting.com/mavensmate/builds/0.34/MavensMate.zip
+[mmcom]: http://mavensmate.com/?utm_source=github&utm_medium=st-plugin&utm_campaign=st
