@@ -31,6 +31,7 @@ TODO: We're looking for talented Linux developers to own MavensMate for Linux. P
 To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
 <img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
+
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
 
 
@@ -45,6 +46,7 @@ You must have **MavensMate.app 0.34** installed. Download MavensMate.app [here][
 To install the Sublime Text 2 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
 <img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
+
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
 
 
