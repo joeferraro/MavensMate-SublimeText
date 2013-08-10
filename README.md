@@ -1,4 +1,4 @@
-#MavensMate for Sublime Text plugin (3.0.0)
+#MavensMate for Sublime Text
 
 MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE. Its goal is to allow developers to work inside Sublime Text for all their Force.com-related tasks.
 
