@@ -375,7 +375,10 @@ def get_apex_completions(search_name):
                     completions.append((c["visibility"] + " " + c["name"], c["name"]))
             if 'properties' in symbol_table:
                 for c in symbol_table['properties']:
-                    completions.append((c["visibility"] + " " + c["name"], c["name"]))
+                    if "type" in c and c["type"] != None and c["type"] != "null":
+                        completions.append((c["visibility"] + " " + c["name"] + "\t" + c["type"], c["name"]))
+                    else:
+                        completions.append((c["visibility"] + " " + c["name"], c["name"]))
             if 'methods' in symbol_table:
                 for c in symbol_table['methods']:
                     params = ''
