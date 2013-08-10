@@ -14,7 +14,6 @@ if sys.version_info >= (3, 0):
     import MavensMate.lib.command_helper as command_helper
     import MavensMate.lib.mm_interface as mm
     import MavensMate.lib.resource_bundle as resource_bundle
-    import MavensMate.lib.completions as completions
     import MavensMate.lib.server.lib.server_threaded as server
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
@@ -30,7 +29,6 @@ else:
     import lib.mm_interface as mm
     import lib.resource_bundle as resource_bundle
     import lib.vf as vf
-    import lib.completions as completions
     from lib.printer import PanelPrinter
     from lib.threads import ThreadTracker
     from lib.mm_merge import *
