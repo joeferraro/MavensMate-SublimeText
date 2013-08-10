@@ -45,7 +45,8 @@ mods_load_order = [
     '.usage_reporter',
     '.views',
     '.mm_merge',
-    '.completioncommon'
+    '.completioncommon',
+    '.vf'
 ]
 
 for suffix in mods_load_order:
