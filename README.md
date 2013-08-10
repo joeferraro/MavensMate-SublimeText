@@ -64,8 +64,12 @@ If `mm_check_for_updates` is set to `true`, MavensMate will check for updates wh
 
 <img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
 
+##Documentation
+<a href="MavensMate Documentation">http://mavensmate.com/Getting_Started/Developers</a>
+
 ##Wiki
 <a href="https://github.com/joeferraro/MavensMate-SublimeText/wiki">https://github.com/joeferraro/MavensMate-SublimeText/wiki</a>
+
 
 ##Screenshots
 
