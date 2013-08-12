@@ -5,7 +5,7 @@ try:
 except:
     import config
 try: 
-    import urllib, urllib2
+    import urllib
 except ImportError:
     import urllib.request as urllib
 
@@ -21,7 +21,7 @@ class UsageReporter(threading.Thread):
             ip_address = ''
             try:
                 #get ip address
-                ip_address = urllib2.urlopen('http://ip.42.pl/raw').read()
+                ip_address = urllib.request.urlopen('http://ip.42.pl/raw').read()
             except:
                 ip_address = 'unknown'
 
@@ -34,11 +34,14 @@ class UsageReporter(threading.Thread):
             #post to usage servlet
             headers = { "Content-Type":"application/x-www-form-urlencoded" }
 
-            handler = urllib2.HTTPSHandler(debuglevel=0)
-            opener = urllib2.build_opener(handler)
+            handler = urllib.request.HTTPSHandler(debuglevel=0)
+            opener = urllib.request.build_opener(handler)
 
-            req = urllib2.Request("https://mavensmate.appspot.com/usage", data='version='+current_version+'&ip_address='+ip_address+'&action='+self.action+'', headers=headers)
+            b = 'version='+current_version+'&ip_address='+ip_address.decode('utf-8')+'&action='+self.action
+            b = b.encode('utf-8')
+            req = urllib.request.Request("https://mavensmate.appspot.com/usage", data=b, headers=headers)
             self.response = opener.open(req).read()
-        except: 
+        except Exception as e: 
             #traceback.print_exc(file=sys.stdout)
             print('[MAVENSMATE] failed to send usage statistic')
+            print(e)

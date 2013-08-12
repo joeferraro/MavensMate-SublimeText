@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.0.0",
-						"release_notes": "Better autocomplete, better output panel, better everything!",
+						"version": "3.0.1",
+						"release_notes": "Bug fixes",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
