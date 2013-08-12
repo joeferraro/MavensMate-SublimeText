@@ -1,12 +1,11 @@
 import threading
+import json
 try:
     import MavensMate.config as config
 except:
     import config
-
-import json
 try: 
-    import urllib, urllib2
+    import urllib
 except ImportError:
     import urllib.request as urllib
 import sublime
@@ -21,9 +20,8 @@ class AutomaticUpgrader(threading.Thread):
             data = json.load(json_data)
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
-            j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json"))
-            #TODO
-            #j = json.load(urllib.urlopen("https://raw.github.com/joeferraro/MavensMate-SublimeText/2.0/packages.json"))
+            response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json').read().decode('utf-8')
+            j = json.loads(response)
             latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
             release_notes = "\n\nRelease Notes: "
             try:
@@ -39,9 +37,10 @@ class AutomaticUpgrader(threading.Thread):
                 needs_update = True
             
             if needs_update == True:
-                #if sublime.ok_cancel_dialog("A new version of MavensMate ("+latest_version+") is available. "+release_notes+"Would you like to update?", "Update"):
-                    #sublime.set_timeout(lambda: sublime.run_command("update_me"), 1)
-                sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available. To update, select 'Plugins' from the MavensMate.app status bar menu.")
-        
-        except:
+                sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available. To update, select 'Plugins' from the MavensMate.app status bar menu, then \"Update Plugin\".\n\nYou will need to restart Sublime Text after updating.")
+        except BaseException as e:
+            # import traceback
+            # import sys
+            # traceback.print_exc(file=sys.stdout)            
             print('[MAVENSMATE] skipping update check')
+            print(e)

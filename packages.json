@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.0.1",
-						"release_notes": "Bug fixes",
+						"version": "3.0.2",
+						"release_notes": "Fixes upgrader",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
