@@ -1057,10 +1057,10 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             lastTagClosing = beginToken.find('>',lastTagOpening);
             lastSpace = beginToken.find(' ',lastTagOpening);
 
-            print('beginToken: ', beginToken)
-            print('lastTagOpening: ', lastTagOpening)
-            print('lastTagClosing: ', lastTagClosing)
-            print('lastSpace: ', lastSpace)
+            #print('beginToken: ', beginToken)
+            #print('lastTagOpening: ', lastTagOpening)
+            #print('lastTagClosing: ', lastTagClosing)
+            #print('lastSpace: ', lastSpace)
 
             #col = infos['curr_pos'];
             index = pt
@@ -1068,19 +1068,20 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             theCode = full_data
             theCodeRfindQuote = theCode.rfind('"',index-1)
             theCodeSubstring = theCode[theCodeRfindQuote:index+1]
-            print(theCodeSubstring)
+            #print(theCodeSubstring)
             prog = re.compile("\"\\s*\\w*\\s*\"")
             #print(theCodeRfindQuote)
             if prog.match(theCode[theCodeRfindQuote:index+1]):
+                pass
                 #if theCodeRfindQuote != -1:
                 #here we may be inside an attribute value
-                print('INSIDE ATTRIB QUOTE')
-                theCodeSubstring = theCode[theCodeRfindQuote:index+1]
-                print('---> ', theCodeSubstring)
+                #print('INSIDE ATTRIB QUOTE')
+                #theCodeSubstring = theCode[theCodeRfindQuote:index+1]
+                #print('---> ', theCodeSubstring)
                 #if theCode[theCodeRfindQuote,index+1].match(new RegExp("\"\\s*\\w*\\s*\"") ):
                 #    pass
             elif theCode[index-1:index] != '"' and lastTagClosing < lastTagOpening and lastSpace > lastTagOpening:
-                print('OK!!!')
+                #print('OK!!!')
                 #Here we need to suggest a list of attributes for the current tag
 
                 #lastEq = max(beginToken.rfind('=\"'), beginToken.rfind('=\''))
@@ -1112,7 +1113,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
 
                     return sorted(_completions)
             else:
-                return None
+                return []
         else:
             return []
 
