@@ -1233,12 +1233,15 @@ class ApexCompletions(sublime_plugin.EventListener):
                                             for field in attr['children']:
                                                 _completions.append((field['text'], field['text']))
                     if len(_completions) == 0:
-                        #need to index custom objects here, because it couldnt be found
-                        if len(ThreadTracker.get_pending_mm_panel_threads(sublime.active_window())) == 0:
-                            params = {
-                                'metadata_types' : ['CustomObject']
-                            }
-                            mm.call('refresh_metadata_index', False, params=params)
+                        try:
+                            #need to index custom objects here, because it couldnt be found
+                            if len(ThreadTracker.get_pending_mm_panel_threads(sublime.active_window())) == 0:
+                                params = {
+                                    'metadata_types' : ['CustomObject']
+                                }
+                                mm.call('refresh_metadata_index', False, params=params)
+                        except:
+                            print('[MAVENSMATE]: failed to index custom object metadata')
                     else:
                         return (sorted(_completions), completion_flags)
                 else:
