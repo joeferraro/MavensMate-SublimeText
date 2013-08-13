@@ -280,11 +280,15 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.picked_project = self.results[picked]
-        #print('opening project: ' + self.picked_project)
-        project_file = self.dir_map[self.picked_project][1]
+        project_file = self.dir_map[self.picked_project][1]        
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        sublime_path = settings.get('mm_plugin_client_location', '/Applications')
         if os.path.isfile(util.mm_workspace()+"/"+self.picked_project+"/"+project_file):
             if sublime_version >= 3000:
-                p = subprocess.Popen("'/Applications/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
+                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
+                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
