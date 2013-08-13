@@ -1,5 +1,8 @@
 import threading
 import json
+import plistlib
+import sublime
+import os
 try:
     import MavensMate.config as config
 except:
@@ -18,6 +21,7 @@ class UsageReporter(threading.Thread):
 
     def run(self):
         try:
+            settings = sublime.load_settings('mavensmate.sublime-settings')
             ip_address = ''
             try:
                 #get ip address
@@ -30,6 +34,14 @@ class UsageReporter(threading.Thread):
             data = json.load(json_data)
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
+            mm_version = None
+            try:
+                dic = plistlib.readPlist(os.path.join(settings.get('mm_app_location'), 'Contents', 'Info.plist'))
+                if 'CFBundleVersion' in dic:
+                    mm_version = dic['CFBundleVersion']
+            except BaseException as e:
+                print(e)
+                pass
 
             #post to usage servlet
             headers = { "Content-Type":"application/x-www-form-urlencoded" }
@@ -37,7 +49,7 @@ class UsageReporter(threading.Thread):
             handler = urllib.request.HTTPSHandler(debuglevel=0)
             opener = urllib.request.build_opener(handler)
 
-            b = 'version='+current_version+'&ip_address='+ip_address.decode('utf-8')+'&action='+self.action
+            b = 'version='+current_version+'&ip_address='+ip_address.decode('utf-8')+'&action='+self.action+'&mm_version='+mm_version
             b = b.encode('utf-8')
             req = urllib.request.Request("https://mavensmate.appspot.com/usage", data=b, headers=headers)
             self.response = opener.open(req).read()

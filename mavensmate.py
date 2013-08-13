@@ -3,7 +3,7 @@ import os
 import subprocess 
 import json
 import sys
-
+import re
 #dist_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.insert(0, dist_dir)
 
@@ -280,11 +280,15 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.picked_project = self.results[picked]
-        #print('opening project: ' + self.picked_project)
-        project_file = self.dir_map[self.picked_project][1]
+        project_file = self.dir_map[self.picked_project][1]        
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        sublime_path = settings.get('mm_plugin_client_location', '/Applications')
         if os.path.isfile(util.mm_workspace()+"/"+self.picked_project+"/"+project_file):
             if sublime_version >= 3000:
-                p = subprocess.Popen("'/Applications/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
+                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
+                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
@@ -1041,26 +1045,75 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             return _completions
 
         elif ch == ' ':
-            _completions = []
-            tag_def = None
+            data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
+            full_data = view.substr(sublime.Region(0, view.size()))
             region_from_top_to_current_word = sublime.Region(0, pt + 1)
             lines = view.lines(region_from_top_to_current_word)
-            for line in reversed(lines):
-                line_contents = view.substr(line)
-                line_contents = line_contents.replace("\t", "").strip()
-                if line_contents.find('<') == -1: continue #skip the line if the opening bracket isn't in the line
-                tag_def = line_contents.split('<')[-1].split(' ')[0]
-                break
+            #print(region_from_top_to_current_word)
+            #print(full_data)
+            
+            beginToken = data
+            lastTagOpening = beginToken.rfind('<');
+            lastTagClosing = beginToken.find('>',lastTagOpening);
+            lastSpace = beginToken.find(' ',lastTagOpening);
 
-            print(tag_def)
-            if tag_def in vf.tag_defs:
-                def_entry = vf.tag_defs[tag_def]
+            #print('beginToken: ', beginToken)
+            #print('lastTagOpening: ', lastTagOpening)
+            #print('lastTagClosing: ', lastTagClosing)
+            #print('lastSpace: ', lastSpace)
 
-                for key, value in def_entry['attribs'].items():
-                    _completions.append((key + '\t(' + value['type'] + ')', key+'=""'))
+            #col = infos['curr_pos'];
+            index = pt
+            #print(index)
+            theCode = full_data
+            theCodeRfindQuote = theCode.rfind('"',index-1)
+            theCodeSubstring = theCode[theCodeRfindQuote:index+1]
+            #print(theCodeSubstring)
+            prog = re.compile("\"\\s*\\w*\\s*\"")
+            #print(theCodeRfindQuote)
+            if prog.match(theCode[theCodeRfindQuote:index+1]):
+                pass
+                #if theCodeRfindQuote != -1:
+                #here we may be inside an attribute value
+                #print('INSIDE ATTRIB QUOTE')
+                #theCodeSubstring = theCode[theCodeRfindQuote:index+1]
+                #print('---> ', theCodeSubstring)
+                #if theCode[theCodeRfindQuote,index+1].match(new RegExp("\"\\s*\\w*\\s*\"") ):
+                #    pass
+            elif theCode[index-1:index] != '"' and lastTagClosing < lastTagOpening and lastSpace > lastTagOpening:
+                #print('OK!!!')
+                #Here we need to suggest a list of attributes for the current tag
 
-                return sorted(_completions)
+                #lastEq = max(beginToken.rfind('=\"'), beginToken.rfind('=\''))
+                #lastQu = max(beginToken.rfind('\"'), beginToken.rfind('\''))
+                #if (lastEq > lastTagOpening) and (lastEq + 1) == lastQu:
+                #    return []
 
+                #print('AN ATTRIBUTE!!!!')
+                #print(beginToken)
+                #print(lastTagOpening)
+                #print(lastTagClosing)
+                #print(lastSpace)
+
+                _completions = []
+                tag_def = None
+                for line in reversed(lines):
+                    line_contents = view.substr(line)
+                    line_contents = line_contents.replace("\t", "").strip()
+                    if line_contents.find('<') == -1: continue #skip the line if the opening bracket isn't in the line
+                    tag_def = line_contents.split('<')[-1].split(' ')[0]
+                    break
+
+                print(tag_def)
+                if tag_def in vf.tag_defs:
+                    def_entry = vf.tag_defs[tag_def]
+
+                    for key, value in def_entry['attribs'].items():
+                        _completions.append((key + '\t(' + value['type'] + ')', key+'=""'))
+
+                    return sorted(_completions)
+            else:
+                return []
         else:
             return []
 
@@ -1092,6 +1145,10 @@ class ApexCompletions(sublime_plugin.EventListener):
         ##OK START COMPLETIONS
         _completions = []
         lower_word = word.lower()
+        completion_flags = (
+            sublime.INHIBIT_WORD_COMPLETIONS |
+            sublime.INHIBIT_EXPLICIT_COMPLETIONS
+        )
 
         data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
         #full_data = view.substr(sublime.Region(0, view.size()))
@@ -1176,7 +1233,18 @@ class ApexCompletions(sublime_plugin.EventListener):
                                         if 'text' in attr and attr['text'] == 'fields':
                                             for field in attr['children']:
                                                 _completions.append((field['text'], field['text']))
-                    return sorted(_completions)
+                    if len(_completions) == 0:
+                        try:
+                            #need to index custom objects here, because it couldnt be found
+                            if len(ThreadTracker.get_pending_mm_panel_threads(sublime.active_window())) == 0:
+                                params = {
+                                    'metadata_types' : ['CustomObject']
+                                }
+                                mm.call('refresh_metadata_index', False, params=params)
+                        except:
+                            print('[MAVENSMATE]: failed to index custom object metadata')
+                    else:
+                        return (sorted(_completions), completion_flags)
                 else:
                     return []
             else:

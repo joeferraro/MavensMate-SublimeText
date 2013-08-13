@@ -206,6 +206,9 @@ class MavensMateTerminalCall(threading.Thread):
             if self.params != None and 'action' in self.params:
                 payload['action'] = self.params.get('action', None)
 
+            if self.params != None and 'metadata_types' in self.params:
+                payload['metadata_types'] = self.params.get('metadata_types', None)
+
         if type(payload) is dict:
             payload = json.dumps(payload)  
         print(payload)  
