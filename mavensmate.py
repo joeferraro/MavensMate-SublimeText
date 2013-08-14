@@ -1193,12 +1193,17 @@ class ApexCompletions(sublime_plugin.EventListener):
             if typedef_class_lower != None:
                 if '<' in typedef_class:
                     typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
+                    typedef_class_lower = re.sub('\<', '', typedef_class_lower)
+                    typedef_class_lower = re.sub('\>', '', typedef_class_lower)
                     typedef_class       = re.sub('\<.*?\>', '', typedef_class)
+                    typedef_class       = re.sub('\<', '', typedef_class)
+                    typedef_class       = re.sub('\>', '', typedef_class)
+
                 if '[' in typedef_class:
                     typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
                     typedef_class       = re.sub('\[.*?\]', '', typedef_class)
 
-                
+                #print(typedef_class_lower)
                 if os.path.isfile(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json"): #=> apex instance methods
                     json_data = open(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json")
                     data = json.load(json_data)
@@ -1233,7 +1238,7 @@ class ApexCompletions(sublime_plugin.EventListener):
                                         if 'text' in attr and attr['text'] == 'fields':
                                             for field in attr['children']:
                                                 _completions.append((field['text'], field['text']))
-                    if len(_completions) == 0:
+                    if len(_completions) == 0 and '__c' in typedef_class_lower:
                         try:
                             #need to index custom objects here, because it couldnt be found
                             if len(ThreadTracker.get_pending_mm_panel_threads(sublime.active_window())) == 0:
