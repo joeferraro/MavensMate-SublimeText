@@ -11,7 +11,7 @@
 				"osx": [
 					{
 						"version": "3.0.4",
-						"release_notes": "Autocomplete bug fixes, escape html in problem message, fix type detection for complex maps",
+						"release_notes": "Autocomplete bug fixes, escape html in problem message, fix type detection for complex maps, add release notes back to update message.",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
