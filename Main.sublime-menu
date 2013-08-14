@@ -160,6 +160,11 @@
 	         	"command": "compile_active_file"
 	     	},
 	     	{
+	        	"id": "force_compile_file", 
+	    		"caption": "Force Save Active File (Skip server check)",  
+	         	"command": "force_compile_file"
+	     	},
+	     	{
 	        	"id": "refresh_active", 
 	    		"caption": "Refresh File From Server",  
 	         	"command": "refresh_active_file"

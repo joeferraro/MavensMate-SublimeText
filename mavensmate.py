@@ -170,6 +170,8 @@ class ForceCompileFileCommand(sublime_plugin.WindowCommand):
             "action"    : "overwrite"
         }
         mm.call('compile', context=self.window, params=params)
+    def is_enabled(self):
+        return util.is_mm_project();
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
