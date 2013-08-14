@@ -6,6 +6,7 @@ import subprocess
 import os
 import sys
 import time
+import html.parser
 try:
     from .threads import ThreadTracker
     from .threads import ThreadProgress
@@ -26,6 +27,7 @@ except:
 
 sublime_version = int(float(sublime.version()))
 settings = sublime.load_settings('mavensmate.sublime-settings')
+html_parser = html.parser.HTMLParser()
 
 #prepares and submits a threaded call to the mm executable
 def call(operation, use_mm_panel=True, **kwargs):
@@ -366,8 +368,9 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
             view.sel().clear()
             view.sel().add(sublime.Region(pt))
             view.show(pt)
-
-            printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], e['problem'],line_col), 'region': [status_region.end(), status_region.end()+10] })
+            problem = e['problem']
+            problem = html_parser.unescape(problem)
+            printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], problem, line_col), 'region': [status_region.end(), status_region.end()+10] })
         
 
     elif 'success' in res and util.to_bool(res['success']) == False and 'messages' in res:

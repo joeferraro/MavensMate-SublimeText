@@ -4,8 +4,12 @@ import pprint
 import json
 import os
 
+# types = [
+#   'blob', 'string', 'set', 'list', 'date', 'datetime', 'boolean', 'double', 'id', 'integer', 'long', 'time', 'map', 'enum', 'apexpages', 'approval', 'limits', 'math', 'search', 'system', 'test', 'timezone', 'type', 'userinfo'
+# ]
+
 types = [
-  'blob', 'string', 'set', 'list', 'date', 'datetime', 'boolean', 'double', 'id', 'integer', 'long', 'time', 'map', 'enum', 'apexpages', 'approval', 'limits', 'math', 'search', 'system', 'test', 'timezone', 'type', 'userinfo'
+  'blob', 'string', 'date', 'datetime', 'boolean', 'double', 'id', 'integer', 'long', 'time', 'enum', 'apexpages', 'approval', 'limits', 'math', 'search', 'system', 'test', 'timezone', 'type', 'userinfo'
 ]
 
 ##userinfo table is 
@@ -62,7 +66,7 @@ for t in types:
         except:
             description = 'None'
 
-        d["instance_methods"].append(
+        d["static_methods"].append(
           "{0}({1})".format(method_name, arguments)
         )
 
@@ -100,7 +104,7 @@ for t in types:
                 except:
                     description = 'None'
 
-                d["static_methods"].append(
+                d["instance_methods"].append(
                   "{0}({1})".format(method_name, arguments)
                 )
         except:

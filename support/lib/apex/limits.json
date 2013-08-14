@@ -1,4 +1,5 @@
 {
+    "instance_methods": [], 
     "static_methods": [
         "getAggregateQueries()", 
         "getLimitAggregateQueries()", 
@@ -46,6 +47,5 @@
         "getLimitScriptStatements()", 
         "getSoslQueries()", 
         "getLimitSoslQueries()"
-    ], 
-    "instance_methods": []
+    ]
 }

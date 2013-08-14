@@ -1,4 +1,5 @@
 {
+    "static_methods": [], 
     "instance_methods": [
         "add(Anytype_e)", 
         "add(Integer_i, Anytype_e)", 
@@ -15,6 +16,5 @@
         "set(Integer_i, Anytype_e)", 
         "size()", 
         "sort()"
-    ], 
-    "static_methods": []
+    ]
 }

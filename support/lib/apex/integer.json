@@ -1,9 +1,9 @@
 {
     "instance_methods": [
-        "valueOf(String_s)", 
-        "valueOf(Object_fieldValue)"
+        "format()"
     ], 
     "static_methods": [
-        "format()"
+        "valueOf(String_s)", 
+        "valueOf(Object_fieldValue)"
     ]
 }

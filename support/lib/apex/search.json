@@ -1,6 +1,6 @@
 {
-    "instance_methods": [
+    "instance_methods": [], 
+    "static_methods": [
         "query(String_query)"
-    ], 
-    "static_methods": []
+    ]
 }

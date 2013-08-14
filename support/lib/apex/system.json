@@ -1,4 +1,5 @@
 {
+    "instance_methods": [], 
     "static_methods": [
         "abortJob(String_Job_ID)", 
         "assert()", 
@@ -25,6 +26,5 @@
         "setPassword(ID_userid, String_password)", 
         "submit(List_WorkItemIDs__workitemids, String_comments, String_nextapprover)", 
         "today()"
-    ], 
-    "instance_methods": []
+    ]
 }
