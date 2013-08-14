@@ -1,0 +1,13 @@
+{
+    "instance_methods": [
+    	"getDisabled()",
+    	"getEscapeItem()",
+    	"getLabel()",
+    	"getValue()",
+    	"setDisabled(Boolean_isDisabled)",
+    	"setEscapeItem(Boolean_itemsEscaped)",
+    	"setLabel(String_label)",
+    	"setValue(String_value)"
+    ], 
+    "static_methods": []
+}
