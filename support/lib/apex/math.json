@@ -1,4 +1,5 @@
 {
+    "instance_methods": [], 
     "static_methods": [
         "abs(Decimal_d)", 
         "abs(Double_d)", 
@@ -58,6 +59,5 @@
         "tan(Double_d)", 
         "tanh(Decimal_d)", 
         "tanh(Double_d)"
-    ], 
-    "instance_methods": []
+    ]
 }

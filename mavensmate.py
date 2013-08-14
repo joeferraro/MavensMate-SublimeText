@@ -1141,7 +1141,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         if word == None or word == '':
             return []
 
-
+        print('[MAVENSMATE] autocomplete word: ', word)
         ##OK START COMPLETIONS
         _completions = []
         lower_word = word.lower()
@@ -1157,6 +1157,8 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         typedef_class = typedef[2]
         typedef_class_lower = typedef_class.lower()
+
+        print('[MAVENSMATE] autocomplete type definition class: ', typedef_class)
 
         if lower_word == 'this':
             full_file_path = os.path.splitext(util.get_active_file())[0]
@@ -1249,6 +1251,7 @@ class ApexCompletions(sublime_plugin.EventListener):
                         except:
                             print('[MAVENSMATE]: failed to index custom object metadata')
                     else:
+                        _completions.append(('Id', 'Id'))
                         return (sorted(_completions), completion_flags)
                 else:
                     return []

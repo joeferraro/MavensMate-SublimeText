@@ -1,4 +1,5 @@
 {
+    "static_methods": [], 
     "instance_methods": [
         "clear()", 
         "clone()", 
@@ -14,6 +15,5 @@
         "remove(Key_key)", 
         "size()", 
         "values()"
-    ], 
-    "static_methods": []
+    ]
 }

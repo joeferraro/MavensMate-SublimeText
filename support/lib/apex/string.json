@@ -1,24 +1,5 @@
 {
     "instance_methods": [
-        "escapeSingleQuotes(String_s)", 
-        "format(String_s, List_String__arguments)", 
-        "fromCharArray(List_Integer__charArray)", 
-        "getCommonPrefix(List_String__strings)", 
-        "isBlank(String_s)", 
-        "isEmpty(String_s)", 
-        "isNotBlank(String_s)", 
-        "isNotEmpty(String_s)", 
-        "join(Object_iterableobj, String_separator)", 
-        "valueOf(Date_d)", 
-        "valueOf(Datetime_dt)", 
-        "valueOf(Decimal_d)", 
-        "valueOf(Double_d)", 
-        "valueOf(Integer_I)", 
-        "valueOf(Long_l)", 
-        "valueOf(Object_x)", 
-        "valueOfGmt(Datetime_dt)"
-    ], 
-    "static_methods": [
         "abbreviate(Integer_maxWidth)", 
         "abbreviate(Integer_maxwidth, Integer_offset)", 
         "capitalize()", 
@@ -111,5 +92,24 @@
         "unescapeHtml3()", 
         "unescapeHtml4()", 
         "unescapeXml()"
+    ], 
+    "static_methods": [
+        "escapeSingleQuotes(String_s)", 
+        "format(String_s, List_String__arguments)", 
+        "fromCharArray(List_Integer__charArray)", 
+        "getCommonPrefix(List_String__strings)", 
+        "isBlank(String_s)", 
+        "isEmpty(String_s)", 
+        "isNotBlank(String_s)", 
+        "isNotEmpty(String_s)", 
+        "join(Object_iterableobj, String_separator)", 
+        "valueOf(Date_d)", 
+        "valueOf(Datetime_dt)", 
+        "valueOf(Decimal_d)", 
+        "valueOf(Double_d)", 
+        "valueOf(Integer_I)", 
+        "valueOf(Long_l)", 
+        "valueOf(Object_x)", 
+        "valueOfGmt(Datetime_dt)"
     ]
 }

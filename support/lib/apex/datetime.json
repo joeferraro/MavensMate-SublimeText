@@ -1,19 +1,5 @@
 {
     "instance_methods": [
-        "newInstance(Long_l)", 
-        "newInstance(Date_date, Time_time)", 
-        "newInstance(Integer_year, Integer_month, Integer_day)", 
-        "newInstance(Integer_year, Integer_month, Integer_day, Integer_hour, Integer_minute, Integer_second)", 
-        "newInstanceGmt(Date_date, Time_time)", 
-        "newInstanceGmt(Integer_year, Integer_month, Integer_date)", 
-        "newInstanceGmt(Integer_year, Integer_month, Integer_date, Integer_hour, Integer_minute, Integer_second)", 
-        "now()", 
-        "parse(String_datetime)", 
-        "valueOf(String_s)", 
-        "valueOf(Object_fieldValue)", 
-        "valueOfGmt(String_s)"
-    ], 
-    "static_methods": [
         "addDays(Integer_addlDays)", 
         "addHours(Integer_addlHours)", 
         "addMinutes(Integer_addlMinutes)", 
@@ -47,5 +33,19 @@
         "timeGmt()", 
         "year()", 
         "yearGmt()"
+    ], 
+    "static_methods": [
+        "newInstance(Long_l)", 
+        "newInstance(Date_date, Time_time)", 
+        "newInstance(Integer_year, Integer_month, Integer_day)", 
+        "newInstance(Integer_year, Integer_month, Integer_day, Integer_hour, Integer_minute, Integer_second)", 
+        "newInstanceGmt(Date_date, Time_time)", 
+        "newInstanceGmt(Integer_year, Integer_month, Integer_date)", 
+        "newInstanceGmt(Integer_year, Integer_month, Integer_date, Integer_hour, Integer_minute, Integer_second)", 
+        "now()", 
+        "parse(String_datetime)", 
+        "valueOf(String_s)", 
+        "valueOf(Object_fieldValue)", 
+        "valueOfGmt(String_s)"
     ]
 }

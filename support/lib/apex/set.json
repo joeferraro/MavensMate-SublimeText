@@ -1,4 +1,5 @@
 {
+    "static_methods": [], 
     "instance_methods": [
         "add(Setelement_e)", 
         "addAll(List_l)", 
@@ -15,6 +16,5 @@
         "retainAll(List_l)", 
         "retainAll(Set_s)", 
         "size()"
-    ], 
-    "static_methods": []
+    ]
 }
