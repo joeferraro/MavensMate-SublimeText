@@ -1,0 +1,14 @@
+{
+    "instance_methods": [
+        "getCause()", 
+        "getLineNumber()", 
+        "getMessage()", 
+        "getStackTraceString()",
+        "getTypeName()",
+        "initCause(Exception_cause)",
+        "setMessage(String_message)"
+    ], 
+    "static_methods": [
+        
+    ]
+}

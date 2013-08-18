@@ -1,0 +1,22 @@
+{
+    "instance_methods": [
+        "getCause()", 
+        "getLineNumber()", 
+        "getMessage()", 
+        "getStackTraceString()",
+        "getTypeName()",
+        "initCause(Exception_cause)",
+        "setMessage(String_message)",
+        "getDmlFieldNames(Integer_i)",
+        "getDmlFields(Integer_i)",
+        "getDmlId(Integer_i)",
+        "getDmlIndex(Integer_i)",
+        "getDmlMessage(Integer_i)",
+        "getDmlStatusCode(Integer_i)",
+        "getDmlType(Integer_i)",
+        "getNumDml(Integer_i)"
+    ], 
+    "static_methods": [
+        
+    ]
+}
