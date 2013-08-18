@@ -311,18 +311,50 @@ def handle_result(operation, process_id, printer, result, thread):
    
         elif operation == 'test_async':
             responses = []
-            if 'detailed_results' in result[0]:
-                for r in result[0]['detailed_results']:
-                    if r["Outcome"] == "Pass":
-                        responses.append("{0} | {1}\n".format(r["MethodName"], r["Outcome"]))
-                    else:
-                        responses.append("{0} | {1} | {2} | {3}\n".format(r["MethodName"], r["Outcome"], r["StackTrace"], r["Message"]))
+            if len(result) == 1:
+                res = result[0]
+                response_string = ""
+                if 'detailed_results' in res:
+                    all_tests_passed = True
+                    for r in res['detailed_results']:
+                        if r["Outcome"] != "Pass":
+                            all_tests_passed = False
+                            break
 
-                response_string = "\n\n"
-                response_string = ", ".join(responses)
-                printer.panel.run_command('write_operation_status', {'text': response_string, 'region': [status_region.end(), status_region.end()+10] })
+                    if all_tests_passed:
+                        response_string += '[TEST RESULT]: PASS'
+                    else:
+                        response_string += '[TEST RESULT]: FAIL'
+                    
+                    for r in res['detailed_results']:
+                        if r["Outcome"] == "Pass":
+                            pass #dont need to write anything here...
+                        else:
+                            response_string += '\n\n'
+                            rstring = "====METHOD RESULT===="
+                            rstring += "\n"
+                            rstring += "{0} : {1}".format(r["MethodName"], r["Outcome"])
+                            
+                            rstring += "\n\n"
+                            rstring += "====STACK TRACE===="
+                            rstring += "\n"
+                            rstring += r["StackTrace"]
+
+                            rstring += "\n\n"
+                            rstring += "====MESSAGE===="
+                            rstring += "\n"
+                            rstring += r["Message"]
+                            rstring += "\n"
+                            #responses.append("{0} | {1} | {2} | {3}\n".format(r["MethodName"], r["Outcome"], r["StackTrace"], r["Message"]))
+                            responses.append(rstring)
+                    response_string += "\n"       
+                    response_string += ", ".join(responses)
+                    printer.panel.run_command('write_operation_status', {'text': response_string, 'region': [status_region.end(), status_region.end()+10] })
+                    printer.scroll_to_bottom()
+                else:
+                    printer.panel.run_command('write_operation_status', {'text': json.dumps(result), 'region': [status_region.end(), status_region.end()+10] })
             else:
-                printer.panel.run_command('write_operation_status', {'text': json.dumps(result), 'region': [status_region.end(), status_region.end()+10] })
+                pass #TODO
         else:
             print_result_message(operation, process_id, status_region, result, printer, thread) 
             if operation == 'new_metadata' and 'success' in result and util.to_bool(result['success']) == True:
@@ -345,17 +377,21 @@ def handle_result(operation, process_id, printer, result, thread):
             if operation == 'refresh':            
                 sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
                 util.clear_marked_line_numbers()
-    except AttributeError:   
+    except AttributeError as e:   
         if printer != None:
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
             msg = ' [OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
             msg += '[RESPONSE FROM MAVENSMATE]: '+result
+            print(e)
+            print(sys.exc_info()[0])
             printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
-    except Exception:
+    except Exception as e:
         if printer != None:
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
             msg = ' [OPERATION FAILED]: Whoops, unable to parse the response. Please report this issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
             msg += '[RESPONSE FROM MAVENSMATE]: '+result
+            print(e)
+            print(sys.exc_info()[0])
             printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
 
 #prints the result of the mm operation, can be a string or a dict

@@ -20,6 +20,26 @@
     </dict>
     <dict>
         <key>match</key>
+        <string>.*\[TEST RESULT\]: FAIL*.</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
+        <string>.*\[TEST RESULT\]: PASS*.</string>
+        <key>name</key>
+        <string>operation.success</string>
+    </dict>
+
+    <dict>
+        <key>match</key>
+        <string>.*====.*====*.</string>
+        <key>name</key>
+        <string>neonblue</string>
+    </dict>
+
+    <dict>
+        <key>match</key>
         <string>\[COMPILE FAILED\]*.</string>
         <key>name</key>
         <string>operation.fail</string>

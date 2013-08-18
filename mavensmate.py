@@ -1242,19 +1242,19 @@ class ApexCompletions(sublime_plugin.EventListener):
                 elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+typedef_class+".cls"): #=> apex classes
                     _completions = util.get_apex_completions(typedef_class)
                     return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
-                    object_dom = parse(util.mm_project_directory()+"/src/objects/"+typedef_class+".object")
-                    for node in object_dom.getElementsByTagName('fields'):
-                        field_name = ''
-                        field_type = ''
-                        for child in node.childNodes:                            
-                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                            if child.nodeName == 'fullName':
-                                field_name = child.firstChild.nodeValue
-                            elif child.nodeName == 'type':
-                                field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" \t"+field_type, field_name))
-                    return sorted(_completions)
+                # elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
+                #     object_dom = parse(util.mm_project_directory()+"/src/objects/"+typedef_class+".object")
+                #     for node in object_dom.getElementsByTagName('fields'):
+                #         field_name = ''
+                #         field_type = ''
+                #         for child in node.childNodes:                            
+                #             if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                #             if child.nodeName == 'fullName':
+                #                 field_name = child.firstChild.nodeValue
+                #             elif child.nodeName == 'type':
+                #                 field_type = child.firstChild.nodeValue
+                #         _completions.append((field_name+" \t"+field_type, field_name))
+                #     return sorted(_completions)
                 elif os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"): #=> parse org metadata, looking for object fields
                     jsonData = util.parse_json_from_file(util.mm_project_directory()+"/config/.org_metadata")
                     for metadata_type in jsonData:
