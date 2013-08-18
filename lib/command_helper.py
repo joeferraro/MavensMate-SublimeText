@@ -79,5 +79,7 @@ def get_message(params, operation):
         message = 'Opening New Project Dialog'  
     elif operation == 'index_apex':
         message = 'Indexing Project Apex Metadata'
+    elif operation == 'test_async':
+        message = 'Running Apex tests for this class...'
 
     return message 

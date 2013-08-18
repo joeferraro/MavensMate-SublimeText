@@ -221,6 +221,29 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
                     return True
         return False
 
+#displays unit test dialog
+class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        active_file = util.get_active_file()
+        try:
+            if os.path.exists(active_file):
+                filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
+                if ext == '.cls':
+                    params = {
+                        "classes"         : [filename]
+                    }
+                else:
+                    params = {}
+            else:
+                params = {}
+        except:
+            params = {}
+        mm.call('test_async', context=self, params=params)
+        util.send_usage_statistics('Async Apex Test')
+
+    def is_enabled(command):
+        return util.is_apex_class_file()
+
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
     def run (self):

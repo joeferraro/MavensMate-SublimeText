@@ -64,6 +64,10 @@
 	         	"children":
 	         	[
  	         		{
+	         			"caption": "Run Async Apex Tests For This Class",
+	         			"command": "run_async_apex_tests"
+	         		},
+ 	         		{
 	         			"caption": "New Debug Log...",
 	         			"command": "new_debug_log"
 	         		},
@@ -175,6 +179,10 @@
 	    		"caption": "Run Apex Tests...",  
 	         	"command": "run_apex_unit_tests"
 	     	},
+	     	{
+     			"caption": "Run Async Apex Tests For This Class",
+     			"command": "run_async_apex_tests"
+     		},
 	     	{
 	    		"caption": "Execute Apex...",  
 	         	"command": "execute_anonymous"

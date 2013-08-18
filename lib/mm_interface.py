@@ -211,6 +211,11 @@ class MavensMateTerminalCall(threading.Thread):
             if self.params != None and 'metadata_types' in self.params:
                 payload['metadata_types'] = self.params.get('metadata_types', None)
 
+            if self.params != None and 'classes' in self.params:
+                payload['classes'] = self.params.get('classes', None)
+
+        #print('>>>>>> ',payload)    
+
         if type(payload) is dict:
             payload = json.dumps(payload)  
         print(payload)  
@@ -304,6 +309,20 @@ def handle_result(operation, process_id, printer, result, thread):
                 else:
                     printer.panel.run_command('write_operation_status', {"text": " "+result["actions"][1].title(), 'region': [status_region.end(), status_region.end()+10] })
    
+        elif operation == 'test_async':
+            responses = []
+            if 'detailed_results' in result[0]:
+                for r in result[0]['detailed_results']:
+                    if r["Outcome"] == "Pass":
+                        responses.append("{0} | {1}\n".format(r["MethodName"], r["Outcome"]))
+                    else:
+                        responses.append("{0} | {1} | {2} | {3}\n".format(r["MethodName"], r["Outcome"], r["StackTrace"], r["Message"]))
+
+                response_string = "\n\n"
+                response_string = ", ".join(responses)
+                printer.panel.run_command('write_operation_status', {'text': response_string, 'region': [status_region.end(), status_region.end()+10] })
+            else:
+                printer.panel.run_command('write_operation_status', {'text': json.dumps(result), 'region': [status_region.end(), status_region.end()+10] })
         else:
             print_result_message(operation, process_id, status_region, result, printer, thread) 
             if operation == 'new_metadata' and 'success' in result and util.to_bool(result['success']) == True:
