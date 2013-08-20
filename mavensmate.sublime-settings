@@ -117,6 +117,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".approvalProcess"
 	],
 
+	"mm_use_github_templates" : true,
+
 	"mm_default_apex_templates_map" : {
         "ApexClass"     : 
 	        {

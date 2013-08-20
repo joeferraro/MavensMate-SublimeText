@@ -153,7 +153,8 @@ class MavensMateTerminalCall(threading.Thread):
                 'api_name'                      : self.params.get('metadata_name', None),
                 'metadata_type'                 : self.params.get('metadata_type', None),
                 'apex_trigger_object_api_name'  : self.params.get('object_api_name', None),
-                'apex_class_type'               : self.params.get('apex_class_type', None)
+                'apex_class_type'               : self.params.get('apex_class_type', None),
+                'github_template'               : self.params.get('github_template', None)
             }
         elif o == 'new_project_from_existing_directory':
             # no project name

@@ -11,6 +11,11 @@ import string
 import random
 # from datetime import datetime, date, time
 
+try: 
+    import urllib
+except ImportError:
+    import urllib.request as urllib
+
 if sys.version_info >= (3, 0):
     #python 3
     import MavensMate.config as config
@@ -69,6 +74,14 @@ def parse_json_from_file(location):
         return data
     except:
         return {}
+
+def parse_templates_package(mtype=None):
+    response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json').read().decode('utf-8')
+    j = json.loads(response)
+    if mtype != None:
+        return j[mtype]
+    else:
+        return j
 
 def get_number_of_lines_in_file(file_path):
     f = open(file_path)

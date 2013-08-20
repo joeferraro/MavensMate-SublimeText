@@ -321,9 +321,26 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
+    
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyClass", class_type="default"): 
-        templates = get_merged_apex_templates("ApexClass")
-        sublime.active_window().show_input_panel("Apex Class Name, Template "+str(sorted(templates.keys())), api_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexClass")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            templates = get_merged_apex_templates("ApexClass")
+            sublime.active_window().show_input_panel("Apex Class Name, Template "+str(sorted(templates.keys())), api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Apex Class')
 
     def on_input(self, input): 
@@ -337,14 +354,51 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         }
         mm.call('new_metadata', params=options) 
 
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Apex Class Name", "MyClassName", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        if '.cls' in api_name:
+            api_name = api_name.replace('.cls', '')
+        params = {
+            'metadata_type'     : 'ApexClass',
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
+
+
     def is_enabled(self):
         return util.is_mm_project()
 
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"): 
-        templates = get_merged_apex_templates("ApexTrigger")
-        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexTrigger")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            templates = get_merged_apex_templates("ApexTrigger")
+            sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Apex Trigger')
 
     def on_input(self, input):
@@ -359,14 +413,49 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         }
         mm.call('new_metadata', params=options) 
 
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Apex Trigger Name, Trigger Object API Name", "MyTriggerName, Account", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        api_name, sobject_name = [x.strip() for x in api_name.split(',')]
+        params = {
+            'metadata_type'     : 'ApexTrigger',
+            'object_api_name'   : sobject_name,
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
+
     def is_enabled(command):
         return util.is_mm_project() 
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyPage", class_type="default"): 
-        templates = get_merged_apex_templates("ApexPage")
-        sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexPage")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Page')
     
     def on_input(self, input): 
@@ -380,14 +469,49 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         }
         mm.call('new_metadata', params=options) 
 
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Visualforce Page Name", "MyVisualforcePageName", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        if '.cls' in api_name:
+            api_name = api_name.replace('.page', '')
+        params = {
+            'metadata_type'     : 'ApexPage',
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
+
     def is_enabled(command):
         return util.is_mm_project()
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyComponent", class_type="default"): 
-        templates = get_merged_apex_templates("ApexComponent")
-        sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexComponent")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Component')
     
     def on_input(self, input): 
@@ -400,6 +524,26 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
             'apex_class_type'   : class_type
         }
         mm.call('new_metadata', params=options) 
+
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Visualforce Component Name", "MyComponentName", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        if '.cls' in api_name:
+            api_name = api_name.replace('.component', '')
+        params = {
+            'metadata_type'     : 'ApexComponent',
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
 
     def is_enabled(command):
         return util.is_mm_project()
