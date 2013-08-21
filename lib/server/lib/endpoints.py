@@ -268,6 +268,21 @@ def refresh_metadata_index(request_handler):
     response = worker_thread.response
     respond(request_handler, response) 
 
+def connect_to_github(request_handler):
+    '''
+        POST /github/connect
+        {
+            "username"      : "myusername",
+            "password"      : "mypassword"
+        }
+    '''
+    request_id = util.generate_request_id()
+    params, json_body, plugin_client = get_request_params(request_handler)
+    worker_thread = BackgroundWorker('sign_in_with_github', params, False, request_id, json_body, plugin_client)
+    worker_thread.start()
+    worker_thread.join()
+    response = worker_thread.response
+    respond(request_handler, response) 
 
 ##########################
 ## END REQUEST HANDLERS ##
@@ -413,5 +428,6 @@ mappings = {
     '/session'                  : { 'GET'   : get_active_session_request },
     '/apex/execute'             : { 'POST'  : execute_apex_request },
     '/metadata/list'            : { 'GET'   : metadata_list_request },
-    '/metadata/list/async'      : { 'GET'   : metadata_list_request_async }
+    '/metadata/list/async'      : { 'GET'   : metadata_list_request_async },
+    '/github/connect'           : { 'POST'  : connect_to_github }
 }
