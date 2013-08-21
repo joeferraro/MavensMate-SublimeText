@@ -22,3 +22,5 @@ support/lib/test_packages.rb
 bin/.DS_Store
 
 command_helper.pyc
+
+lib/mm_merge.py.lock
