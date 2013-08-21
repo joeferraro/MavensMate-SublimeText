@@ -171,6 +171,11 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 
 	//choices: "metadata" or "apex". "metadata" is recommended, however if your tests are taking forever to run, try switching to "apex"
 	//we're working on async testing api support in 0.36
-	"mm_test_api" : "metadata"
+	"mm_test_api" : "metadata",
+
+	"mm_use_browser_as_ui" : false,
+
+	//for linux users
+	"mm_python_location" : "usr/bin/python"
 	
 }
