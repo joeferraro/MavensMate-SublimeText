@@ -71,6 +71,10 @@
 	         			"caption": "New Debug Log...",
 	         			"command": "new_debug_log"
 	         		},
+	         		{
+	         			"caption": "New Quick Log",
+	         			"command": "new_quick_log"
+	         		},
  	         		{
 	         			"caption": "Fetch Logs",
 	         			"command": "fetch_logs"

@@ -32,6 +32,10 @@
     "command": "new_debug_log"
   },
   {
+    "caption": "MavensMate: New Quick Debug Log",
+    "command": "new_quick_log"
+  },
+  {
     "caption": "MavensMate: Fetch Logs",
     "command": "fetch_logs"
   },

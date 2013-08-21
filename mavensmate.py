@@ -908,6 +908,11 @@ class IndexMetadataCommand(sublime_plugin.WindowCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
+class NewQuickLogCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('new_quick_log', False)
+        util.send_usage_statistics('New Quick Log')
+
 #refreshes the currently active file from the server
 class FetchLogsCommand(sublime_plugin.WindowCommand):
     def run(self):

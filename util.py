@@ -54,15 +54,16 @@ def package_check():
         pass
 
 def is_project_legacy():
-    if os.path.exists(mm_project_directory()+"/config/settings.yaml"):
+    if not os.path.exists(os.path.join(mm_project_directory(),"config",".debug")):
         return True
-    elif os.path.exists(mm_project_directory()+"/config/.settings"):
-        current_settings = parse_json_from_file(mm_project_directory()+"/config/.settings")
+    if os.path.exists(os.path.join(mm_project_directory(),"config","settings.yaml")):
+        return True
+    elif os.path.exists(os.path.join(mm_project_directory(),"config",".settings")):
+        current_settings = parse_json_from_file(os.path.join(mm_project_directory(),"config",".settings"))
         if 'subscription' not in current_settings:
             return True
         else:
             return False
-
     else:
         return False
  
