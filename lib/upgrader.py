@@ -1,5 +1,6 @@
 import threading
 import json
+import os.path
 try:
     import MavensMate.config as config
 except:
@@ -16,7 +17,7 @@ class AutomaticUpgrader(threading.Thread):
 
     def run(self):
         try:
-            json_data = open(config.mm_dir+"/packages.json")
+            json_data = open(os.path.join(config.mm_dir,"packages.json"))
             data = json.load(json_data)
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]

@@ -30,7 +30,7 @@ class UsageReporter(threading.Thread):
                 ip_address = 'unknown'
 
             #get current version of mavensmate
-            json_data = open(config.mm_dir+"/packages.json")
+            json_data = open(os.path.join(config.mm_dir,"packages.json"))
             data = json.load(json_data)
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]

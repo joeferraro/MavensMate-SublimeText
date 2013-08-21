@@ -365,7 +365,7 @@ def handle_result(operation, process_id, printer, result, thread):
                     for m in result['messages']:
                         if 'package.xml' not in m['fileName']:
                             file_name = m['fileName']
-                            location = util.mm_project_directory() + "/" + file_name.replace('unpackaged/', 'src/')
+                            location = os.path.join(util.mm_project_directory(),file_name.replace('unpackaged/', 'src/'))
                             sublime.active_window().open_file(location)
                             break
             if 'success' in result and util.to_bool(result['success']) == True:

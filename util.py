@@ -48,8 +48,8 @@ sublime_version = int(float(sublime.version()))
 def package_check():
     #ensure user settings are installed
     try:
-        if not os.path.exists(packages_path+"/User/mavensmate.sublime-settings"):
-            shutil.copyfile(config.mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
+        if not os.path.exists(os.path.join(packages_path,"User","mavensmate.sublime-settings")):
+            shutil.copyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
     except:
         pass
 
@@ -150,10 +150,10 @@ def check_for_workspace():
 
 def sublime_project_file_path():
     project_directory = sublime.active_window().folders()[0]
-    if os.path.isfile(project_directory+"/.sublime-project"):
-        return project_directory+"/.sublime-project"
-    elif os.path.isfile(project_directory+"/"+get_project_name()+".sublime-project"):
-        return project_directory+"/"+get_project_name()+".sublime-project"
+    if os.path.isfile(os.path.join(project_directory,".sublime-project")):
+        return os.path.join(project_directory,".sublime-project")
+    elif os.path.isfile(os.path.join(project_directory,get_project_name(),".sublime-project")):
+        return os.path.join(project_directory,get_project_name(),".sublime-project")
     else:
         return None 
 
@@ -163,9 +163,9 @@ def is_mm_project():
     if workspace == "" or workspace == None or not os.path.exists(workspace):
         return False
     try:
-        if os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings"):
+        if os.path.isfile(os.path.join(sublime.active_window().folders()[0],"config",".settings")):
             return True
-        elif os.path.isfile(sublime.active_window().folders()[0]+"/config/settings.yaml"):
+        elif os.path.isfile(os.path.join(sublime.active_window().folders()[0],"config","settings.yaml")):
             return True 
         else:
             return False
@@ -182,7 +182,7 @@ def get_file_extension(filename=None):
     return None
 
 def get_apex_file_properties():
-    return parse_json_from_file(mm_project_directory()+"/config/.apex_file_properties")
+    return parse_json_from_file(os.path.join(mm_project_directory(),"config",".apex_file_properties"))
 
 def is_mm_file(filename=None):
     try :
@@ -404,7 +404,7 @@ def get_apex_completions(search_name):
 
 def get_version_number():
     try:
-        json_data = open(config.mm_dir+"/packages.json")
+        json_data = open(os.path.join(config.mm_dir,"packages.json"))
         data = json.load(json_data)
         json_data.close()
         version = data["packages"][0]["platforms"]["osx"][0]["version"]

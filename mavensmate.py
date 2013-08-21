@@ -287,9 +287,9 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         for dirname in os.listdir(util.mm_workspace()):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
             if dirname in open_projects : continue
-            if not os.path.isdir(util.mm_workspace()+"/"+dirname) : continue
+            if not os.path.isdir(os.path.join(util.mm_workspace(),dirname)) : continue
             sublime_project_file = dirname+'.sublime-project'
-            for project_content in os.listdir(util.mm_workspace()+"/"+dirname):
+            for project_content in os.listdir(os.path.join(util.mm_workspace(),dirname)):
                 if '.' not in project_content: continue
                 if project_content == '.sublime-project':
                     sublime_project_file = '.sublime-project'
@@ -308,7 +308,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         project_file = self.dir_map[self.picked_project][1]        
         settings = sublime.load_settings('mavensmate.sublime-settings')
         sublime_path = settings.get('mm_plugin_client_location', '/Applications')
-        if os.path.isfile(util.mm_workspace()+"/"+self.picked_project+"/"+project_file):
+        if os.path.isfile(os.path.join(util.mm_workspace(),self.picked_project,project_file)):
             if sublime_version >= 3000:
                 if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
                     p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -317,7 +317,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             else:
                 p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
-            sublime.message_dialog("Cannot find: "+util.mm_workspace()+"/"+self.picked_project+"/"+project_file)
+            sublime.message_dialog("Cannot find: "+os.path.join(util.mm_workspace(),self.picked_project,project_file))
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
@@ -1082,7 +1082,7 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer.write('\n[OPERATION FAILED] Unable to locate "src" folder\n')
             return
         
-        dir_entries = os.listdir(directory+"/src")
+        dir_entries = os.listdir(os.path.join(directory,"src"))
         has_package = False
         for entry in dir_entries:
             if entry == "package.xml":
@@ -1343,9 +1343,9 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         ## HANDLE APEX STATIC METHODS
         ## String.valueOf, Double.toString(), etc.
-        elif os.path.isfile(config.mm_dir+"/support/lib/apex/"+lower_word+".json"): 
+        elif os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",lower_word+".json")): 
             prefix = prefix.lower()
-            json_data = open(config.mm_dir+"/support/lib/apex/"+lower_word+".json")
+            json_data = open(os.path.join(config.mm_dir,"support","lib","apex",lower_word+".json"))
             data = json.load(json_data)
             json_data.close()
             if 'static_methods' in data:
@@ -1358,7 +1358,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         
         ## HANDLE CUSTOM APEX CLASS STATIC METHODS 
         ## MyCustomClass.some_static_method
-        elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+word+".cls"):
+        elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",word+".cls")):
             _completions = util.get_apex_completions(word) 
             return sorted(_completions)  
 
@@ -1380,15 +1380,15 @@ class ApexCompletions(sublime_plugin.EventListener):
                     typedef_class       = re.sub('\[.*?\]', '', typedef_class)
 
                 #print(typedef_class_lower)
-                if os.path.isfile(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json"): #=> apex instance methods
-                    json_data = open(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json")
+                if os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
+                    json_data = open(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json"))
                     data = json.load(json_data)
                     json_data.close()
                     pd = data["instance_methods"]
                     for method in pd:
                         _completions.append((method, method))
                     return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+typedef_class+".cls"): #=> apex classes
+                elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
                     _completions = util.get_apex_completions(typedef_class)
                     return sorted(_completions)
                 # elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
@@ -1404,8 +1404,8 @@ class ApexCompletions(sublime_plugin.EventListener):
                 #                 field_type = child.firstChild.nodeValue
                 #         _completions.append((field_name+" \t"+field_type, field_name))
                 #     return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"): #=> parse org metadata, looking for object fields
-                    jsonData = util.parse_json_from_file(util.mm_project_directory()+"/config/.org_metadata")
+                elif os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object fields
+                    jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
                     for metadata_type in jsonData:
                         if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
                             for object_type in metadata_type['children']:
@@ -1436,7 +1436,7 @@ class ApexCompletions(sublime_plugin.EventListener):
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self):
         srs = []
-        for dirname in os.listdir(util.mm_project_directory()+"/src/staticresources"):
+        for dirname in os.listdir(os.path.join(util.mm_project_directory(),"src","staticresources")):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or '-meta.xml' in dirname : continue
             srs.append(dirname)
         self.results = srs
@@ -1449,7 +1449,7 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         ps = []
-        ps.append(util.mm_project_directory()+"/src/staticresources/"+self.results[picked])
+        ps.append(os.path.join(util.mm_project_directory(),"src","staticresources",self.results[picked]))
         resource_bundle.create(self, ps)
         
 #deploys selected resource bundle to the server
@@ -1457,7 +1457,7 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self):
         self.rbs_map = {}
         rbs = []
-        for dirname in os.listdir(util.mm_project_directory()+"/resource-bundles"):
+        for dirname in os.listdir(os.path.join(util.mm_project_directory(),"resource-bundles")):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
             rbs.append(dirname)
         self.results = rbs
@@ -1474,14 +1474,14 @@ def deploy_resource_bundle(bundle_name):
         bundle_name = bundle_name + '.resource'
     message = 'Bundling and deploying to server: ' + bundle_name
     # delete existing sr
-    if os.path.exists(util.mm_project_directory()+"/src/staticresources/"+bundle_name):
-        os.remove(util.mm_project_directory()+"/src/staticresources/"+bundle_name)
+    if os.path.exists(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)):
+        os.remove(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name))
     # zip bundle to static resource dir 
-    os.chdir(util.mm_project_directory()+"/resource-bundles/"+bundle_name)
+    os.chdir(os.path.join(util.mm_project_directory(),"resource-bundles",bundle_name))
     cmd = "zip -r -X '"+util.mm_project_directory()+"/src/staticresources/"+bundle_name+"' *"      
     os.system(cmd)
     #compile
-    file_path = util.mm_project_directory()+"/src/staticresources/"+bundle_name
+    file_path = os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)
     params = {
         "files" : [file_path]
     }
