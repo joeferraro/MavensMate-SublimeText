@@ -1,0 +1,43 @@
+tree_store = new Ext.data.TreeStore({
+    autoLoad: 'true',
+    proxy: {
+        type: 'ajax',
+        url: "{{ base_local_server_url() }}/project/get_index",
+        extraParams: {
+            project_name: '{{ name }}',
+        },
+        headers: {
+            'Content-Type'  : 'application/json; charset=UTF-8',
+            'Accept'        : 'application/json, text/javascript'
+        },
+        actionMethods: {
+            create : 'POST',
+            read   : 'POST',
+            update : 'POST',
+            destroy: 'POST'
+        },
+        doRequest: function(operation, callback, scope) {
+            var writer  = this.getWriter();
+            var request = this.buildRequest(operation, callback, scope);
+
+            if (operation.allowWrite()) {
+                request = writer.write(request);
+            }
+
+            Ext.apply(request, {
+                headers         : this.headers,
+                timeout         : this.timeout,
+                scope           : this,
+                callback        : this.createRequestCallback(request, operation, callback, scope),
+                method          : this.getMethod(request),
+                jsonData        : this.extraParams,
+                disableCaching  : false // explicitly set it to false, ServerProxy handles caching
+            });
+            Ext.Ajax.request(request);
+            return request;
+        },
+        writer: {
+          type: 'json'
+        }
+    }
+})

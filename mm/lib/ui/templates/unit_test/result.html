@@ -1,0 +1,211 @@
+{% for w in result['codeCoverageWarnings'] -%}
+	{% if w['name'] == None -%}
+	<div class="alert alert-error">
+		<span><i class="icon-exclamation-sign icon-2x pull-left"></i>&nbsp;{{ w['message'] }}</span>
+	</div>
+	{%- endif %}
+{%- endfor %}
+
+{% for cls, tests in result['results_normal'].items() -%}
+		
+	<div class="alert-message block-message-custom white" style="margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;">
+			<p style="float:left;"><strong>{{ cls }}.cls</strong></p>
+			<p style="float:right;"><strong>{{ result['pass_fail'][cls]['pass'] }}/{{ result['pass_fail'][cls]['pass']+result['pass_fail'][cls]['fail'] }}&nbsp;tests passed</strong></p>
+		<div style="clear:both;"></div>	
+	</div>
+
+	<table class="table table-striped test_result" style="-webkit-border-radius: 0px 0px 4px 4px;">
+		<thead>
+			<tr>
+				<th>Test Method</th>
+				<th>Result</th>
+				<th>Message</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for test in tests -%}
+				<tr>
+					<td style="width:210px;">{{ test['methodName'] }}</td>
+					<td style="width:45px;">
+						{% if 'stackTrace' not in test -%}
+							<span class="label label-small label-success">Passed</span>
+						{% else %}
+							<span class="label label-small label-important">Failed</span>
+						{%- endif %}
+					</td>
+					<td>
+						{% if 'message' in test %}
+							{{ test['message'] }} 
+						{% endif %}
+						{% if 'stackTrace' in test -%}
+							<br/><br/>
+							<span class="label">Stack Trace</span><br/>{{ test['stackTrace'] }}
+						{%- endif %}
+					</td>
+				</tr>
+			{%- endfor %}
+		</tbody>
+	</table>
+{%- endfor %} 
+
+<div id="warnings_wrapper">
+	<!--  WARNINGS -->
+	<div class="alert-message block-message-custom white" style="margin-bottom:0px;padding: 5px;-webkit-border-radius: 4px 4px 0px 0px;">
+			<p style="float:left;"><strong>Test Coverage Warnings</strong></p>
+		<div style="clear:both;"></div>	
+	</div>
+	<table class="table table-striped test_result" style="-webkit-border-radius: 0px 0px 4px 4px;">
+		<thead>
+			<tr>
+				<th>Metadata</th>
+				<th>Message</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for w in result['codeCoverageWarnings'] %}
+				{% if 'name' in w and w['name'] != None %}
+					<tr>
+						<td>{{ w['name'] }}</td>					
+						<td>{{ w['message'] }}</td>					
+					</tr>   
+				{% endif %}
+			{% endfor %}
+		</tbody>
+	</table>  
+	<!-- END WARNINGS -->
+</div>
+
+
+<div id="class_wrapper">
+	<!-- START CLASS PROCESSING -->
+	{% for r in result['codeCoverage']['classes'] -%}
+		{% set coverage = r['percentCovered'] %}
+		{% set coverage_class = r['coverageLevel'] %}
+		{% set display = "block" %}
+		{% set extension = "cls"  %}
+		{% set directory = "classes" %}
+
+	<div class="alert alert-{{ coverage_class }}">
+	  	
+		<h3>{{ r['name'] }}.{{ extension }} </h3>
+
+		<div class="progress" style="height:22px;margin:10px 0px;">
+			<div class="bar bar-{{ coverage_class }}" style="width: {{ coverage }}%;"></div>
+		</div>
+
+		<p>({{ coverage }}% covered)</p>
+
+		{% if does_file_exist(r['name'], 'ApexClass') == True -%}
+	    	<a href="#" class="btn btn-mini btn-info" onclick="toggleSourceButton(this, {{ loop.index }}, 'class')">Show Coverage</a>
+		{%- endif %}
+	</div>
+
+		{% if does_file_exist(r['name'], 'ApexClass') == True -%}
+		<table class='code' id="class_code_result_{{ loop.index }}">
+			<tbody>
+				{% for line in get_file_lines(r['name'], 'ApexClass') -%} 
+					{% set file_line_number = loop.index %}
+					{% set td_class = [] %}
+					{% if 'locationsNotCovered' in r -%}
+						{% for location in r['locationsNotCovered'] -%}
+							{% if 'line' in location %}
+								{% if location['line']|int == file_line_number -%}
+									{% if td_class.append(1) %}{% endif %}
+									{% break %}
+								{%- endif %}
+							{% endif %}
+						{%- endfor %}
+					{%- endif %}
+					
+					{% if td_class -%}
+					   	<tr>
+					    	<td class="line_numbers">{{ file_line_number }}</td>
+					    	<td class="code not_covered">{{ htmlize(line) }}</td>
+						</tr>
+					{% else %}
+						<tr>
+					    	<td class="line_numbers">{{ file_line_number }}</td>
+					    	<td class="code covered"> {{ htmlize(line) }} </td>
+						</tr>
+					{%- endif %}
+					
+				{%- endfor %}
+			</tbody>
+		</table>
+		{%- endif %}
+
+	{%- endfor %} 
+	<!-- END CLASS PROCESSING --> 
+</div>
+
+<div id="trigger_wrapper">
+	<!-- START TRIGGER PROCESSING -->
+	{% for r in result['codeCoverage']['triggers'] -%}
+		{% set coverage = r['percentCovered'] %}
+		{% set coverage_class = r['coverageLevel'] %}
+		{% set display = "block" %}
+		{% set extension = "trigger"  %}
+		{% set directory = "triggers" %}
+
+	<div class="alert alert-{{ coverage_class }}">
+	  	
+		<h3>{{ r['name'] }}.{{ extension }} </h3>
+
+		<div class="progress" style="height:22px;margin:10px 0px;">
+			<div class="bar bar-{{ coverage_class }}" style="width: {{ coverage }}%;"></div>
+		</div>
+
+		<p>({{ coverage }}% covered)</p>
+		{% if does_file_exist(r['name'], 'ApexTrigger') == True -%}
+	    	<a href="#" class="btn btn-mini btn-info" onclick="toggleSourceButton(this, {{ loop.index }}, 'trigger')">Show Coverage</a>
+		{%- endif %}
+	</div>
+
+		{% if does_file_exist(r['name'], 'ApexTrigger') == True -%}
+		<table class='code' id="trigger_code_result_{{ loop.index }}">
+			<tbody>
+				{% for line in get_file_lines(r['name'], 'ApexTrigger') -%} 
+					{% set file_line_number = loop.index %}
+					{% set td_class = [] %}
+					{% if 'locationsNotCovered' in r -%}
+						{% for location in r['locationsNotCovered'] -%}
+							{% if 'line' in location %}
+								{% if location['line']|int == file_line_number %}
+									{% if td_class.append(1) %}{% endif %}
+									{% break %}
+								{% endif %}
+							{% endif %}
+						{%- endfor %}
+					{%- endif %}
+					
+					{% if td_class -%}
+					   	<tr>
+					    	<td class="line_numbers">{{ file_line_number }}</td>
+					    	<td class="code not_covered">{{ htmlize(line) }}</td>
+						</tr>
+					{% else %}
+						<tr>
+					    	<td class="line_numbers">{{ file_line_number }}</td>
+					    	<td class="code covered">{{ htmlize(line) }}</td>
+						</tr>
+					{%- endif %}
+				{%- endfor %}
+			</tbody>
+		</table>
+		{%- endif %}
+
+	{%- endfor %} 
+	<!-- END TRIGGER PROCESSING --> 
+</div>
+
+
+<div id="log_wrapper" style="position:relative;">
+	<a href="javascript:void(0)" class="btn btn-success" onclick="$('#log_selector').selectText();" style="padding: 3px 5px;font-size: .9em;top:0;right:10px;position:absolute;">Select Log Text</a>
+	<div style="padding:10px;" id="log_selector">
+		{{ htmlize(result['log']) }}
+	</div>
+</div>
+
+<script>
+	$(".stack-trace-tip").popover({})
+</script>

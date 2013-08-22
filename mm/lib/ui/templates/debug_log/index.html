@@ -1,0 +1,164 @@
+{% extends "layouts/base.html" %}
+{% block yield %}
+<div id="result_output">
+	<div class="alert alert-error">
+		<button type="button" class="close fui-cross"></button>
+		<span id="error_message"></span>
+	</div>
+</div>
+
+<div class="content">
+	<ul class="nav nav-tabs nav-append-content">
+		<li class="active"><a id="" href="#form" data-toggle="tab">Log Setup</a></li>
+		<li><a href="#logs" data-toggle="tab">Log Debug Levels</a></li>
+	</ul>
+	
+	<div class="tab-content" id="main-tab-content">
+		<div id="form" class="tab-pane active">
+			<form class="form-stacked">
+				<fieldset>
+					<div class="clearfix">
+						<label for="type">Log Type</label> 
+						<select style="width:90%;" id="type" class="" data-placeholder="Select a log type">
+							<option value="">--Select--</option>
+							<option value="user" selected="selected">User log</option>
+							<option value="apex">Apex log</option>
+						</select>	
+					</div>			
+				</fieldset>
+
+				<fieldset>
+					<div class="clearfix">
+						<label for="apex">Apex Class/Trigger</label> 
+						<select style="width:90%;" id="apex" class="" data-size="10" data-placeholder="Select an Apex Class or Apex Trigger">
+							<option value="">--Select--</option>
+							<optgroup label="Apex Classes">
+								{% for a in apex_items['Apex Classes'] %}
+									<option value="{{ a['Id'] }}">
+										{{ a['Name'] }}
+									</option>
+								{% endfor %} 
+							</optgroup>
+							<optgroup label="Apex Triggers">
+								{% for a in apex_items['Apex Triggers'] %}
+									<option value="{{ a['Id'] }}">
+										{{ a['Name'] }}
+									</option>
+								{% endfor %}
+							</optgroup>
+						</select>	
+					</div>			
+				</fieldset>
+
+				<fieldset>
+					<div class="clearfix">
+						<label for="un_list">Debug Log User</label> 
+						<select style="width:90%;" id="un_list" class="" data-size="10" data-placeholder="Select a User...">
+							<option value="">--Select--</option>
+							{% for u in users %}
+								{% if u['Id'] == user_id %}
+									<option selected="selected" value="{{ u['Id'] }}">
+										{{ u['Name'] }}
+									</option>
+								{% else %}
+									<option value="{{ u['Id'] }}">
+										{{ u['Name'] }}
+									</option>
+								{% endif %}
+							{% endfor %} 
+						</select>	
+					</div>			
+				</fieldset>
+
+				<fieldset>
+					<div class="clearfix">
+						<label for="expiration">Expiration</label> 
+						<select style="width:90%;" id="expiration" class="" data-placeholder="Expiration">
+							<option value="30">30 minutes</option>
+							<option value="60" selected="selected">60 minutes</option>
+							<option value="90">90 minutes</option>
+							<option value="480">8 hours</option>
+						</select>	
+					</div>			
+				</fieldset>
+
+			</form>
+		</div>
+
+		<div id="logs" class="tab-pane">
+			{% include 'snippets/tooling_log_levels.html' %}
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+
+{% block buttons %}					
+	<input type="button" id="btnSubmit" class="btn btn-info" value="Create Log"  onclick='new_log();'>
+	<button class="btn" onclick="window.close();">Close</button>
+{% endblock %}
+
+{% block body_js %}
+	<script>
+
+	function new_log() {
+		$.ajax({
+			type: "POST",
+			url: "{{ base_local_server_url() }}/project/new_log", 
+			dataType: "json",
+			contentType: 'application/json; charset=utf-8',
+			data: JSON.stringify({
+				 user_id 			: $("#un_list").val(),
+				 apex_id 			: $("#apex").val(),
+				 type 				: $("#type").val(),
+				 project_name 		: '{{ project_name }}',
+				 debug_categories 	: get_log_levels_json_tooling(),
+				 expiration 		: $("#expiration").val(),
+			}),
+			beforeSend: function() { showLoading('Creating Debug Log...'); },
+			complete: function(data){	
+				global_init_handler(data)		
+			} 
+		});
+	}
+
+	function handle_response(response) {
+		console.log(response)
+		try {
+			if (response["success"] == true) {
+				show_message("Debug log created successfully.", 'success', true)
+			} else {
+				show_message(response["message"])
+			}
+		} catch(e) {
+			console.log(e)
+		}
+		
+		hideLoading();
+	}
+
+	$(function(){
+		$(window).resize(function() {
+			resizeProjectWrapper(10)
+		});
+
+		$("#apex").prop('disabled', true);
+
+		$("#type").change(function() {
+			if ($(this).val() == 'user') {
+				$("#apex").prop('disabled', true);
+				$("#un_list").prop('disabled', false);
+			} else if ($(this).val() == 'apex') {
+				$("#apex").prop('disabled', false);
+				$("#un_list").prop('disabled', true);
+			}
+		})
+
+		window.resizeTo(780, 810)
+		centerWindow()
+	});
+
+	</script>
+	
+{% endblock %}

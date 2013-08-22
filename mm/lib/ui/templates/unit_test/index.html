@@ -1,0 +1,377 @@
+{% extends "layouts/base.html" %}
+
+{% block body_class %}test{% endblock %}
+
+{% block yield %}
+
+<link href="{{ base_path }}/lib/ui/resources/css/multiselect.css" rel="stylesheet" type="text/css"/> 
+<link href="{{ base_path }}/lib/ui/resources/css/progress.css" rel="stylesheet" type="text/css"/>
+<script src="{{ base_path }}/lib/ui/resources/js/multi-select.js" type="text/javascript"></script>
+<!-- <script src="{{ base_path }}/lib/ui/resources/js/buttons.js" type="text/javascript"></script>
+<script src="{{ base_path }}/lib/ui/resources/js/modal.js" type="text/javascript"></script> -->
+
+<style>
+	.results_hidden {
+	    display:none;
+	}
+
+	#mm_logger {
+		display:none;
+		height:200px;
+		overflow-y:auto;
+		padding:10px;
+		border:1px solid #f2f2f2;
+	}
+
+	table.code {
+		display:none;
+	}
+
+	table.code td {
+		padding:0px;
+	}
+
+	table.code {
+		border: 1px solid #CCC;
+		width: 100%;
+		border-collapse: collapse;
+		font: 95%/105% "Consolas", Monaco, "Courier New", Courier, "Bitstream Vera Sans Mono", monospace;
+	}
+
+	table.code thead .line_numbers, table.code thead {
+		background: #DDD;
+	}
+
+	table.code td.covered {
+		background: #DFD;
+	}
+
+	table.code td.not_covered { 
+		background: #fdd; 
+	}
+
+	table.code tr td.line_numbers {
+		text-align: right;
+		vertical-align: top;
+		background: #EEE;
+		color: #555;
+		font-size: 90%;
+		padding: 2px;
+		padding-top: 0;
+		width: 35px;
+		border-right: 1px solid #CCC;
+		border-bottom: 1px solid #DDD;
+		vertical-align:middle;
+	}
+
+	table.code td {
+		vertical-align:middle;
+		border-top: 1px dotted #b5b5b5;
+	}
+
+	#tests_results .alert.block-message-custom,
+	#ms-tests .alert.block-message-custom {
+		background-image: none;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+		padding: 7px 12px;
+		border:none;
+		border-bottom:2px solid #ddd;
+		margin-bottom:0px;
+		border-radius: 4px 4px 0px 0px;
+	}
+
+	#tests_results .block-message-custom {
+		padding: 5px 0px;
+	}
+
+	.alert-message .btn {
+		font-weight:normal;
+	}
+
+	.ms-selectable, .ms-selection {
+		width:292px;
+	}
+
+	.ms-container {
+		background: none !important;
+	}
+
+	.ms-selectable {
+		margin-right:10px !important;
+		margin-bottom: 10px !important;
+	}
+
+	table.test_result {
+		border-top:none;
+	}
+	table.test_result th, table.test_result td {
+		padding:5px;
+		line-height:1;
+	}
+
+	embed.hidden {
+		position: absolute;
+		left: -10000px;
+	}
+
+	.deploy_options label, .deploy_options div.divlabel {
+		width:180px;
+		font-weight: bold;
+	}
+
+	.deploy_options label {
+		text-align: left;
+	}
+
+	.deploy_options .clearfix {
+		margin-left: 20px;
+		margin-bottom:10px;
+	}
+	
+	.deploy_options input[type="checkbox"] {
+		margin: 0px;
+		width: 32px;
+		float: left;
+	}
+	.deploy_options .clearfix label > div {
+		float: left;
+		width: auto;
+		font-weight: bold;
+		padding-top: 5px;
+		cursor: pointer;
+	}
+	
+</style>
+	
+	<div id="result_output">
+		<div class="alert alert-error">
+			<button type="button" class="close fui-cross"></button>
+			<span id="error_message"></span>
+		</div>
+	</div>
+
+	<div class="content" id="content1">	
+
+		<ul id="maintabs" class="nav nav-tabs nav-append-content">
+			<li class="active"><a href="#tests_content" data-toggle="tab">Apex Tests</a></li>
+			<li><a href="#debug_content" data-toggle="tab">Debug Options</a></li>
+			<li class="game"><a href="#arcade" data-toggle="tab">Arcade</a></li>
+			
+			<li class="results_hidden dropdown active">
+          		<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+            		Test Results
+            		<b class="caret"></b>
+          		</a>
+          		<ul class="dropdown-menu">
+            		<li class="active"><a class="test_result_link" href="#tests_results">Test Results</a></li>
+            		<li class=""><a href="#class_coverage">Class Coverage</a></li>
+            		<li class=""><a href="#trigger_coverage">Trigger Coverage</a></li>
+            		<li class=""><a href="#warnings">Warnings</a></li>
+            		<li class=""><a href="#log">Debug Log</a></li>
+          		</ul>
+        	</li>
+		</ul> 
+
+		<div class="tab-content" id="main-tab-content">
+			<div class="tab-pane active" id="tests_content">
+				<select id="tests" multiple="multiple" class="multiselect" style="display: none;">
+					{% for cls in classes %}
+					<option value="{{ cls }}" {% if cls in selected %}selected{% endif %}>{{ cls }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			
+			{% include 'snippets/log_levels.html' %}
+
+			{% include 'snippets/arcade.html' %}
+
+			<div id="tests_results" class="tab-pane active">
+				<div id="result_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
+				</div>
+			</div>
+			<div id="class_coverage" class="tab-pane">
+				<div class="item-search class">
+					<div class="control-group large">
+					    <input style="height:34px;width:100%" class="span12" type="text" placeholder="Search">
+					</div>
+				</div>
+				<div id="class_coverage_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
+				</div>   
+			</div>
+			<div id="trigger_coverage" class="tab-pane">
+				<div class="item-search trigger">
+					<div class="control-group large">
+					    <input style="height:34px;width:100%" class="span12" type="text" placeholder="Search">
+					</div>
+				</div>
+				<div id="trigger_coverage_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
+				</div>
+			</div>
+			<div id="warnings" class="tab-pane">
+				<div id="warnings_coverage_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
+				</div>
+			</div>
+			<div id="log" class="tab-pane">
+				<div id="log_coverage_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
+				</div>
+			</div>
+
+
+		</div> 
+	</div>
+
+	{% endblock %}
+
+
+	{% block buttons %}					
+		<input type="button" class="btn btn-info" value="Run Tests" onclick="run_tests()" id="btnRunTests"> 
+		{% include 'snippets/cancel_button.html' %}
+		{% include 'snippets/running_indicator.html' %}
+	{% endblock %}
+
+	{% block body_js %}
+
+
+<script>
+
+	function handle_response(response) {
+		$("#result_wrapper").html(response["body"])
+
+		$("#class_coverage_wrapper").html(
+			$("#class_wrapper").html()
+			)
+		$("#trigger_coverage_wrapper").html(
+			$("#trigger_wrapper").html()
+			)
+		$("#warnings_coverage_wrapper").html(
+			$("#warnings_wrapper").html()
+			)
+		$("#log_coverage_wrapper").html(
+			$("#log_wrapper").html()
+			)
+		$("#class_wrapper").remove()
+		$("#trigger_wrapper").remove()
+		$("#warnings_wrapper").remove()
+		$("#log_wrapper").remove()
+
+		$(".results_hidden").show();
+		if ($("#arcade").css("display") == "none") {
+			//$(".results_hidden ul li:first-child").click();
+			$("li.active").removeClass('active')
+			$("div.active").removeClass('active')
+			$('a.test_result_link').tab('show');
+		}
+
+		toggleRunningIndicator();
+		$("#btnRunTests").show();
+		notify_sound()
+	}
+
+	function run_tests() {
+		$.ajax({
+			type: "POST",
+			url: "{{ base_local_server_url() }}/project/unit_test", 
+			dataType: "json",
+			data: JSON.stringify({
+				project_name 		: '{{ name }}',
+				classes 			: $('#tests').val(),
+				debug_categories 	: get_log_levels_json()
+			}),
+			beforeSend: function() { toggleRunningIndicator(); $("#btnRunTests").hide() },
+			complete: function(data){
+				global_init_handler(data)				
+			} 
+		});
+	}
+
+	function resize_height() {
+		window.resizeTo(window.width, document.getElementById('content1').offsetHeight+65);
+	}
+
+	function resize_test_container_sizes() {
+		$(".ms-selectable, .ms-selection").css("width", $(".tab-content").width()/2 - 15)
+		$(".ms-selectable, .ms-selection").css("height", $(window).height() - 220)
+		$(".ms-list").css("height", $(".ms-selectable").height()-90)
+	}
+
+	$(function(){
+	
+		$(window).resize(function() {
+			$("#result_wrapper").height($(window).height() - 210)
+			$("#class_coverage_wrapper").height($(window).height() - 260)   
+			$("#trigger_coverage_wrapper").height($(window).height() - 260)
+			$("#warnings_coverage_wrapper").height($(window).height() - 210)
+			$("#log_coverage_wrapper").height($(window).height() - 210)
+			resize_test_container_sizes()  
+			resize_arcade()
+		});
+
+		$(".item-search.class input").change(function() {
+			var thevalue = $(this).val().toLowerCase()
+			$("#class_coverage_wrapper").find("div.alert h3").each(function() {
+				var metaname = $(this).html().toLowerCase()
+				if (metaname.indexOf(thevalue) == -1) {
+					$(this).parent().hide()
+				} else {
+					$(this).parent().show()
+				}
+			})
+		})
+		.keyup(function() {
+	        $(this).change();
+	    });
+
+		$(".item-search.trigger input").change(function() {
+			var thevalue = $(this).val().toLowerCase()
+			$("#trigger_coverage_wrapper").find("div.alert h3").each(function() {
+				var metaname = $(this).html().toLowerCase()
+				if (metaname.indexOf(thevalue) == -1) {
+					$(this).parent().hide()
+				} else {
+					$(this).parent().show()
+				}
+			})
+		})
+		.keyup(function() {
+	        $(this).change();
+	    });
+
+		window.resizeTo(950, 700)
+
+		$('#tests').multiSelect({
+			selectableHeader : '<div class="alert alert-info block-message-custom"><p style="float:left;"><strong>Available Tests</strong></p><p style="float:right;"><a style="color:#0069D6;" href="javascript:void(0);" onclick="$(\'#tests\').multiSelect(\'select_all\');">Select All</a></p><div style="clear:both;"></div></div>',
+			selectedHeader : '<div class="alert alert-info block-message-custom"><p style="float:left;"><strong>Selected Tests</strong></p><p style="float:right;"><a style="color:#0069D6;" href="javascript:void(0);" onclick="$(\'#tests\').multiSelect(\'deselect_all\');">Select None</a></p><div style="clear:both;"></div></div>'
+		});
+
+		resize_test_container_sizes()
+		resize_arcade()
+		centerWindow()
+	});
+
+	function toggleSourceButton(el, index, type) {
+		console.log($(el).html())
+		if ($(el).html() == "Show Coverage") {
+			$(el).html("Hide Coverage").removeClass("btn-info");
+		} else {
+			$(el).html("Show Coverage").addClass("btn-info");
+		}
+		$("#"+type+"_code_result_"+index).toggle();        
+	}
+
+	$("#result_wrapper").height($(window).height() - 210)
+	$("#class_coverage_wrapper").height($(window).height() - 260)
+	$("#trigger_coverage_wrapper").height($(window).height() - 260)
+	$("#warnings_coverage_wrapper").height($(window).height() - 210)
+	$("#log_coverage_wrapper").height($(window).height() - 210)
+	
+	$("#category").change(function() {
+		if (this.value == "Apex_code") {
+			$("#levelwrapper").show()
+		} else {
+			$("#levelwrapper").hide()
+		}
+	})
+</script>
+
+{% endblock %}

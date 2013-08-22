@@ -1,0 +1,631 @@
+{% extends "layouts/base.html" %}
+{% block yield %}
+<style>
+	.deploy_options label, .deploy_options div.divlabel {
+		width:180px;
+		font-weight: bold;
+	}
+
+	.deploy_options label {
+		text-align: left;
+	}
+
+	.deploy_options .clearfix {
+		margin-left: 20px;
+		margin-bottom:10px;
+	}
+	
+	.deploy_options input[type="checkbox"] {
+		margin: 0px;
+		width: 32px;
+		float: left;
+	}
+	.deploy_options .clearfix label > div {
+		float: left;
+		width: auto;
+		font-weight: bold;
+		padding-top: 5px;
+		cursor: pointer;
+	}	
+	
+  
+	table.test_result {
+		border-top:none;
+	}
+	table.test_result th, table.test_result td {
+		padding:5px;
+		line-height:1;
+	}  
+
+	#connection_error_wrapper {
+		display: none;
+	}
+
+	ul.nav .dropdown-menu {
+		width:300px;
+	}
+
+</style>
+<div id="result_output">
+	
+</div>
+
+<div class="content">
+		
+	<ul class="nav nav-tabs nav-append-content" id="main-tabs">
+		<li class="active"><a href="#form" data-toggle="tab">Deploy Options</a></li>
+		<li><a href="#connections" data-toggle="tab">Org Connections</a></li>
+		<li>
+			<a href="#metadata" data-toggle="tab">
+				Metadata &nbsp;&nbsp;
+				<span onclick="refresh_index()" class="label" style="line-height:15px;cursor:pointer;">Refresh <i class="icon-refresh"></i></span> 	
+			</a>
+		</li>
+		<li><a href="#arcade" id="arcade_tab" data-toggle="tab">Arcade</a></li>
+		<li class="results_hidden dropdown active">
+      		<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+        		Deploy Results
+        		<b class="caret"></b>
+      		</a>
+      		<ul class="dropdown-menu" id="dropdown-destinations">
+
+      		</ul>
+    	</li>
+	</ul>
+	
+	<div class="tab-content" id="main-tab-content">
+		<div id="form" class="tab-pane active debug-tab-pane">
+			<form class="form-stacked" style="padding-top:10px;">
+				<fieldset>
+					<div class="clearfix">
+						<label for="un_list" style="font-weight:bold;">Deployment Targets</label> 
+							<select name="huge" class="select-block mbl info" style="display:none;" id="un_list" multiple="multiple" data-placeholder="Select 1 or more connections...">
+								{% for c in connections %}
+									{% if loop.index0 == 0 %}
+										{% set selected = 'selected="selected"' %}
+									{% else %}
+										{% set selected = '' %}
+									{% endif %}
+									<option {{ selected }} value="{{ c['username'] }};{{c['environment']}};{{c['id']}}">
+										{{ c['username'] }}
+									</option>
+								{% endfor %} 
+							</select>	
+					</div>			
+				</fieldset>
+			</form>
+
+			<form>
+				<fieldset class="deploy_options" style="margin:0;padding-top:0px;">
+					
+					<div class="row-fluid" style="margin-bottom:30px;">
+						<div class="span4">
+							<label class="checkbox" for="check_only">
+							  <input type="checkbox" value="" id="check_only" data-toggle="checkbox">
+							  Validate Only
+							</label>
+						</div>
+						<div class="span4">
+							<label class="checkbox" for="run_tests">
+							  <input type="checkbox" value="" id="run_tests" data-toggle="checkbox">
+							  Run Tests
+							</label>
+						</div>
+						<div class="span4">
+							<label class="checkbox" for="rollback">
+							  <input type="checkbox" value="" id="rollback" data-toggle="checkbox">
+							  Rollback on Error
+							</label>
+						</div>
+					</div>
+					
+
+					<div class="row-fluid">
+						<div class="span12">
+							<div class="alert alert-info">
+			            		<i class="icon-cogs icon-2x pull-left"></i>
+			            		Debug levels control the level of granularity in a debug log.
+			          		</div>
+			      		</div>
+					</div>
+					<div class="row-fluid">
+						<div class="span6">
+							<label for="select-Db" >Database Log Level</label>
+							<select id="select-Db">
+								<option value="">None</option>
+								<option value="ERROR">ERROR</option>
+								<option value="WARN">WARN</option>
+								<option value="INFO">INFO</option>
+								<option value="DEBUG">DEBUG</option>
+								<option value="FINE">FINE</option>
+								<option value="FINER">FINER</option>
+								<option value="FINEST">FINEST</option>
+							</select>
+						</div>
+						<div class="span6">
+							<label for="select-Workflow" >Workflow Log Level</label>
+							<select id="select-Workflow">
+								<option value="">None</option>
+								<option value="ERROR">ERROR</option>
+								<option value="WARN">WARN</option>
+								<option value="INFO">INFO</option>
+								<option value="DEBUG">DEBUG</option>
+								<option value="FINE">FINE</option>
+								<option value="FINER">FINER</option>
+								<option value="FINEST">FINEST</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="row-fluid">
+						<div class="span6">
+							<label for="select-Validation" >Validation Log Level</label>
+							<select id="select-Validation">
+								<option value="">None</option>
+								<option value="ERROR">ERROR</option>
+								<option value="WARN">WARN</option>
+								<option value="INFO">INFO</option>
+								<option value="DEBUG">DEBUG</option>
+								<option value="FINE">FINE</option>
+								<option value="FINER">FINER</option>
+								<option value="FINEST">FINEST</option>
+							</select>
+						</div>
+						<div class="span6">
+							<label for="select-Callout" >Callout Log Level</label>
+							<select id="select-Callout">
+								<option value="">None</option>
+								<option value="ERROR">ERROR</option>
+								<option value="WARN">WARN</option>
+								<option value="INFO">INFO</option>
+								<option value="DEBUG">DEBUG</option>
+								<option value="FINE">FINE</option>
+								<option value="FINER">FINER</option>
+								<option value="FINEST">FINEST</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="row-fluid">
+						<div class="span6">
+							<label for="select-Apex_code" >Apex Code Log Level</label>
+							<select id="select-Apex_code">
+								<option value="">None</option>
+								<option value="ERROR">ERROR</option>
+								<option value="WARN">WARN</option>
+								<option value="INFO">INFO</option>
+								<option value="DEBUG" selected="selected">DEBUG</option>
+								<option value="FINE">FINE</option>
+								<option value="FINER">FINER</option>
+								<option value="FINEST">FINEST</option>
+							</select>
+						</div>
+						<div class="span6">
+							<label for="select-Apex_profiling" >Apex Profiling Log Level</label>
+							<select id="select-Apex_profiling">
+								<option value="">None</option>
+								<option value="ERROR">ERROR</option>
+								<option value="WARN">WARN</option>
+								<option value="INFO">INFO</option>
+								<option value="DEBUG">DEBUG</option>
+								<option value="FINE">FINE</option>
+								<option value="FINER">FINER</option>
+								<option value="FINEST">FINEST</option>
+							</select>
+						</div>
+					</div>
+
+				</fieldset>
+
+
+			</form>
+		</div>
+
+		<div id="connections" class="tab-pane">
+
+			<div class="alert alert-error" id="connection_error_wrapper">
+				<button type="button" class="close fui-cross"></button>
+				<span id="connection_error_message"></span>
+			</div>
+			
+			<div class="alert alert-info">
+	        	<i class="icon-exchange icon-2x pull-left"></i>A deployment connection is a Salesforce.com org that you wish to deploy to from this MavensMate project.
+	      	</div>
+			
+	      	<div class="row-fluid">
+	      		
+	      		<div class="span5">
+	      			<table class="table table-striped" style="border-bottom: 2px solid #eef0f0;">
+	      				<thead>
+	      					<tr>
+	      						<th style="padding-left:0px">New Connection</th>
+	      					</tr>
+	      				</thead>
+	      			</table>
+	      			<form class="form-stacked">
+	      				<fieldset>					   						
+	      					<div class="control-group large">
+	      						<input class="span12" placeholder="Salesforce.com Username" type="text" id="connection_un">
+	      					</div>
+	      					<div class="control-group large">
+	      						<input class="span12" placeholder="Salesforce.com Password" type="password" id="connection_pw">
+	      					</div>
+
+	      					 <div class="control-group large">
+	      						<select id="org_type" class="info">
+	      							<option value="production">Production</option>
+	      							<option value="developer">Developer</option>
+	      							<option value="sandbox">Sandbox</option>
+	      							<option value="prerelease">Prerelease</option>
+	      						</select>
+	      					</div>
+
+	      					<a id="btnSubmit" class="btn btn-success" onclick="newConnection()">Create Connection <i class="icon-circle-arrow-right"></i></a>
+	      									
+	      				</fieldset>
+	      			</form>
+	      		</div>
+
+	      		<div class="span7">
+	      			<table class="table table-striped">
+	      				<thead>
+	      					<tr>
+	      						<th>Connection</th>
+	      						<th>Action</th>
+	      					</tr>
+	      				</thead>
+	      				<tbody id="connections_list">
+	      					{% for c in connections %}
+	      						<tr>
+	      							<td>{{ c['username'] }} ({{c['environment']}})</td>
+	      							<td>
+	      								<a href="javascript:void(0);" onclick="deleteConnection('{{ c['id'] }}')">Remove</a>
+	      							</td>
+	      						</tr>
+	      					{% endfor %}
+	      				</tbody>
+	      			</table>
+	      		</div>
+
+	      	</div>
+		</div>
+
+		<div id="metadata" class="tab-pane">
+			
+			<div class="alert alert-info" id="filter">
+				<input type="text" placeholder="Search for metadata" id="txtFilter" style="width:300px;height:35px;" />
+				<a href="#" class="btn btn-success" id="search-btn" style="right:45px"><i class="icon-search"></i></a>
+				<a href="#" class="btn btn-select" id="select-btn" ><i class="icon-check-empty"></i></a>
+			</div>
+
+			<div id="project_wrapper">
+								
+				<div id="treewrapper">
+					<div id="tree"></div>
+					<div id="info"></div>
+				</div> 
+			</div>
+		</div>
+		
+		{% include 'snippets/arcade.html' %}
+	
+	</div>
+</div> 
+
+<div id="result" style="display:none;">
+
+</div>
+
+
+{% endblock %}
+
+
+{% block buttons %}					
+	<input id="btnDeploy" type="button" class="btn btn-info" value="Deploy to Server" onclick='deploy()'>
+	{% include 'snippets/cancel_button.html' %}
+	{% include 'snippets/running_indicator.html' %}
+{% endblock %}
+
+{% block body_js %}
+<script type="text/javascript">
+	var has_indexed_metadata = {{ has_indexed_metadata|lower }};
+	var operation;
+
+	function isValidateOnly() {
+		return $("#check_only").is(":checked")
+	}
+
+	function isRunTests() {
+		return $("#run_tests").is(":checked")
+	}
+
+	function isRollbackOnError() {
+		return $("#rollback").is(":checked")
+	}
+
+	$(function() {
+		$("#check_only").change(function() {
+			var text = (this.checked)? 'Validate Deployment' : 'Deploy to Server';
+			$("#btnDeploy").val(text);
+		});
+		
+		$("#un_list").change(function() {
+			if (this.value == 'new') {
+				$("#un").val("");
+				$("#un").show();
+			} else {
+				$("#un").hide();
+				$("#un").val(this.value);
+			}
+		});
+
+		$("ul.nav-tabs li a span").hover(
+			$(this).toggleClass("label-success")
+		)
+		
+		if ($("#un_list").val() != 'new') {
+			$("#un").val($("#un_list").val());
+		}  
+
+		$(window).resize(function() {
+			resize_arcade()
+			resizeProjectWrapper()
+		});
+
+		//render tree when tab is clicked, otherwise there's an extjs and it doesnt render
+		$('a[data-toggle="tab"]').on('shown', function (e) {
+			if (e.target.href.indexOf("metadata") != -1) {
+				if (tree === undefined) {
+					renderTree()
+					setTimeout(resizeProjectWrapper(),500)
+					resizeFilter()
+				}
+			}
+		})
+		
+		if (!has_indexed_metadata) {
+			index_org();
+		}
+
+		$("#select-btn").click(function() {
+			if ($(this).html().indexOf('icon-check-empty') !== -1) {
+				$("#tree").dynatree("getRoot").visit(function(node){
+					if ($("#txtFilter").val() == '') {
+						if (node.data.cls !== 'hidden')
+							node.select(true);
+					} else {
+						if (node.data.level != 1 && node.data.cls !== 'hidden')
+							node.select(true);
+					}
+				});
+				$(this).html('<i class="icon-check"></i>')
+			} else {
+				$("#tree").dynatree("getRoot").visit(function(node){
+					if ($("#txtFilter").val() == '') {
+						if (node.data.cls !== 'hidden')
+							node.select(false);
+					} else {
+						if (node.data.level != 1 && node.data.cls !== 'hidden')
+							node.select(false);
+					}
+				});
+				$(this).html('<i class="icon-check-empty"></i>')
+			}
+		})
+
+		$('label.checkbox input').checkbox();
+
+		resize_games()
+		window.resizeTo(900, 720)
+		centerWindow()
+		setTimeout(resizeProjectWrapper(),500)
+	});
+
+	function repopulate_connection_list(conns) {
+		var connHtml = ''
+		for (c in conns) {
+			connHtml += '<option value="'+conns[c]['username']+';'+conns[c]['environment']+';'+conns[c]['id']+'">'
+			connHtml += conns[c]['username']
+			connHtml += '</option>'
+		}
+		$("#un_list").html(connHtml)
+		$('#un_list').trigger("liszt:updated");
+	}
+
+	function index_org(refresh) {
+		operation = "index"
+		$.ajax({
+			type: "POST",
+			url: "{{ base_local_server_url() }}/project/index", 
+			data: JSON.stringify({
+				project_name 	: '{{ name }}'
+			}),
+			beforeSend: function() { showLoading('Updating the metadata index for this project. This operation can take a few minutes in large orgs.<br/><br/>Thanks for being patient! :)'); },
+			complete: function(data, status, xhr){
+				global_init_handler(data)				
+			} 
+		});
+	}
+
+	function get_target_json() {
+		var targets = $("#un_list").val();
+		var ts = []
+		for (t in targets) {
+			console.log(targets[t])
+			var username = targets[t].split(';')[0]
+			var type = targets[t].split(';')[1]
+			var id = targets[t].split(';')[2]
+			var t = {}
+			t.username = username
+			t.org_type = type
+			t.id = id
+			ts.push(t)
+		}
+		return ts
+	}
+
+	function handle_response(response) {
+		if (operation == "deploy") {
+			$(".result_wrapper").remove()
+
+			$("#result").html(response["body"]);
+
+			$("#dropdown-destinations").html($("#destination_options ul").html());
+			$("#destination_options").remove()
+
+			if (response["deploy_success"] == true){
+				$("#check_only").attr('checked', false);
+				$("#check_only").parent().removeClass('checked')
+				$("#btnDeploy").val('Deploy to Server');
+			}
+
+			$("#main-tab-content").append($("#extra_tabs").html());
+			$("#extra_tabs").remove()
+
+			$('.nav-tabs a').click(function (e) {
+			  e.preventDefault();
+			  $(this).tab('show');
+			})
+
+			$(".results_hidden").show();
+			if ($("#arcade").css("display") == "none") {
+				$("ul#main-tabs > li.active").removeClass('active')
+				$("div#main-tab-content > div.active").removeClass('active')
+				$("#result-0").addClass('active')
+				$('li.dropdown ul li a.test_result_link').tab('show');
+				$(".results_hidden").addClass('active');
+			}
+
+			toggleRunningIndicator();
+			$("#btnDeploy").show();
+			notify_sound()
+		} else if (operation == "index") {
+			if (response["success"] == false) {
+				show_message(response["body"])
+			} else {
+				if (tree === undefined) {
+					renderTree()  
+				} else {
+					$("#tree").dynatree("getTree").reload();
+				}
+			}
+			resizeProjectWrapper();
+			notify_sound();
+			hideLoading();
+		}
+	}
+
+	function deploy() {
+		operation = "deploy"
+		$.ajax({
+			type: "POST",
+			url: "{{ base_local_server_url() }}/project/deploy", 
+			data: JSON.stringify({
+				destinations 		: get_target_json(),
+			    check_only 			: isValidateOnly(),
+			    run_tests 			: isRunTests(),
+			    rollback_on_error 	: isRollbackOnError(),
+			    package 			: get_tree(),
+			    project_name 		: '{{ name }}',
+			    debug_categories 	: get_log_levels_json()
+			}),
+			beforeSend: function() { toggleRunningIndicator(); $("#btnDeploy").hide()  },
+			complete: function(data){
+				global_init_handler(data)
+			} 
+	 	});
+	} 
+
+	function refresh_index() {
+		index_org(true);
+	}
+
+	function listConnections() {
+		$.ajax({
+			type: "GET",
+			url: "{{ base_local_server_url() }}/project/conns/list", 
+			data: {
+				 project_name	: '{{name}}'
+			},
+			beforeSend: function() { showLoading('Listing connections'); },
+			complete: function(data){
+				var connHtml = ''
+				console.log(data)				
+				var conns = JSON.parse(data.responseText)
+				for (c in conns) {
+					connHtml += '<tr>'
+					connHtml += '<td>'+conns[c]['username']+' ('+conns[c]['environment']+')</td>'
+					connHtml += '<td><a href="javascript:void(0);" onclick="deleteConnection(\''+conns[c]['id']+'\')">Remove</a></td>'
+					connHtml += '</tr>'
+				}
+				repopulate_connection_list(conns)	
+				$("#connections_list").html(connHtml)
+				hideLoading()			
+			}
+	 	});
+	}
+
+	function deleteConnection(id) {
+		$.ajax({
+			type: "POST",
+			dataType: 'json',
+			contentType: 'application/json; charset=utf-8',
+			url: "{{ base_local_server_url() }}/project/conns/delete", 
+			data: JSON.stringify({
+				project_name	: '{{name}}',
+				id 				: id
+			}),
+			beforeSend: function() { showLoading('Removing connection'); },
+			complete: function(data){
+				$("#connection_error_message").html('')
+				console.log(data)				
+				var response = JSON.parse(data.responseText)
+				if (response["success"] == false) {
+					$("#connection_error_message").html(response["body"])
+					$("#connection_error_wrapper").show()
+					hideLoading()	
+				} else {
+					$("#connection_error_wrapper").hide()
+					hideLoading()	
+					listConnections()
+				}		
+			}
+	 	});
+	}
+	
+	function newConnection() {
+		$.ajax({
+			type: "POST",
+			dataType: 'json',
+			contentType: 'application/json; charset=utf-8',
+			url: "{{ base_local_server_url() }}/project/conns/new", 
+			data: JSON.stringify({
+				username 		: $("#connection_un").val(), 
+				password 		: $("#connection_pw").val(), 
+				org_type 		: $("#org_type").val(),
+				project_name 	: '{{name}}'
+			}),
+			beforeSend: function() { showLoading('Adding connection'); },
+			complete: function(data){
+				$("#connection_error_message").html('')
+				console.log(data)				
+				var response = JSON.parse(data.responseText)
+				if (response["success"] == false) {
+					$("#connection_error_message").html(response["body"])
+					$("#connection_error_wrapper").show()
+					hideLoading()	
+				} else {
+					$("#connection_un").val('')
+					$("#connection_pw").val('')
+					$("#connection_error_wrapper").hide()
+					hideLoading()	
+					listConnections()
+				}
+			}
+	 	});
+	}
+
+
+</script>
+
+{% endblock %}

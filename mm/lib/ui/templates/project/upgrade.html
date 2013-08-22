@@ -1,0 +1,107 @@
+{% extends "layouts/base.html" %}
+{% block yield %}
+<div id="result_output">
+	<div class="alert alert-error">
+		<button type="button" class="close fui-cross"></button>
+		<span id="error_message"></span>
+	</div>
+</div>
+
+<div class="content">
+	
+	<ul class="nav nav-tabs nav-append-content">
+		<li class="active"><a id="project_details_tab" href="#form" data-toggle="tab">Project Details</a></li>
+	</ul>
+	
+	<div class="tab-content" id="main-tab-content">  
+		<div id="form" class="tab-pane active">
+			<div class="alert alert-info">
+				This project was created using an older version of MavensMate. Please re-enter your credentials to upgrade the project.
+			</div>
+			<form class="form-stacked">
+				<fieldset>
+					<div class="control-group large disabled">
+						<input class="span12" placeholder="Project Name" type="text" id="pn" disabled="disabled">
+						<i class="input-icon fui-lock"></i>
+					</div>
+					<div class="control-group large">
+						<input class="span12" placeholder="Salesforce.com Username" type="text" id="un">
+					</div>
+					<div class="control-group large">
+						<input class="span12" placeholder="Salesforce.com Password" type="password" id="pw">
+					</div>
+
+					 <div class="control-group large">
+						<select id="org_type" class="info">
+							<option value="production">Production</option>
+							<option value="developer">Developer</option>
+							<option value="sandbox">Sandbox</option>
+							<option value="prerelease">Prerelease</option>
+						</select>
+					</div>  
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</div>  
+	
+{% endblock %}
+
+
+{% block buttons %}					
+	<input type="button" id="btnSubmit" class="btn btn-info" value="Upgrade Project"  onclick="upgrade();">
+	<button id="btnCancel" class="btn" onclick="window.close();">Cancel</button>
+{% endblock %}
+
+{% block body_js %}
+	<script type="text/javascript">
+		
+		function upgrade() {
+			$.ajax({
+				type: "POST",
+				url: "{{ base_local_server_url() }}/project/upgrade", 
+				dataType: 'json',
+				contentType: 'application/json; charset=utf-8',
+				data: JSON.stringify({
+					username 			: $("#un").val(),
+			    	password 			: $("#pw").val(),
+			    	org_type 			: $("#org_type").val(),
+			    	override_session	: true,
+			    	defer_connection 	: true,
+			    	project_name 		: '{{ name }}' 
+				}),
+				beforeSend: function() { showLoading('Upgrading your project'); },
+				complete: function(data){	
+					global_init_handler(data)			
+				} 
+			});
+		}
+
+		function handle_response(response) {
+			if (response["success"] == false) {
+				show_message(response["body"])
+				notify_sound()
+			} else {
+				$("#btnSubmit").remove()
+				$("#btnCancel").html("Done")
+				show_message("Your project has been successfully upgraded. Happy coding :)", 'success', true)
+				notify_sound()
+			}
+			hideLoading();
+		}
+			
+		$(function() {		   
+			$("#pn").val("{{ name }}");  
+			$("#un").val("");
+			$("#pw").val("");
+			$("#org_type").val("");
+			$("#pn").prop('disabled', true); 
+
+			window.resizeTo(600, 700)
+			centerWindow()
+
+		});	
+
+	</script>
+
+{% endblock %}

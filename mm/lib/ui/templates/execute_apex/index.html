@@ -1,0 +1,426 @@
+{% extends "layouts/base.html" %}
+{% block yield %}
+<link href="{{ base_path }}/lib/ui/resources/css/multiselect.css" rel="stylesheet" type="text/css"/> 
+<link href="{{ base_path }}/lib/ui/resources/css/progress.css" rel="stylesheet" type="text/css"/>
+<script src="{{ base_path }}/lib/ui/resources/js/multi-select.js" type="text/javascript"></script>
+<script src="{{ base_path }}/lib/ui/resources/js/buttons.js" type="text/javascript"></script>
+<script src="{{ base_path }}/lib/ui/resources/js/modal.js" type="text/javascript"></script>
+<script src="{{ base_path }}/lib/ui/resources/editor/ace.js" type="text/javascript"></script>
+<script src="{{ base_path }}/lib/ui/resources/editor/mode-java.js" type="text/javascript"></script>
+<style>
+	#editor {
+        position:absolute; 
+        top:0;
+        bottom:0;
+        left: 0;
+        right:0;
+    }
+	.results_hidden {
+		display:none;
+	}
+	#mm_logger {
+		display:none;
+		height:200px;
+		overflow-y:auto;
+		padding:10px;
+		border:1px solid #f2f2f2;
+	}
+
+	table.code {
+		display:none;
+	}
+
+	table.code td {
+		padding:0px;
+	}
+
+	table.code {
+		border: 1px solid #CCC;
+		width: 100%;
+		border-collapse: collapse;
+		font: 95%/105% "Consolas", Monaco, "Courier New", Courier, "Bitstream Vera Sans Mono", monospace;
+	}
+
+	table.code thead .line_numbers, table.code thead {
+		background: #DDD;
+	}
+
+	table.code td.covered {
+		background: #DFD;
+	}
+
+	table.code td.not_covered { 
+		background: #fdd; 
+	}
+				
+	table.code tr td.line_numbers {
+		text-align: right;
+		vertical-align: top;
+		background: #EEE;
+		color: #555;
+		font-size: 90%;
+		padding: 2px;
+		padding-top: 0;
+		width: 35px;
+		border-right: 1px solid #CCC;
+		border-bottom: 1px solid #DDD;
+		vertical-align:middle;
+	}
+
+	table.code td {
+		vertical-align:middle;
+		border-top: 1px dotted #b5b5b5;
+	}
+
+	.block-message-custom {
+		background-image: none;
+		background-color: #F2F2F2;
+		filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+		padding: 14px;
+		border-color: #CCC;
+		-webkit-box-shadow: none;
+		-moz-box-shadow: none;
+		box-shadow: none;
+	}
+
+	.alert-message .btn {
+		font-weight:normal;
+	}
+
+	/*.container {
+		width: 100%;
+		margin-left: 12px;
+	}  */
+
+	h4 {
+	    background: none repeat scroll 0 0 #777777;
+	    border: none;
+			font-weight:normal;
+	    border-radius: 4px 4px 0 0;
+	    color: #FFFFFF;
+	    margin: 0;
+	    padding: 3px;
+	    text-align: center;
+			line-height:1.3;
+			
+			background-color:#222;background-color:#222222;background-repeat:repeat-x;background-image:-khtml-gradient(linear, left top, left bottom, from(#333333), to(#222222));background-image:-moz-linear-gradient(top, #333333, #222222);background-image:-ms-linear-gradient(top, #333333, #222222);background-image:-webkit-gradient(linear, left top, left bottom, color-stop(0%, #333333), color-stop(100%, #222222));background-image:-webkit-linear-gradient(top, #333333, #222222);background-image:-o-linear-gradient(top, #333333, #222222);background-image:linear-gradient(top, #333333, #222222);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#222222', GradientType=0);-webkit-box-shadow:0 1px 3px rgba(0, 0, 0, 0.25),inset 0 -1px 0 rgba(0, 0, 0, 0.1);-moz-box-shadow:0 1px 3px rgba(0, 0, 0, 0.25),inset 0 -1px 0 rgba(0, 0, 0, 0.1);box-shadow:0 1px 3px rgba(0, 0, 0, 0.25),inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+
+
+			
+	}
+
+	.ms-selectable, .ms-selection {
+		width:292px;
+	}
+
+	.ms-container {
+		background: none !important;
+	}
+
+	.ms-selectable {
+		margin-right:10px !important;
+		margin-bottom: 10px !important;
+	}
+
+	table.test_result {
+		border-top:none;
+	}
+	table.test_result th, table.test_result td {
+		padding:5px;
+		line-height:1;
+	}
+
+	embed.hidden {
+	    position: absolute;
+	    left: -10000px;
+	}
+
+	.gutter-mark {
+		background:red;
+	}
+
+	.deploy_options label, .deploy_options div.divlabel {
+		width:180px;
+		font-weight: bold;
+	}
+
+	.deploy_options label {
+		text-align: left;
+	}
+
+	.deploy_options .clearfix {
+		margin-left: 20px;
+		margin-bottom:10px;
+	}
+	
+	.deploy_options input[type="checkbox"] {
+		margin: 0px;
+		width: 32px;
+		float: left;
+	}
+	.deploy_options .clearfix label > div {
+		float: left;
+		width: auto;
+		font-weight: bold;
+		padding-top: 5px;
+		cursor: pointer;
+	}
+	
+</style>
+
+<div id="result_output">
+	<div class="alert alert-error">
+		<button type="button" class="close fui-cross"></button>
+		<span id="error_message"></span>
+	</div>
+</div>
+
+
+<div class="content" id="content1">	
+	
+
+	<ul class="nav nav-tabs nav-append-content">
+	  <li class="active"><a href="#tests_content" data-toggle="tab">Apex Code</a></li>
+	  <li><a href="#debug_content" data-toggle="tab">Debug Options</a></li>
+	  <li class="results_hidden"><a href="#log" id="a_result" data-toggle="tab">Log</a></li>
+	</ul> 
+
+	<div class="tab-content"  id="main-tab-content">
+	  <div class="tab-pane active" id="tests_content">
+  		<div id="editor_wrapper" style="position:relative;">
+  			<div id="editor"></div>
+  		</div>
+	  </div>
+	  	<div id="debug_content" class="tab-pane debug-tab-pane">
+	  		<div class="row-fluid">
+	  			<div class="span12">
+	  				<div class="alert alert-info">
+	              		<i class="icon-cogs icon-2x pull-left"></i>
+	              		Debug levels control the level of granularity in a debug log.
+	            		</div>
+	        		</div>
+	  		</div>
+	  		<div class="row-fluid">
+	  			<div class="span6">
+	  				<label for="select-Db" >Database Log Level</label>
+	  				<select id="select-Db">
+	  					<option value="">None</option>
+	  					<option value="ERROR">ERROR</option>
+	  					<option value="WARN">WARN</option>
+	  					<option value="INFO">INFO</option>
+	  					<option value="DEBUG">DEBUG</option>
+	  					<option value="FINE">FINE</option>
+	  					<option value="FINER">FINER</option>
+	  					<option value="FINEST">FINEST</option>
+	  				</select>
+	  			</div>
+	  			<div class="span6">
+	  				<label for="select-Workflow" >Workflow Log Level</label>
+	  				<select id="select-Workflow">
+	  					<option value="">None</option>
+	  					<option value="ERROR">ERROR</option>
+	  					<option value="WARN">WARN</option>
+	  					<option value="INFO">INFO</option>
+	  					<option value="DEBUG">DEBUG</option>
+	  					<option value="FINE">FINE</option>
+	  					<option value="FINER">FINER</option>
+	  					<option value="FINEST">FINEST</option>
+	  				</select>
+	  			</div>
+	  		</div>
+
+	  		<div class="row-fluid">
+	  			<div class="span6">
+	  				<label for="select-Validation" >Validation Log Level</label>
+	  				<select id="select-Validation">
+	  					<option value="">None</option>
+	  					<option value="ERROR">ERROR</option>
+	  					<option value="WARN">WARN</option>
+	  					<option value="INFO">INFO</option>
+	  					<option value="DEBUG">DEBUG</option>
+	  					<option value="FINE">FINE</option>
+	  					<option value="FINER">FINER</option>
+	  					<option value="FINEST">FINEST</option>
+	  				</select>
+	  			</div>
+	  			<div class="span6">
+	  				<label for="select-Callout" >Callout Log Level</label>
+	  				<select id="select-Callout">
+	  					<option value="">None</option>
+	  					<option value="ERROR">ERROR</option>
+	  					<option value="WARN">WARN</option>
+	  					<option value="INFO">INFO</option>
+	  					<option value="DEBUG">DEBUG</option>
+	  					<option value="FINE">FINE</option>
+	  					<option value="FINER">FINER</option>
+	  					<option value="FINEST">FINEST</option>
+	  				</select>
+	  			</div>
+	  		</div>
+
+	  		<div class="row-fluid">
+	  			<div class="span6">
+	  				<label for="select-Apex_code" >Apex Code Log Level</label>
+	  				<select id="select-Apex_code">
+	  					<option value="">None</option>
+	  					<option value="ERROR">ERROR</option>
+	  					<option value="WARN">WARN</option>
+	  					<option value="INFO">INFO</option>
+	  					<option value="DEBUG" selected="selected">DEBUG</option>
+	  					<option value="FINE">FINE</option>
+	  					<option value="FINER">FINER</option>
+	  					<option value="FINEST">FINEST</option>
+	  				</select>
+	  			</div>
+	  			<div class="span6">
+	  				<label for="select-Apex_profiling" >Apex Profiling Log Level</label>
+	  				<select id="select-Apex_profiling">
+	  					<option value="">None</option>
+	  					<option value="ERROR">ERROR</option>
+	  					<option value="WARN">WARN</option>
+	  					<option value="INFO">INFO</option>
+	  					<option value="DEBUG">DEBUG</option>
+	  					<option value="FINE">FINE</option>
+	  					<option value="FINER">FINER</option>
+	  					<option value="FINEST">FINEST</option>
+	  				</select>
+	  			</div>
+	  		</div>
+	  	</div>
+	  <div class="tab-pane" id="log">
+	    <div id="log_coverage_wrapper" style="-webkit-border-radius: 4px 4px 4px 4px;overflow-y:auto;padding:0px;position:relative;">
+			<a href="javascript:void(0)" class="btn btn-success" onclick="$('#log_selector').selectText();" style="padding: 3px 5px;font-size: .9em;top:0;right:10px;position:absolute;">Select Log Text</a>
+			<div style="padding:10px;" id="log_selector">
+				
+			</div>
+		</div>
+	  </div>
+	</div> 
+</div>
+
+{% endblock %}
+
+
+{% block buttons %}					
+	<input type="button" class="btn btn-info" value="Execute" onclick="execute_apex()" id="btnExecuteApex"> 
+	{% include 'snippets/cancel_button.html' %}
+	{% include 'snippets/running_indicator.html' %}
+{% endblock %}
+
+{% block body_js %}
+
+<script>
+
+var editor;
+var line;
+
+function execute_apex() {
+	$.ajax({
+		type: "POST",
+		url: "{{ base_local_server_url() }}/apex/execute", 
+		dataType: "json",
+		contentType: 'application/json; charset=utf-8',
+		data: JSON.stringify({
+			 body 				: editor.getValue(),
+			 project_name 		: '{{ name }}',
+			 debug_categories 	: get_log_levels_json()
+		}),
+		beforeSend: function() { 
+			toggleRunningIndicator();
+			$("#btnExecuteApex").hide(); 
+			editor.getSession().clearAnnotations(); 
+			editor.setReadOnly(true); 
+		},
+		complete: function(data){	
+			global_init_handler(data)		
+		} 
+	});
+}
+
+function handle_response(response) {
+	console.log(response)
+	try {
+		if (response["success"] == true) {
+			debug_log = response["log"]
+			console.log(debug_log)
+			debug_log = debug_log.replace(/\n/g, "<br />");
+			$("#log_selector").html(debug_log)
+			$(".results_hidden").show();
+			$("#a_result").click();
+			hide_message()
+		} else {
+			var return_message = ''
+			var error_message = response["compileProblem"]
+			var exception_message = response["exceptionMessage"]
+			var log = response["log"]
+			if (log != null) {
+				var debug_log = log.replace(/\n/g, "<br />");
+				$("#log_selector").html(debug_log)
+				$(".results_hidden").show()
+				$("#a_result").click();
+			}
+			if (error_message != null) {
+				return_message += error_message;
+			}
+			if (exception_message != null && exception_message != "") {
+				if (return_message == '') {
+					return_message = exception_message
+				} else {
+					return_message += "<br/><br/>" + exception_message
+				}
+			}
+			line = (parseInt(response["line"]) == -1) ? 0 : (parseInt(response["line"]) - 1)
+			if (line == -1)
+				line = 0
+			var column = (parseInt(response["column"]) == -1) ? 0 : (parseInt(response["column"]) - 1)
+			editor.getSession().setAnnotations([{
+			  row: line,
+			  column: column,
+			  text: return_message,
+			  type: "error" // also warning and information
+			}]);
+			show_message(return_message);
+			notify_sound();
+		}
+	} catch(e) {
+		console.log(e)
+		$("#log_coverage_wrapper").html(response["body"])
+		$(".results_hidden").show();
+		$("#a_result").click();
+	}
+	
+	toggleRunningIndicator();
+	$("#btnExecuteApex").show();	
+	editor.setReadOnly(false);
+}
+
+function resize_editor() {
+	$("#editor_wrapper").css("width", $(window).width() - 95)
+	$("#editor_wrapper").css("height", $(window).height() - 210)
+}
+
+$(function(){
+	editor = ace.edit("editor");
+	editor.setTheme("ace/theme/dawn");
+	var JavaMode = ace.require("ace/mode/java").Mode;
+	editor.getSession().setMode(new JavaMode());
+	editor.getSession().setUseWrapMode(true);
+	editor.setFontSize(16);
+	editor.getSession().setTabSize(4);
+	resize_editor()
+	editor.resize()
+	editor.focus()
+
+	window.resizeTo(780, 650)
+	centerWindow()
+});
+
+$("#log_coverage_wrapper").height($(window).height() - 175)
+$(window).resize(function() {
+	$("#log_coverage_wrapper").height($(window).height() - 175)
+    resize_editor()  
+});
+
+</script>
+{% endblock %}

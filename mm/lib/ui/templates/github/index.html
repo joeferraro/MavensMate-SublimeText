@@ -1,0 +1,79 @@
+{% extends "layouts/base.html" %}
+{% block yield %}
+<div id="result_output">
+	<div class="alert alert-error">
+		<button type="button" class="close fui-cross"></button>
+		<span id="error_message"></span>
+	</div>
+</div>
+
+<div class="content">
+	<div style="width:250px;margin:0 auto;margin-bottom:20px;">
+		<img src="{{ base_path }}/lib/ui/resources/images/github-logo.png" style=""/>
+	</div>	
+	<div class="alert alert-info">
+		<p>The social enterprise needs a social IDE. MavensMate is providing deeper integration with GitHub to enable teams working on projects, public and private alike, to collaborate in a more meaningful way directly from the development environment. </p>
+	</div>
+	<div id="form" class="tab-pane active">
+		<form class="form-stacked">
+			<fieldset>
+				<div class="control-group large">
+					<input class="span12" placeholder="GitHub Username" type="text" id="un">
+				</div>
+				<div class="control-group large">
+					<input class="span12" placeholder="GitHub Password" type="password" id="pw">
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</div>  
+	
+{% endblock %}
+
+
+{% block buttons %}					
+	<input type="button" id="btnSubmit" class="btn btn-info" value="Sign In"  onclick="connect();">
+	<button id="btnCancel" class="btn" onclick="window.close();">Cancel</button>
+{% endblock %}
+
+{% block body_js %}
+	<script type="text/javascript">
+		
+		function connect() {
+			$.ajax({
+				type: "POST",
+				url: "{{ base_local_server_url() }}/github/connect", 
+				dataType: 'json',
+				contentType: 'application/json; charset=utf-8',
+				data: JSON.stringify({
+					username 			: $("#un").val(),
+			    	password 			: $("#pw").val()
+				}),
+				beforeSend: function() { showLoading('Connecting to GitHub'); },
+				complete: function(data){	
+					console.log(data)
+					var response = JSON.parse(data.responseText)
+					if (response["success"] == false) {
+						show_message(response["body"])
+						notify_sound()
+					} else {
+						$("#btnSubmit").remove()
+						$("#btnCancel").html("Done")
+						show_message("MavensMate and GitHub are now BFFs. Happy coding :)", 'success', true)
+						notify_sound()
+					}
+					hideLoading();	
+				} 
+			});
+		}
+	
+		$(function() {		   
+			$("#un").val("");
+			$("#pw").val("");
+			window.resizeTo(600, 700)
+			centerWindow()
+		});	
+
+	</script>
+
+{% endblock %}

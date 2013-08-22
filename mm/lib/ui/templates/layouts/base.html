@@ -1,0 +1,268 @@
+<html>
+<head>
+    <title>MavensMate</title>
+    <link rel="stylesheet" href="{{ base_path }}/lib/ui/resources/bootstrap/css/bootstrap.css"></link> 
+    <link rel="stylesheet" href="{{ base_path }}/lib/ui/resources/bootstrap/css/bootstrap-responsive.css"></link> 
+    <link rel="stylesheet" href="{{ base_path }}/lib/ui/resources/css/flat-ui.css"></link> 
+    <link rel="stylesheet" href="{{ base_path }}/lib/ui/resources/css/mavensmate.css"></link> 
+    <link rel="stylesheet" href="{{ base_path }}/lib/ui/resources/css/dynatree.css"></link> 
+    <link rel="stylesheet" href="{{ base_path }}/lib/ui/resources/css/font-awesome.min.css"></link>
+    <script>
+        var baseLocalServerURL = '{{ base_local_server_url() }}';
+        var project_name = '{{ name }}'
+    </script>
+    <script src="{{ base_path }}/lib/ui/resources/js/jquery.js" type="text/javascript"></script>
+    <script src="{{ base_path }}/lib/ui/resources/js/jqueryui.js" type="text/javascript"></script>
+    <script src="{{ base_path }}/lib/ui/resources/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="{{ base_path }}/lib/ui/resources/js/bootstrap-select.js" type="text/javascript"></script>
+    <script src="{{ base_path }}/lib/ui/resources/js/flatui-checkbox.js" type="text/javascript"></script>
+    <script src="{{ base_path }}/lib/ui/resources/js/mavensmate.js" type="text/javascript"></script>    
+    <script src="{{ base_path }}/lib/ui/resources/js/dynatree2.js" type="text/javascript"></script>
+    <script src="{{ base_path }}/lib/ui/resources/js/jquery.contextMenu-custom.js" type="text/javascript"></script>
+    <script>
+        var tree;
+
+        $.ajaxSetup({
+            headers: { "mm_plugin_client": "{{ client }}" }
+        });
+
+        $(function() {
+           
+            //instantiate tabs on page, if any
+            $('.nav-tabs a').click(function (e) {
+              e.preventDefault();
+              $(this).tab('show');
+            })
+
+            //clicking on close "x" hides message (and resizes elements)
+            $('#result_output .close').click(function() {
+                $('#result_output').hide();
+                resizeElements();
+            })
+
+            //fancy select boes
+            $("select.info").selectpicker({style: 'btn-info'});
+
+            //when the windows resizes, resize everything accordingly
+            $(window).resize(function() {
+                resizeElements()
+
+                $(".twipsy").height($(window).height())
+                $(".twipsy").width($(window).width())
+            });
+
+            //focus first input
+            $("input[type='text']:first").focus(); //focus first input element
+        })
+
+        function notify_sound() {
+            if ({{ play_sounds()|lower }}) {
+                var snd = new Audio("{{ base_path }}/lib/ui/resources/sounds/pling.mp3"); // buffers automatically when created
+                snd.play();  
+            }
+        }
+
+        function submitSearch() {
+            var filter = $("#txtFilter").val();
+            if (filter && filter.length > 2) {
+                $("#tree").dynatree("option", "initAjax",
+                    {
+                        type     : "POST",
+                        dataType : "json",
+                        url      : baseLocalServerURL+"/project/get_index",
+                        data     : JSON.stringify({
+                            "project_name"  : project_name,
+                            keyword         : filter,
+                            ids             : $("#tree").dynatree("getTree").selectedIds
+                        })
+                    }
+                );
+                $("#tree").dynatree("getTree").reload();
+                $("#search-btn").removeClass('btn-success').addClass('btn-danger').html('<i class="icon-remove"></i>')
+            }
+        }
+
+        function clearFilter() {
+            //ids: tree.selectedIds
+            $("#tree").dynatree("option", "initAjax",
+                {
+                    type     : "POST",
+                    dataType : "json",
+                    url      : baseLocalServerURL+"/project/get_index",
+                    data     : JSON.stringify({
+                        "project_name"  : project_name,
+                        ids             : $("#tree").dynatree("getTree").selectedIds
+                    })
+                }
+            );
+            $("#tree").dynatree("getTree").reload();
+            $('#txtFilter').val('');
+            $('#txtFilter').focus();
+            $("#search-btn").removeClass('btn-danger').addClass('btn-success').html('<i class="icon-search"></i>');
+        }
+
+        function reloadTree() {
+            hideLoading()
+            showLoading("Loading...")
+            tree_store.load({
+                params: {project_name: '{{ name }}'},
+                callback:hideLoading
+            })
+        }
+
+        //right now this only supports existing projects (not new project UI)
+        function refreshNode(mtype) {
+            $.ajax({
+                type: "POST",
+                url: baseLocalServerURL+"/project/refresh_index", 
+                data: JSON.stringify({
+                    metadata_types  : mtype,
+                    project_name    : project_name
+                }),
+                beforeSend: function() { showLoading("Refreshing Metadata Type: "+ mtype +"..."); },
+                complete: function(data){
+                    $("#tree").dynatree("getTree").reload()
+                } 
+            });
+        }
+    </script>
+</head>
+<body id="body" class="{% block body_class %}{% endblock %}">
+  	
+    {% include 'snippets/context-menu.html' %}
+
+    <div id="footer">
+        <div class="container">
+            <div class="main-wrapper">
+                <div style="text-align:center;">
+                    {% if 'project_name' in project_settings() %}
+                        {{ project_settings()['project_name'] }} ({{ project_settings()['username'] }})
+                    {% elif operation == 'github' %}
+                        {{ 'Github Connection' }}
+                    {% else %}
+                        {{ 'New Project' }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="container" style="position:relative;">
+                <img src="{{ base_path }}/lib/ui/resources/images/logo2.png" id="mmlogo"/> 
+                <div class="actions-right">
+                    {% block buttons %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-wrapper">
+    		<div id="global_message_wrapper">
+                <div class="alert alert-error">
+                    <button type="button" class="close fui-cross" data-dismiss="alert"></button>
+                    <p id="global_message"></p>
+                </div>
+            </div>
+            {% block yield %}{% endblock %}
+        </div>
+    </div>
+
+        <div class="loading">
+            <div class="twipsy"></div> 
+            <div class="loading_message_wrapper">
+                <div class="loading_message">
+
+                    <div id="floatingCirclesG">
+                    <div class="f_circleG" id="frotateG_01">
+                    </div>
+                    <div class="f_circleG" id="frotateG_02">
+                    </div>
+                    <div class="f_circleG" id="frotateG_03">
+                    </div>
+                    <div class="f_circleG" id="frotateG_04">
+                    </div>
+                    <div class="f_circleG" id="frotateG_05">
+                    </div>
+                    <div class="f_circleG" id="frotateG_06">
+                    </div>
+                    <div class="f_circleG" id="frotateG_07">
+                    </div>
+                    <div class="f_circleG" id="frotateG_08">
+                    </div>
+                    </div>
+
+                    <span id="loading_message"></span>
+
+                </div>
+            </div>                                    
+        </div>
+        {% block body_js %}{% endblock %}
+        <script>
+            $(function() {
+                resizeFilter()
+                $(window).resize(function() {
+                    resizeFilter()
+                })
+
+                //set up global ajax handling
+                try {
+                    setUpAjaxErrorHandling()
+                } catch(e) {
+                    console.log(e)
+                }
+
+                if ($("#txtFilter") !== []) {
+                    $("#txtFilter").bind('keyup', function(e) {
+                        var code = (e.keyCode ? e.keyCode : e.which);
+                        if (code == 13) {
+                            submitSearch()
+                        }
+                    })
+                   
+                    $("#search-btn").click(function() {
+                        if ($(this).hasClass('btn-success')) {
+                            submitSearch()
+                        } else {
+                            clearFilter()
+                        }
+                    })
+                }
+                
+                //$('input[type="checkbox"]').checkbox();
+                resizeElements()
+            })
+
+            function check_status(request_id) {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ base_local_server_url() }}/status", 
+                    data: {
+                         id: request_id
+                    },
+                    complete: function(data, status, xhr) {
+                        try {
+                            console.log('checking status of async request')
+                            console.log(data)
+                            console.log('json response: ')
+                            console.log(data.responseText)
+                            var response = JSON.parse(data.responseText)
+                            if (response["status"] == 'pending') {
+                                setTimeout(function() { check_status(request_id); }, CHECK_STATUS_INTERVAL); //poll for completed async request
+                            } else {
+                                handle_response(response);
+                            }
+                        } catch(e) {
+                            console.log(e)
+                            console.log('caught an error, polling again...')
+                            setTimeout(function() { check_status(request_id); }, 2000);
+                        }
+                                    
+                    } 
+                });
+            }
+        </script>
+</body>
+</html>

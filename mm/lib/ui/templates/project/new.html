@@ -1,0 +1,237 @@
+{% extends "layouts/base.html" %}
+{% block yield %}
+<div id="result_output">
+	<div class="alert alert-error">
+		<button type="button" class="close fui-cross"></button>
+		<span id="error_message"></span>
+	</div>
+</div>
+
+<div class="content">
+		 
+	<ul class="nav nav-tabs nav-append-content">
+		<li class="active"><a id="project_details_tab" href="#form" data-toggle="tab">Project Details</a></li>
+		<li><a href="#advanced" data-toggle="tab">Advanced</a></li>
+		<li>
+			<a href="#metadata" data-toggle="tab">
+				Project Metadata &nbsp;&nbsp;
+				<span onclick="populateMetadataTree('Refreshing Metadata...')" class="label" style="line-height:15px;cursor:pointer;">
+					Refresh <i class="icon-refresh"></i>
+				</span> 
+			</a>
+		</li>
+	</ul>
+	
+	<div class="tab-content" id="main-tab-content">
+		<div id="form" class="tab-pane active">
+			<form class="form-stacked">
+				<input type="hidden" value="" id="sid"/>
+				<input type="hidden" value="" id="metadata_server_url"/>
+				<input type="hidden" value="" id="server_url"/>
+				<fieldset>
+					<div class="control-group large">
+						<input class="span12" placeholder="Project Name" type="text" id="pn">
+					</div>
+					<div class="control-group large">
+						<input class="span12" placeholder="Salesforce.com Username" type="text" id="un">
+					</div>
+					<div class="control-group large">
+						<input class="span12" placeholder="Salesforce.com Password" type="password" id="pw">
+					</div>
+
+					 <div class="control-group large">
+						<select id="org_type" class="info">
+							<option value="production">Production</option>
+							<option value="developer">Developer</option>
+							<option value="sandbox">Sandbox</option>
+							<option value="prerelease">Prerelease</option>
+						</select>
+					</div>  
+				</fieldset>
+			</form>
+		</div>
+
+		<div id="advanced" class="tab-pane">
+			<form class="form-stacked" style="padding-top:10px;">
+				<fieldset>
+					<div class="clearfix">
+						<label for="subscription" style="font-weight:bold;">Metadata Subscription List</label> 
+						<select name="huge" class="select-block mbl info" style="display:none;" id="subscription" multiple="multiple" data-placeholder="Select 1 or more metadata types..." data-selected-text-format="count>3" data-size="20">
+
+							{% for m in metadata_types() %}
+								{% if m['xmlName'] in client_subscription_list() %}
+									{% set selected = 'selected="selected"' %}
+								{% else %}
+									{% set selected = '' %}
+								{% endif %}
+								<option {{ selected }} value="{{ m['xmlName'] }}">
+									{{ m['xmlName'] }}
+								</option>
+							{% endfor %} 
+						</select>	
+						<div class="alert alert-info" style="margin-top:20px">
+							<ul>
+								<li>
+									If you only plan to work with certain metadata types in this project, specify those types here. Otherwise, MavensMate will index each metadata type available in your org. In larger orgs, this can negatively impact performance.
+								</li>
+								<li>
+									You can update your project's metadata subscription at any time.
+								</li>
+								<li>
+									The default list of metadata types is controlled by your plugin client's <strong>mm_default_subscription</strong> setting.
+								</li>
+							</ul>
+							
+						</div>
+					</div>			
+				</fieldset>
+			</form>
+		</div>
+		
+		<div id="metadata" class="tab-pane">
+			<div id="project_wrapper">
+				<div id="treewrapper">
+					<div id="tree"></div>
+					<div id="info"></div>
+				</div> 
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+
+{% block buttons %}					
+	<input type="button" id="btnSubmit" class="btn btn-info" value="Create Project"  onclick='new_custom_project();'>
+	<button class="btn" onclick="window.close();">Cancel</button>
+{% endblock %}
+
+{% block body_js %}
+
+	<script type="text/javascript">
+		var response;
+		var operation;
+		var developer_metadata_types = ['ApexClass', 'ApexComponent', 'ApexTrigger', 'ApexPage', 'StaticResource']
+
+		function new_custom_project() {
+			operation = "new"
+			$.ajax({
+				type: "POST",
+				dataType: 'json',
+				contentType: 'application/json; charset=utf-8',
+				url: "{{ base_local_server_url() }}/project", 
+				data: JSON.stringify({
+					 project_name 	: $("#pn").val(), 
+					 username 		: $("#un").val(), 
+					 password 		: $("#pw").val(), 
+					 org_type 		: $("#org_type").val(),
+					 package 		: get_tree(),
+					 subscription 	: $("#subscription").val(),
+					 action 		: "new"
+				}),
+				beforeSend: function() { showLoading('Creating new MavensMate project'); },
+				complete: function(data){
+					global_init_handler(data)
+				} 
+		 	});
+		}
+
+		function handle_response(response) {
+			if (operation == "new") {
+				if (response["success"] == false) {
+					show_message(response["body"])
+					notify_sound()
+				} else {
+					window.close()
+				}
+				hideLoading();
+			} else if (operation == "check_creds") {
+				if (response["success"] == false) {
+					show_message(response["body"])
+					notify_sound()
+				} else {
+					$('#sid').val(response["sid"])	
+					$('#metadata_server_url').val(response["metadata_server_url"])
+					$('#server_url').val(response["server_url"])
+					hide_message()
+				}
+				hideLoading();
+			}
+		}
+	
+		var user_action = "{{ user_action }}";
+			
+		$(function() {		   									
+		    
+			$(window).resize(function() {
+				resizeProjectWrapper(10)
+			});
+
+			window.resizeTo(675, 750)
+			centerWindow()
+
+			//submit form on enter
+			$(".content").bind('keyup', function(e) {
+				var code = (e.keyCode ? e.keyCode : e.which);
+				 if(code == 13) { //enter pressed
+				 	if ($('#un').val() && $('#pw').val() && $('#pn').val())
+						$("#btnSubmit").click();
+				 }
+			});  
+
+			//when user changes tab to metadata selection, use provided creds to login and get session id
+			$('a[data-toggle="tab"]').on('shown', function (e) {
+				//console.log(e.target.href.indexOf("metadata"))
+				if (e.target.href.indexOf("metadata") != -1 && ($('#sid').val() == null || $('#sid').val() == "")) {
+					console.log('checking creds');
+					operation = "check_creds"
+					populateMetadataTree('Attempting to authenticate to Salesforce using the provided credentials')
+				}
+		    });
+
+		});
+
+		function populateMetadataTree(message) {
+			$.ajax({
+				type: "GET",
+				url: "{{ base_local_server_url() }}/session", 
+				data: {
+					 username 		: $("#un").val(), 
+					 password 		: $("#pw").val(), 
+					 org_type 		: $("#org_type").val(),
+					 subscription 	: $("#subscription").val()
+				},
+				beforeSend: function() { showLoading(message); },
+				complete: function(data){
+					console.log(data)
+					try {
+						var response = JSON.parse(data.responseText)
+						if (response["success"] == false) {
+							$("#project_details_tab").click();
+							show_message(response["body"]);
+							notify_sound();
+						} else {
+							renderBufferedTree(response['metadata'])
+							$('#sid').val(response["sid"])	
+							$('#metadata_server_url').val(response["metadata_server_url"])
+							$('#server_url').val(response["server_url"])
+							//tree.setLoading(false)
+							hide_message()
+						}
+						resizeProjectWrapper(10);
+						hideLoading();
+					} catch(e) {
+						console.log(e)
+						show_message('The local MavensMate server did not respond properly. This likely means it is not running or it is malfunctioning. Try restarting your text editor and MavensMate.app.');
+
+						notify_sound();
+						hideLoading();
+					}
+					
+				}
+		 	});
+		}
+								
+	</script>
+{% endblock %}

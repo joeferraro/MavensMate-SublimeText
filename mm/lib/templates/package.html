@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+{% for key, value in hash.iteritems() %}
+{% if value == "*" %}
+	<types>
+		<members>*</members>
+		<name>{{ key }}</name>
+	</types>
+{% else %}
+	<types>
+	{% for metadata_element in value if key != 'unfiled$public' %}
+	<members>{{ metadata_element }}</members>
+	{% endfor %}
+	<name>{{ key }}</name>
+	</types>
+{% endif %}
+{% endfor %}
+	<version>{{ sfdc_api_version }}</version>
+</Package>

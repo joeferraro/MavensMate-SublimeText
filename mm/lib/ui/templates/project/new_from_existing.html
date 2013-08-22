@@ -1,0 +1,125 @@
+{% extends "layouts/base.html" %}
+{% block yield %}
+<div id="result_output">
+	<div class="alert alert-error">
+		<button type="button" class="close fui-cross"></button>
+		<span id="error_message"></span>
+	</div>
+</div>
+
+<div class="content">	 
+
+	<ul class="nav nav-tabs nav-append-content">
+		<li class="active"><a id="project_details_tab" href="#form" data-toggle="tab">Project Details</a></li>
+	</ul>
+	
+	<div class="tab-content" id="main-tab-content">
+		<div id="form" class="tab-pane active">
+			<form class="form-stacked">
+				<input type="hidden" value="" id="sid"/>
+				<input type="hidden" value="" id="murl"/>
+
+				<fieldset>
+					<div class="control-group large">
+						<input class="span12" placeholder="Project Name" type="text" id="pn" value="{{ project_name }}">
+					</div>
+					<div class="control-group large">
+						<input class="span12" placeholder="Salesforce.com Username" type="text" id="un">
+					</div>
+					<div class="control-group large">
+						<input class="span12" placeholder="Salesforce.com Password" type="password" id="pw">
+					</div>
+
+					 <div class="control-group large">
+						<select id="org_type" class="info">
+							<option value="production">Production</option>
+							<option value="developer">Developer</option>
+							<option value="sandbox">Sandbox</option>
+							<option value="prerelease">Prerelease</option>
+						</select>
+					</div>  
+				</fieldset>
+
+
+			</form>
+		</div>
+	</div>
+	
+</div>
+
+<input type="hidden" value="{{ directory }}" id="directory"/>
+
+{% endblock %}
+
+
+{% block buttons %}					
+	<input type="button" id="btnSubmit" class="btn btn-info" value="Create Project"  onclick='new_project();'>
+	<button type="reset" class="btn" onclick="window.close();">Cancel</button>
+{% endblock %}
+
+{% block body_js %}
+
+	<script type="text/javascript">
+		var response;
+
+		function new_project() {
+			operation = "new"
+			$.ajax({
+				type: "POST",
+				dataType: 'json',
+				contentType: 'application/json; charset=utf-8',
+				url: "{{ base_local_server_url() }}/project/existing", 
+				data: JSON.stringify({
+					 project_name 	: $("#pn").val(), 
+					 username 		: $("#un").val(), 
+					 password 		: $("#pw").val(), 
+					 org_type 		: $("#org_type").val(),
+					 directory 		: $("#directory").val(),
+					 action 		: "existing"
+				}),
+				beforeSend: function() { showLoading('Creating new MavensMate project'); },
+				complete: function(data){
+					global_init_handler(data)
+				} 
+		 	});
+		}
+
+		function handle_response(response) {
+			if (operation == "checkout" || operation == "new") {
+				if (response["success"] == false) {
+					$("#error_message").html(response["body"])
+					$("#result_output").show()
+				} else {
+					window.close()
+				}
+				hideLoading();
+			} else if (operation == "check_creds") {
+				if (response["success"] == false) {
+					$("#error_message").html(response["body"])
+					$("#result_output").show()
+				} else {
+					$('#sid').val(response["sid"])	
+					$('#murl').val(response["metadata_server_url"])
+					$("#result_output").hide()
+				}
+				hideLoading();
+			}
+		}
+				
+		$(function() {		   						
+			
+		    window.resizeTo(520, 620)
+		    centerWindow()
+											
+			//submit form on enter
+			$(".content").bind('keyup', function(e) {
+				var code = (e.keyCode ? e.keyCode : e.which);
+				 if(code == 13) { //enter pressed
+				 	if ($('#un').val() && $('#pw').val() && $('#pn').val())
+						$("#btnSubmit").click();
+				 }
+			});  
+		});
+	
+	</script>
+{% endblock %}

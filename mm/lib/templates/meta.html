@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<{{ meta_type }} xmlns="http://soap.sforce.com/2006/04/metadata">
+	<apiVersion>{{ sfdc_api_version }}</apiVersion>
+{% if meta_type == "ApexPage" or meta_type == "ApexComponent" %}
+	<label>{{ api_name }}</label>
+	<description></description>
+{% endif %}
+{% if meta_type == "ApexTrigger" %}
+	<status>Active</status>
+{% endif %}
+</{{ meta_type }}>

@@ -1,0 +1,180 @@
+<div id="destination_options">
+	<ul>
+		{% for destination in args['destinations'] %}
+			{% if loop.first == True  %}
+			<li class="active"><a href="#result-{{ loop.index0 }}">{{ destination['username'] }}</a></li>
+			{% else %}
+			<li class=""><a href="#result-{{ loop.index0 }}">{{ destination['username'] }}</a></li>
+			{% endif %}
+		{% endfor %}
+	</ul>
+</div>
+
+<div id="extra_tabs">
+	{% for result in deploy_results %}
+	<div class="tab-pane result_wrapper" id="result-{{ loop.index0 }}" style="padding:10px;">
+		{% if result['success'] == True %}
+			
+			{% if args['check_only'] == True %}
+				{% set deploy_type = "validation"  %}
+				{% set further_instruction = " Click \"Deploy to Server\" to complete deployment." %}
+			{% else %}
+				{% set deploy_type = "deployment"  %}
+				{% set further_instruction = ""  %}
+			{% endif %}
+
+			<div class="alert alert-success">
+				<button type="button" class="close fui-cross" data-dismiss="alert"></button>
+				<i class="icon-ok-sign icon-2x pull-left"></i>
+				<strong>Success!</strong>{{' '}}Your{{' '}}{{ deploy_type }}{{' '}}completed{{' '}}successfully.{{' '}}{{ further_instruction }}</p>
+			</div> 
+
+		{% endif %}
+		{% if result['success'] == False %}
+			<div class="alert alert-error">
+				<button type="button" class="close fui-cross" data-dismiss="alert"></button>
+				<i class="icon-exclamation-sign icon-2x pull-left"></i>
+				Deployment Failed!
+			</div> 
+		{% endif %}
+		
+		<div class="result_table_class">
+			
+			{% if result['messages']|length > 0 %}
+			<div class="deploy-category" onclick="$('#{{ result['id'] }}-table').toggle();"><i class="icon-info-sign"></i>&nbsp;Deploy Messages</div>			
+			<table id="{{ result['id'] }}-table" class="table table-striped test_result">
+				<thead>
+					<tr>
+						<th>Metadata</th>
+						<th>Result</th>
+						<th>Message</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for message in result['messages'] %}
+						{% set file_name = message['fileName'] %}
+						{% set fns = message['fileName'].split("/") %}
+						{% set file_name = fns[fns|length - 1] %}
+						{% if file_name != "package.xml" %}
+						<tr>
+							<td style="width:210px;">{{ file_name }}</td>
+							<td style="width:45px;">
+								{% if message['success'] ==  False %}
+									<span class="label label-important">Failed</span>
+								{% else %}
+									<span class="label label-success">Success</span>
+								{% endif %}
+							</td>
+							<td>
+								{% if message['success'] == False %}
+									{{ message['problem'] }} 
+									{% if 'lineNumber' in message %}
+										[Line: {{ message['lineNumber'] }}, Column: {% if 'columnNumber' in message %}{{ message['columnNumber'] }}{% endif %}]
+									{% endif %}
+								{% endif %}
+							</td>
+						</tr>
+						{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+		    {% endif %}
+
+		    {% if 'log' in result %}
+			<div class="deploy-category" onclick="$('#{{ result['id'] }}-log').toggle();"><i class="icon-file-alt"></i>&nbsp;Deploy Log</div>			
+				<div id="{{ result['id'] }}-log" class="log" style="padding:10px;border-bottom:2px solid #ddd">
+					{{ htmlize(result['log']) }}
+				</div>
+		    {% endif %}
+			
+			{% if 'parsedTestResults' in result %} 
+
+				{% if 'failures' in result['parsedTestResults'] and result['parsedTestResults']['failures']|length > 0 %} 
+					<div class="deploy-category" onclick="$('#{{ result['id'] }}-test-failures').toggle();"><i class="icon-thumbs-down"></i>&nbsp;Test Failures</div>			
+					<table id="{{ result['id'] }}-test-failures" class="table table-striped test_result">
+						<thead>
+							<tr>
+								<th>Class</th>
+								<th>Method</th>
+								<th>Result</th>
+								<th>Message</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for f in result['parsedTestResults']['failures'] %}
+								<tr>
+									<td style="width:210px;">{{ f['name'] }}</td>
+									<td style="width:210px;">{{ f['methodName'] }}</td>
+									<td style="width:45px;">
+										<span class="label label-important">Failed</span>
+									</td>
+									<td>
+										{{ f['message'] }}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				{% endif %}
+
+				{% if 'codeCoverageWarnings' in result and result['parsedTestResults']['codeCoverageWarnings']|length > 0 %} 
+					<div class="deploy-category" onclick="$('#{{ result['id'] }}-coverage-warnings').toggle();"><i class="icon-exclamation-sign"></i>&nbsp;Code Coverage Warnings</div>			
+					<table id="{{ result['id'] }}-coverage-warnings" class="table table-striped test_result">
+						<thead>
+							<tr>
+								<th>Metadata</th>
+								<th>Result</th>
+								<th>Message</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for warning in result['parsedTestResults']['codeCoverageWarnings'] %}
+								<tr>
+									<td style="width:210px;">{{ warning['name'] }}</td>
+									<td style="width:45px;">
+										<span class="label label-warning">Warning</span>
+									</td>
+									<td>
+										{{ warning['message'] }}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+			        {% endif %}
+
+					{% if 'successes' in result and result['parsedTestResults']['successes']|length > 0 %} 
+					<div class="deploy-category" onclick="$('#{{ result['id'] }}-test-successes').toggle();"><i class="icon-thumbs-up"></i>&nbsp;Test Successes</div>			
+					<table id="{{ result['id'] }}-test-successes" class="table table-striped test_result">
+						<thead>
+							<tr>
+								<th>Class</th>
+								<th>Method</th>
+								<th>Result</th>
+								<th>Message</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for s in result['parsedTestResults']['successes'] %}
+								<tr>
+									<td style="width:210px;">{{ s['name'] }}</td>
+									<td style="width:210px;">{{ s['methodName'] }}</td>
+									<td style="width:45px;">
+										<span class="label label-success">Success</span>
+									</td>
+									<td>
+										{{ s['message'] }}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					{% endif %}
+
+			{% endif %} 
+
+
+		</div>			 
+	</div>
+	{% endfor %}
+</div>
