@@ -309,13 +309,21 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         sublime_path = settings.get('mm_plugin_client_location', '/Applications')
         if os.path.isfile(os.path.join(util.mm_workspace(),self.picked_project,project_file)):
-            if sublime_version >= 3000:
-                if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
-                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
-                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            if sys.platform == 'darwin':
+                if sublime_version >= 3000:
+                    if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
+                        p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
+                        p = subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                else:
+                    p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            elif 'linux' in sys.platform:
+                subl_location = settings.get('mm_subl_location', '/usr/bin')
+                p = subprocess.Popen("'{0}' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
-                p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                subl_location = settings.get('mm_subl_location', '/usr/bin')
+                project_location = os.path.join(util.mm_workspace(),self.picked_project,project_file)
+                p = subprocess.Popen("'{0}' --project '{1}'".format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             sublime.message_dialog("Cannot find: "+os.path.join(util.mm_workspace(),self.picked_project,project_file))
 
