@@ -186,6 +186,14 @@ class MavensMatePluginConnection(object):
                             os.system("'{0}/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '{1}'".format(client_location,self.project.location+"/"+self.project.project_name+".sublime-project"))
                         else:
                             os.system("'{0}/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '{1}'".format(client_location,self.project.location+"/"+self.project.project_name+".sublime-project"))
+                    elif 'linux' in self.platform:
+                        subl_location = self.get_plugin_client_setting('mm_subl_location', '/usr/bin')
+                        os.system("'{0}' --project '{1}'".format(subl_location,os.path.join(self.project.location,self.project.project_name+".sublime-project")))
+                    else:
+                        subl_location = self.get_plugin_client_setting('mm_subl_location')
+                        os.system("'{0}' --project '{1}'".format(subl_location,os.path.join(self.project.location,self.project.project_name+".sublime-project")))
+
+
 
             return result
         except BaseException, e:
