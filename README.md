@@ -38,11 +38,16 @@ TODO
 ####Linux
 You must have Python 2.7 installed (you can likely use system python)
 
-`easy_install jinja2 suds keyring markupsafe pyyaml requests`
+```
+easy_install jinja2 suds keyring markupsafe pyyaml requests
+```
 
 OR
 
-`pip install jinja2 suds keyring markupsafe pyyaml requests`
+```
+pip install jinja2 suds keyring markupsafe pyyaml requests
+
+```
 
 
 ##Sublime Text 2 plugin (no longer supported)
