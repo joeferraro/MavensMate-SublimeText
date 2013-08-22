@@ -36,17 +36,19 @@ To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in
 TODO
 
 ####Linux
-You must have Python 2.7 installed (you can likely use system python)
+*You must have Python 2.7 installed (you can likely use system python)
+
+#####Install required modules (using easy_install or pip)
 
 ```
-easy_install jinja2 suds keyring markupsafe pyyaml requests
+$ easy_install jinja2 suds keyring markupsafe pyyaml requests
 ```
 
-OR
+#####Alias your `subl` command line tool to `/usr/local/bin`
 
 ```
-pip install jinja2 suds keyring markupsafe pyyaml requests
-
+$ cd /usr/local/bin
+$ sudo ln -s /usr/bin/subl subl
 ```
 
 
