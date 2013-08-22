@@ -7,6 +7,7 @@ import mm_github
 import sys
 import config
 import logging
+import pipes
 from enum import enum
 from mm_project import MavensMateProject
 from mm_exceptions import MMException
@@ -133,7 +134,7 @@ class MavensMatePluginConnection(object):
             else:
                 return os.path.join(os.path.expanduser('~'),"Library","Application Support",sublime_ver,"Packages",type,obj)
         elif self.platform == 'win32' or self.platform == 'cygwin':
-            return os.path.join(os.environ['APPDATA'], sublime_ver, 'Packages', 'MavensMate', obj)
+            return os.path.join(os.environ['APPDATA'], pipes.quote(sublime_ver), 'Packages', 'MavensMate', obj)
         elif self.platform == 'linux2':
             return os.path.join(os.path.expanduser('~'),".config","sublime-text-3","Packages",type,obj)
         else:
