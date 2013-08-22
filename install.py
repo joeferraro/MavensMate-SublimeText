@@ -51,6 +51,7 @@ try:
         parser = argparse.ArgumentParser()
         parser.add_argument('-b', '--branch') #name of the branch being requested
         args = parser.parse_args()
+        print args
         if args.branch != None and args.branch != '':
             branch = args.branch
         install()
