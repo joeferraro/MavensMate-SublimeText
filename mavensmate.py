@@ -318,10 +318,10 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 else:
                     p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             elif 'linux' in sys.platform:
-                subl_location = settings.get('mm_subl_location', '/usr/bin/subl')
+                subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
                 p = subprocess.Popen("'{0}' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
-                subl_location = settings.get('mm_subl_location', '/usr/bin/subl')
+                subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
                 project_location = os.path.join(util.mm_workspace(),self.picked_project,project_file)
                 p = subprocess.Popen("'{0}' --project '{1}'".format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
