@@ -405,7 +405,7 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
         errors = json.loads(res['CompilerErrors'])
         if type(errors) is not list:
             errors = [errors]
-        if len(errors > 0):
+        if len(errors) > 0:
             for e in errors:
                 line_col = ""
                 line, col = 1, 1
