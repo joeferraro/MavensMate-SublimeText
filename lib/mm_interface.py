@@ -251,11 +251,17 @@ class MavensMateTerminalCall(threading.Thread):
                 mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
             print('[MAVENSMATE] executing DEBUG mm terminal call:')
             print("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
-            process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            if 'linux' in sys.platform or 'darwin' in sys.platform:
+                #osx, linux
+                process = subprocess.Popen('{0} {1} {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            else:
+                #windows
+                process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             print('[MAVENSMATE] executing mm terminal call:')
             print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
-            process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            process = subprocess.Popen("{0} {1} {2}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload(process)
         if process.stdout is not None: 
             mm_response = process.stdout.readlines()
