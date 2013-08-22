@@ -42,7 +42,10 @@ class AutomaticUpgrader(threading.Thread):
                 needs_update = True
             
             if needs_update == True:
-                sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select 'Plugins' from the MavensMate.app status bar menu, then \"Update Plugin\".\n\nYou will need to restart Sublime Text after updating.")
+                if 'linux' in sys.platform:
+                    sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, download the package from https://github.com/joeferraro/MavensMate-SublimeText and place in the Sublime Text packages directory.")
+                else:
+                    sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select 'Plugins' from the MavensMate.app status bar menu, then \"Update Plugin\".\n\nYou will need to restart Sublime Text after updating.")
         except BaseException as e:
             # import traceback
             # import sys

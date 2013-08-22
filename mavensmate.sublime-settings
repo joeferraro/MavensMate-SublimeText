@@ -173,9 +173,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//we're working on async testing api support in 0.36
 	"mm_test_api" : "metadata",
 
-	"mm_use_browser_as_ui" : false,
+	//linux/windows users: ignore this setting
+	"mm_use_browser_as_ui" : false, 
 
-	//for linux users
+	//for linux/windows users, set to location of your python 2.7 install
 	"mm_python_location" : "usr/bin/python"
 	
 }

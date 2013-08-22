@@ -23,18 +23,26 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 ####Mac OSX (OSX 10.7+ only)
 You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
 
-####Windows
-TODO: We're looking for talented Windows developers to own MavensMate for Windows. Please visit the MavensMate project on GitHub for more information: https://github.com/joeferraro/MavensMate
-
-####Linux
-TODO: We're looking for talented Linux developers to own MavensMate for Linux. Please visit the MavensMate project on GitHub for more information: https://github.com/joeferraro/MavensMate
-
 ###Install
+
+####Mac OSX (OSX 10.7+ only)
 To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
 <img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
 
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
+
+####Windows
+TODO
+
+####Linux
+You must have Python 2.7 installed (you can likely use system python)
+
+`easy_install jinja2 suds keyring markupsafe pyyaml requests`
+
+OR
+
+`pip install jinja2 suds keyring markupsafe pyyaml requests`
 
 
 ##Sublime Text 2 plugin (no longer supported)
@@ -60,9 +68,17 @@ Go to `MavensMate > Settings > User` and modify `mm_workspace` with the EXISTING
 	"mm_workspace": "/Users/your_username/Projects"
 
 ##Update
+
+###Mac OSX (OSX 10.7+ only)
 If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, you can update the plugin through the "Plugins" panel in MavensMate.app.
 
 <img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
+
+###Windows
+TODO
+
+###Linux
+If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available...
 
 ##Documentation
 <a href="MavensMate Documentation">http://mavensmate.com/Getting_Started/Developers</a>

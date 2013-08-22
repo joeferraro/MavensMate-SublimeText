@@ -243,9 +243,12 @@ class MavensMateTerminalCall(threading.Thread):
         #last_thread = ThreadTracker.get_last_added(self.window)
         ThreadTracker.add(self)
 
-        if self.settings.get('mm_debug_mode'):
+        if self.settings.get('mm_debug_mode') or 'darwin' not in sys.platform:
             python_path = self.settings.get('mm_python_location')
-            mm_loc = self.settings.get('mm_debug_location')
+            if 'darwin' in sys.platform:
+                mm_loc = self.settings.get('mm_debug_location')
+            else:
+                mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
             print('[MAVENSMATE] executing DEBUG mm terminal call:')
             print("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
             process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)

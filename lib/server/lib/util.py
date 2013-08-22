@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import string
 import json
@@ -7,6 +8,7 @@ import subprocess
 import pipes
 import sublime
 import MavensMate.lib.server.lib.config as global_config
+import MavensMate.config as config
 
 #this function is only used on async requests
 def generate_request_id():
@@ -42,11 +44,15 @@ class BackgroundWorker(threading.Thread):
         args = self.get_arguments()
         global_config.logger.debug('>>> running thread arguments on next line!')
         global_config.logger.debug(args)
-        if self.debug_mode:
+        if self.debug_mode or 'darwin' not in sys.platform:
             print('RUNNING DEBUG BACKGROUND WORKER!!!')
             print(self.payload)
             python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
-            mm_loc = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location')
+
+            if 'darwin' in sys.platform:
+                mm_loc = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location')
+            else:
+                mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
             p = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             p = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_path), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
