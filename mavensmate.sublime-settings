@@ -177,6 +177,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_use_browser_as_ui" : false, 
 
 	//for linux/windows users, set to location of your python 2.7 install
-	"mm_python_location" : "usr/bin/python"
+	"mm_python_location" : "/usr/bin/python",
+
+	"mm_subl_location" : "/usr/local/bin/subl"
 	
 }
