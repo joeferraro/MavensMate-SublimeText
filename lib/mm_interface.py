@@ -402,32 +402,34 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
         errors = json.loads(res['CompilerErrors'])
         if type(errors) is not list:
             errors = [errors]
-        for e in errors:
-            line_col = ""
-            line, col = 1, 1
-            if 'line' in e:
-                line = int(e['line'])
-                line_col = ' (Line: '+str(line)
-                util.mark_line_numbers(thread.view, [line], "bookmark")
-            if 'column' in e:
-                col = int(e['column'])
-                line_col += ', Column: '+str(col)
-            if len(line_col):
-                line_col += ')'
+        if len(errors > 0):
+            for e in errors:
+                line_col = ""
+                line, col = 1, 1
+                if 'line' in e:
+                    line = int(e['line'])
+                    line_col = ' (Line: '+str(line)
+                    util.mark_line_numbers(thread.view, [line], "bookmark")
+                if 'column' in e:
+                    col = int(e['column'])
+                    line_col += ', Column: '+str(col)
+                if len(line_col):
+                    line_col += ')'
 
-            #scroll to the line and column of the exception
-            #if settings.get('mm_compile_scroll_to_error', True):
-            #open file, if already open it will bring it to focus
-            #view = sublime.active_window().open_file(thread.active_file)
-            view = thread.view
-            pt = view.text_point(line-1, col-1)
-            view.sel().clear()
-            view.sel().add(sublime.Region(pt))
-            view.show(pt)
-            problem = e['problem']
-            problem = html_parser.unescape(problem)
-            printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], problem, line_col), 'region': [status_region.end(), status_region.end()+10] })
-        
+                #scroll to the line and column of the exception
+                #if settings.get('mm_compile_scroll_to_error', True):
+                #open file, if already open it will bring it to focus
+                #view = sublime.active_window().open_file(thread.active_file)
+                view = thread.view
+                pt = view.text_point(line-1, col-1)
+                view.sel().clear()
+                view.sel().add(sublime.Region(pt))
+                view.show(pt)
+                problem = e['problem']
+                problem = html_parser.unescape(problem)
+                printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], problem, line_col), 'region': [status_region.end(), status_region.end()+10] })
+        elif "ErrorMsg" in res:
+            printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
 
     elif 'success' in res and util.to_bool(res['success']) == False and 'messages' in res:
         #here we're parsing a response from the metadata endpoint
