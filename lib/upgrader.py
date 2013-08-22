@@ -1,6 +1,7 @@
 import threading
 import json
-import os.path
+import os
+import sys
 try:
     import MavensMate.config as config
 except:
@@ -21,7 +22,10 @@ class AutomaticUpgrader(threading.Thread):
             data = json.load(json_data)
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
-            response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json').read().decode('utf-8')
+            if 'linux' in sys.platform:
+                response = os.popen('curl https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json').read()
+            else:
+                response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json').read().decode('utf-8')
             j = json.loads(response)
             latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
             release_notes = "\n\nRelease Notes: "

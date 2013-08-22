@@ -11,10 +11,11 @@ import string
 import random
 # from datetime import datetime, date, time
 
-try: 
-    import urllib
-except ImportError:
-    import urllib.request as urllib
+# try: 
+#     import urllib
+# except ImportError:
+#     import urllib.request as urllib
+import urllib.request
 
 if sys.version_info >= (3, 0):
     #python 3
@@ -39,8 +40,6 @@ else:
 #sublime.packages_path()
 
 import sublime
-
-
 settings = sublime.load_settings('mavensmate.sublime-settings')
 packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
@@ -77,7 +76,10 @@ def parse_json_from_file(location):
         return {}
 
 def parse_templates_package(mtype=None):
-    response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json').read().decode('utf-8')
+    if 'linux' in sys.platform:
+        response = os.popen('wget https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json -q -O -').read()
+    else:
+        response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json').read().decode('utf-8')
     j = json.loads(response)
     if mtype != None:
         return j[mtype]
