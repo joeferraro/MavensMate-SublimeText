@@ -18,39 +18,29 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ##Sublime Text 3 plugin (current stable version)
 
-###Prerequisites
-
-####Mac OSX (OSX 10.7+ only)
-You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
-
 ###Install
 
 ####Mac OSX (OSX 10.7+ only)
-To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
+1. You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
+2. To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
 <img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
 
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
 
-####Windows
-TODO
-
 ####Linux
-*You must have Python 2.7 installed (you can likely use system python)
-
-#####Install required modules (using easy_install or pip)
-
-```
-$ easy_install jinja2 suds keyring markupsafe pyyaml requests
-```
-
-#####Alias your `subl` command line tool to `/usr/local/bin`
+1. You must have python 2.7 installed
+2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
+3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)`
+4. Alias your `subl` command line tool to `/usr/local/bin`
 
 ```
 $ cd /usr/local/bin
 $ sudo ln -s /usr/bin/subl subl
 ```
 
+####Windows
+TODO
 
 ##Sublime Text 2 plugin (no longer supported)
 
@@ -59,7 +49,7 @@ $ sudo ln -s /usr/bin/subl subl
 ####Mac OSX (OSX 10.7+ only)
 You must have **MavensMate.app 0.34** installed. Download [MavensMate.app v0.34][mm_034_download] and place in /Applications
 
-##Install
+###Install
 To install the Sublime Text 2 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
 <img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
@@ -81,11 +71,14 @@ If `mm_check_for_updates` is set to `true`, MavensMate will check for updates wh
 
 <img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
 
+###Linux
+If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, run the install script:
+```
+$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)
+```
+
 ###Windows
 TODO
-
-###Linux
-If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available...
 
 ##Documentation
 <a href="MavensMate Documentation">http://mavensmate.com/Getting_Started/Developers</a>
