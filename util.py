@@ -116,25 +116,28 @@ def get_active_file():
         return ''
 
 def get_project_name(context=None):
-    if context == None:
-        try:
-            return os.path.basename(sublime.active_window().folders()[0])
-        except:
-            return None
-    else:
-        if isinstance(context, sublime.View):
-            view = context
-            window = view.window()
-        elif isinstance(context, sublime.Window):
-            window = context
-            view = window.active_view()
+    if is_mm_project():
+        if context == None:
+            try:
+                return os.path.basename(sublime.active_window().folders()[0])
+            except:
+                return None
         else:
-            window = sublime.active_window()
-            view = window.active_view()
-        try:
-            return os.path.basename(window.folders()[0])
-        except:
-            return None
+            if isinstance(context, sublime.View):
+                view = context
+                window = view.window()
+            elif isinstance(context, sublime.Window):
+                window = context
+                view = window.active_view()
+            else:
+                window = sublime.active_window()
+                view = window.active_view()
+            try:
+                return os.path.basename(window.folders()[0])
+            except:
+                return None
+    else:
+        return None
 
 def check_for_workspace():
     workspace = mm_workspace()
