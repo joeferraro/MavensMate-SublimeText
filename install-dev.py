@@ -29,10 +29,14 @@ try:
             os.system("git clone --recursive {0} {1}".format(git_url, pipes.quote(install_path)))
             os.chdir(install_path)
             os.system("git checkout -b {0} origin/{0}".format(pipes.quote(branch)))
+            os.system("git submodule init")
+            os.system("git submodule update")
         else:
             os.system('git clone --recursive {0} "{1}"'.format(git_url, install_path))
             os.chdir(install_path)
             os.system("git checkout -b {0} origin/{0}".format(branch))
+            os.system("git submodule init")
+            os.system("git submodule update")
 
     def install_user_settings():
         if os.path.isfile(user_settings_path+"/mavensmate.sublime-settings") == False:
