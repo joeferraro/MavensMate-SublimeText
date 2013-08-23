@@ -38,7 +38,8 @@ try:
             ))
 
     def uninstall():
-        os.system("rm -rf {0}".format(pipes.quote(install_path)))
+        #os.system("rm -rf {0}".format(pipes.quote(install_path)))
+        shutil.rmtree("{0}".format(pipes.quote(install_path)))
 
     def install():
         uninstall()
