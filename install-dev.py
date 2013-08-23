@@ -2,7 +2,6 @@ try:
     import os
     import sys
     import shutil
-    import argparse
     import pipes
 
     install_paths = {
@@ -26,20 +25,31 @@ try:
     git_url             = pipes.quote('git://github.com/joeferraro/MavensMate-SublimeText.git')
 
     def install_from_source():
-        os.system("git clone {0} {1}".format(git_url, pipes.quote(install_path)))
-        os.chdir(install_path)
-        os.system("git checkout -b {0} origin/{0}".format(pipes.quote(branch)))
+        if 'linux' in sys.platform or 'darwin' in sys.platform:
+            os.system("git clone {0} {1}".format(git_url, pipes.quote(install_path)))
+            os.chdir(install_path)
+            os.system("git checkout -b {0} origin/{0}".format(pipes.quote(branch)))
+        else:
+            os.system('git clone {0} "{1}"'.format(git_url, install_path))
+            os.chdir(install_path)
+            os.system("git checkout -b {0} origin/{0}".format(branch))
 
     def install_user_settings():
         if os.path.isfile(user_settings_path+"/mavensmate.sublime-settings") == False:
-            os.system("cp {0} {1}".format(
-                pipes.quote(install_path+"/mavensmate.sublime-settings"), 
-                pipes.quote(user_settings_path)
-            ))
+            if 'linux' in sys.platform or 'darwin' in sys.platform:
+                os.system("cp {0} {1}".format(
+                    pipes.quote(install_path+"/mavensmate.sublime-settings"), 
+                    pipes.quote(user_settings_path)
+                ))
+            else:
+                shutil.copyfile(install_path+"/mavensmate.sublime-settings", user_settings_path)
 
     def uninstall():
-        #os.system("rm -rf {0}".format(pipes.quote(install_path)))
-        shutil.rmtree("{0}".format(pipes.quote(install_path)))
+        if 'linux' in sys.platform or 'darwin' in sys.platform:
+            os.system("rm -rf {0}".format(pipes.quote(install_path)))
+        else:
+            #shutil.rmtree('{0}'.format(install_path))
+            os.system('rmdir /S /Q \"{}\"'.format(install_path))
 
     def install():
         uninstall()
@@ -47,13 +57,8 @@ try:
         install_user_settings()
 
     if __name__ == '__main__':
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-b', '--branch') #name of the branch being requested
-        args = parser.parse_args()
-        print args
-        if args.branch != None and args.branch != '':
-            branch = args.branch
         install()
+        
 except Exception as e:
-    print('install.py issue')
-    print(e.message)
+    #print('install.py issue')
+    print(e)
