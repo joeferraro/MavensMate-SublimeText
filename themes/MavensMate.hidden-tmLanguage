@@ -38,6 +38,12 @@
     </dict>
     <dict>
         <key>match</key>
+        <string>\[ERROR: COULD NOT PARSE RESPONSE FROM MM\]</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
         <string>^\[RESPONSE FROM MAVENSMATE\]?</string>
         <key>name</key>
         <string>operation.fail</string>
