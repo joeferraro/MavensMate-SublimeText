@@ -45,7 +45,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
 	"mm_log_level" : "INFO",
 
-	//location where mm log should be placed (must be existing path)
+	//location where mm debug log should be placed (must be existing path)
 	"mm_log_location" : "",
 
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
@@ -63,7 +63,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//the location of your Sublime Text install
 	"mm_plugin_client_location" : "/Applications",
 
-	//set to true to use the tooling api to compile apex metadata
+	//set to true to use the tooling api to compile apex metadata (if you're experiencing any compile issues, set this to false to use the metadata api)
 	"mm_compile_with_tooling_api" : true,
 
 	//set to true if you want a history of your executed apex scripts in project/apex-scripts
