@@ -1,2 +1,0 @@
-class MMException(Exception):
-    pass
