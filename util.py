@@ -115,6 +115,10 @@ def get_active_file():
     except Exception:
         return ''
 
+def get_file_name_no_extension(path):
+    base=os.path.basename(path)
+    return os.path.splitext(base)[0]
+
 def get_project_name(context=None):
     if is_mm_project():
         if context == None:

@@ -275,7 +275,9 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 root = w.folders()[0]
                 if util.mm_workspace() not in root:
                     continue
-                project_name = root.split("/")[-1]
+                #project_name = root.split("/")[-1]
+                project_name = util.get_file_name_no_extension(root)
+
                 open_projects.append(project_name)
         except:
             pass
@@ -323,7 +325,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             else:
                 subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
                 project_location = os.path.join(util.mm_workspace(),self.picked_project,project_file)
-                p = subprocess.Popen("'{0}' --project '{1}'".format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                p = subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             sublime.message_dialog("Cannot find: "+os.path.join(util.mm_workspace(),self.picked_project,project_file))
 

@@ -7,14 +7,14 @@ try:
     install_paths = {
         "darwin" : os.path.expanduser("~/Library/Application Support/Sublime Text 3/Packages/MavensMate"),
         "win32"  : os.path.join(os.environ['APPDATA'], 'Sublime Text 3', 'Packages', 'MavensMate'),
-        "win32"  : os.path.join(os.environ['APPDATA'], 'Sublime Text 3', 'Packages', 'MavensMate'),
+        "cygwin"  : os.path.join(os.environ['APPDATA'], 'Sublime Text 3', 'Packages', 'MavensMate'),
         "linux2" : os.path.expanduser("~/.config/sublime-text-3/Packages/MavensMate")
     }
 
     user_settings_path = {
         "darwin" : os.path.expanduser("~/Library/Application Support/Sublime Text 3/Packages/User"),
         "win32"  : os.path.join(os.environ['APPDATA'], 'Sublime Text 3', 'Packages', 'User'),
-        "win32"  : os.path.join(os.environ['APPDATA'], 'Sublime Text 3', 'Packages', 'User'),
+        "cygwin"  : os.path.join(os.environ['APPDATA'], 'Sublime Text 3', 'Packages', 'User'),
         "linux2" : os.path.expanduser("~/.config/sublime-text-3/Packages/User")
     }
 
