@@ -77,36 +77,28 @@ If `mm_check_for_updates` is set to `true`, MavensMate will check for updates wh
 <img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
 
 ###Linux
-If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, run the install script:
-```
-$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)
-```
+NOT SUPPORTED
 
 ###Windows
-TODO
+NOT SUPPORTED
 
 ##Documentation
-<a href="MavensMate Documentation">http://mavensmate.com/Getting_Started/Developers</a>
-
-##Wiki
-<a href="https://github.com/joeferraro/MavensMate-SublimeText/wiki">https://github.com/joeferraro/MavensMate-SublimeText/wiki</a>
-
+<a href="MavensMate Documentation">http://mavensmate.com/Getting_Started/Users</a>
 
 ##Screenshots
 
 ###Project Wizard
-<img src="http://wearemavens.com/images/mm/project_wizard.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/new_project.png"/>
 ###Apex Test Runner
-<img src="http://wearemavens.com/images/mm/test2.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/tests.png"/>
 ###Apex Execute Anonymous
-<img src="http://wearemavens.com/images/mm/execute.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/execute-apex.png"/>
 ###Quick Panel
 <img src="http://wearemavens.com/images/mm/panel.png"/>
-###Apex Code Assist
-<img src="http://wearemavens.com/images/mm/code_3.png"/>
-<img src="http://wearemavens.com/images/mm/code_4.png"/>
-###Pacman
-<img src="http://wearemavens.com/images/mm/pacman.png"/>
+###Apex/Visualforce Code Assist
+<img src="http://wearemavens.com/images/mm/apex2.png"/>
+<img src="http://wearemavens.com/images/mm/vf1.png"/>
+<img src="http://wearemavens.com/images/mm/vf2.png"/>
 
 [mm_download]: http://cdn.mavensconsulting.com/mavensmate/builds/MavensMate.zip
 [mm_034_download]: http://cdn.mavensconsulting.com/mavensmate/builds/0.34/MavensMate.zip
