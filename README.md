@@ -83,7 +83,7 @@ NOT SUPPORTED
 NOT SUPPORTED
 
 ##Documentation
-<a href="MavensMate Documentation">http://mavensmate.com/Getting_Started/Users</a>
+<a href="MavensMate for Sublime Text Documentation">http://mavensmate.com/Plugins/Sublime_Text/Overview</a>
 
 ##Screenshots
 
