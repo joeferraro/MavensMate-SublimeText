@@ -88,7 +88,7 @@ NOT SUPPORTED
 ##Screenshots
 
 ###Project Wizard
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/new-project.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/new-project.png" style="box-shadow:-14px 14px 0 0 #16325c"/>
 ###Apex Test Runner
 <img src="http://cdn.mavensconsulting.com/mavensmate/img/tests.png"/>
 ###Apex Execute Anonymous
