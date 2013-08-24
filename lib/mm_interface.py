@@ -253,7 +253,7 @@ class MavensMateTerminalCall(threading.Thread):
             print("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 #osx, linux
-                process = subprocess.Popen('{0} {1} {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
                 process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -406,7 +406,9 @@ def handle_result(operation, process_id, printer, result, thread):
 
 #prints the result of the mm operation, can be a string or a dict
 def print_result_message(operation, process_id, status_region, res, printer, thread):
-    if 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
+    if 'State' in res and res['State'] == 'Error' and 'ErrorMsg' in res:
+        printer.panel.run_command('write_operation_status', {"text": " [OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\''), 'region': [status_region.end(), status_region.end()+10] })
+    elif 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
         #here we're parsing a response from the tooling endpoint
         errors = json.loads(res['CompilerErrors'])
         if type(errors) is not list:
