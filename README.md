@@ -88,7 +88,7 @@ NOT SUPPORTED
 ##Screenshots
 
 ###Project Wizard
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/new_project.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/new-project.png"/>
 ###Apex Test Runner
 <img src="http://cdn.mavensconsulting.com/mavensmate/img/tests.png"/>
 ###Apex Execute Anonymous
@@ -96,9 +96,9 @@ NOT SUPPORTED
 ###Quick Panel
 <img src="http://wearemavens.com/images/mm/panel.png"/>
 ###Apex/Visualforce Code Assist
-<img src="http://wearemavens.com/images/mm/apex2.png"/>
-<img src="http://wearemavens.com/images/mm/vf1.png"/>
-<img src="http://wearemavens.com/images/mm/vf2.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/apex2.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/vf1.png"/>
+<img src="http://cdn.mavensconsulting.com/mavensmate/img/vf2.png"/>
 
 [mm_download]: http://cdn.mavensconsulting.com/mavensmate/builds/MavensMate.zip
 [mm_034_download]: http://cdn.mavensconsulting.com/mavensmate/builds/0.34/MavensMate.zip
