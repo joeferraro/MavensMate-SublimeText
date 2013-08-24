@@ -1166,7 +1166,13 @@ class CancelCurrentCommand(sublime_plugin.WindowCommand):
 #updates MavensMate plugin
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(self):
-        sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
+        if 'darwin' in sys.platform:
+            sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
+        elif 'linux' in sys.platform:
+            response = os.popen('python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)').read()
+            print('update response: '+response)
+        elif 'win' in sys.platform:
+            pass
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):
