@@ -40,8 +40,8 @@ class UsageReporter(threading.Thread):
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
 
+            mm_version = ''
             if 'darwin' in sys.platform:
-                mm_version = None
                 try:
                     dic = plistlib.readPlist(os.path.join(settings.get('mm_app_location'), 'Contents', 'Info.plist'))
                     if 'CFBundleVersion' in dic:
