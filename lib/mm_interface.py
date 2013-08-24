@@ -340,7 +340,7 @@ def handle_result(operation, process_id, printer, result, thread):
                         if r["Outcome"] == "Pass":
                             pass #dont need to write anything here...
                         else:
-                            response_string += '\n\n'
+                            response_string += '\n'
                             rstring = "====METHOD RESULT===="
                             rstring += "\n"
                             rstring += "{0} : {1}".format(r["MethodName"], r["Outcome"])
@@ -358,7 +358,7 @@ def handle_result(operation, process_id, printer, result, thread):
                             #responses.append("{0} | {1} | {2} | {3}\n".format(r["MethodName"], r["Outcome"], r["StackTrace"], r["Message"]))
                             responses.append(rstring)
                     response_string += "\n"       
-                    response_string += ", ".join(responses)
+                    response_string += "\n\n".join(responses)
                     printer.panel.run_command('write_operation_status', {'text': response_string, 'region': [status_region.end(), status_region.end()+10] })
                     printer.scroll_to_bottom()
                 else:
