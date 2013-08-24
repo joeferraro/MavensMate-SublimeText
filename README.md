@@ -29,7 +29,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
 
 ####Linux
-1. You must have python 2.7 installed
+1. You must have python 2.7 and git installed
 2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
 3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)`
 4. Alias your `subl` command line tool to `/usr/local/bin`
@@ -40,7 +40,12 @@ $ sudo ln -s /usr/bin/subl subl
 ```
 
 ####Windows
-TODO
+1. You must have python 2.7 and git installed
+2. Install required modules `easy_install jinja2 suds keyring markupsafe pyyaml requests`
+3. Close Sublime Text
+4. Download and run python install script: `https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py`
+
+
 
 ##Sublime Text 2 plugin (no longer supported)
 
