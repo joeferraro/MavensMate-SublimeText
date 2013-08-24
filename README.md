@@ -77,10 +77,14 @@ If `mm_check_for_updates` is set to `true`, MavensMate will check for updates wh
 <img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
 
 ###Linux
-NOT SUPPORTED
+If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, run the update script:
+
+`$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)`
 
 ###Windows
-NOT SUPPORTED
+If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, run the update script:
+
+`python install-dev.py`
 
 ##Documentation
 <a href="MavensMate for Sublime Text Documentation">http://mavensmate.com/Plugins/Sublime_Text/Overview</a>
