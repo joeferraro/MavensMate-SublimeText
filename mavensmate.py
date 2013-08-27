@@ -1171,7 +1171,7 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
         elif 'linux' in sys.platform:
             response = os.popen('python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)').read()
             print('update response: '+response)
-        elif 'win' in sys.platform:
+        elif 'win32' in sys.platform or 'win64' in sys.platform:
             pass
 
 #opens the MavensMate shell
