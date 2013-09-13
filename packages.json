@@ -6,12 +6,12 @@
 			"description": "MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.",
 			"author": "joeferraro",
 			"homepage": "https://github.com/joeferraro/MavensMate-SublimeText",
-			"last_modified": "2013-08-23 07:00:00",
+			"last_modified": "2013-09-13 10:00:00",
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.0.5",
-						"release_notes": "Resolves an issue where some error messages from the tooling API were not properly handled.",
+						"version": "3.0.6",
+						"release_notes": "Resolves issues 212 and 203 where square brackets were causing autocomplete to crash Sublime Text",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
