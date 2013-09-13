@@ -66,6 +66,12 @@ if reloader_name in sys.modules and sys.version_info >= (3, 0):
     reload(sys.modules[reloader_name])
     from .lib import reloader
 
+try:
+    # Python 3
+    import MavensMate.lib.reloader as reloader
+except (ValueError):
+    # Python 2
+    import lib.reloader as reloader
 
 def plugin_loaded():
     settings = sublime.load_settings('mavensmate.sublime-settings')

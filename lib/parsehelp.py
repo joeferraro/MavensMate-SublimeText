@@ -469,6 +469,7 @@ def get_var_type(data, var):
     data = remove_preprocessing(data)
     data = collapse_ltgt(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = remove_functions(data)
 
     match = None
