@@ -144,10 +144,10 @@ def collapse_strings(before):
     count = 0
     end = -1
     while i >= 0:
-        i = before.rfind("\"", 0, i)
+        i = before.rfind("'", 0, i)
         if i == -1:
             break
-        if before[i] == '\"':
+        if before[i] == "'":
             if i > 0 and before[i-1] == '\\':
                 i -= 1
             elif count > 0:
@@ -381,6 +381,7 @@ def extract_variables(data):
     data = remove_includes(data)
     data = collapse_brackets(data)
     data = collapse_square_brackets(data)
+    data = collapse_strings(data)
     data = collapse_ltgt(data)
     data = remove_functions(data)
     data = remove_namespaces(data)
@@ -470,6 +471,7 @@ def get_var_type(data, var):
     data = collapse_ltgt(data)
     data = collapse_brackets(data)
     data = collapse_square_brackets(data)
+    data = collapse_strings(data)
     data = remove_functions(data)
 
     match = None
