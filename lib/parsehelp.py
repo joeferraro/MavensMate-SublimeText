@@ -222,6 +222,7 @@ def extract_used_namespaces(data):
 def extract_namespace(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = remove_namespaces(data)
     regex = re.compile(r"namespace\s+([^{\s]+)\s*\{", re.MULTILINE)
     ret = ""
@@ -243,6 +244,7 @@ def extract_namespace(data):
 def extract_class_from_function(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = collapse_parenthesis(data)
     data = remove_functions(data)
     ret = None
@@ -256,6 +258,7 @@ def extract_class_from_function(data):
 def extract_class(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = collapse_strings(data)
     data = remove_classes(data)
     regex = re.compile(r"class\s+([^;{\s:]+)\s*(:|;|\{|extends|implements)", re.MULTILINE)
@@ -273,6 +276,7 @@ def extract_class(data):
 def extract_inheritance(data, classname):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = remove_classes(data)
     regex = re.compile(r"class\s+%s\s*(:|extends)\s+([^\s,{]+)" % classname, re.MULTILINE)
     match = regex.search(data)
