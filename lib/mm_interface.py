@@ -255,7 +255,7 @@ class MavensMateTerminalCall(threading.Thread):
 
         if self.settings.get('mm_debug_mode') or 'darwin' not in sys.platform:
             python_path = self.settings.get('mm_python_location')
-            if 'darwin' in sys.platform:
+            if 'darwin' in sys.platform or self.settings.get('mm_debug_location') != None:
                 mm_loc = self.settings.get('mm_debug_location')
             else:
                 mm_loc = os.path.join(config.mm_dir,"mm","mm.py") #mm.py is bundled with sublime text plugin
