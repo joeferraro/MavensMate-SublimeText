@@ -176,9 +176,14 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//linux/windows users: ignore this setting
 	"mm_use_browser_as_ui" : false, 
 
-	//for linux/windows users, set to location of your python 2.7 install
+	//for linux users (or adventurous windows users), set to location of your python 2.7 install
 	"mm_python_location" : "/usr/bin/python",
 
-	"mm_subl_location" : "/usr/local/bin/subl"
+	"mm_subl_location" : "/usr/local/bin/subl",
+
+	"mm_windows_subl_location" : "C:/Program Files/Sublime Text 3/sublime_text.exe",
+
+	//if true, mavensmate will store all deployment packages in your project's "deploy" directory
+	"mm_archive_deployments" : true
 	
 }
