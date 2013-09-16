@@ -144,10 +144,10 @@ def collapse_strings(before):
     count = 0
     end = -1
     while i >= 0:
-        i = before.rfind("\"", 0, i)
+        i = before.rfind("'", 0, i)
         if i == -1:
             break
-        if before[i] == '\"':
+        if before[i] == "'":
             if i > 0 and before[i-1] == '\\':
                 i -= 1
             elif count > 0:
@@ -222,6 +222,7 @@ def extract_used_namespaces(data):
 def extract_namespace(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = remove_namespaces(data)
     regex = re.compile(r"namespace\s+([^{\s]+)\s*\{", re.MULTILINE)
     ret = ""
@@ -243,6 +244,7 @@ def extract_namespace(data):
 def extract_class_from_function(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = collapse_parenthesis(data)
     data = remove_functions(data)
     ret = None
@@ -256,6 +258,7 @@ def extract_class_from_function(data):
 def extract_class(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = collapse_strings(data)
     data = remove_classes(data)
     regex = re.compile(r"class\s+([^;{\s:]+)\s*(:|;|\{|extends|implements)", re.MULTILINE)
@@ -273,6 +276,7 @@ def extract_class(data):
 def extract_inheritance(data, classname):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = remove_classes(data)
     regex = re.compile(r"class\s+%s\s*(:|extends)\s+([^\s,{]+)" % classname, re.MULTILINE)
     match = regex.search(data)
@@ -381,6 +385,7 @@ def extract_variables(data):
     data = remove_includes(data)
     data = collapse_brackets(data)
     data = collapse_square_brackets(data)
+    data = collapse_strings(data)
     data = collapse_ltgt(data)
     data = remove_functions(data)
     data = remove_namespaces(data)
@@ -469,6 +474,8 @@ def get_var_type(data, var):
     data = remove_preprocessing(data)
     data = collapse_ltgt(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
+    data = collapse_strings(data)
     data = remove_functions(data)
 
     match = None
