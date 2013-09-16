@@ -111,6 +111,8 @@ class BackgroundWorker(threading.Thread):
             args['--html'] = None
         elif self.operation == 'unit_test':
             args['--html'] = None
+        elif self.operation == 'project_health_check':
+            args['--html'] = None    
         #elif self.operation == 'index_metadata':
         #    args['--html'] = None    
                 

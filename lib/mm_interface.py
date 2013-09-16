@@ -130,7 +130,17 @@ class MavensMateTerminalCall(threading.Thread):
             args['-c'] = 'SUBLIME_TEXT_3'
         else:
             args['-c'] = 'SUBLIME_TEXT_2'
-        ui_operations = ['edit_project', 'new_project', 'unit_test', 'deploy', 'execute_apex', 'upgrade_project', 'new_project_from_existing_directory', 'debug_log']
+        ui_operations = [
+            'edit_project', 
+            'new_project', 
+            'unit_test', 
+            'deploy', 
+            'execute_apex', 
+            'upgrade_project', 
+            'new_project_from_existing_directory', 
+            'debug_log', 
+            'project_health_check'
+        ]
         if self.operation in ui_operations:
             args['--ui'] = True
 
@@ -248,7 +258,7 @@ class MavensMateTerminalCall(threading.Thread):
             if 'darwin' in sys.platform:
                 mm_loc = self.settings.get('mm_debug_location')
             else:
-                mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
+                mm_loc = os.path.join(config.mm_dir,"mm","mm.py") #mm.py is bundled with sublime text plugin
             print('[MAVENSMATE] executing DEBUG mm terminal call:')
             print("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
             if 'linux' in sys.platform or 'darwin' in sys.platform:
@@ -256,12 +266,13 @@ class MavensMateTerminalCall(threading.Thread):
                 process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
+                python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python")
                 process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             print('[MAVENSMATE] executing mm terminal call:')
             print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
-            process = subprocess.Popen("{0} {1} {2}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload(process)
         if process.stdout is not None: 
             mm_response = process.stdout.readlines()

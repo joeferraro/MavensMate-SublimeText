@@ -324,7 +324,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
                 p = subprocess.Popen("'{0}' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
-                subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
+                subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
                 project_location = os.path.join(util.mm_workspace(),self.picked_project,project_file)
                 p = subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
@@ -1485,6 +1485,14 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         deploy_resource_bundle(self.results[picked])
+
+class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('project_health_check')
+        util.send_usage_statistics('Project Health Check')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 def deploy_resource_bundle(bundle_name):
     if '.resource' not in bundle_name:

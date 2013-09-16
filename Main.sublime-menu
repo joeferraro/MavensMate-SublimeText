@@ -28,6 +28,10 @@
 	         		{
 	         			"caption": "Clean Project",
 	         			"command": "clean_project"
+	         		},
+	         		{
+	         			"caption": "Health Check",
+	         			"command": "project_health_check"
 	         		}
 	         	]
 	     	},
