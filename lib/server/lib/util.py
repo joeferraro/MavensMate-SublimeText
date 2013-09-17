@@ -49,7 +49,7 @@ class BackgroundWorker(threading.Thread):
             print(self.payload)
             python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
 
-            if 'darwin' in sys.platform or sublime.load_settings.get('mm_debug_location') != None:
+            if 'darwin' in sys.platform or sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location') != None:
                 mm_loc = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location')
             else:
                 mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
