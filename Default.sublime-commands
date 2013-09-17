@@ -12,6 +12,10 @@
     "command": "checkout_project"
   },
   {
+    "caption": "MavensMate: Project Health Check",
+    "command": "project_health_check"
+  },
+  {
     "caption": "MavensMate: Edit Project...",
     "command": "edit_project"
   },
