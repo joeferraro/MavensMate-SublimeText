@@ -200,7 +200,8 @@ class MavensMateTerminalCall(threading.Thread):
             else:
                 payload = {}
 
-            payload['project_name'] = self.project_name
+            if o != 'new_project' and o != 'new_project_from_existing_directory':
+                payload['project_name'] = self.project_name
 
             #selected files
             if o in params['files']:
