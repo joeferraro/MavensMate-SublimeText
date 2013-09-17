@@ -1176,7 +1176,7 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
             updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.call('"{0}"'.format(updater_path), startupinfo=startupinfo)
+            subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):

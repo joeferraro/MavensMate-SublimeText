@@ -53,7 +53,7 @@ class AutomaticUpgrader(threading.Thread):
                         #os.system('"{0}"'.format(updater_path))
                         startupinfo = subprocess.STARTUPINFO()
                         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                        subprocess.call('"{0}"'.format(updater_path), startupinfo=startupinfo)
+                        subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
 
         except BaseException as e:
             # import traceback
