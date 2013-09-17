@@ -1173,7 +1173,10 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
             response = os.popen('python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)').read()
             print('update response: '+response)
         elif 'win32' in sys.platform or 'win64' in sys.platform:
-            pass
+            updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            subprocess.call('"{0}"'.format(updater_path), startupinfo=startupinfo)
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):

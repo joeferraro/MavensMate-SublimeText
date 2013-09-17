@@ -2,6 +2,7 @@ import threading
 import json
 import os
 import sys
+import subprocess
 try:
     import MavensMate.config as config
 except:
@@ -49,7 +50,10 @@ class AutomaticUpgrader(threading.Thread):
                 else: #windows
                     if sublime.ok_cancel_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"Would you like to update?"):
                         updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
-                        os.system('"{0}"'.format(updater_path))
+                        #os.system('"{0}"'.format(updater_path))
+                        startupinfo = subprocess.STARTUPINFO()
+                        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                        subprocess.call('"{0}"'.format(updater_path), startupinfo=startupinfo)
 
         except BaseException as e:
             # import traceback
