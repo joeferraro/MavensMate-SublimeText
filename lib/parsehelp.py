@@ -321,6 +321,7 @@ def sub(exp, data):
 @debug
 def remove_preprocessing(data):
     data = data.replace("\\\n", " ")
+    data = data.replace(",", " ")
     data = sub(r"\#\s*define[^\n]+\n", data)
     data = sub(r"\#\s*(ifndef|ifdef|if|endif|else|elif|pragma|include)[^\n]*\n", data)
     data = sub(r"//[^\n]+\n", data)
