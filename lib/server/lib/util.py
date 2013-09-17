@@ -49,18 +49,27 @@ class BackgroundWorker(threading.Thread):
             print(self.payload)
             python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
 
-            if 'darwin' in sys.platform:
+            if 'darwin' in sys.platform or self.settings.get('mm_debug_location') != None:
                 mm_loc = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location')
             else:
                 mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
             #p = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         
+            # if 'linux' in sys.platform or 'darwin' in sys.platform:
+            #     #osx, linux
+            #     p = subprocess.Popen('{0} {1} {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            # else:
+            #     #windows
+            #     p = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 #osx, linux
-                p = subprocess.Popen('{0} {1} {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
-                p = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python")
+                process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
             #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             p = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_path), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
