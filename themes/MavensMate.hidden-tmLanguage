@@ -52,6 +52,12 @@
     </dict>
     <dict>
         <key>match</key>
+        <string>\[DEPLOYMENT FAILED\]?</string>
+        <key>name</key>
+        <string>operation.fail</string>
+    </dict>
+    <dict>
+        <key>match</key>
         <string>^\[OPERATION FAILED\]?</string>
         <key>name</key>
         <string>operation.fail</string>
