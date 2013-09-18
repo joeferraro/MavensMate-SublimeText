@@ -174,7 +174,7 @@
 	     	{
 	        	"id": "force_compile_file", 
 	    		"caption": "Force Save Active File (Skip server check)",  
-	         	"command": "force_compile_file"
+	         	"command": "force_compile_file_main_menu"
 	     	},
 	     	{
 	        	"id": "refresh_active", 

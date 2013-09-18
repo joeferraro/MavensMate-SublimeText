@@ -161,6 +161,21 @@ class MavensStubCommand(sublime_plugin.WindowCommand):
         return not util.is_mm_project();
 
 #deploys the currently active file
+class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
+    def run(self, files=None):       
+        print('FORCE COMPILING!')
+        if files == None:
+            files = [util.get_active_file()]
+        params = {
+            "files"     : files,
+            "action"    : "overwrite"
+        }
+        mm.call('compile', context=self.window, params=params)
+    
+    def is_enabled(self):
+       return util.is_mm_project();
+
+#deploys the currently active file
 class ForceCompileFileCommand(sublime_plugin.WindowCommand):
     def run(self, files=None):       
         print('FORCE COMPILING!')
@@ -171,8 +186,6 @@ class ForceCompileFileCommand(sublime_plugin.WindowCommand):
             "action"    : "overwrite"
         }
         mm.call('compile', context=self.window, params=params)
-    def is_enabled(self):
-        return util.is_mm_project();
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
