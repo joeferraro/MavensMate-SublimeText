@@ -49,39 +49,31 @@ class ManualUpgrader(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        ThreadProgress(self, "Updating MavensMate for Sublime Text", 'MavensMate update complete')
-
-        process = None
         if 'linux' in sys.platform:
+            ThreadProgress(self, "Updating MavensMate for Sublime Text", 'MavensMate update complete. Please restart Sublime Text.')
+            process = None
+            
             updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
             settings = sublime.load_settings('mavensmate.sublime-settings')
             python_location = settings.get("mm_python_location")
-            #subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path), startupinfo=startupinfo)
             process = subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        elif 'darwin' in sys.platform:
-            sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select 'Plugins' from the MavensMate.app status bar menu, then \"Update Plugin\".\n\nYou will need to restart Sublime Text after updating.")
-        else: #windows
-            updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
+        
+            mm_response = ""
+            if process != None:
+                if process.stdout is not None: 
+                    mm_response = process.stdout.readlines()
+                elif process.stderr is not None:
+                    mm_response = process.stderr.readlines()
+                try:
+                    response_body = '\n'.join(mm_response)
+                except:
+                    strs = []
+                    for line in mm_response:
+                        strs.append(line.decode('utf-8'))   
+                    response_body = '\n'.join(strs)
 
-        mm_response = ""
-        if process != None:
-            if process.stdout is not None: 
-                mm_response = process.stdout.readlines()
-            elif process.stderr is not None:
-                mm_response = process.stderr.readlines()
-            try:
-                response_body = '\n'.join(mm_response)
-            except:
-                strs = []
-                for line in mm_response:
-                    strs.append(line.decode('utf-8'))   
-                response_body = '\n'.join(strs)
-
-        print('[MAVENSMATE] response from upgrader: ' + response_body)
-        self.result = response_body
+            print('[MAVENSMATE] response from upgrader: ' + response_body)
+            self.result = response_body
 
 class AutomaticUpgrader(threading.Thread):
     def __init__(self):

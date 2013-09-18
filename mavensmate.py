@@ -1184,10 +1184,6 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
         if 'darwin' in sys.platform:
             sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
         elif 'linux' in sys.platform:
-            # updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
-            # settings = sublime.load_settings('mavensmate.sublime-settings')
-            # python_location = settings.get("mm_python_location")
-            # subprocess.Popen(['{0}'.format(python_location), '{0}'.format(updater_path)])
             printer = PanelPrinter.get(sublime.active_window().id())
             upgrader.execute(printer)
         elif 'win32' in sys.platform or 'win64' in sys.platform:
