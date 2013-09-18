@@ -19,6 +19,7 @@ if sys.version_info >= (3, 0):
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
     import MavensMate.lib.parsehelp as parsehelp
+    import MavensMate.lib.upgrader as upgrader
     import MavensMate.lib.vf as vf
     from MavensMate.lib.mm_merge import *
     from MavensMate.lib.completioncommon import *
@@ -1183,12 +1184,11 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
         if 'darwin' in sys.platform:
             sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
         elif 'linux' in sys.platform:
-            #response = os.popen('python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)').read()
-            #print('update response: '+response)
-            updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
-            settings = sublime.load_settings('mavensmate.sublime-settings')
-            python_location = settings.get("mm_python_location")
-            subprocess.Popen(['{0}'.format(python_location), '{0}'.format(updater_path)])
+            # updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
+            # settings = sublime.load_settings('mavensmate.sublime-settings')
+            # python_location = settings.get("mm_python_location")
+            # subprocess.Popen(['{0}'.format(python_location), '{0}'.format(updater_path)])
+            upgrader.execute()
         elif 'win32' in sys.platform or 'win64' in sys.platform:
             updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
             startupinfo = subprocess.STARTUPINFO()
