@@ -55,7 +55,7 @@ class ManualUpgrader(threading.Thread):
 
     def run(self):
         self.calculate_process_region()
-        PanelThreadProgress(thread)
+        PanelThreadProgress(self)
 
         process = None
         if 'linux' in sys.platform:
