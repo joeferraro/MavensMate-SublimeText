@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import subprocess
+import time
 
 try:
     from .threads import ThreadTracker
@@ -18,18 +19,11 @@ except ImportError:
 import sublime
 
 def execute(printer):
-    printer.show()
-    printer.writeln(' ')
-    printer.writeln('==============================================')
-    printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete.")
-    printer.writeln('Result:          ')
-
     threads = []
     thread = ManualUpgrader(printer)
     threads.append(thread)        
     thread.start()
     PanelThreadProgress(thread)
-    ThreadTracker(thread)
 
 def handle_result(operation, process_id, printer, result, thread):
     process_region = printer.panel.find(process_id,0)
@@ -41,10 +35,18 @@ class ManualUpgrader(threading.Thread):
     def __init__(self, printer):
         self.printer        = printer
         self.operation      = "upgrade"
-        self.process_id     = "upgrade"
+        self.process_id     = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         self.result         = None
         self.callback       = handle_result
         self.alt_callback   = None
+
+        self.printer.show()
+        self.printer.writeln(' ')
+        self.printer.writeln('==============================================')
+        self.printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete.")
+        self.printer.writeln('Timestamp: '+self.process_id)
+        self.printer.writeln('Result:          ')
+
         threading.Thread.__init__(self)
 
     def run(self):
