@@ -23,7 +23,6 @@ def execute(printer):
     thread = ManualUpgrader(printer)
     threads.append(thread)        
     thread.start()
-    PanelThreadProgress(thread)
 
 def handle_result(operation, process_id, printer, result, thread):
     process_region = printer.panel.find(process_id,0)
@@ -39,6 +38,7 @@ class ManualUpgrader(threading.Thread):
         self.result         = None
         self.callback       = handle_result
         self.alt_callback   = None
+        self.status_region  = None
 
         self.printer.show()
         self.printer.writeln(' ')
@@ -49,7 +49,14 @@ class ManualUpgrader(threading.Thread):
 
         threading.Thread.__init__(self)
 
+    def calculate_process_region(self):
+        process_region = self.printer.panel.find(self.process_id,0)
+        self.status_region = self.printer.panel.find('Result:',process_region.begin())
+
     def run(self):
+        self.calculate_process_region()
+        PanelThreadProgress(thread)
+
         process = None
         if 'linux' in sys.platform:
             updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
