@@ -32,13 +32,13 @@ def handle_result(operation, process_id, printer, result, thread):
     printer.scroll_to_bottom()
 
 class ManualUpgrader(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self, printer)
+    def __init__(self, printer):
         self.printer        = printer
         self.operation      = "upgrade"
         self.process_id     = "upgrade"
         self.result         = None
         self.callback       = handle_result
+        threading.Thread.__init__(self)
 
     def run(self):
         process = None
