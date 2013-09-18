@@ -1183,8 +1183,15 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
         if 'darwin' in sys.platform:
             sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
         elif 'linux' in sys.platform:
-            response = os.popen('python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)').read()
-            print('update response: '+response)
+            #response = os.popen('python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)').read()
+            #print('update response: '+response)
+            updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
+            settings = sublime.load_settings('mavensmate.sublime-settings')
+            python_location = settings.get("mm_python_location")
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            #subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path), startupinfo=startupinfo)
+            subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path))
         elif 'win32' in sys.platform or 'win64' in sys.platform:
             updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
             startupinfo = subprocess.STARTUPINFO()
