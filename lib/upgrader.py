@@ -18,6 +18,12 @@ except ImportError:
 import sublime
 
 def execute(printer):
+    printer.show()
+    printer.writeln(' ')
+    printer.writeln('==============================================')
+    printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete.")
+    printer.writeln('Result:          ')
+
     threads = []
     thread = ManualUpgrader(printer)
     threads.append(thread)        
@@ -38,6 +44,7 @@ class ManualUpgrader(threading.Thread):
         self.process_id     = "upgrade"
         self.result         = None
         self.callback       = handle_result
+        self.alt_callback   = None
         threading.Thread.__init__(self)
 
     def run(self):
