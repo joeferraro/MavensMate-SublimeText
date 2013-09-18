@@ -14,12 +14,12 @@ if sys.version_info >= (3, 0):
     import MavensMate.util as util
     import MavensMate.lib.command_helper as command_helper
     import MavensMate.lib.mm_interface as mm
+    import MavensMate.lib.upgrader as upgrader
     import MavensMate.lib.resource_bundle as resource_bundle
     import MavensMate.lib.server.lib.server_threaded as server
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
     import MavensMate.lib.parsehelp as parsehelp
-    import MavensMate.lib.upgrader as upgrader
     import MavensMate.lib.vf as vf
     from MavensMate.lib.mm_merge import *
     from MavensMate.lib.completioncommon import *
@@ -1188,7 +1188,8 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
             # settings = sublime.load_settings('mavensmate.sublime-settings')
             # python_location = settings.get("mm_python_location")
             # subprocess.Popen(['{0}'.format(python_location), '{0}'.format(updater_path)])
-            upgrader.execute()
+            printer = PanelPrinter.get(sublime.active_window().id())
+            upgrader.execute(printer)
         elif 'win32' in sys.platform or 'win64' in sys.platform:
             updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
             startupinfo = subprocess.STARTUPINFO()

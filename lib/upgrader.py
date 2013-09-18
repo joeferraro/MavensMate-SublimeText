@@ -3,18 +3,13 @@ import json
 import os
 import sys
 import subprocess
-try:
-    import MavensMate.config as config
-except:
-    import config
 
 try:
     from .threads import ThreadTracker
     from .threads import ThreadProgress
     from .threads import PanelThreadProgress
-    from .printer import PanelPrinter
-except:
-    pass
+except ImportError as e:
+    print("[MAVENSMATE] import error: ", e)
 
 try: 
     import urllib
@@ -22,9 +17,9 @@ except ImportError:
     import urllib.request as urllib
 import sublime
 
-def execute():
+def execute(printer):
     threads = []
-    thread = ManualUpgrader()
+    thread = ManualUpgrader(printer)
     threads.append(thread)        
     thread.start()
     PanelThreadProgress(thread)
@@ -38,8 +33,8 @@ def handle_result(operation, process_id, printer, result, thread):
 
 class ManualUpgrader(threading.Thread):
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.printer        = PanelPrinter.get(sublime.active_window().id())
+        threading.Thread.__init__(self, printer)
+        self.printer        = printer
         self.operation      = "upgrade"
         self.process_id     = "upgrade"
         self.result         = None
@@ -84,7 +79,7 @@ class AutomaticUpgrader(threading.Thread):
 
     def run(self):
         try:
-            json_data = open(os.path.join(config.mm_dir,"packages.json"))
+            json_data = open(os.path.join(sublime.packages_path(),"MavensMate","packages.json"))
             data = json.load(json_data)
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
