@@ -41,15 +41,17 @@ def call(operation, use_mm_panel=True, **kwargs):
         printer.write('\n'+message+'\n')
         return
 
+    window, view = util.get_window_and_view_based_on_context(kwargs.get('context', None))
+
     #if it's a legacy project, need to intercept the call and open the upgrade ui
     #TODO: this should probably be handled in mm
-    if operation != 'new_project' and operation != 'new_project_from_existing_directory' and util.is_project_legacy() == True:
+    if operation != 'new_project' and operation != 'new_project_from_existing_directory' and util.is_project_legacy(window) == True:
         operation = 'upgrade_project'
     
     threads = []
     thread = MavensMateTerminalCall(
         operation, 
-        project_name=util.get_project_name(kwargs.get('context', None)), 
+        project_name=util.get_project_name(window), 
         active_file=util.get_active_file(), 
         params=kwargs.get('params', None),
         context=kwargs.get('context', None),
@@ -93,6 +95,9 @@ class MavensMateTerminalCall(threading.Thread):
         if self.message == None:
             self.message = command_helper.get_message(self.params, self.operation)
         
+        if self.project_name == None:
+            self.project_name = util.get_project_name(self.window)
+
         if self.use_mm_panel:
             self.printer.show()
             self.printer.writeln(' ')

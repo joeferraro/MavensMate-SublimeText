@@ -52,13 +52,15 @@ def package_check():
     except:
         pass
 
-def is_project_legacy():
-    if not os.path.exists(os.path.join(mm_project_directory(),"config",".debug")):
+def is_project_legacy(window=None):
+    print(">>>> ", window)
+    print(mm_project_directory(window))
+    if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
-    if os.path.exists(os.path.join(mm_project_directory(),"config","settings.yaml")):
+    if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
         return True
-    elif os.path.exists(os.path.join(mm_project_directory(),"config",".settings")):
-        current_settings = parse_json_from_file(os.path.join(mm_project_directory(),"config",".settings"))
+    elif os.path.exists(os.path.join(mm_project_directory(window),"config",".settings")):
+        current_settings = parse_json_from_file(os.path.join(mm_project_directory(window),"config",".settings"))
         if 'subscription' not in current_settings:
             return True
         else:
@@ -120,22 +122,27 @@ def get_file_name_no_extension(path):
     return os.path.splitext(base)[0]
 
 def get_project_name(context=None):
-    if is_mm_project():
+    if context != None:
+        if isinstance(context, sublime.View):
+            view = context
+            window = view.window()
+        elif isinstance(context, sublime.Window):
+            window = context
+            view = window.active_view()
+        else:
+            window = sublime.active_window()
+            view = window.active_view()
+    else:
+        window = sublime.active_window()
+        view = window.active_view()
+
+    if is_mm_project(window):
         if context == None:
             try:
                 return os.path.basename(sublime.active_window().folders()[0])
             except:
                 return None
         else:
-            if isinstance(context, sublime.View):
-                view = context
-                window = view.window()
-            elif isinstance(context, sublime.Window):
-                window = context
-                view = window.active_view()
-            else:
-                window = sublime.active_window()
-                view = window.active_view()
             try:
                 return os.path.basename(window.folders()[0])
             except:
@@ -167,14 +174,16 @@ def sublime_project_file_path():
         return None 
 
 # check for mavensmate .settings file
-def is_mm_project():
+def is_mm_project(window=None):
+    if window == None:
+        window = sublime.active_window()
     workspace = mm_workspace();
     if workspace == "" or workspace == None or not os.path.exists(workspace):
         return False
     try:
-        if os.path.isfile(os.path.join(sublime.active_window().folders()[0],"config",".settings")):
+        if os.path.isfile(os.path.join(window.folders()[0],"config",".settings")):
             return True
-        elif os.path.isfile(os.path.join(sublime.active_window().folders()[0],"config","settings.yaml")):
+        elif os.path.isfile(os.path.join(window.folders()[0],"config","settings.yaml")):
             return True 
         else:
             return False
@@ -271,6 +280,17 @@ def clear_marked_line_numbers(view, mark_type="compile_issue"):
         print(e.message)
         print('no regions to clean up')
 
+def get_window_and_view_based_on_context(context):
+    if isinstance(context, sublime.View):
+        view = context
+        window = view.window()
+    elif isinstance(context, sublime.Window):
+        window = context
+        view = window.active_view()
+    else:
+        window = sublime.active_window()
+        view = window.active_view()
+    return window, view
 
 def is_apex_webservice_file(filename=None):
     if not filename: filename = get_active_file()
@@ -283,11 +303,13 @@ def is_apex_webservice_file(filename=None):
             if p.search(content): return True
     return False
 
-def mm_project_directory():
+def mm_project_directory(window=None):
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
-    folders = sublime.active_window().folders()
+    if window == None:
+        window = sublime.active_window()
+    folders = window.folders()
     if len(folders) > 0:
-        return sublime.active_window().folders()[0]
+        return window.folders()[0]
     else:
         return mm_workspace()
 
