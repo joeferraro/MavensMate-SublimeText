@@ -1188,7 +1188,7 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
             updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
             settings = sublime.load_settings('mavensmate.sublime-settings')
             python_location = settings.get("mm_python_location")
-            subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path))
+            subprocess.Popen(["'{0}'".format(python_location), "'{1}'".format(updater_path)])
         elif 'win32' in sys.platform or 'win64' in sys.platform:
             updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
             startupinfo = subprocess.STARTUPINFO()
