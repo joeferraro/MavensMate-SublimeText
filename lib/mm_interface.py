@@ -459,37 +459,47 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
         elif "ErrorMsg" in res:
             printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
 
-    elif 'success' in res and util.to_bool(res['success']) == False and 'messages' in res:
+    elif 'success' in res and util.to_bool(res['success']) == False and ('messages' in res or 'Messages' in res):
+        if 'Messages' in res:
+            res['messages'] = res.pop('Messages')
         #here we're parsing a response from the metadata endpoint
-        line_col = ""
-        msg = None
         failures = None
-        if type( res['messages'] ) == list:
-            for m in res['messages']:
-                if 'problem' in m:
-                    msg = m
-                    break
-            if msg == None: #must not have been a compile error, must be a test run error
-                if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
-                    failures = res['run_test_result']['failures']
-                elif 'failures' in res['run_test_result']:
-                    failures = [res['run_test_result']['failures']]
-        else:
-            msg = res['messages']
-        if msg != None:
-            if 'lineNumber' in msg:
-                line_col = ' (Line: '+msg['lineNumber']
-                util.mark_line_numbers(thread.view, [int(float(msg['lineNumber']))], "bookmark")
-            if 'columnNumber' in msg:
-                line_col += ', Column: '+msg['columnNumber']
-            if len(line_col) > 0:
-                line_col += ')'
-            printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg['fileName'] + ': ' + msg['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
-        elif failures != None:
-            msg = ' [DEPLOYMENT FAILED]:'
-            for f in failures: 
-                msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
-            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
+        messages = res['messages']
+        if type( messages ) is not list:
+            messages = [messages]
+
+        problems = 0
+        for m in messages:
+            if 'problem' in m:
+                problems += 1
+                break
+
+        if problems == 0: #must not have been a compile error, must be a test run error
+            if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
+                failures = res['run_test_result']['failures']
+            elif 'failures' in res['run_test_result']:
+                failures = [res['run_test_result']['failures']]
+            
+            if failures != None:
+                msg = ' [DEPLOYMENT FAILED]:'
+                for f in failures: 
+                    msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
+                printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
+        else: #compile error, build error message
+            msg = ""
+            for m in messages:
+                line_col = ""
+                if 'lineNumber' in m:
+                    line_col = ' (Line: '+m['lineNumber']
+                    util.mark_line_numbers(thread.view, [int(float(m['lineNumber']))], "bookmark")
+                if 'columnNumber' in m:
+                    line_col += ', Column: '+m['columnNumber']
+                if len(line_col) > 0:
+                    line_col += ')'
+                msg += "\n\n" + m['fileName'] + ': ' + m['problem'] + line_col
+
+            printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
+            
     elif 'success' in res and res["success"] == False and 'line' in res:
         #this is a response from the apex compile api
         line_col = ""
