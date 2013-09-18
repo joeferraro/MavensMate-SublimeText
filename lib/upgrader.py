@@ -45,17 +45,11 @@ class ManualUpgrader(threading.Thread):
         self.printer.writeln('==============================================')
         self.printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete.")
         self.printer.writeln('Timestamp: '+self.process_id)
-        self.printer.writeln('Result:          ')
 
         threading.Thread.__init__(self)
 
-    def calculate_process_region(self):
-        process_region = self.printer.panel.find(self.process_id,0)
-        self.status_region = self.printer.panel.find('Result:',process_region.begin())
-
     def run(self):
-        self.calculate_process_region()
-        PanelThreadProgress(self)
+        ThreadProgress(self, "Updating MavensMate for Sublime Text", 'MavensMate update complete')
 
         process = None
         if 'linux' in sys.platform:
