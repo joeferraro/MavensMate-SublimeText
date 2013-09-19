@@ -43,5 +43,16 @@ class Handler(BaseHTTPRequestHandler):
         self.main_handler('POST')
         return
 
+    #to enable CORS
+    def do_OPTIONS(self):
+        self.send_response(200, "ok")
+        self.send_header('Access-Control-Allow-Origin', "*")
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header("Access-Control-Allow-Headers", "accept,origin,mm_plugin_client,content-type")
+        self.send_header('Content-Length',0)
+        self.send_header('Connection','close')
+        self.end_headers()
+        return
+
     def log_message(self, format, *args):
         return

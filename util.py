@@ -11,6 +11,12 @@ import string
 import random
 # from datetime import datetime, date, time
 
+# try: 
+#     import urllib
+# except ImportError:
+#     import urllib.request as urllib
+import urllib.request
+
 if sys.version_info >= (3, 0):
     #python 3
     import MavensMate.config as config
@@ -34,8 +40,6 @@ else:
 #sublime.packages_path()
 
 import sublime
-
-
 settings = sublime.load_settings('mavensmate.sublime-settings')
 packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
@@ -43,21 +47,23 @@ sublime_version = int(float(sublime.version()))
 def package_check():
     #ensure user settings are installed
     try:
-        if not os.path.exists(packages_path+"/User/mavensmate.sublime-settings"):
-            shutil.copyfile(config.mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
+        if not os.path.exists(os.path.join(packages_path,"User","mavensmate.sublime-settings")):
+            shutil.copyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
     except:
         pass
 
-def is_project_legacy():
-    if os.path.exists(mm_project_directory()+"/config/settings.yaml"):
+def is_project_legacy(window=None):
+    #print(mm_project_directory(window))
+    if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
-    elif os.path.exists(mm_project_directory()+"/config/.settings"):
-        current_settings = parse_json_from_file(mm_project_directory()+"/config/.settings")
+    if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
+        return True
+    elif os.path.exists(os.path.join(mm_project_directory(window),"config",".settings")):
+        current_settings = parse_json_from_file(os.path.join(mm_project_directory(window),"config",".settings"))
         if 'subscription' not in current_settings:
             return True
         else:
             return False
-
     else:
         return False
  
@@ -69,6 +75,17 @@ def parse_json_from_file(location):
         return data
     except:
         return {}
+
+def parse_templates_package(mtype=None):
+    if 'linux' in sys.platform:
+        response = os.popen('wget https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json -q -O -').read()
+    else:
+        response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json').read().decode('utf-8')
+    j = json.loads(response)
+    if mtype != None:
+        return j[mtype]
+    else:
+        return j
 
 def get_number_of_lines_in_file(file_path):
     f = open(file_path)
@@ -99,13 +116,12 @@ def get_active_file():
     except Exception:
         return ''
 
+def get_file_name_no_extension(path):
+    base=os.path.basename(path)
+    return os.path.splitext(base)[0]
+
 def get_project_name(context=None):
-    if context == None:
-        try:
-            return os.path.basename(sublime.active_window().folders()[0])
-        except:
-            return None
-    else:
+    if context != None:
         if isinstance(context, sublime.View):
             view = context
             window = view.window()
@@ -115,10 +131,23 @@ def get_project_name(context=None):
         else:
             window = sublime.active_window()
             view = window.active_view()
-        try:
-            return os.path.basename(window.folders()[0])
-        except:
-            return None
+    else:
+        window = sublime.active_window()
+        view = window.active_view()
+
+    if is_mm_project(window):
+        if context == None:
+            try:
+                return os.path.basename(sublime.active_window().folders()[0])
+            except:
+                return None
+        else:
+            try:
+                return os.path.basename(window.folders()[0])
+            except:
+                return None
+    else:
+        return None
 
 def check_for_workspace():
     workspace = mm_workspace()
@@ -136,22 +165,24 @@ def check_for_workspace():
 
 def sublime_project_file_path():
     project_directory = sublime.active_window().folders()[0]
-    if os.path.isfile(project_directory+"/.sublime-project"):
-        return project_directory+"/.sublime-project"
-    elif os.path.isfile(project_directory+"/"+get_project_name()+".sublime-project"):
-        return project_directory+"/"+get_project_name()+".sublime-project"
+    if os.path.isfile(os.path.join(project_directory,".sublime-project")):
+        return os.path.join(project_directory,".sublime-project")
+    elif os.path.isfile(os.path.join(project_directory,get_project_name(),".sublime-project")):
+        return os.path.join(project_directory,get_project_name(),".sublime-project")
     else:
         return None 
 
 # check for mavensmate .settings file
-def is_mm_project():
+def is_mm_project(window=None):
+    if window == None:
+        window = sublime.active_window()
     workspace = mm_workspace();
     if workspace == "" or workspace == None or not os.path.exists(workspace):
         return False
     try:
-        if os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings"):
+        if os.path.isfile(os.path.join(window.folders()[0],"config",".settings")):
             return True
-        elif os.path.isfile(sublime.active_window().folders()[0]+"/config/settings.yaml"):
+        elif os.path.isfile(os.path.join(window.folders()[0],"config","settings.yaml")):
             return True 
         else:
             return False
@@ -168,7 +199,7 @@ def get_file_extension(filename=None):
     return None
 
 def get_apex_file_properties():
-    return parse_json_from_file(mm_project_directory()+"/config/.apex_file_properties")
+    return parse_json_from_file(os.path.join(mm_project_directory(),"config",".apex_file_properties"))
 
 def is_mm_file(filename=None):
     try :
@@ -248,6 +279,17 @@ def clear_marked_line_numbers(view, mark_type="compile_issue"):
         print(e.message)
         print('no regions to clean up')
 
+def get_window_and_view_based_on_context(context):
+    if isinstance(context, sublime.View):
+        view = context
+        window = view.window()
+    elif isinstance(context, sublime.Window):
+        window = context
+        view = window.active_view()
+    else:
+        window = sublime.active_window()
+        view = window.active_view()
+    return window, view
 
 def is_apex_webservice_file(filename=None):
     if not filename: filename = get_active_file()
@@ -260,11 +302,13 @@ def is_apex_webservice_file(filename=None):
             if p.search(content): return True
     return False
 
-def mm_project_directory():
+def mm_project_directory(window=None):
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
-    folders = sublime.active_window().folders()
+    if window == None:
+        window = sublime.active_window()
+    folders = window.folders()
     if len(folders) > 0:
-        return sublime.active_window().folders()[0]
+        return window.folders()[0]
     else:
         return mm_workspace()
 
@@ -390,7 +434,7 @@ def get_apex_completions(search_name):
 
 def get_version_number():
     try:
-        json_data = open(config.mm_dir+"/packages.json")
+        json_data = open(os.path.join(config.mm_dir,"packages.json"))
         data = json.load(json_data)
         json_data.close()
         version = data["packages"][0]["platforms"]["osx"][0]["version"]

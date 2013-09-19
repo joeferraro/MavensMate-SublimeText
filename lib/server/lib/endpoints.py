@@ -133,6 +133,20 @@ def metadata_list_request_async(request_handler):
     '''
     run_async_operation(request_handler, 'list_metadata')
 
+def generic_endpoint(request_handler):
+    request_id = util.generate_request_id()
+    params, json_body, plugin_client = get_request_params(request_handler)
+    worker_thread = BackgroundWorker(params["command"], params, False, request_id, json_body, plugin_client)
+    worker_thread.start()
+    worker_thread.join()
+    response = worker_thread.response
+    respond(request_handler, response)
+
+def generic_async_endpoint(request_handler):
+    #params, raw_post_body, plugin_client = get_request_params(request_handler)
+    run_async_operation(request_handler, None)
+
+
 ##########################
 ## SYNCHRONOUS REQUESTS ##
 ##########################
@@ -268,6 +282,21 @@ def refresh_metadata_index(request_handler):
     response = worker_thread.response
     respond(request_handler, response) 
 
+def connect_to_github(request_handler):
+    '''
+        POST /github/connect
+        {
+            "username"      : "myusername",
+            "password"      : "mypassword"
+        }
+    '''
+    request_id = util.generate_request_id()
+    params, json_body, plugin_client = get_request_params(request_handler)
+    worker_thread = BackgroundWorker('sign_in_with_github', params, False, request_id, json_body, plugin_client)
+    worker_thread.start()
+    worker_thread.join()
+    response = worker_thread.response
+    respond(request_handler, response) 
 
 ##########################
 ## END REQUEST HANDLERS ##
@@ -278,6 +307,8 @@ def run_async_operation(request_handler, operation_name):
     gc.logger.debug('>>> running an async operation')
     request_id = util.generate_request_id()
     params, raw_post_body, plugin_client = get_request_params(request_handler)
+    if operation_name == None and "command" in params:
+        operation_name = params["command"]
     gc.logger.debug(request_id)
     gc.logger.debug(params)
     gc.logger.debug(raw_post_body)
@@ -377,7 +408,7 @@ def respond_with_async_request_id(request_handler, request_id):
     respond(request_handler, json_response_body, 'text/json')
 
 def respond(request_handler, body, type='text/json'):
-    gc.logger.debug('responding!')
+    #gc.logger.debug('responding!')
     #gc.logger.debug(body)
     #print('>>>>>>>> responding with: ', body)
     request_handler.send_response(200)
@@ -413,5 +444,8 @@ mappings = {
     '/session'                  : { 'GET'   : get_active_session_request },
     '/apex/execute'             : { 'POST'  : execute_apex_request },
     '/metadata/list'            : { 'GET'   : metadata_list_request },
-    '/metadata/list/async'      : { 'GET'   : metadata_list_request_async }
+    '/metadata/list/async'      : { 'GET'   : metadata_list_request_async },
+    '/github/connect'           : { 'POST'  : connect_to_github },
+    '/generic'                  : { 'POST'  : generic_endpoint },
+    '/generic/async'            : { 'POST'  : generic_async_endpoint }
 }

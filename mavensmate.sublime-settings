@@ -117,6 +117,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".approvalProcess"
 	],
 
+	"mm_use_github_templates" : true,
+
 	"mm_default_apex_templates_map" : {
         "ApexClass"     : 
 	        {
@@ -169,6 +171,19 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 
 	//choices: "metadata" or "apex". "metadata" is recommended, however if your tests are taking forever to run, try switching to "apex"
 	//we're working on async testing api support in 0.36
-	"mm_test_api" : "metadata"
+	"mm_test_api" : "metadata",
+
+	//linux/windows users: ignore this setting
+	"mm_use_browser_as_ui" : false, 
+
+	//for linux users (or adventurous windows users), set to location of your python 2.7 install
+	"mm_python_location" : "/usr/bin/python",
+
+	"mm_subl_location" : "/usr/local/bin/subl",
+
+	"mm_windows_subl_location" : "C:/Program Files/Sublime Text 3/sublime_text.exe",
+
+	//if true, mavensmate will store all deployment packages in your project's "deploy" directory
+	"mm_archive_deployments" : true
 	
 }

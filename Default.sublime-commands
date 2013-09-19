@@ -12,6 +12,10 @@
     "command": "checkout_project"
   },
   {
+    "caption": "MavensMate: Project Health Check (beta)",
+    "command": "project_health_check"
+  },
+  {
     "caption": "MavensMate: Edit Project...",
     "command": "edit_project"
   },
@@ -30,6 +34,10 @@
   {
     "caption": "MavensMate: New Debug Log...",
     "command": "new_debug_log"
+  },
+  {
+    "caption": "MavensMate: New Quick Debug Log",
+    "command": "new_quick_log"
   },
   {
     "caption": "MavensMate: Fetch Logs",
@@ -98,6 +106,10 @@
   {
     "caption": "MavensMate: Compile Tabs",          
     "command": "compile_tabs"
+  },
+  {
+    "caption": "MavensMate: Run Async Apex Tests For This Class",          
+    "command": "run_async_apex_tests"
   },
   {
     "caption": "MavensMate: Force Save Current File",          

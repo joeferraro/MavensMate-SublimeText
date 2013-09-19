@@ -19,7 +19,7 @@ mm_path = None
 frozen = __get_is_frozen()
 base_path = __get_base_path()
 
-handler = logging.FileHandler(tempfile.gettempdir()+"/mmserver.log")
+handler = logging.FileHandler(os.path.join(tempfile.gettempdir(),"mmserver.log"))
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('mmserver')
 logging.getLogger('mmserver').propagate = False 

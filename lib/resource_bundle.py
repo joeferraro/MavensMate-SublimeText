@@ -32,7 +32,7 @@ def create(self, files):
     for file in files:
         fileName, fileExtension = os.path.splitext(file)
         baseFileName = fileName.split("/")[-1]
-        if os.path.exists(util.mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension):
+        if os.path.exists(os.path.join(util.mm_project_directory(),'resource-bundles',baseFileName+fileExtension)):
             printer.write('[OPERATION FAILED]: The resource bundle already exists\n')
             return
         cmd = 'unzip \''+file+'\' -d \''+util.mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension+'\''

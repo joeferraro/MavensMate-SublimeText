@@ -6,6 +6,7 @@ import sys
 import re
 #dist_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.insert(0, dist_dir)
+from xml.dom.minidom import parse, parseString
 
 if sys.version_info >= (3, 0):
     # Python 3
@@ -13,6 +14,7 @@ if sys.version_info >= (3, 0):
     import MavensMate.util as util
     import MavensMate.lib.command_helper as command_helper
     import MavensMate.lib.mm_interface as mm
+    import MavensMate.lib.upgrader as upgrader
     import MavensMate.lib.resource_bundle as resource_bundle
     import MavensMate.lib.server.lib.server_threaded as server
     from MavensMate.lib.printer import PanelPrinter
@@ -166,6 +168,21 @@ class MavensStubCommand(sublime_plugin.WindowCommand):
         return not util.is_mm_project();
 
 #deploys the currently active file
+class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
+    def run(self, files=None):       
+        print('FORCE COMPILING!')
+        if files == None:
+            files = [util.get_active_file()]
+        params = {
+            "files"     : files,
+            "action"    : "overwrite"
+        }
+        mm.call('compile', context=self.window, params=params)
+    
+    def is_enabled(self):
+       return util.is_mm_project();
+
+#deploys the currently active file
 class ForceCompileFileCommand(sublime_plugin.WindowCommand):
     def run(self, files=None):       
         print('FORCE COMPILING!')
@@ -225,6 +242,29 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
                     return True
         return False
 
+#displays unit test dialog
+class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        active_file = util.get_active_file()
+        try:
+            if os.path.exists(active_file):
+                filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
+                if ext == '.cls':
+                    params = {
+                        "classes"         : [filename]
+                    }
+                else:
+                    params = {}
+            else:
+                params = {}
+        except:
+            params = {}
+        mm.call('test_async', context=self, params=params)
+        util.send_usage_statistics('Async Apex Test')
+
+    def is_enabled(command):
+        return util.is_apex_class_file()
+
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
     def run (self):
@@ -256,7 +296,9 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 root = w.folders()[0]
                 if util.mm_workspace() not in root:
                     continue
-                project_name = root.split("/")[-1]
+                #project_name = root.split("/")[-1]
+                project_name = util.get_file_name_no_extension(root)
+
                 open_projects.append(project_name)
         except:
             pass
@@ -268,9 +310,9 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         for dirname in os.listdir(util.mm_workspace()):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
             if dirname in open_projects : continue
-            if not os.path.isdir(util.mm_workspace()+"/"+dirname) : continue
+            if not os.path.isdir(os.path.join(util.mm_workspace(),dirname)) : continue
             sublime_project_file = dirname+'.sublime-project'
-            for project_content in os.listdir(util.mm_workspace()+"/"+dirname):
+            for project_content in os.listdir(os.path.join(util.mm_workspace(),dirname)):
                 if '.' not in project_content: continue
                 if project_content == '.sublime-project':
                     sublime_project_file = '.sublime-project'
@@ -289,22 +331,47 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         project_file = self.dir_map[self.picked_project][1]        
         settings = sublime.load_settings('mavensmate.sublime-settings')
         sublime_path = settings.get('mm_plugin_client_location', '/Applications')
-        if os.path.isfile(util.mm_workspace()+"/"+self.picked_project+"/"+project_file):
-            if sublime_version >= 3000:
-                if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
-                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
-                    p = subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        if os.path.isfile(os.path.join(util.mm_workspace(),self.picked_project,project_file)):
+            if sys.platform == 'darwin':
+                if sublime_version >= 3000:
+                    if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
+                        p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
+                        p = subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                else:
+                    p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            elif 'linux' in sys.platform:
+                subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
+                p = subprocess.Popen("'{0}' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
-                p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
+                project_location = os.path.join(util.mm_workspace(),self.picked_project,project_file)
+                p = subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
-            sublime.message_dialog("Cannot find: "+util.mm_workspace()+"/"+self.picked_project+"/"+project_file)
+            sublime.message_dialog("Cannot find: "+os.path.join(util.mm_workspace(),self.picked_project,project_file))
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
+    
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyClass", class_type="default"): 
-        templates = get_merged_apex_templates("ApexClass")
-        sublime.active_window().show_input_panel("Apex Class Name, Template "+str(sorted(templates.keys())), api_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexClass")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            templates = get_merged_apex_templates("ApexClass")
+            sublime.active_window().show_input_panel("Apex Class Name, Template "+str(sorted(templates.keys())), api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Apex Class')
 
     def on_input(self, input): 
@@ -318,14 +385,51 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         }
         mm.call('new_metadata', params=options) 
 
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Apex Class Name", "MyClassName", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        if '.cls' in api_name:
+            api_name = api_name.replace('.cls', '')
+        params = {
+            'metadata_type'     : 'ApexClass',
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
+
+
     def is_enabled(self):
         return util.is_mm_project()
 
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.TextCommand):
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"): 
-        templates = get_merged_apex_templates("ApexTrigger")
-        sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexTrigger")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            templates = get_merged_apex_templates("ApexTrigger")
+            sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Apex Trigger')
 
     def on_input(self, input):
@@ -340,14 +444,49 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         }
         mm.call('new_metadata', params=options) 
 
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Apex Trigger Name, Trigger Object API Name", "MyTriggerName, Account", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        api_name, sobject_name = [x.strip() for x in api_name.split(',')]
+        params = {
+            'metadata_type'     : 'ApexTrigger',
+            'object_api_name'   : sobject_name,
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
+
     def is_enabled(command):
         return util.is_mm_project() 
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyPage", class_type="default"): 
-        templates = get_merged_apex_templates("ApexPage")
-        sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexPage")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Page')
     
     def on_input(self, input): 
@@ -361,14 +500,49 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         }
         mm.call('new_metadata', params=options) 
 
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Visualforce Page Name", "MyVisualforcePageName", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        if '.cls' in api_name:
+            api_name = api_name.replace('.page', '')
+        params = {
+            'metadata_type'     : 'ApexPage',
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
+
     def is_enabled(command):
         return util.is_mm_project()
 
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.TextCommand):
+    def __init__(self, *args, **kwargs):
+        sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
+        self.template_options   = None
+        self.github_templates   = None
+        self.api_name           = None
+        self.github_template    = None
+
     def run(self, edit, api_name="MyComponent", class_type="default"): 
-        templates = get_merged_apex_templates("ApexComponent")
-        sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        use_github = settings.get('mm_use_github_templates', True)
+        if use_github:
+            self.template_options = []
+            self.github_templates = util.parse_templates_package("ApexComponent")
+            for t in self.github_templates:
+                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
+        else:
+            sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
         util.send_usage_statistics('New Visualforce Component')
     
     def on_input(self, input): 
@@ -381,6 +555,26 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
             'apex_class_type'   : class_type
         }
         mm.call('new_metadata', params=options) 
+
+    def on_select_from_github_template(self, selection):
+        if selection != -1:
+            template_name = self.template_options[selection][0]
+            for t in self.github_templates:
+                if t["name"] == template_name:
+                    self.github_template = t
+                    break
+
+            sublime.active_window().show_input_panel("Visualforce Component Name", "MyComponentName", self.finish_github_template_selection, None, None)
+             
+    def finish_github_template_selection(self, api_name):
+        if '.cls' in api_name:
+            api_name = api_name.replace('.component', '')
+        params = {
+            'metadata_type'     : 'ApexComponent',
+            'metadata_name'     : api_name,
+            'github_template'   : self.github_template
+        }
+        mm.call('new_metadata', params=params)
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -745,6 +939,11 @@ class IndexMetadataCommand(sublime_plugin.WindowCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
+class NewQuickLogCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('new_quick_log', False)
+        util.send_usage_statistics('New Quick Log')
+
 #refreshes the currently active file from the server
 class FetchLogsCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -914,7 +1113,7 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer.write('\n[OPERATION FAILED] Unable to locate "src" folder\n')
             return
         
-        dir_entries = os.listdir(directory+"/src")
+        dir_entries = os.listdir(os.path.join(directory,"src"))
         has_package = False
         for entry in dir_entries:
             if entry == "package.xml":
@@ -988,7 +1187,16 @@ class CancelCurrentCommand(sublime_plugin.WindowCommand):
 #updates MavensMate plugin
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(self):
-        sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
+        if 'darwin' in sys.platform:
+            sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
+        elif 'linux' in sys.platform:
+            printer = PanelPrinter.get(sublime.active_window().id())
+            upgrader.execute(printer)
+        elif 'win32' in sys.platform or 'win64' in sys.platform:
+            updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):
@@ -1175,9 +1383,9 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         ## HANDLE APEX STATIC METHODS
         ## String.valueOf, Double.toString(), etc.
-        elif os.path.isfile(config.mm_dir+"/support/lib/apex/"+lower_word+".json"): 
+        elif os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",lower_word+".json")): 
             prefix = prefix.lower()
-            json_data = open(config.mm_dir+"/support/lib/apex/"+lower_word+".json")
+            json_data = open(os.path.join(config.mm_dir,"support","lib","apex",lower_word+".json"))
             data = json.load(json_data)
             json_data.close()
             if 'static_methods' in data:
@@ -1190,7 +1398,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         
         ## HANDLE CUSTOM APEX CLASS STATIC METHODS 
         ## MyCustomClass.some_static_method
-        elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+word+".cls"):
+        elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",word+".cls")):
             _completions = util.get_apex_completions(word) 
             return sorted(_completions)  
 
@@ -1212,15 +1420,15 @@ class ApexCompletions(sublime_plugin.EventListener):
                     typedef_class       = re.sub('\[.*?\]', '', typedef_class)
 
                 #print(typedef_class_lower)
-                if os.path.isfile(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json"): #=> apex instance methods
-                    json_data = open(config.mm_dir+"/support/lib/apex/"+typedef_class_lower+".json")
+                if os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
+                    json_data = open(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json"))
                     data = json.load(json_data)
                     json_data.close()
                     pd = data["instance_methods"]
                     for method in pd:
                         _completions.append((method, method))
                     return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/src/classes/"+typedef_class+".cls"): #=> apex classes
+                elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
                     _completions = util.get_apex_completions(typedef_class)
                     return sorted(_completions)
                 elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
@@ -1236,8 +1444,8 @@ class ApexCompletions(sublime_plugin.EventListener):
                                 field_type = child.firstChild.nodeValue
                         _completions.append((field_name+" \t"+field_type, field_name))
                     return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/config/.org_metadata"): #=> parse org metadata, looking for object fields
-                    jsonData = util.parse_json_from_file(util.mm_project_directory()+"/config/.org_metadata")
+                elif os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object fields
+                    jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
                     for metadata_type in jsonData:
                         if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
                             for object_type in metadata_type['children']:
@@ -1268,7 +1476,7 @@ class ApexCompletions(sublime_plugin.EventListener):
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self):
         srs = []
-        for dirname in os.listdir(util.mm_project_directory()+"/src/staticresources"):
+        for dirname in os.listdir(os.path.join(util.mm_project_directory(),"src","staticresources")):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or '-meta.xml' in dirname : continue
             srs.append(dirname)
         self.results = srs
@@ -1281,7 +1489,7 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         ps = []
-        ps.append(util.mm_project_directory()+"/src/staticresources/"+self.results[picked])
+        ps.append(os.path.join(util.mm_project_directory(),"src","staticresources",self.results[picked]))
         resource_bundle.create(self, ps)
         
 #deploys selected resource bundle to the server
@@ -1289,7 +1497,7 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self):
         self.rbs_map = {}
         rbs = []
-        for dirname in os.listdir(util.mm_project_directory()+"/resource-bundles"):
+        for dirname in os.listdir(os.path.join(util.mm_project_directory(),"resource-bundles")):
             if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
             rbs.append(dirname)
         self.results = rbs
@@ -1301,19 +1509,27 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
             return
         deploy_resource_bundle(self.results[picked])
 
+class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('project_health_check')
+        util.send_usage_statistics('Project Health Check')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 def deploy_resource_bundle(bundle_name):
     if '.resource' not in bundle_name:
         bundle_name = bundle_name + '.resource'
     message = 'Bundling and deploying to server: ' + bundle_name
     # delete existing sr
-    if os.path.exists(util.mm_project_directory()+"/src/staticresources/"+bundle_name):
-        os.remove(util.mm_project_directory()+"/src/staticresources/"+bundle_name)
+    if os.path.exists(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)):
+        os.remove(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name))
     # zip bundle to static resource dir 
-    os.chdir(util.mm_project_directory()+"/resource-bundles/"+bundle_name)
+    os.chdir(os.path.join(util.mm_project_directory(),"resource-bundles",bundle_name))
     cmd = "zip -r -X '"+util.mm_project_directory()+"/src/staticresources/"+bundle_name+"' *"      
     os.system(cmd)
     #compile
-    file_path = util.mm_project_directory()+"/src/staticresources/"+bundle_name
+    file_path = os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)
     params = {
         "files" : [file_path]
     }

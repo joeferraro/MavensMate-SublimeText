@@ -13,7 +13,7 @@ types = [
 ]
 
 ##userinfo table is 
-#system, userinfo, math, approval, limits, test
+#system, userinfo, math, approval, limits, test, selectoption
 
 
 for t in types:

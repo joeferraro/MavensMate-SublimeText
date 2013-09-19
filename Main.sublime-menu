@@ -28,6 +28,10 @@
 	         		{
 	         			"caption": "Clean Project",
 	         			"command": "clean_project"
+	         		},
+	         		{
+	         			"caption": "Health Check (beta)",
+	         			"command": "project_health_check"
 	         		}
 	         	]
 	     	},
@@ -64,8 +68,16 @@
 	         	"children":
 	         	[
  	         		{
+	         			"caption": "Run Async Apex Tests For This Class",
+	         			"command": "run_async_apex_tests"
+	         		},
+ 	         		{
 	         			"caption": "New Debug Log...",
 	         			"command": "new_debug_log"
+	         		},
+	         		{
+	         			"caption": "New Quick Log",
+	         			"command": "new_quick_log"
 	         		},
  	         		{
 	         			"caption": "Fetch Logs",
@@ -160,6 +172,11 @@
 	         	"command": "compile_active_file"
 	     	},
 	     	{
+	        	"id": "force_compile_file", 
+	    		"caption": "Force Save Active File (Skip server check)",  
+	         	"command": "force_compile_file_main_menu"
+	     	},
+	     	{
 	        	"id": "refresh_active", 
 	    		"caption": "Refresh File From Server",  
 	         	"command": "refresh_active_file"
@@ -170,6 +187,10 @@
 	    		"caption": "Run Apex Tests...",  
 	         	"command": "run_apex_unit_tests"
 	     	},
+	     	{
+     			"caption": "Run Async Apex Tests For This Class",
+     			"command": "run_async_apex_tests"
+     		},
 	     	{
 	    		"caption": "Execute Apex...",  
 	         	"command": "execute_anonymous"
