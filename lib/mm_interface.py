@@ -488,15 +488,16 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
         else: #compile error, build error message
             msg = ""
             for m in messages:
-                line_col = ""
-                if 'lineNumber' in m:
-                    line_col = ' (Line: '+m['lineNumber']
-                    util.mark_line_numbers(thread.view, [int(float(m['lineNumber']))], "bookmark")
-                if 'columnNumber' in m:
-                    line_col += ', Column: '+m['columnNumber']
-                if len(line_col) > 0:
-                    line_col += ')'
-                msg += "\n\n" + m['fileName'] + ': ' + m['problem'] + line_col
+                if "success" in m and m["success"] == False:
+                    line_col = ""
+                    if 'lineNumber' in m:
+                        line_col = ' (Line: '+m['lineNumber']
+                        util.mark_line_numbers(thread.view, [int(float(m['lineNumber']))], "bookmark")
+                    if 'columnNumber' in m:
+                        line_col += ', Column: '+m['columnNumber']
+                    if len(line_col) > 0:
+                        line_col += ')'
+                    msg += "\n\n" + m['fileName'] + ': ' + m['problem'] + line_col
 
             printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
             
