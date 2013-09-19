@@ -106,15 +106,7 @@ class AutomaticUpgrader(threading.Thread):
             
             if needs_update == True:
                 if 'linux' in sys.platform:
-                    #sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, download the package from https://github.com/joeferraro/MavensMate-SublimeText and place in the Sublime Text packages directory.")
-                    if sublime.ok_cancel_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"Would you like to update?"):
-                        updater_path = os.path.join(sublime.packages_path(),"MavensMate","install.py")
-                        settings = sublime.load_settings('mavensmate.sublime-settings')
-                        python_location = settings.get("mm_python_location")
-                        startupinfo = subprocess.STARTUPINFO()
-                        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                        #subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path), startupinfo=startupinfo)
-                        subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path), startupinfo=startupinfo)
+                    sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select MavensMate > Update MavensMate from the Sublime Text menu.")
                 elif 'darwin' in sys.platform:
                     sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select 'Plugins' from the MavensMate.app status bar menu, then \"Update Plugin\".\n\nYou will need to restart Sublime Text after updating.")
                 else: #windows
