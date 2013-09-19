@@ -121,7 +121,7 @@ class PanelThreadProgress():
                 self.callback()
             return
 
-        print(">>> POLLING PROGRESS")
+        #print(">>> POLLING PROGRESS")
         #we need to recalculate this every run in case a thread has responded and added
         #text to the panel
         process_region = self.thread.printer.panel.find(self.thread.process_id,0)
