@@ -273,7 +273,7 @@ class MavensMateTerminalCall(threading.Thread):
                 process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
-                python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python")
+                python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python.exe")
                 if not os.path.isfile(python_path):
                     python_path = python_path.replace("Program Files", "Program Files (x86)")
                 print('[MAVENSMATE] executing mm terminal call:')
