@@ -345,6 +345,8 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 p = subprocess.Popen("'{0}' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
+                if not os.path.isfile(subl_location) and "x86" not in subl_location:
+                    subl_location = subl_location.replace("Program Files", "Program Files (x86)")
                 project_location = os.path.join(util.mm_workspace(),self.picked_project,project_file)
                 p = subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
