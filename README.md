@@ -28,10 +28,13 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
 
+####Windows
+1. Download and run the [MavensMate.exe Windows Installer][http://push.mavensconsulting.netdna-cdn.com/mavensmate/builds/windows/MavensMate.exe]
+
 ####Linux
 1. You must have python 2.7 and git installed
 2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)`
+3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install.py)`
 4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"/usr/bin/python"`
 5. Alias your `subl` command line tool to `/usr/local/bin`
 
@@ -40,52 +43,28 @@ $ cd /usr/local/bin
 $ sudo ln -s /usr/bin/subl subl
 ```
 
-####Windows
-1. You must have python 2.7 and git installed
-2. Install required modules `easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Close Sublime Text
-4. Download and run python install script: `https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py`
-5. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example: `"C:/Python27/python"`
-6. Set your `"mm_subl_location"` user setting to the location of your Sublime Text install. For example, `"C:/Program Files/Sublime Text 3/sublime_text.exe"`
-
 ##Sublime Text 2 plugin (no longer supported)
 
-###Prerequisites
-
-####Mac OSX (OSX 10.7+ only)
+###Mac OSX (OSX 10.7+ only)
 You must have **MavensMate.app 0.34** installed. Download [MavensMate.app v0.34][mm_034_download] and place in /Applications
 
-###Install
+####Install
 To install the Sublime Text 2 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
 
-<img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
+##Updating MavensMate for Sublime Text
 
-<img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
-
-
-##Setup
-<img src="http://wearemavens.com/images/mm/menu3.png" width="400"/>
-
-Go to `MavensMate > Settings > User` and modify `mm_workspace` with the EXISTING location where you'd like your MavensMate projects to reside, for example (notice the absolute path):
-
-	"mm_workspace": "/Users/your_username/Projects"
-
-##Update
+If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up.
 
 ###Mac OSX (OSX 10.7+ only)
-If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, you can update the plugin through the "Plugins" panel in MavensMate.app.
+If an update is available, you can update the plugin through the "Plugins" panel in MavensMate.app.
 
 <img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
 
-###Linux
-If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, run the update script:
-
-`$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install-dev.py)`
-
 ###Windows
-If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up. If an update is available, run the update script:
+If an update is available, you will be given the option to run the update installer. You will need to close Sublime Text in order to run the update.
 
-`python install-dev.py`
+###Linux
+If an update is available, you will be given the option to run the update installer. Once the update is complete, you will need to restart Sublime Text.
 
 ##Documentation
 <a href="MavensMate for Sublime Text Documentation">http://mavensmate.com/Plugins/Sublime_Text/Overview</a>
