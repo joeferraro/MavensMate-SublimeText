@@ -34,7 +34,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 ####Linux
 1. You must have python 2.7 and git installed
 2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/dev/install.py)`
+3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py)`
 4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"/usr/bin/python"`
 5. Alias your `subl` command line tool to `/usr/local/bin`
 
