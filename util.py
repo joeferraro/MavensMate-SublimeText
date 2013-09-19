@@ -176,9 +176,10 @@ def sublime_project_file_path():
 def is_mm_project(window=None):
     if window == None:
         window = sublime.active_window()
-    workspace = mm_workspace();
-    if workspace == "" or workspace == None or not os.path.exists(workspace):
-        return False
+    #workspace = mm_workspace();
+    #commented out bc it's confusing to users to see commands grayed out with no error 
+    #if workspace == "" or workspace == None or not os.path.exists(workspace):
+    #    return False
     try:
         if os.path.isfile(os.path.join(window.folders()[0],"config",".settings")):
             return True

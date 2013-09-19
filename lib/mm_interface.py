@@ -32,12 +32,47 @@ html_parser = html.parser.HTMLParser()
 #prepares and submits a threaded call to the mm executable
 def call(operation, use_mm_panel=True, **kwargs):
     settings = sublime.load_settings('mavensmate.sublime-settings')
-    #if the mm tool is missing, we can't do anything
-    if not os.path.exists(settings.get('mm_location')) and settings.get('mm_development_mode') == False:
+    
+    if settings.get("mm_debug_mode") and not os.path.isfile(settings.get("mm_python_location")):
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
-        message = '[OPERATION FAILED]: Could not find MavensMate.app. Download MavensMate.app from http://www.joe-ferraro.com/mavensmate/MavensMate.app and place in /Applications. Also, please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
+        message = '[OPERATION FAILED]: Could not find your system python install. Please set the location at mm_python_location'
+        printer.write('\n'+message+'\n')
+        return
+
+    if 'darwin' in sys.platform:
+        if not os.path.isfile(settings.get('mm_location')) and settings.get('mm_debug_mode') == False:
+            active_window_id = sublime.active_window().id()
+            printer = PanelPrinter.get(active_window_id)
+            printer.show()
+            message = '[OPERATION FAILED]: Could not find MavensMate.app. Download MavensMate.app from mavensmate.com and place in /Applications. Also, please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
+            printer.write('\n'+message+'\n')
+            return
+
+    if 'linux' in sys.platform:
+        if not os.path.isfile(settings.get('mm_subl_location')):
+            active_window_id = sublime.active_window().id()
+            printer = PanelPrinter.get(active_window_id)
+            printer.show()
+            message = '[OPERATION FAILED]: Could not locate Sublime Text "subl" executable. Please set mm_subl_location to location of "subl" on the disk.'
+            printer.write('\n'+message+'\n')
+            return
+
+    if 'win32' in sys.platform:
+        if not os.path.isfile(settings.get('mm_windows_subl_location')):
+            active_window_id = sublime.active_window().id()
+            printer = PanelPrinter.get(active_window_id)
+            printer.show()
+            message = '[OPERATION FAILED]: Could not locate Sublime Text. Please set mm_windows_subl_location to location of sublime_text.exe on the disk.'
+            printer.write('\n'+message+'\n')
+            return
+
+    if not os.path.exists(settings.get('mm_workspace')):
+        active_window_id = sublime.active_window().id()
+        printer = PanelPrinter.get(active_window_id)
+        printer.show()
+        message = '[OPERATION FAILED]: Please set mm_workspace to an existing location on your local drive'
         printer.write('\n'+message+'\n')
         return
 
