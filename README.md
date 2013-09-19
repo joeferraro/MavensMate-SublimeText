@@ -29,7 +29,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 <img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
 
 ####Windows
-1. Download and run the [MavensMate.exe Windows Installer][http://push.mavensconsulting.netdna-cdn.com/mavensmate/builds/windows/MavensMate.exe]
+1. Download and run the <a href="http://push.mavensconsulting.netdna-cdn.com/mavensmate/builds/windows/MavensMate.exe">MavensMate.exe Windows Installer</a>
 
 ####Linux
 1. You must have python 2.7 and git installed
