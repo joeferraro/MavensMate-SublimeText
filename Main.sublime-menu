@@ -30,7 +30,7 @@
 	         			"command": "clean_project"
 	         		},
 	         		{
-	         			"caption": "Health Check",
+	         			"caption": "Health Check (beta)",
 	         			"command": "project_health_check"
 	         		}
 	         	]

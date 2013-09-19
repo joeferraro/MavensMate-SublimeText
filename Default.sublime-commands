@@ -12,7 +12,7 @@
     "command": "checkout_project"
   },
   {
-    "caption": "MavensMate: Project Health Check",
+    "caption": "MavensMate: Project Health Check (beta)",
     "command": "project_health_check"
   },
   {
