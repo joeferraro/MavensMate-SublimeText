@@ -53,7 +53,7 @@ class ManualUpgrader(threading.Thread):
             ThreadProgress(self, "Updating MavensMate for Sublime Text", 'MavensMate update complete. Please restart Sublime Text.')
             process = None
             
-            updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
+            updater_path = os.path.join(sublime.packages_path(),"MavensMate","install.py")
             settings = sublime.load_settings('mavensmate.sublime-settings')
             python_location = settings.get("mm_python_location")
             process = subprocess.Popen('"{0}" "{1}"'.format(python_location, updater_path), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
@@ -108,7 +108,7 @@ class AutomaticUpgrader(threading.Thread):
                 if 'linux' in sys.platform:
                     #sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, download the package from https://github.com/joeferraro/MavensMate-SublimeText and place in the Sublime Text packages directory.")
                     if sublime.ok_cancel_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"Would you like to update?"):
-                        updater_path = os.path.join(sublime.packages_path(),"MavensMate","install-dev.py")
+                        updater_path = os.path.join(sublime.packages_path(),"MavensMate","install.py")
                         settings = sublime.load_settings('mavensmate.sublime-settings')
                         python_location = settings.get("mm_python_location")
                         startupinfo = subprocess.STARTUPINFO()
