@@ -1194,7 +1194,7 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
             upgrader.execute(printer)
         elif 'win32' in sys.platform or 'win64' in sys.platform:
             updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
-            if not os.path.exists(updater_path):
+            if not os.path.isfile(updater_path):
                 updater_path = updater_path.replace("Program Files", "Program Files (x86)")
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW

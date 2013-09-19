@@ -112,7 +112,7 @@ class AutomaticUpgrader(threading.Thread):
                 else: #windows
                     if sublime.ok_cancel_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"Would you like to update?"):
                         updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
-                        if not os.path.exists(updater_path):
+                        if not os.path.isfile(updater_path):
                             updater_path = updater_path.replace("Program Files", "Program Files (x86)")
                         startupinfo = subprocess.STARTUPINFO()
                         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW

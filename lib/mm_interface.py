@@ -265,16 +265,19 @@ class MavensMateTerminalCall(threading.Thread):
                 mm_loc = self.settings.get('mm_debug_location')
             else:
                 mm_loc = os.path.join(config.mm_dir,"mm","mm.py") #mm.py is bundled with sublime text plugin
-            print('[MAVENSMATE] executing DEBUG mm terminal call:')
-            print("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
+            
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 #osx, linux
+                print('[MAVENSMATE] executing mm terminal call:')
+                print("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
                 process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
                 python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python")
-                if not os.path.exists(python_path):
+                if not os.path.isfile(python_path):
                     python_path = python_path.replace("Program Files", "Program Files (x86)")
+                print('[MAVENSMATE] executing mm terminal call:')
+                print('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()))
                 process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
