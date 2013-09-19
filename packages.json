@@ -11,7 +11,7 @@
 				"osx": [
 					{
 						"version": "3.0.9",
-						"release_notes": "First version to officially support Windows & Linux. Mac users: it is recommended that you update MavensMate.app to the latest version (0.35.2)",
+						"release_notes": "First official beta versions of Windows & Linux plugins. Mac users: it is recommended that you update MavensMate.app to the latest version (0.35.2)",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
