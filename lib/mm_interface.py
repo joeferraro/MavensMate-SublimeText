@@ -309,15 +309,16 @@ class MavensMateTerminalCall(threading.Thread):
             else:
                 #windows
                 if self.settings.get('mm_debug_mode', False):
+                    #user wishes to use system python
                     python_path = self.settings.get('mm_python_location')
+                    process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
                 else:
                     python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python.exe")
                     if not os.path.isfile(python_path):
                         python_path = python_path.replace("Program Files", "Program Files (x86)")
-                print('[MAVENSMATE] executing mm terminal call:')
-                print('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()))
-                process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    print('[MAVENSMATE] executing mm terminal call:')
+                    print('"{0}" -E "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()))
+                    process = subprocess.Popen('"{0}" -E "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             print('[MAVENSMATE] executing mm terminal call:')
             print("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))

@@ -55,29 +55,20 @@ class BackgroundWorker(threading.Thread):
                 mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
             #p = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         
-            # if 'linux' in sys.platform or 'darwin' in sys.platform:
-            #     #osx, linux
-            #     p = subprocess.Popen('{0} {1} {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            # else:
-            #     #windows
-            #     p = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 #osx, linux
                 p = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
                 if sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_mode', False):
+                    #user wishes to use system python
                     python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
+                    p = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
                 else:
                     python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python.exe")
                     if not os.path.isfile(python_path):
                         python_path = python_path.replace("Program Files", "Program Files (x86)")
-
-                #python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python.exe")
-                #if not os.path.isfile(python_path):
-                #    python_path = python_path.replace("Program Files", "Program Files (x86)")
-                p = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    p = subprocess.Popen('"{0}" -E "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
             #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
