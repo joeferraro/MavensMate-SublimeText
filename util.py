@@ -53,8 +53,7 @@ def package_check():
         pass
 
 def is_project_legacy(window=None):
-    print(">>>> ", window)
-    print(mm_project_directory(window))
+    #print(mm_project_directory(window))
     if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
     if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
