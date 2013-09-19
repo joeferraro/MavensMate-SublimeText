@@ -10,6 +10,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to absolute location where you wish your MavensMate project to reside
 	//if the location does not exist, MavensMate will attempt to create it
 	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
+	//WINDOWS USERS: it's probably best to set this like so: C:\\path\\to\\your\\workspace
 	"mm_workspace" : "",
 
 	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
@@ -51,16 +52,31 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
 	"mm_send_usage_statistics" : true,
 
-	//the location of MavensMate.app
+	//OSX only: the location of MavensMate.app
 	"mm_app_location" : "/Applications/MavensMate.app",
 
-	//the location of the mm command line tool (must be inside MavensMate.app)
+	//OSX only: the location of the mm command line tool (must be inside MavensMate.app)
 	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
+
+	//linux/windows users: ignore this setting
+	"mm_use_browser_as_ui" : false, 
+
+	//(advanced users only) set to location of your python 2.7 install (mm_debug_mode must be set to true)
+	"mm_python_location" : "/usr/bin/python",
+
+	//(advanced users only) set to true if you want to use system python (mm_python_location must be set)
+	"mm_debug_mode" : false,
+
+	//linux users: the location of your "subl" executable
+	"mm_subl_location" : "/usr/local/bin/subl",
+
+	//windows users: set to the location of your sublime_text.exe
+	"mm_windows_subl_location" : "C:/Program Files/Sublime Text 3/sublime_text.exe",
 
 	//specify a path for custom wsdl files here. wsdls must be named: apex.xml, partner.xml, metadata.xml, tooling.xml
 	"mm_wsdl_path" : "",
 
-	//the location of your Sublime Text install
+	//OSX only: the location of your Sublime Text install
 	"mm_plugin_client_location" : "/Applications",
 
 	//set to true to use the tooling api to compile apex metadata (if you're experiencing any compile issues, set this to false to use the metadata api)
@@ -163,25 +179,12 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//ignore metadata from managed packages (highly recommended)
 	"mm_ignore_managed_metadata" : true,
 
-	//internal only
-	"mm_debug_mode" : false,
-
 	//the number of the most recent apex debug logs to download during the "fetch logs" command
 	"mm_number_of_logs_limit" : 10,
 
 	//choices: "metadata" or "apex". "metadata" is recommended, however if your tests are taking forever to run, try switching to "apex"
 	//we're working on async testing api support in 0.36
 	"mm_test_api" : "metadata",
-
-	//linux/windows users: ignore this setting
-	"mm_use_browser_as_ui" : false, 
-
-	//for linux users (or adventurous windows users), set to location of your python 2.7 install
-	"mm_python_location" : "/usr/bin/python",
-
-	"mm_subl_location" : "/usr/local/bin/subl",
-
-	"mm_windows_subl_location" : "C:/Program Files/Sublime Text 3/sublime_text.exe",
 
 	//if true, mavensmate will store all deployment packages in your project's "deploy" directory
 	"mm_archive_deployments" : true
