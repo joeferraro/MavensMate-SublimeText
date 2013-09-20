@@ -315,9 +315,21 @@ def print_result_message(operation, res, printer, thread):
         printer.write('\n[COMPILE FAILED]: ' + res['problem'] + line_col + '\n')
     elif 'success' in res and to_bool(res['success']) == True and 'Messages' in res and len(res['Messages']) > 0:
         printer.write('\n[Operation completed Successfully - With Compile Errors]' + '\n')
-        printer.write('\n[COMPILE ERRORS] - Count:' )
+        errorCount = 0
         for m in res['Messages']:
-            printer.write('\n' + 'FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber'] + '\n')
+            errorCount += 1
+            fileName = ""
+            problem = ""
+            lineNumber = ""
+            if 'fileName' in m:
+                fileName = m['fileName']
+            if 'problem' in m:
+                problem = m['problem']
+            if 'lineNumber' in m:
+                lineNumber = m['lineNumber']
+            printer.write('\n' + 'FileName: ' + fileName + ': ' + problem + ' Line: ' + lineNumber + '\n')
+
+        printer.write('\n[COMPILE ERRORS] - Count: {} '.format(errorCount))
     elif 'success' in res and to_bool(res['success']) == True:
         printer.write('\n[Operation completed Successfully]' + '\n')
     elif 'success' in res and to_bool(res['success']) == False and 'body' in res:
