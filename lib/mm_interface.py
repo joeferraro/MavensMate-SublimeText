@@ -68,7 +68,7 @@ def call(operation, use_mm_panel=True, **kwargs):
             printer.write('\n'+message+'\n')
             return
 
-    if not os.path.exists(settings.get('mm_workspace')):
+    if not util.valid_workspace():
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
@@ -242,6 +242,11 @@ class MavensMateTerminalCall(threading.Thread):
 
             if o != 'new_project' and o != 'new_project_from_existing_directory':
                 payload['project_name'] = self.project_name
+                workspace = util.get_project_settings().get("workspace")
+                if workspace != None:
+                    payload['workspace'] = util.get_project_settings().get("workspace")
+                else:
+                    payload['workspace'] = os.path.dirname(util.mm_project_directory())
 
             #selected files
             if o in params['files']:

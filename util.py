@@ -60,7 +60,7 @@ def is_project_legacy(window=None):
         return True
     elif os.path.exists(os.path.join(mm_project_directory(window),"config",".settings")):
         current_settings = parse_json_from_file(os.path.join(mm_project_directory(window),"config",".settings"))
-        if 'subscription' not in current_settings:
+        if 'subscription' not in current_settings or 'workspace' not in current_settings:
             return True
         else:
             return False
@@ -149,6 +149,21 @@ def get_project_name(context=None):
     else:
         return None
 
+def valid_workspace():
+    workspace = mm_workspace()
+    if workspace == None or workspace == "":
+        return False
+    elif type(workspace) is list and len(workspace) > 0:
+        workspaces = workspace
+        for w in workspaces:
+            if not os.path.exists(w):
+                return False
+    elif type(workspace) is list and len(workspace) == 0:
+        return False
+    elif not os.path.exists(w):
+        return False
+    return True
+
 def check_for_workspace():
     workspace = mm_workspace()
     if workspace == None or workspace == "":
@@ -157,7 +172,17 @@ def check_for_workspace():
         sublime.error_message(msg)  
         raise BaseException
 
-    if not os.path.exists(workspace):
+    selected_workspace = None
+    if type(workspace) is list and len(workspace) > 0:
+        selected_workspace = workspace[0]
+    elif type(workspace) is list and len(workspace) == 0:
+        msg = 'Your [mm_workspace] directory \''+workspace+'\' does not exist. Please create the directory then try your operation again. Thx!'
+        sublime.error_message(msg)  
+        raise BaseException
+    else:
+        selected_workspace = workspace
+
+    if not os.path.exists(selected_workspace):
         #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
         msg = 'Your [mm_workspace] directory \''+workspace+'\' does not exist. Please create the directory then try your operation again. Thx!'
         sublime.error_message(msg)  
@@ -171,6 +196,14 @@ def sublime_project_file_path():
         return os.path.join(project_directory,get_project_name(),".sublime-project")
     else:
         return None 
+
+def get_project_settings(window=None):
+    if window == None:
+        window = sublime.active_window()
+    try:
+       return parse_json_from_file(os.path.join(window.folders()[0],"config",".settings"))
+    except:
+        raise BaseException("Could not load project settings")
 
 # check for mavensmate .settings file
 def is_mm_project(window=None):

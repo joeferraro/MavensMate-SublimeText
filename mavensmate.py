@@ -307,18 +307,23 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         self.dir_map = {}
         dirs = [] 
         #print(util.mm_workspace())
-        for dirname in os.listdir(util.mm_workspace()):
-            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
-            if dirname in open_projects : continue
-            if not os.path.isdir(os.path.join(util.mm_workspace(),dirname)) : continue
-            sublime_project_file = dirname+'.sublime-project'
-            for project_content in os.listdir(os.path.join(util.mm_workspace(),dirname)):
-                if '.' not in project_content: continue
-                if project_content == '.sublime-project':
-                    sublime_project_file = '.sublime-project'
-                    continue
-            dirs.append(dirname)
-            self.dir_map[dirname] = [dirname, sublime_project_file]
+        workspaces = util.mm_workspace()
+        if type(workspaces) is not list:
+            workspaces = [workspaces]
+
+        for w in workspaces:
+            for dirname in os.listdir(w):
+                if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
+                if dirname in open_projects : continue
+                if not os.path.isdir(os.path.join(w,dirname)) : continue
+                sublime_project_file = dirname+'.sublime-project'
+                for project_content in os.listdir(os.path.join(w,dirname)):
+                    if '.' not in project_content: continue
+                    if project_content == '.sublime-project':
+                        sublime_project_file = '.sublime-project'
+                        continue
+                dirs.append([dirname, "Workspace: "+os.path.basename(w)])
+                self.dir_map[dirname] = [dirname, sublime_project_file, w]
         self.results = dirs
         #print(self.results)
         self.window.show_quick_panel(dirs, self.panel_done,
@@ -328,29 +333,33 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.picked_project = self.results[picked]
-        project_file = self.dir_map[self.picked_project][1]        
+        project_file = self.dir_map[self.picked_project[0]][1]  
+        project_name = self.dir_map[self.picked_project[0]][0]
+        workspace = self.dir_map[self.picked_project[0]][2]
+        project_file_location = os.path.join(workspace,project_name,project_file)
+        #print(project_file_location)
+        
+        if not os.path.isfile(project_file_location):
+            sublime.message_dialog("Cannot find project file for ",project_name)
+
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        sublime_path = settings.get('mm_plugin_client_location', '/Applications')
-        if os.path.isfile(os.path.join(util.mm_workspace(),self.picked_project,project_file)):
-            if sys.platform == 'darwin':
-                if sublime_version >= 3000:
-                    if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
-                        p = subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                    elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
-                        p = subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                else:
-                    p = subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            elif 'linux' in sys.platform:
-                subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
-                p = subprocess.Popen("'{0}' --project '"+util.mm_workspace()+"/"+self.picked_project+"/"+project_file+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        if sys.platform == 'darwin':
+            sublime_path = settings.get('mm_plugin_client_location', '/Applications')
+            if sublime_version >= 3000:
+                if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
+                    subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
+                    subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
-                subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
-                if not os.path.isfile(subl_location) and "x86" not in subl_location:
-                    subl_location = subl_location.replace("Program Files", "Program Files (x86)")
-                project_location = os.path.join(util.mm_workspace(),self.picked_project,project_file)
-                p = subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        elif 'linux' in sys.platform:
+            subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
+            subprocess.Popen("'{0}' --project '"+project_file_location+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
-            sublime.message_dialog("Cannot find: "+os.path.join(util.mm_workspace(),self.picked_project,project_file))
+            subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
+            if not os.path.isfile(subl_location) and "x86" not in subl_location:
+                subl_location = subl_location.replace("Program Files", "Program Files (x86)")
+            subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_file_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
