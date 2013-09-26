@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.1.0",
-						"release_notes": "Resolves an issue where some OSX users were unable to refresh a file from server",
+						"version": "3.1.1",
+						"release_notes": "Visualforce now included in Project Health Check. OSX users: be sure to update both MavensMate.app and MM for Sublime Text.",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
