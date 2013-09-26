@@ -614,7 +614,7 @@ class HideDebugPanelCommand(sublime_plugin.WindowCommand):
 class ShowVersionCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         version = util.get_version_number()
-        sublime.message_dialog("MavensMate for Sublime Text v"+version+"\n\nMavensMate for Sublime Text is an open source Sublime Text package for Force.com development.\n\nhttp://mavens.io/mm")
+        sublime.message_dialog("MavensMate for Sublime Text v"+version+"\n\nMavensMate for Sublime Text is an open source Sublime Text package for Force.com development.\n\nhttp://mavensmate.com")
 
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
