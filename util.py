@@ -297,7 +297,7 @@ def is_apex_webservice_file(filename=None):
     if not is_apex_class_file(filename): return False
     with codecs.open(filename, "r", "utf-8") as content_file:
         content = content_file.read()
-        p = re.compile("global\s+class\s", re.I + re.M)
+        p = re.compile("global\s+(abstract\s+)?class\s", re.I + re.M)
         if p.search(content):
             p = re.compile("\swebservice\s", re.I + re.M)
             if p.search(content): return True
