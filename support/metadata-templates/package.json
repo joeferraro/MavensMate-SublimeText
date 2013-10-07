@@ -1,0 +1,94 @@
+{
+	"ApexClass" : [
+		{
+			"name" 			: "Default",
+			"file_name" 	: "ApexClass.cls",
+			"description" 	: "The default template for an Apex Class",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Controller Extension",
+			"file_name" 	: "ControllerExtension.cls",
+			"description" 	: "Controller extension Apex Class",
+			"author" 		: "David Schach @dschach"
+		},
+		{
+			"name" 			: "No Constructor",
+			"file_name" 	: "ApexClassNoConstructor.cls",
+			"description" 	: "The default template for an Apex Class",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Batch",
+			"file_name" 	: "BatchApexClass.cls",
+			"description" 	: "Batch Apex Class",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Email Service",
+			"file_name" 	: "EmailServiceApexClass.cls",
+			"description" 	: "Template for an Apex Email Service",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Custom Exception",
+			"file_name" 	: "ExceptionApexClass.cls",
+			"description" 	: "A custom exception class",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Schedulable",
+			"file_name" 	: "SchedulableApexClass.cls",
+			"description" 	: "A Schedulable class",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Unit Test",
+			"file_name" 	: "UnitTestApexClass.cls",
+			"description" 	: "Unit test class",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "URL Rewriter",
+			"file_name" 	: "UrlRewriterApexClass.cls",
+			"description" 	: "URL Rewriter class",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Web Service",
+			"file_name" 	: "WebserviceClass.cls",
+			"description" 	: "Web service class",
+			"author" 		: "MavensMate"
+		}
+	],
+	"ApexComponent" : [
+		{
+			"name" 			: "Visualforce Component",
+			"file_name" 	: "ApexComponent.component",
+			"description" 	: "Basic Visualforce Component template",
+			"author" 		: "MavensMate"
+		}
+	],
+	"ApexPage" : [
+		{
+			"name" 			: "Visualforce Page",
+			"file_name" 	: "ApexPage.page",
+			"description" 	: "Basic Visualforce Page template",
+			"author" 		: "MavensMate"
+		}
+	],
+	"ApexTrigger" : [
+		{
+			"name" 			: "Apex Trigger",
+			"file_name" 	: "ApexTrigger.trigger",
+			"description" 	: "Basic Apex Trigger template",
+			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Bulkified Apex Trigger",
+			"file_name" 	: "ApexTriggerBulk.trigger",
+			"description" 	: "Bulk Apex Trigger with all Trigger events",
+			"author" 		: "David Schach @dschach"
+		}
+	]
+}

@@ -77,15 +77,20 @@ def parse_json_from_file(location):
         return {}
 
 def parse_templates_package(mtype=None):
-    if 'linux' in sys.platform:
-        response = os.popen('wget https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json -q -O -').read()
-    else:
-        response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json').read().decode('utf-8')
-    j = json.loads(response)
+    try:
+        if 'linux' in sys.platform:
+            response = os.popen('wget https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json -q -O -').read()
+        else:
+            response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json').read().decode('utf-8')
+        j = json.loads(response)
+    except:
+        local_template_path = os.path.join(config.mm_dir,"support","metadata-templates","package.json")
+        j = parse_json_from_file(local_template_path)
     if mtype != None:
         return j[mtype]
     else:
         return j
+
 
 def get_number_of_lines_in_file(file_path):
     f = open(file_path)
