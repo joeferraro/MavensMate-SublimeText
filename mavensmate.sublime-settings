@@ -11,6 +11,13 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if the location does not exist, MavensMate will attempt to create it
 	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
 	//WINDOWS USERS: it's probably best to set this like so: C:\\path\\to\\your\\workspace
+	//NEW: you can now set mm_workspace to an array of locations on your file system
+	//EXAMPLE:
+	// "mm_workspace" : [
+	// 		"/my/workspace",
+	// 		"/my/other/workspace",
+	// 		"my/super/secret/workspace"
+	// ]
 	"mm_workspace" : "",
 
 	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
