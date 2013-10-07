@@ -165,7 +165,7 @@ def valid_workspace():
                 return False
     elif type(workspace) is list and len(workspace) == 0:
         return False
-    elif not os.path.exists(w):
+    elif type(workspace) is not list and not os.path.exists(workspace):
         return False
     return True
 
