@@ -340,7 +340,8 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         #print(project_file_location)
         
         if not os.path.isfile(project_file_location):
-            sublime.message_dialog("Cannot find project file for ",project_name)
+            sublime.message_dialog("Cannot find project file for: "+project_name)
+            return
 
         settings = sublime.load_settings('mavensmate.sublime-settings')
         if sys.platform == 'darwin':
