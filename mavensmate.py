@@ -1505,7 +1505,24 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         ps = []
         ps.append(os.path.join(util.mm_project_directory(),"src","staticresources",self.results[picked]))
         resource_bundle.create(self, ps)
-        
+
+#opens a file 
+class OpenFileInProject(sublime_plugin.ApplicationCommand):
+    def run(self, project_name, file_name, line_number):       
+        window = sublime.active_window()
+        for w in sublime.windows():
+            if w.project_file_name() == None:
+                continue
+            if project_name+".sublime-project" in w.project_file_name():
+                window = w
+                break
+        window.open_file("{0}:{1}:{2}".format(file_name, line_number, 0), sublime.ENCODED_POSITION)
+        view = window.active_view()
+        sublime.set_timeout(lambda: self.mark_line(view, line_number), 100)
+
+    def mark_line(self, view, line_number):
+        view.add_regions("health_item", [view.line(view.text_point(line_number-1, 0))], "foo", "bookmark", sublime.DRAW_OUTLINED)
+
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self):
