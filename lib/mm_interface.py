@@ -551,7 +551,7 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
                         line_col += ', Column: '+m['columnNumber']
                     if len(line_col) > 0:
                         line_col += ')'
-                    msg += "\n\n" + m['fileName'] + ': ' + m['problem'] + line_col
+                    msg += m['fileName'] + ': ' + m['problem'] + line_col + "\n\n"
 
             printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
             
