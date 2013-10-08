@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.0.9",
-						"release_notes": "First official beta versions of Windows & Linux plugins. Mac users: it is recommended that you update MavensMate.app to the latest version (0.35.2)",
+						"version": "3.1.2",
+						"release_notes": "Multiple workspaces, health check enhancements, custom salesforce urls for projects, various UI/UX updates, various bug fixes (OSX users: be sure MM.app *AND* MM for ST3 plugin are both updated)",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
