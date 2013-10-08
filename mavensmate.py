@@ -151,7 +151,7 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
 #displays deploy dialog
 class NewDebugLogCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('debug_log', False)
+        mm.call('debug_log', True)
         util.send_usage_statistics('New Debug Log')
 
     def is_enabled(command):
@@ -953,19 +953,19 @@ class IndexMetadataCommand(sublime_plugin.WindowCommand):
 
 class NewQuickLogCommand(sublime_plugin.WindowCommand):
     def run(self):
-        mm.call('new_quick_log', False)
+        mm.call('new_quick_log', True)
         util.send_usage_statistics('New Quick Log')
 
 #refreshes the currently active file from the server
 class FetchLogsCommand(sublime_plugin.WindowCommand):
     def run(self):
-        mm.call('fetch_logs', False)
+        mm.call('fetch_logs', True)
         util.send_usage_statistics('Fetch Apex Logs')  
 
 #refreshes the currently active file from the server
 class FetchCheckpointsCommand(sublime_plugin.WindowCommand):
     def run(self):
-        mm.call('fetch_checkpoints', False)
+        mm.call('fetch_checkpoints', True)
         util.send_usage_statistics('Fetch Apex Checkpoints')  
 
 
