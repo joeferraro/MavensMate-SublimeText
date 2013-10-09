@@ -68,11 +68,11 @@ def call(operation, use_mm_panel=True, **kwargs):
             printer.write('\n'+message+'\n')
             return
 
-    if not os.path.exists(settings.get('mm_workspace')):
+    if not util.valid_workspace():
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
-        message = '[OPERATION FAILED]: Please set mm_workspace to an existing location on your local drive'
+        message = '[OPERATION FAILED]: Please ensure mm_workspace is set to existing location(s) on your local drive'
         printer.write('\n'+message+'\n')
         return
 
@@ -206,6 +206,11 @@ class MavensMateTerminalCall(threading.Thread):
                 'apex_class_type'               : self.params.get('apex_class_type', None),
                 'github_template'               : self.params.get('github_template', None)
             }
+            workspace = util.get_project_settings().get("workspace")
+            if workspace != None:
+                payload['workspace'] = util.get_project_settings().get("workspace")
+            else:
+                payload['workspace'] = os.path.dirname(util.mm_project_directory())
         elif o == 'new_project_from_existing_directory':
             # no project name
             payload = self.params
@@ -242,6 +247,11 @@ class MavensMateTerminalCall(threading.Thread):
 
             if o != 'new_project' and o != 'new_project_from_existing_directory':
                 payload['project_name'] = self.project_name
+                workspace = util.get_project_settings().get("workspace")
+                if workspace != None:
+                    payload['workspace'] = util.get_project_settings().get("workspace")
+                else:
+                    payload['workspace'] = os.path.dirname(util.mm_project_directory())
 
             #selected files
             if o in params['files']:
@@ -541,7 +551,7 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
                         line_col += ', Column: '+m['columnNumber']
                     if len(line_col) > 0:
                         line_col += ')'
-                    msg += "\n\n" + m['fileName'] + ': ' + m['problem'] + line_col
+                    msg += m['fileName'] + ': ' + m['problem'] + line_col + "\n\n"
 
             printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
             

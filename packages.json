@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.1.1",
-						"release_notes": "Visualforce now included in Project Health Check. OSX users: be sure to update both MavensMate.app and MM for Sublime Text.",
+						"version": "3.1.2",
+						"release_notes": "Multiple workspaces, health check enhancements, custom salesforce urls for projects, various UI/UX updates, various bug fixes (OSX users: be sure MM.app *AND* MM for ST3 plugin are both updated)",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
