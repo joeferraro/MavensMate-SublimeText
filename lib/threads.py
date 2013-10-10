@@ -106,7 +106,7 @@ class PanelThreadProgress():
         self.addend = 1
         self.size = 8
         self.callback = None
-        sublime.set_timeout(lambda: self.run(0), 100)
+        sublime.set_timeout(lambda: self.run(0), 70)
 
     def run(self, i):
         if not self.thread.is_alive():
@@ -141,7 +141,7 @@ class PanelThreadProgress():
             self.addend = 1
         i += self.addend
 
-        sublime.set_timeout(lambda: self.run(i), 100)
+        sublime.set_timeout(lambda: self.run(i), 70)
 
 class ThreadProgress():
     """
