@@ -22,7 +22,7 @@ try:
     install_path        = install_paths[platform]
     user_settings_path  = user_settings_path[platform]
     branch              = 'master'
-    git_url             = pipes.quote('git://github.com/joeferraro/MavensMate-SublimeText.git')
+    git_url             = pipes.quote('http://github.com/joeferraro/MavensMate-SublimeText.git')
 
     def install_from_source():
         if 'linux' in sys.platform or 'darwin' in sys.platform:
