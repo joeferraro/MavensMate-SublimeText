@@ -153,7 +153,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	            "url"           : "UrlRewriterApexClass.html",
 	            "webservice"    : "WebserviceClass.html",
 	            "empty"         : "ApexClassNoConstructor.html",
-	            "default"       : "ApexClass.html"
+	            "default"       : "ApexClass.html",
+	            "standardcontroller" : "StandardController.html"
 	        },
         "ApexTrigger"   : 
 	        {
@@ -166,6 +167,40 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
         "ApexPage"      : 
 	        {
 	            "default"       : "ApexPage.html"
+	        }
+    },
+
+    //the location for user custom templates. 
+    //If the value does not match a valid path, the default value will be a folder named "templates" in the mm_workspace directory
+    //for example: "/Users/username/Documents/templates" (notice the absolute path and ability to place in any folder)
+	"mm_apex_templates_dir" : "",
+
+	//uncomment a line to supply your own template in the templates directory, or add a new one
+	"mm_apex_templates_map" : {
+        "ApexClass"     : 
+	        {
+	            //"test"          : "UnitTestApexClass.html",
+	            //"exception"     : "ExceptionApexClass.html",
+	            //"batch"         : "BatchApexClass.html",
+	            //"schedulable"   : "SchedulableApexClass.html",
+	            //"email"         : "EmailServiceApexClass.html",
+	            //"url"           : "UrlRewriterApexClass.html",
+	            //"webservice"    : "WebserviceClass.html",
+	            //"empty"         : "ApexClassNoConstructor.html",
+	            //"default"       : "ApexClass.html"
+	            
+	        },
+        "ApexTrigger"   : 
+	        {
+	            //"default"       : "ApexTrigger.html"
+	        },
+        "ApexComponent" :  
+	        {
+	            //"default"       : "ApexComponent.html"
+	        },
+        "ApexPage"      : 
+	        {
+	            //"default"       : "ApexPage.html"
 	        }
     },
 
