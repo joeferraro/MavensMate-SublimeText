@@ -20,6 +20,14 @@
     "command": "edit_project"
   },
   {
+    "caption": "MavensMate: New Apex Script...",
+    "command": "new_apex_script"
+  },
+  {
+    "caption": "MavensMate: Run Apex Script...",
+    "command": "run_apex_script"
+  },
+  {
     "caption": "MavensMate: Diff",
     "command": "mavens_mate_diff"
   },

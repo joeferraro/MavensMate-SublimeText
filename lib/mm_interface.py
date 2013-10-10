@@ -276,6 +276,10 @@ class MavensMateTerminalCall(threading.Thread):
             if self.params != None and 'classes' in self.params:
                 payload['classes'] = self.params.get('classes', None)
 
+            if o == 'run_apex_script':
+                payload['script_name'] = self.params.get('script_name', None)
+                payload['return_log'] = False
+
         #print('>>>>>> ',payload)    
 
         if type(payload) is dict:
@@ -436,6 +440,20 @@ def handle_result(operation, process_id, printer, result, thread):
                     printer.panel.run_command('write_operation_status', {'text': json.dumps(result), 'region': [status_region.end(), status_region.end()+10] })
             else:
                 pass #TODO
+        
+        elif operation == 'run_apex_script':
+            if result["success"] == True and result["compiled"] == True:
+                printer.panel.run_command('write_operation_status', {'text': " Success", 'region': [status_region.end(), status_region.end()+10] })
+                thread.window.open_file(result["log_location"], sublime.TRANSIENT)
+            elif result["success"] == False:
+                message = " [OPERATION FAILED]: "
+                if "compileProblem" in result and result["compileProblem"] != None:
+                    message += "[Line: "+str(result["line"]) + ", Column: "+str(result["column"])+"] " + result["compileProblem"] + "\n"
+                if "exceptionMessage" in result and result["exceptionMessage"] != None:
+                    message += result["exceptionMessage"] + "\n"
+                if "exceptionStackTrace" in result and result["exceptionStackTrace"] != None:
+                    message += result["exceptionStackTrace"] + "\n"
+                printer.panel.run_command('write_operation_status', {'text': message, 'region': [status_region.end(), status_region.end()+10] })
         else:
             print_result_message(operation, process_id, status_region, result, printer, thread) 
             if operation == 'new_metadata' and 'success' in result and util.to_bool(result['success']) == True:

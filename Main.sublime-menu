@@ -191,9 +191,18 @@
      			"caption": "Run Async Apex Tests For This Class",
      			"command": "run_async_apex_tests"
      		},
+     		{"caption":"-"},
 	     	{
 	    		"caption": "Execute Apex...",  
 	         	"command": "execute_anonymous"
+	     	},
+	     	{
+	    		"caption": "New Apex Script...",  
+	         	"command": "new_apex_script"
+	     	},
+	     	{
+	    		"caption": "Run Apex Script",  
+	         	"command": "run_apex_script"
 	     	},
 	     	// {
 	      //   	"id": "delete_active", 

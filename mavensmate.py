@@ -362,6 +362,37 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 subl_location = subl_location.replace("Program Files", "Program Files (x86)")
             subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_file_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
+class RunApexScriptCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        params = {
+            "script_name"         : os.path.basename(util.get_active_file())
+        }
+        mm.call('run_apex_script', context=self, params=params)
+        util.send_usage_statistics('Run Apex Script')
+
+    def is_enabled(command):
+        return "apex-scripts" in util.get_active_file() and '.cls' in util.get_active_file()
+
+class NewApexScriptCommand(sublime_plugin.TextCommand):
+
+    def run(self, edit):
+        sublime.active_window().show_input_panel("Apex Script Name", "MyScriptName", self.finish, None, None)
+
+    def finish(self, name):
+        if not os.path.exists(os.path.join(util.mm_project_directory(), "apex-scripts")):
+            os.makedirs(os.path.join(util.mm_project_directory(), "apex-scripts"))
+
+        if ".cls" not in name:
+            name = name + ".cls"
+
+        f = open(os.path.join(util.mm_project_directory(), "apex-scripts", name), "w")
+        f.close()
+
+        sublime.active_window().open_file(os.path.join(util.mm_project_directory(), "apex-scripts", name))
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
     

@@ -87,5 +87,6 @@ def get_message(params, operation):
         message = 'Running Apex tests for this class...'
     elif operation == 'new_quick_log':
         message = 'Setting up logs for debug users (logs can be configured in project/config/.debug)'
-
+    elif operation == 'run_apex_script':
+        message = 'Running Apex script (logs can be found in project/apex-scripts/log)'
     return message 
