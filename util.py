@@ -307,9 +307,12 @@ def write_overlays(view, overlay_result):
             sublime.set_timeout(lambda: mark_line_numbers(view, [int(r["Line"])], "dot", "overlay"), 100)
 
 def mark_line_numbers(view, lines, icon="dot", mark_type="compile_issue"):
-    points = [view.text_point(l - 1, 0) for l in lines]
-    regions = [sublime.Region(p, p) for p in points]
-    view.add_regions(mark_type, regions, "operation.fail", icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
+    try:
+        view.add_regions(mark_type, [view.line(view.text_point(lines[0]-1, 0))], "invalid.illegal", icon, sublime.DRAW_EMPTY_AS_OVERWRITE)
+    except:
+        points = [view.text_point(l - 1, 0) for l in lines]
+        regions = [sublime.Region(p, p) for p in points]
+        view.add_regions(mark_type, regions, "operation.fail", icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
 
 def clear_marked_line_numbers(view, mark_type="compile_issue"):
     try:
