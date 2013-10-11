@@ -6,12 +6,12 @@
 			"description": "MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.",
 			"author": "joeferraro",
 			"homepage": "https://github.com/joeferraro/MavensMate-SublimeText",
-			"last_modified": "2013-09-20 18:45:00",
+			"last_modified": "2013-10-11 18:45:00",
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.1.2",
-						"release_notes": "Multiple workspaces, health check enhancements, custom salesforce urls for projects, various UI/UX updates, various bug fixes (OSX users: be sure MM.app *AND* MM for ST3 plugin are both updated)",
+						"version": "3.1.3",
+						"release_notes": "New \"Apex Scripts\" functionality enables you to create & run named scripts within Sublime Text, more code assist enhancements based on Tooling API.\n\n(OSX USERS: please update MM.app and MM for ST plugin)",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
