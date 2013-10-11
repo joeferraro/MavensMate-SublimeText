@@ -41,8 +41,8 @@ import sublime_plugin
 settings = sublime.load_settings('mavensmate.sublime-settings')
 sublime_version = int(float(sublime.version()))
 
-completioncommon = imp.load_source("completioncommon", os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib/completioncommon.py"))
-
+completioncommon = imp.load_source("completioncommon", os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib","completioncommon.py"))
+apex_completions = util.parse_json_from_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "support", "lib", "completions.json"))
 
 st_version = 2
 # Warn about out-dated versions of ST3
@@ -1405,6 +1405,7 @@ class ApexCompletions(sublime_plugin.EventListener):
             return []
 
         print('[MAVENSMATE] autocomplete word: ', word)
+        
         ##OK START COMPLETIONS
         _completions = []
         lower_word = word.lower()
@@ -1418,114 +1419,121 @@ class ApexCompletions(sublime_plugin.EventListener):
         typedef = parsehelp.get_type_definition(data)
         print('[MAVENSMATE] autocomplete type definition: ', typedef)
 
-        typedef_class = typedef[2]
-        typedef_class_lower = typedef_class.lower()
+        if '.' in typedef[2]:
+            type_parts = typedef[2].split('.')
+            typedef_class = type_parts[0] #e.g. ApexPages
+            typedef_class_lower = typedef_class.lower()
+            typedef_class_extra = type_parts[1] #e.g. StandardController
+            typedef_class_extra_lower = typedef_class_extra.lower()
+        else:
+            typedef_class = typedef[2] #e.g. ApexPages
+            typedef_class_lower = typedef_class.lower()
+            typedef_class_extra = typedef[4].replace('.','') #e.g. StandardController
+            typedef_class_extra_lower = typedef_class_extra.lower()
 
-        print('[MAVENSMATE] autocomplete type definition class: ', typedef_class)
+        print('[MAVENSMATE] autocomplete type: ', typedef_class) #String
+        print('[MAVENSMATE] autocomplete type extra: ', typedef_class_extra) #String
 
+        #need to return symbol table for this class
         if lower_word == 'this':           
             _completions = util.get_apex_completions(file_name) 
             return sorted(_completions)
 
-        ## HANDLE APEX STATIC METHODS
-        ## String.valueOf, Double.toString(), etc.
-        elif os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",lower_word+".json")): 
-            prefix = prefix.lower()
-            json_data = open(os.path.join(config.mm_dir,"support","lib","apex",lower_word+".json"))
-            data = json.load(json_data)
-            json_data.close()
-            if 'static_methods' in data:
-                pd = data["static_methods"]
-                for method in pd:
-                    _completions.append((method, method))
-                return sorted(_completions)
-            else:
-                return []
-        
+        if typedef_class in apex_completions["publicDeclarations"] and typedef_class_extra_lower == '':
+            comp_def = apex_completions["publicDeclarations"].get(word)
+            for i in comp_def:
+                _completions.append((i, i))
+            return sorted(_completions)
+        elif apex_completions["publicDeclarations"].get(typedef_class) != None:
+            top_level = apex_completions["publicDeclarations"].get(typedef_class)
+            sub_def = top_level.get(word)
+            if sub_def == None:
+                sub_def = top_level.get(typedef_class_extra)
+            #print('>>>>>>>>> ',sub_def)
+            _completions = util.get_system_apex_completions(sub_def)
+            return sorted(_completions)
+        elif typedef_class in apex_completions["publicDeclarations"]["System"]:
+            if word == typedef_class: #static
+                comp_def = apex_completions["publicDeclarations"]["System"].get(word)
+            else: #instance
+                comp_def = apex_completions["publicDeclarations"]["System"].get(typedef_class)
+            _completions = util.get_system_apex_completions(comp_def)
+            return sorted(_completions)
+
         ## HANDLE CUSTOM APEX CLASS STATIC METHODS 
         ## MyCustomClass.some_static_method
         elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",word+".cls")):
             _completions = util.get_apex_completions(word) 
             return sorted(_completions)  
 
+        if typedef_class_lower == None:
+            return []
+
+        if '<' in typedef_class:
+            typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
+            typedef_class_lower = re.sub('\<', '', typedef_class_lower)
+            typedef_class_lower = re.sub('\>', '', typedef_class_lower)
+            typedef_class       = re.sub('\<.*?\>', '', typedef_class)
+            typedef_class       = re.sub('\<', '', typedef_class)
+            typedef_class       = re.sub('\>', '', typedef_class)
+
+        if '[' in typedef_class:
+            typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
+            typedef_class       = re.sub('\[.*?\]', '', typedef_class)
+
         ## HANDLE CUSTOM APEX INSTANCE METHOD ## 
         ## MyClass foo = new MyClass()
-        ## foo.??
-        else: 
-            symbol_table = util.get_symbol_table(file_name)
+        ## foo.??        
+        symbol_table = util.get_symbol_table(file_name)
 
-            if typedef_class_lower != None:
-                if '<' in typedef_class:
-                    typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
-                    typedef_class_lower = re.sub('\<', '', typedef_class_lower)
-                    typedef_class_lower = re.sub('\>', '', typedef_class_lower)
-                    typedef_class       = re.sub('\<.*?\>', '', typedef_class)
-                    typedef_class       = re.sub('\<', '', typedef_class)
-                    typedef_class       = re.sub('\>', '', typedef_class)
-
-                if '[' in typedef_class:
-                    typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
-                    typedef_class       = re.sub('\[.*?\]', '', typedef_class)
-
-                if symbol_table != None:
-                    if "innerClasses" in symbol_table and type(symbol_table["innerClasses"] is list and len(symbol_table["innerClasses"]) > 0):
-                        for ic in symbol_table["innerClasses"]:
-                            if ic["name"].lower() == typedef_class_lower:
-                                _completions = util.get_completions_for_inner_class(ic)
-                                return sorted(_completions)  
-
-                #print(typedef_class_lower)
-                if os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
-                    json_data = open(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json"))
-                    data = json.load(json_data)
-                    json_data.close()
-                    pd = data["instance_methods"]
-                    for method in pd:
-                        _completions.append((method, method))
-                    return sorted(_completions)
-                elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
-                    _completions = util.get_apex_completions(typedef_class)
-                    return sorted(_completions)
-                elif os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
-                    object_dom = parse(util.mm_project_directory()+"/src/objects/"+typedef_class+".object")
-                    for node in object_dom.getElementsByTagName('fields'):
-                        field_name = ''
-                        field_type = ''
-                        for child in node.childNodes:                            
-                            if child.nodeName != 'fullName' and child.nodeName != 'type': continue
-                            if child.nodeName == 'fullName':
-                                field_name = child.firstChild.nodeValue
-                            elif child.nodeName == 'type':
-                                field_type = child.firstChild.nodeValue
-                        _completions.append((field_name+" \t"+field_type, field_name))
-                    return sorted(_completions)
-                elif os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object fields
-                    jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
-                    for metadata_type in jsonData:
-                        if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
-                            for object_type in metadata_type['children']:
-                                if 'text' in object_type and object_type['text'].lower() == typedef_class_lower:
-                                    for attr in object_type['children']:
-                                        if 'text' in attr and attr['text'] == 'fields':
-                                            for field in attr['children']:
-                                                _completions.append((field['text'], field['text']))
-                    if len(_completions) == 0 and '__c' in typedef_class_lower:
-                        try:
-                            #need to index custom objects here, because it couldnt be found
-                            if len(ThreadTracker.get_pending_mm_panel_threads(sublime.active_window())) == 0:
-                                params = {
-                                    'metadata_types' : ['CustomObject']
-                                }
-                                mm.call('refresh_metadata_index', False, params=params)
-                        except:
-                            print('[MAVENSMATE]: failed to index custom object metadata')
-                    else:
-                        _completions.append(('Id', 'Id'))
-                        return (sorted(_completions), completion_flags)
-                else:
-                    return []
+        if symbol_table != None and "innerClasses" in symbol_table and type(symbol_table["innerClasses"] is list and len(symbol_table["innerClasses"]) > 0):
+            for ic in symbol_table["innerClasses"]:
+                if ic["name"].lower() == typedef_class_lower:
+                    _completions = util.get_completions_for_inner_class(ic)
+                    return sorted(_completions)  
+        
+        if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
+            _completions = util.get_apex_completions(typedef_class)
+            return sorted(_completions)
+        
+        if os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
+            object_dom = parse(util.mm_project_directory()+"/src/objects/"+typedef_class+".object")
+            for node in object_dom.getElementsByTagName('fields'):
+                field_name = ''
+                field_type = ''
+                for child in node.childNodes:                            
+                    if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                    if child.nodeName == 'fullName':
+                        field_name = child.firstChild.nodeValue
+                    elif child.nodeName == 'type':
+                        field_type = child.firstChild.nodeValue
+                _completions.append((field_name+" \t"+field_type, field_name))
+            return sorted(_completions)
+        elif os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object fields
+            jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
+            for metadata_type in jsonData:
+                if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                    for object_type in metadata_type['children']:
+                        if 'text' in object_type and object_type['text'].lower() == typedef_class_lower:
+                            for attr in object_type['children']:
+                                if 'text' in attr and attr['text'] == 'fields':
+                                    for field in attr['children']:
+                                        _completions.append((field['text'], field['text']))
+            if len(_completions) == 0 and '__c' in typedef_class_lower:
+                try:
+                    #need to index custom objects here, because it couldnt be found
+                    if len(ThreadTracker.get_pending_mm_panel_threads(sublime.active_window())) == 0:
+                        params = {
+                            'metadata_types' : ['CustomObject']
+                        }
+                        mm.call('refresh_metadata_index', False, params=params)
+                except:
+                    print('[MAVENSMATE]: failed to index custom object metadata')
             else:
-                return []
+                _completions.append(('Id', 'Id'))
+                return (sorted(_completions), completion_flags)
+        else:
+            return []
 
 #prompts users to select a static resource to create a resource bundle
 class CreateResourceBundleCommand(sublime_plugin.WindowCommand):

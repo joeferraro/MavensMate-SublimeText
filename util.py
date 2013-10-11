@@ -458,11 +458,40 @@ def get_symbol_table(class_name):
     except:
         return None
 
-def get_completions_for_inner_class(symbol_table):
+def get_system_apex_completions(symbol_table):
     completions = []
     if 'constructors' in symbol_table:
         for c in symbol_table['constructors']:
-            completions.append((c["visibility"] + " " + c["name"], c["name"]))
+            completions.append((c["name"], c["name"]))
+    if 'properties' in symbol_table:
+        for c in symbol_table['properties']:
+            if "type" in c and c["type"] != None and c["type"] != "null":
+                completions.append((c["name"] + "\t" + c["type"], c["name"]))
+            else:
+                completions.append((c["name"], c["name"]))
+    if 'methods' in symbol_table:
+        for c in symbol_table['methods']:
+            params = []
+            if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
+                for p in c['parameters']:
+                    params.append(p["type"] + " " + p["name"])
+            completions.append((c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]))
+    return sorted(completions) 
+
+def get_completions_for_inner_class(symbol_table):
+    return get_symbol_table_completions(symbol_table)
+
+def get_symbol_table_completions(symbol_table):
+    completions = []
+    if 'constructors' in symbol_table:
+        for c in symbol_table['constructors']:
+            params = []
+            if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
+                for p in c['parameters']:
+                    params.append(p["type"] + " " + p["name"])
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+")", c["name"]))
+            else:
+                completions.append((c["visibility"] + " " + c["name"]+"()", c["name"]))
     if 'properties' in symbol_table:
         for c in symbol_table['properties']:
             if "type" in c and c["type"] != None and c["type"] != "null":
@@ -471,16 +500,15 @@ def get_completions_for_inner_class(symbol_table):
                 completions.append((c["visibility"] + " " + c["name"], c["name"]))
     if 'methods' in symbol_table:
         for c in symbol_table['methods']:
-            params = ''
+            params = []
             if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
                 for p in c['parameters']:
-                    params += p['name'] + " (" + p["type"] + ")"
-            completions.append((c["visibility"] + " " + c["name"]+"("+params+") "+c['returnType'], c["name"]))
+                    params.append(p["type"] + " " + p["name"])
+            completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]))
     return sorted(completions) 
 
 #returns suggestions based on tooling api symbol table
 def get_apex_completions(search_name):
-    completions = []
     if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
         return []
 
@@ -489,23 +517,7 @@ def get_apex_completions(search_name):
     for p in apex_props.keys():
         if p == search_name+".cls" and 'symbolTable' in apex_props[p]:
             symbol_table = apex_props[p]['symbolTable']
-            if 'constructors' in symbol_table:
-                for c in symbol_table['constructors']:
-                    completions.append((c["visibility"] + " " + c["name"], c["name"]))
-            if 'properties' in symbol_table:
-                for c in symbol_table['properties']:
-                    if "type" in c and c["type"] != None and c["type"] != "null":
-                        completions.append((c["visibility"] + " " + c["name"] + "\t" + c["type"], c["name"]))
-                    else:
-                        completions.append((c["visibility"] + " " + c["name"], c["name"]))
-            if 'methods' in symbol_table:
-                for c in symbol_table['methods']:
-                    params = ''
-                    if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
-                        for p in c['parameters']:
-                            params += p['name'] + " (" + p["type"] + ")"
-                    completions.append((c["visibility"] + " " + c["name"]+"("+params+") "+c['returnType'], c["name"]))
-    return sorted(completions) 
+            return get_symbol_table_completions(symbol_table)
 
 def get_version_number():
     try:
