@@ -248,7 +248,7 @@ def is_mm_file(filename=None):
             if os.path.exists(filename):
                 settings = sublime.load_settings('mavensmate.sublime-settings')
                 valid_file_extensions = settings.get("mm_apex_file_extensions", [])
-                if get_file_extension(filename) in valid_file_extensions:
+                if get_file_extension(filename) in valid_file_extensions and 'apex-scripts' not in get_active_file():
                     return True
                 elif "-meta.xml" in filename:
                     return True
