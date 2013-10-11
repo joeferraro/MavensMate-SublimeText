@@ -505,10 +505,23 @@ def get_symbol_table_completions(symbol_table):
                 for p in c['parameters']:
                     params.append(p["type"] + " " + p["name"])
             completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]))
+    if 'innerClasses' in symbol_table:
+        for c in symbol_table["innerClasses"]:
+            if 'constructors' in c and len(c['constructors']) > 0:
+                for con in c['constructors']:
+                    params = []
+                    if 'parameters' in con and type(con['parameters']) is list and len(con['parameters']) > 0:
+                        for p in con['parameters']:
+                            params.append(p["type"] + " " + p["name"])
+                        completions.append((con["visibility"] + " " + con["name"]+"("+", ".join(params)+")", con["name"]))
+                    else:
+                        completions.append((con["visibility"] + " " + con["name"]+"()", con["name"]))
+            else:
+                completions.append(("INNER CLASS " + c["name"]+"() \t", c["name"]))
     return sorted(completions) 
 
 #returns suggestions based on tooling api symbol table
-def get_apex_completions(search_name):
+def get_apex_completions(search_name, search_name_extra=None):
     if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
         return []
 
@@ -517,7 +530,12 @@ def get_apex_completions(search_name):
     for p in apex_props.keys():
         if p == search_name+".cls" and 'symbolTable' in apex_props[p]:
             symbol_table = apex_props[p]['symbolTable']
-            return get_symbol_table_completions(symbol_table)
+            if search_name_extra == None or search_name_extra == '':
+                return get_symbol_table_completions(symbol_table)
+            elif 'innerClasses' in symbol_table and len(symbol_table['innerClasses']) > 0:
+                for inner in symbol_table['innerClasses']:
+                    if inner["name"] == search_name_extra:
+                        return get_completions_for_inner_class(inner)
 
 def get_version_number():
     try:

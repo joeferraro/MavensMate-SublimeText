@@ -17398,7 +17398,7 @@
         } ],
         "properties" : [ ]
       },
-      "CURRENCY" : {
+      "Currency" : {
         "constructors" : [ ],
         "methods" : [ {
           "returnType" : "String",
@@ -21213,7 +21213,7 @@
           "references" : [ ]
         } ]
       },
-      "LIST" : {
+      "List" : {
         "constructors" : [ ],
         "methods" : [ {
           "returnType" : "Object",

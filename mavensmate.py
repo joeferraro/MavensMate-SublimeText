@@ -1422,7 +1422,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         typedef = parsehelp.get_type_definition(data)
         print('[MAVENSMATE] autocomplete type definition: ', typedef)
 
-        if '.' in typedef[2]:
+        if '.' in typedef[2] and '<' not in typedef[2]:
             type_parts = typedef[2].split('.')
             typedef_class = type_parts[0] #e.g. ApexPages
             typedef_class_lower = typedef_class.lower()
@@ -1434,6 +1434,18 @@ class ApexCompletions(sublime_plugin.EventListener):
             typedef_class_extra = typedef[4].replace('.','') #e.g. StandardController
             typedef_class_extra_lower = typedef_class_extra.lower()
 
+        if '<' in typedef_class:
+            typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
+            typedef_class_lower = re.sub('\<', '', typedef_class_lower)
+            typedef_class_lower = re.sub('\>', '', typedef_class_lower)
+            typedef_class       = re.sub('\<.*?\>', '', typedef_class)
+            typedef_class       = re.sub('\<', '', typedef_class)
+            typedef_class       = re.sub('\>', '', typedef_class)
+
+        if '[' in typedef_class:
+            typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
+            typedef_class       = re.sub('\[.*?\]', '', typedef_class)
+
         print('[MAVENSMATE] autocomplete type: ', typedef_class) #String
         print('[MAVENSMATE] autocomplete type extra: ', typedef_class_extra) #String
 
@@ -1441,6 +1453,11 @@ class ApexCompletions(sublime_plugin.EventListener):
         if lower_word == 'this':           
             _completions = util.get_apex_completions(file_name) 
             return sorted(_completions)
+
+        if len(typedef[4]) > 1 and '.' in typedef[4]:
+            #deeply nested, need to look for properties
+            #TODO 
+            return []
 
         if typedef_class in apex_completions["publicDeclarations"] and typedef_class_extra_lower == '':
             comp_def = apex_completions["publicDeclarations"].get(word)
@@ -1472,21 +1489,9 @@ class ApexCompletions(sublime_plugin.EventListener):
         if typedef_class_lower == None:
             return []
 
-        if '<' in typedef_class:
-            typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
-            typedef_class_lower = re.sub('\<', '', typedef_class_lower)
-            typedef_class_lower = re.sub('\>', '', typedef_class_lower)
-            typedef_class       = re.sub('\<.*?\>', '', typedef_class)
-            typedef_class       = re.sub('\<', '', typedef_class)
-            typedef_class       = re.sub('\>', '', typedef_class)
-
-        if '[' in typedef_class:
-            typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
-            typedef_class       = re.sub('\[.*?\]', '', typedef_class)
-
         ## HANDLE CUSTOM APEX INSTANCE METHOD ## 
         ## MyClass foo = new MyClass()
-        ## foo.??        
+        ## foo.??  
         symbol_table = util.get_symbol_table(file_name)
 
         if symbol_table != None and "innerClasses" in symbol_table and type(symbol_table["innerClasses"] is list and len(symbol_table["innerClasses"]) > 0):
@@ -1494,9 +1499,9 @@ class ApexCompletions(sublime_plugin.EventListener):
                 if ic["name"].lower() == typedef_class_lower:
                     _completions = util.get_completions_for_inner_class(ic)
                     return sorted(_completions)  
-        
+
         if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
-            _completions = util.get_apex_completions(typedef_class)
+            _completions = util.get_apex_completions(typedef_class, typedef_class_extra)
             return sorted(_completions)
         
         if os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
