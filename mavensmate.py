@@ -1388,6 +1388,10 @@ class ApexCompletions(sublime_plugin.EventListener):
         if ext != '.cls' and ext != '.trigger':
             return []
 
+        full_file_path = os.path.splitext(util.get_active_file())[0]
+        base = os.path.basename(full_file_path)
+        file_name = os.path.splitext(base)[0] 
+
         #now get the autocomplete context
         #if not dot notation, ignore
         pt = locations[0] - len(prefix) - 1
@@ -1419,10 +1423,7 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         print('[MAVENSMATE] autocomplete type definition class: ', typedef_class)
 
-        if lower_word == 'this':
-            full_file_path = os.path.splitext(util.get_active_file())[0]
-            base = os.path.basename(full_file_path)
-            file_name = os.path.splitext(base)[0]            
+        if lower_word == 'this':           
             _completions = util.get_apex_completions(file_name) 
             return sorted(_completions)
 
@@ -1451,6 +1452,8 @@ class ApexCompletions(sublime_plugin.EventListener):
         ## MyClass foo = new MyClass()
         ## foo.??
         else: 
+            symbol_table = util.get_symbol_table(file_name)
+
             if typedef_class_lower != None:
                 if '<' in typedef_class:
                     typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
@@ -1463,6 +1466,13 @@ class ApexCompletions(sublime_plugin.EventListener):
                 if '[' in typedef_class:
                     typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
                     typedef_class       = re.sub('\[.*?\]', '', typedef_class)
+
+                if symbol_table != None:
+                    if "innerClasses" in symbol_table and type(symbol_table["innerClasses"] is list and len(symbol_table["innerClasses"]) > 0):
+                        for ic in symbol_table["innerClasses"]:
+                            if ic["name"].lower() == typedef_class_lower:
+                                _completions = util.get_completions_for_inner_class(ic)
+                                return sorted(_completions)  
 
                 #print(typedef_class_lower)
                 if os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
