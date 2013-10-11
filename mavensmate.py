@@ -371,7 +371,10 @@ class RunApexScriptCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Run Apex Script')
 
     def is_enabled(command):
-        return "apex-scripts" in util.get_active_file() and '.cls' in util.get_active_file()
+        try:
+            return "apex-scripts" in util.get_active_file() and '.cls' in util.get_active_file()
+        except:
+            return False
 
 class NewApexScriptCommand(sublime_plugin.TextCommand):
 
