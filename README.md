@@ -37,15 +37,23 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ####Linux (beta)
 1. You must have python 2.7 and git installed
-2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py)`
-4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"/usr/bin/python"`
-5. Alias your `subl` command line tool to `/usr/local/bin`
-
+2. You must have easy_install. It can be installed as part of `python-setuptools`:
+```
+$ sudo apt-get install python-setuptools
+```
+3. Install required modules `$ sudo easy_install jinja2 suds keyring markupsafe pyyaml requests`
+4. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py)`
+5. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"/usr/bin/python"`
+6. Alias your `subl` command line tool to `/usr/local/bin`
 ```
 $ cd /usr/local/bin
 $ sudo ln -s /usr/bin/subl subl
 ```
+7. Ensure that `python-gnomekeyring` package is installed. Using apt-get:
+```
+$ sudo apt-get install python-gnomekeyring
+```
+8. Make sure that the default opener for html files is a browser.
 
 ##Sublime Text 2 plugin (no longer supported)
 
