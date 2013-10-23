@@ -1422,32 +1422,54 @@ class ApexCompletions(sublime_plugin.EventListener):
         typedef = parsehelp.get_type_definition(data)
         print('[MAVENSMATE] autocomplete type definition: ', typedef)
 
-        if '.' in typedef[2] and '<' not in typedef[2]:
-            type_parts = typedef[2].split('.')
-            typedef_class = type_parts[0] #e.g. ApexPages
-            typedef_class_lower = typedef_class.lower()
-            typedef_class_extra = type_parts[1] #e.g. StandardController
-            typedef_class_extra_lower = typedef_class_extra.lower()
+        if '<' not in typedef[2] and '[' not in typedef[2]:
+            if '.' in typedef[2] and '<' not in typedef[2]:
+                type_parts = typedef[2].split('.')
+                typedef_class = type_parts[0] #e.g. ApexPages
+                typedef_class_lower = typedef_class.lower()
+                typedef_class_extra = type_parts[1] #e.g. StandardController
+                typedef_class_extra_lower = typedef_class_extra.lower()
+            else:
+                typedef_class = typedef[2] #e.g. ApexPages
+                typedef_class_lower = typedef_class.lower()
+                typedef_class_extra = typedef[4].replace('.','') #e.g. StandardController
+                typedef_class_extra_lower = typedef_class_extra.lower()
+
+            if '<' in typedef_class:
+                typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
+                typedef_class_lower = re.sub('\<', '', typedef_class_lower)
+                typedef_class_lower = re.sub('\>', '', typedef_class_lower)
+                typedef_class       = re.sub('\<.*?\>', '', typedef_class)
+                typedef_class       = re.sub('\<', '', typedef_class)
+                typedef_class       = re.sub('\>', '', typedef_class)
+
+            if '[' in typedef_class:
+                typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
+                typedef_class       = re.sub('\[.*?\]', '', typedef_class)
         else:
-            typedef_class = typedef[2] #e.g. ApexPages
+            if '<' in typedef[2]:
+                typedef_class = typedef[2].split('<')[0]
+            elif '[' in typedef[2]:
+                typedef_class = typedef[2].split('[')[0]
             typedef_class_lower = typedef_class.lower()
-            typedef_class_extra = typedef[4].replace('.','') #e.g. StandardController
-            typedef_class_extra_lower = typedef_class_extra.lower()
+            typedef_class_extra = ''
+            typedef_class_extra_lower = ''
 
-        if '<' in typedef_class:
-            typedef_class_lower = re.sub('\<.*?\>', '', typedef_class_lower)
-            typedef_class_lower = re.sub('\<', '', typedef_class_lower)
-            typedef_class_lower = re.sub('\>', '', typedef_class_lower)
-            typedef_class       = re.sub('\<.*?\>', '', typedef_class)
-            typedef_class       = re.sub('\<', '', typedef_class)
-            typedef_class       = re.sub('\>', '', typedef_class)
 
-        if '[' in typedef_class:
-            typedef_class_lower = re.sub('\[.*?\]', '', typedef_class_lower)
-            typedef_class       = re.sub('\[.*?\]', '', typedef_class)
 
         print('[MAVENSMATE] autocomplete type: ', typedef_class) #String
         print('[MAVENSMATE] autocomplete type extra: ', typedef_class_extra) #String
+
+        legacy_classes = ['system', 'search', 'limits', 'enum']
+
+        if typedef_class_lower in legacy_classes and os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
+            json_data = open(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json"))
+            data = json.load(json_data)
+            json_data.close()
+            pd = data["static_methods"]
+            for method in pd:
+                _completions.append((method, method))
+            return sorted(_completions)
 
         #need to return symbol table for this class
         if lower_word == 'this':           
