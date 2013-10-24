@@ -1597,7 +1597,9 @@ class OpenFileInProject(sublime_plugin.ApplicationCommand):
                 break
         window.open_file("{0}:{1}:{2}".format(file_name, line_number, 0), sublime.ENCODED_POSITION)
         view = window.active_view()
-        sublime.set_timeout(lambda: self.mark_line(view, line_number), 100)
+        view.erase_regions("health_item")
+        if line_number != 0:
+            sublime.set_timeout(lambda: self.mark_line(view, line_number), 100)
 
     def mark_line(self, view, line_number):
         view.add_regions("health_item", [view.line(view.text_point(line_number-1, 0))], "foo", "bookmark", sublime.DRAW_OUTLINED)
