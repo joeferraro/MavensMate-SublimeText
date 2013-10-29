@@ -495,29 +495,113 @@ def handle_result(operation, process_id, printer, result, thread):
 
 #prints the result of the mm operation, can be a string or a dict
 def print_result_message(operation, process_id, status_region, res, printer, thread):
-    if 'State' in res and res['State'] == 'Error' and 'ErrorMsg' in res:
-        printer.panel.run_command('write_operation_status', {"text": " [OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\''), 'region': [status_region.end(), status_region.end()+10] })
-    elif 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
-        #here we're parsing a response from the tooling endpoint
-        errors = json.loads(res['CompilerErrors'])
-        if type(errors) is not list:
-            errors = [errors]
-        if len(errors) > 0:
-            for e in errors:
-                line_col = ""
-                line, col = 1, 1
-                if 'line' in e:
-                    line = int(e['line'])
-                    line_col = ' (Line: '+str(line)
-                    util.mark_line_numbers(thread.view, [line], "bookmark")
-                if 'column' in e:
-                    col = int(e['column'])
-                    line_col += ', Column: '+str(col)
-                if len(line_col):
-                    line_col += ')'
+    try:
+        if 'State' in res and res['State'] == 'Error' and 'ErrorMsg' in res:
+            printer.panel.run_command('write_operation_status', {"text": " [OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\''), 'region': [status_region.end(), status_region.end()+10] })
+        elif 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
+            #here we're parsing a response from the tooling endpoint
+            errors = json.loads(res['CompilerErrors'])
+            if type(errors) is not list:
+                errors = [errors]
+            if len(errors) > 0:
+                for e in errors:
+                    line_col = ""
+                    line, col = 1, 1
+                    if 'line' in e:
+                        line = int(e['line'])
+                        line_col = ' (Line: '+str(line)
+                        util.mark_line_numbers(thread.view, [line], "bookmark")
+                    if 'column' in e:
+                        col = int(e['column'])
+                        line_col += ', Column: '+str(col)
+                    if len(line_col):
+                        line_col += ')'
 
-                #scroll to the line and column of the exception
-                #if settings.get('mm_compile_scroll_to_error', True):
+                    #scroll to the line and column of the exception
+                    #if settings.get('mm_compile_scroll_to_error', True):
+                    #open file, if already open it will bring it to focus
+                    #view = sublime.active_window().open_file(thread.active_file)
+                    view = thread.view
+                    pt = view.text_point(line-1, col-1)
+                    view.sel().clear()
+                    view.sel().add(sublime.Region(pt))
+                    view.show(pt)
+                    problem = e['problem']
+                    problem = html_parser.unescape(problem)
+                    printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], problem, line_col), 'region': [status_region.end(), status_region.end()+10] })
+            elif "ErrorMsg" in res:
+                printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
+
+        elif 'success' in res and util.to_bool(res['success']) == False and ('messages' in res or 'Messages' in res):
+            if 'Messages' in res:
+                res['messages'] = res.pop('Messages')
+            #here we're parsing a response from the metadata endpoint
+            failures = None
+            messages = res['messages']
+            if type( messages ) is not list:
+                messages = [messages]
+
+            problems = 0
+            for m in messages:
+                if 'problem' in m:
+                    problems += 1
+                    break
+
+            if problems == 0: #must not have been a compile error, must be a test run error
+                if 'runTestResult' in res:
+                    if 'runTestResult' in res and 'failures' in res['runTestResult'] and type( res['runTestResult']['failures'] ) == list:
+                        failures = res['runTestResult']['failures']
+                    elif 'failures' in res['runTestResult']:
+                        failures = [res['runTestResult']['failures']]
+                    
+                    if failures != None:
+                        msg = ' [DEPLOYMENT FAILED]:'
+                        for f in failures: 
+                            msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
+                        printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
+                elif 'run_test_result' in res:
+                    if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
+                        failures = res['run_test_result']['failures']
+                    elif 'failures' in res['run_test_result']:
+                        failures = [res['run_test_result']['failures']]
+                    
+                    if failures != None:
+                        msg = ' [DEPLOYMENT FAILED]:'
+                        for f in failures: 
+                            msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
+                        printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
+            else: #compile error, build error message
+                msg = ""
+                for m in messages:
+                    if "success" in m and m["success"] == False:
+                        line_col = ""
+                        if 'lineNumber' in m:
+                            line_col = ' (Line: '+m['lineNumber']
+                            util.mark_line_numbers(thread.view, [int(float(m['lineNumber']))], "bookmark")
+                        if 'columnNumber' in m:
+                            line_col += ', Column: '+m['columnNumber']
+                        if len(line_col) > 0:
+                            line_col += ')'
+                        msg += m['fileName'] + ': ' + m['problem'] + line_col + "\n\n"
+
+                printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
+                
+        elif 'success' in res and res["success"] == False and 'line' in res:
+            #this is a response from the apex compile api
+            line_col = ""
+            line, col = 1, 1
+            if 'line' in res:
+                line = int(res['line'])
+                line_col = ' (Line: '+str(line)
+                util.mark_line_numbers(thread.view, [line], "bookmark")
+            if 'column' in res:
+                col = int(res['column'])
+                line_col += ', Column: '+str(col)
+            if len(line_col):
+                line_col += ')'
+
+            #scroll to the line and column of the exception
+            if settings.get('mm_compile_scroll_to_error', True):
                 #open file, if already open it will bring it to focus
                 #view = sublime.active_window().open_file(thread.active_file)
                 view = thread.view
@@ -525,93 +609,31 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
                 view.sel().clear()
                 view.sel().add(sublime.Region(pt))
                 view.show(pt)
-                problem = e['problem']
-                problem = html_parser.unescape(problem)
-                printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], problem, line_col), 'region': [status_region.end(), status_region.end()+10] })
-        elif "ErrorMsg" in res:
-            printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
 
-    elif 'success' in res and util.to_bool(res['success']) == False and ('messages' in res or 'Messages' in res):
-        if 'Messages' in res:
-            res['messages'] = res.pop('Messages')
-        #here we're parsing a response from the metadata endpoint
-        failures = None
-        messages = res['messages']
-        if type( messages ) is not list:
-            messages = [messages]
-
-        problems = 0
-        for m in messages:
-            if 'problem' in m:
-                problems += 1
-                break
-
-        if problems == 0: #must not have been a compile error, must be a test run error
-            if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
-                failures = res['run_test_result']['failures']
-            elif 'failures' in res['run_test_result']:
-                failures = [res['run_test_result']['failures']]
-            
-            if failures != None:
-                msg = ' [DEPLOYMENT FAILED]:'
-                for f in failures: 
-                    msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
-                printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
-        else: #compile error, build error message
-            msg = ""
-            for m in messages:
-                if "success" in m and m["success"] == False:
-                    line_col = ""
-                    if 'lineNumber' in m:
-                        line_col = ' (Line: '+m['lineNumber']
-                        util.mark_line_numbers(thread.view, [int(float(m['lineNumber']))], "bookmark")
-                    if 'columnNumber' in m:
-                        line_col += ', Column: '+m['columnNumber']
-                    if len(line_col) > 0:
-                        line_col += ')'
-                    msg += m['fileName'] + ': ' + m['problem'] + line_col + "\n\n"
-
-            printer.panel.run_command('write_operation_status', {'text': ' [DEPLOYMENT FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
-            
-    elif 'success' in res and res["success"] == False and 'line' in res:
-        #this is a response from the apex compile api
-        line_col = ""
-        line, col = 1, 1
-        if 'line' in res:
-            line = int(res['line'])
-            line_col = ' (Line: '+str(line)
-            util.mark_line_numbers(thread.view, [line], "bookmark")
-        if 'column' in res:
-            col = int(res['column'])
-            line_col += ', Column: '+str(col)
-        if len(line_col):
-            line_col += ')'
-
-        #scroll to the line and column of the exception
-        if settings.get('mm_compile_scroll_to_error', True):
-            #open file, if already open it will bring it to focus
-            #view = sublime.active_window().open_file(thread.active_file)
-            view = thread.view
-            pt = view.text_point(line-1, col-1)
-            view.sel().clear()
-            view.sel().add(sublime.Region(pt))
-            view.show(pt)
-
-        printer.panel.run_command('write_operation_status', {'text': ' [COMPILE FAILED]: ' + res['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
-    elif 'success' in res and util.to_bool(res['success']) == True and 'Messages' in res and len(res['Messages']) > 0:
-        msg = ' [Operation completed Successfully - With Compile Errors]\n'
-        msg += '[COMPILE ERRORS] - Count:\n'
-        for m in res['Messages']:
-            msg += ' FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber']
-        printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
-    elif 'success' in res and util.to_bool(res['success']) == True:
-        printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
-    elif 'success' in res and util.to_bool(res['success']) == False and 'body' in res:
-        printer.panel.run_command('write_operation_status', {'text': ' [OPERATION FAILED]:' + res['body'], 'region': [status_region.end(), status_region.end()+10] })
-    elif 'success' in res and util.to_bool(res['success']) == False:
-        printer.panel.run_command('write_operation_status', {'text': ' [OPERATION FAILED]', 'region': [status_region.end(), status_region.end()+10] })
-    else:
-        printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
+            printer.panel.run_command('write_operation_status', {'text': ' [COMPILE FAILED]: ' + res['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
+        elif 'success' in res and util.to_bool(res['success']) == True and 'Messages' in res and len(res['Messages']) > 0:
+            msg = ' [Operation completed Successfully - With Compile Errors]\n'
+            msg += '[COMPILE ERRORS] - Count:\n'
+            for m in res['Messages']:
+                msg += ' FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber']
+            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
+        elif 'success' in res and util.to_bool(res['success']) == True:
+            printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
+        elif 'success' in res and util.to_bool(res['success']) == False and 'body' in res:
+            printer.panel.run_command('write_operation_status', {'text': ' [OPERATION FAILED]:' + res['body'], 'region': [status_region.end(), status_region.end()+10] })
+        elif 'success' in res and util.to_bool(res['success']) == False:
+            printer.panel.run_command('write_operation_status', {'text': ' [OPERATION FAILED]', 'region': [status_region.end(), status_region.end()+10] })
+        else:
+            printer.panel.run_command('write_operation_status', {'text': ' Success', 'region': [status_region.end(), status_region.end()+10] })
+    except:
+        msg = ""
+        if type(res) is dict:
+            msg = json.dumps(res)
+        elif type(res) is str:
+            msg = res
+        else:
+            msg = "Check Sublime Text console for error and report issue to MavensMate GitHub project."
+        printer.panel.run_command('write_operation_status', {'text': ' [OPERATION FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
 
 def compile_callback(thread, result):
     try:
