@@ -54,6 +54,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_log_level" : "INFO",
 
 	//location where mm debug log should be placed (must be existing path)
+	//windows users: please set like so: C:\\path\\to\\your\\logs
 	"mm_log_location" : "",
 
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
@@ -137,7 +138,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".authProvider",
 		".customApplicationComponent",
 		".quickAction",
-		".approvalProcess"
+		".approvalProcess",
+		".html"
 	],
 
 	"mm_use_github_templates" : true,
@@ -194,6 +196,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_test_api" : "metadata",
 
 	//if true, mavensmate will store all deployment packages in your project's "deploy" directory
-	"mm_archive_deployments" : true
+	"mm_archive_deployments" : true,
+	
+	//if true, mavensmate will set the purgeOnDelete to true during metadata deletes (a hard delete)
+	"mm_purge_on_delete" : false
 	
 }
