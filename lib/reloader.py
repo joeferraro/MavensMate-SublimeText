@@ -46,7 +46,8 @@ mods_load_order = [
     '.mm_merge',
     '.completioncommon',
     '.vf',
-    '.parsehelp'
+    '.parsehelp',
+    '.resource_bundle'
 ]
 
 for suffix in mods_load_order:
