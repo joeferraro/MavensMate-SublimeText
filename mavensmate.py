@@ -238,7 +238,7 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
     def is_enabled(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.util.is_mm_file(f):
+                if util.is_mm_file(f):
                     return True
         return False
 
@@ -744,11 +744,11 @@ class RefreshPropertiesFromServerCommand(sublime_plugin.WindowCommand):
     def is_enabled(self, dirs, files):
         if dirs != None and type(dirs) is list and len(dirs) > 0:
             for d in dirs:
-                if util.is_config.mm_dir(d):
+                if util.is_mm_dir(d):
                     return True
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.util.is_mm_file(f):
+                if util.is_mm_file(f):
                     return True
         return False
 
@@ -799,7 +799,7 @@ class SynchronizeSelectedMetadataCommand(sublime_plugin.WindowCommand):
                     return True
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.util.is_mm_file(f):
+                if util.is_mm_file(f):
                     return True
         return False
 
@@ -1217,8 +1217,17 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
         mm.call('new_project_from_existing_directory', params=params)
         util.send_usage_statistics('New Project From Existing Directory')  
 
-    def is_visible(self):
-        return not util.is_mm_project()
+    def is_visible(self, dirs):
+        if dirs != None and type(dirs) is list and len(dirs) > 1:
+            return False
+        if util.is_mm_project():
+            return False
+        directory = dirs[0]
+        if not os.path.isfile(os.path.join(directory, "src", "package.xml")):
+            return False
+        if not os.path.exists(os.path.join(directory, "src")):
+            return False
+        return True
 
 #generic handler for writing text to an output panel (sublime text 3 requirement)
 class MavensMateOutputText(sublime_plugin.TextCommand):
