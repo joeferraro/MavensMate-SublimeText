@@ -1128,12 +1128,51 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
 
 #right click context menu support for resource bundle creation
 class NewResourceBundleCommand(sublime_plugin.WindowCommand):
-    def run(self, files):
+    def run(self, files, dirs):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
             resource_bundle.create(self, files) 
             util.send_usage_statistics('New Resource Bundle (Sidebar)')
-    def is_visible(self):
-        return util.is_mm_project()
+
+    def is_visible(self, files, dirs):
+        if not util.is_mm_project():
+            return False
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            return False
+        is_ok = True
+        if files != None and type(files) is list and len(files) > 0:
+            for f in files:
+                basename = os.path.basename(f)
+                if "." not in basename:
+                    is_ok = False
+                    return
+                if "." in basename and basename.split(".")[-1] != "resource":
+                    is_ok = False
+                    break
+        return is_ok   
+
+#right click context menu support for resource bundle refresh
+class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
+    def run(self, dirs, files):
+        if sublime.ok_cancel_dialog("This command will refresh the resource bundle(s) based on your local project's corresponding static resource(s). Do you wish to continue?", "Refresh"):
+            resource_bundle.refresh(self, dirs) 
+            util.send_usage_statistics('Refresh Resource Bundle (Sidebar)')
+    def is_visible(self, dirs, files):
+        if files != None and type(files) is list and len(files) > 0:
+            return False
+
+        if not util.is_mm_project():
+            return False
+        is_ok = True
+        if dirs != None and type(dirs) is list and len(dirs) > 0:
+            for d in dirs:
+                basename = os.path.basename(d)
+                if "." not in basename:
+                    is_ok = False
+                    return
+                if "." in basename and basename.split(".")[-1] != "resource":
+                    is_ok = False
+                    break
+        return is_ok   
 
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
