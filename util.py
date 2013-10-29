@@ -189,7 +189,7 @@ def check_for_workspace():
 
     if not os.path.exists(selected_workspace):
         #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
-        msg = 'Your [mm_workspace] directory \''+workspace+'\' does not exist. Please create the directory then try your operation again. Thx!'
+        msg = 'Your [mm_workspace] setting is not configured properly. Please ensure any locations specified in mm_workspace exist on the system, then try your operation again.'
         sublime.error_message(msg)  
         raise BaseException
 
