@@ -43,6 +43,9 @@ sublime_version = int(float(sublime.version()))
 
 completioncommon = imp.load_source("completioncommon", os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib","completioncommon.py"))
 apex_completions = util.parse_json_from_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "support", "lib", "completions.json"))
+apex_system_completions = []
+for top_level_class_name in apex_completions["publicDeclarations"]["System"].keys():
+    apex_system_completions.append((top_level_class_name+"\t[Standard Apex Class]", top_level_class_name))
 
 st_version = 2
 # Warn about out-dated versions of ST3
@@ -1351,60 +1354,18 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             for t in vf.tag_list:
                 if word in t:
                     _completions.append((t, t))
-
             return _completions
 
         elif ch == ' ':
-            data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
-            full_data = view.substr(sublime.Region(0, view.size()))
-            region_from_top_to_current_word = sublime.Region(0, pt + 1)
-            lines = view.lines(region_from_top_to_current_word)
-            #print(region_from_top_to_current_word)
-            #print(full_data)
-            
-            beginToken = data
-            lastTagOpening = beginToken.rfind('<');
-            lastTagClosing = beginToken.find('>',lastTagOpening);
-            lastSpace = beginToken.find(' ',lastTagOpening);
+            print('SCOPE: ', view.scope_name(pt))
+            scope_names = view.scope_name(pt).split(' ')
+            if 'string.quoted.double.html' in scope_names or 'string.quoted.single.html' in scope_names:
+                return []
 
-            #print('beginToken: ', beginToken)
-            #print('lastTagOpening: ', lastTagOpening)
-            #print('lastTagClosing: ', lastTagClosing)
-            #print('lastSpace: ', lastSpace)
-
-            #col = infos['curr_pos'];
-            index = pt
-            #print(index)
-            theCode = full_data
-            theCodeRfindQuote = theCode.rfind('"',index-1)
-            theCodeSubstring = theCode[theCodeRfindQuote:index+1]
-            #print(theCodeSubstring)
-            prog = re.compile("\"\\s*\\w*\\s*\"")
-            #print(theCodeRfindQuote)
-            if prog.match(theCode[theCodeRfindQuote:index+1]):
-                pass
-                #if theCodeRfindQuote != -1:
-                #here we may be inside an attribute value
-                #print('INSIDE ATTRIB QUOTE')
-                #theCodeSubstring = theCode[theCodeRfindQuote:index+1]
-                #print('---> ', theCodeSubstring)
-                #if theCode[theCodeRfindQuote,index+1].match(new RegExp("\"\\s*\\w*\\s*\"") ):
-                #    pass
-            elif theCode[index-1:index] != '"' and lastTagClosing < lastTagOpening and lastSpace > lastTagOpening:
-                #print('OK!!!')
-                #Here we need to suggest a list of attributes for the current tag
-
-                #lastEq = max(beginToken.rfind('=\"'), beginToken.rfind('=\''))
-                #lastQu = max(beginToken.rfind('\"'), beginToken.rfind('\''))
-                #if (lastEq > lastTagOpening) and (lastEq + 1) == lastQu:
-                #    return []
-
-                #print('AN ATTRIBUTE!!!!')
-                #print(beginToken)
-                #print(lastTagOpening)
-                #print(lastTagClosing)
-                #print(lastSpace)
-
+            if 'meta.tag.other.html' in scope_names:
+                region_from_top_to_current_word = sublime.Region(0, pt + 1)
+                lines = view.lines(region_from_top_to_current_word)
+                
                 _completions = []
                 tag_def = None
                 for line in reversed(lines):
@@ -1414,18 +1375,87 @@ class VisualforceCompletions(sublime_plugin.EventListener):
                     tag_def = line_contents.split('<')[-1].split(' ')[0]
                     break
 
-                print(tag_def)
+                #print(tag_def)
                 if tag_def in vf.tag_defs:
                     def_entry = vf.tag_defs[tag_def]
 
                     for key, value in def_entry['attribs'].items():
-                        _completions.append((key + '\t(' + value['type'] + ')', key+'=""'))
+                        _completions.append((key + '\t(' + value['type'] + ')', key+'="${1:'+value['type']+'}"'))
 
                     return sorted(_completions)
-            else:
+                else:
+                    completion_flags = (
+                        sublime.INHIBIT_WORD_COMPLETIONS |
+                        sublime.INHIBIT_EXPLICIT_COMPLETIONS
+                    )
+                    return ([], completion_flags)
+            elif 'source.js.embedded.html' in scope_names:
                 return []
+            else:
+                completion_flags = (
+                    sublime.INHIBIT_WORD_COMPLETIONS |
+                    sublime.INHIBIT_EXPLICIT_COMPLETIONS
+                )
+                return ([], completion_flags)
         else:
+            completion_flags = (
+                sublime.INHIBIT_WORD_COMPLETIONS |
+                sublime.INHIBIT_EXPLICIT_COMPLETIONS
+            )
+            return ([], completion_flags)
+
+class SalesforceGenericCompletions(sublime_plugin.EventListener):
+    def on_query_completions(self, view, prefix, locations):
+        #if user has opted out of autocomplete or this isnt a mm project, ignore it
+        if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
             return []
+
+        #only run completions for Apex Triggers and Classes
+        ext = util.get_file_extension(view.file_name())
+        if ext != '.cls' and ext != '.trigger':
+            return []
+
+        full_file_path = os.path.splitext(util.get_active_file())[0]
+        base = os.path.basename(full_file_path)
+        file_name = os.path.splitext(base)[0]
+
+        # print('prefix: ',prefix)
+        # print('locations: ',locations)
+        # pt1 = locations[0] - len(prefix) + 1
+        # right_of_point = view.substr(pt1)
+        # print('right of pt: ',right_of_point)
+
+        #now get the autocomplete context
+        #if not dot notation, ignore
+        pt = locations[0] - len(prefix) - 1
+        if 'string.quoted.single.java' in view.scope_name(pt):
+            return []
+
+        ch = view.substr(sublime.Region(pt, pt + 1))
+        if ch == '.': return []
+        ltr = view.substr(sublime.Region(pt, pt + 2))
+        if not ltr.isupper(): return []
+
+        _completions = []
+
+        if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object names
+            jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
+            for metadata_type in jsonData:
+                if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                    for object_type in metadata_type['children']:
+                        _completions.append((object_type['text']+"\t[Sobject Name]", object_type['text']))
+
+        if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".apex_file_properties")): #=> parse org metadata, looking for object names
+            jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".apex_file_properties"))
+            for element in jsonData.keys():
+                if ".cls" in element:
+                        class_name = element.replace(".cls", "")
+                        _completions.append((class_name+"\t[Custom Apex Class]", class_name))
+
+        #print(apex_system_completions)
+        _completions.extend(apex_system_completions)
+
+        return _completions
 
 #completions for force.com-specific use cases
 class ApexCompletions(sublime_plugin.EventListener):
@@ -1539,22 +1569,24 @@ class ApexCompletions(sublime_plugin.EventListener):
             sub_def = top_level.get(word)
             if sub_def == None:
                 sub_def = top_level.get(typedef_class_extra)
-            #print('>>>>>>>>> ',sub_def)
-            _completions = util.get_system_apex_completions(sub_def)
+            _completions = util.get_symbol_table_completions(sub_def)
             return sorted(_completions)
         elif typedef_class in apex_completions["publicDeclarations"]["System"]:
             if word == typedef_class: #static
                 comp_def = apex_completions["publicDeclarations"]["System"].get(word)
             else: #instance
                 comp_def = apex_completions["publicDeclarations"]["System"].get(typedef_class)
-            _completions = util.get_system_apex_completions(comp_def)
+            _completions = util.get_symbol_table_completions(comp_def)
             return sorted(_completions)
 
         ## HANDLE CUSTOM APEX CLASS STATIC METHODS 
         ## MyCustomClass.some_static_method
         elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",word+".cls")):
-            _completions = util.get_apex_completions(word) 
-            return sorted(_completions)  
+            try:
+                _completions = util.get_apex_completions(word) 
+                return sorted(_completions) 
+            except:
+                return [] 
 
         if typedef_class_lower == None:
             return []
@@ -1574,6 +1606,8 @@ class ApexCompletions(sublime_plugin.EventListener):
             _completions = util.get_apex_completions(typedef_class, typedef_class_extra)
             return sorted(_completions)
         
+        if typedef_class.endswith('__r'):
+            typedef_class = typedef_class.replace('__r', '__c')
         if os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
             object_dom = parse(util.mm_project_directory()+"/src/objects/"+typedef_class+".object")
             for node in object_dom.getElementsByTagName('fields'):

@@ -44,6 +44,9 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
 
+def mm_plugin_location():
+    return os.path.join(packages_path,"MavensMate")
+
 def package_check():
     #ensure user settings are installed
     try:
@@ -458,26 +461,6 @@ def get_symbol_table(class_name):
     except:
         return None
 
-def get_system_apex_completions(symbol_table):
-    completions = []
-    if 'constructors' in symbol_table:
-        for c in symbol_table['constructors']:
-            completions.append((c["name"], c["name"]))
-    if 'properties' in symbol_table:
-        for c in symbol_table['properties']:
-            if "type" in c and c["type"] != None and c["type"] != "null":
-                completions.append((c["name"] + "\t" + c["type"], c["name"]))
-            else:
-                completions.append((c["name"], c["name"]))
-    if 'methods' in symbol_table:
-        for c in symbol_table['methods']:
-            params = []
-            if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
-                for p in c['parameters']:
-                    params.append(p["type"] + " " + p["name"])
-            completions.append((c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]))
-    return sorted(completions) 
-
 def get_completions_for_inner_class(symbol_table):
     return get_symbol_table_completions(symbol_table)
 
@@ -486,14 +469,22 @@ def get_symbol_table_completions(symbol_table):
     if 'constructors' in symbol_table:
         for c in symbol_table['constructors']:
             params = []
+            if not 'visibility' in c:
+                c['visibility'] = 'PUBLIC'
             if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
                 for p in c['parameters']:
                     params.append(p["type"] + " " + p["name"])
-                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+")", c["name"]))
+                paramStrings = []
+                for i, p in enumerate(params):
+                    paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
+                paramString = ", ".join(paramStrings)
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+");"))
             else:
-                completions.append((c["visibility"] + " " + c["name"]+"()", c["name"]))
+                completions.append((c["visibility"] + " " + c["name"]+"()", c["name"]+"();${1:}"))
     if 'properties' in symbol_table:
         for c in symbol_table['properties']:
+            if not 'visibility' in c:
+                c['visibility'] = 'PUBLIC'
             if "type" in c and c["type"] != None and c["type"] != "null":
                 completions.append((c["visibility"] + " " + c["name"] + "\t" + c["type"], c["name"]))
             else:
@@ -501,23 +492,40 @@ def get_symbol_table_completions(symbol_table):
     if 'methods' in symbol_table:
         for c in symbol_table['methods']:
             params = []
+            if not 'visibility' in c:
+                c['visibility'] = 'PUBLIC'
             if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
                 for p in c['parameters']:
                     params.append(p["type"] + " " + p["name"])
-            completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]))
+            if len(params) == 1:
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"(${1:"+", ".join(params)+"});"))
+            elif len(params) > 1:
+                paramStrings = []
+                for i, p in enumerate(params):
+                    paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
+                paramString = ", ".join(paramStrings)
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"("+paramString+");"))
+            else:
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"();${1:}"))
     if 'innerClasses' in symbol_table:
         for c in symbol_table["innerClasses"]:
             if 'constructors' in c and len(c['constructors']) > 0:
                 for con in c['constructors']:
+                    if not 'visibility' in con:
+                        con['visibility'] = 'PUBLIC'
                     params = []
                     if 'parameters' in con and type(con['parameters']) is list and len(con['parameters']) > 0:
                         for p in con['parameters']:
                             params.append(p["type"] + " " + p["name"])
-                        completions.append((con["visibility"] + " " + con["name"]+"("+", ".join(params)+")", con["name"]))
+                        paramStrings = []
+                        for i, p in enumerate(params):
+                            paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
+                        paramString = ", ".join(paramStrings)
+                        completions.append((con["visibility"] + " " + con["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+");"))
                     else:
-                        completions.append((con["visibility"] + " " + con["name"]+"()", con["name"]))
+                        completions.append((con["visibility"] + " " + con["name"]+"()", c["name"]+"();${1:}"))
             else:
-                completions.append(("INNER CLASS " + c["name"]+"() \t", c["name"]))
+                completions.append(("INNER CLASS " + c["name"]+"() \t", c["name"]+"();${1:}"))
     return sorted(completions) 
 
 #returns suggestions based on tooling api symbol table
