@@ -224,7 +224,7 @@ class SyntaxHandler(sublime_plugin.EventListener):
 
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
-    def on_post_save(self, view):
+    def on_post_save_async(self, view):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         if settings.get('mm_compile_on_save') == True and util.is_mm_file() == True:
             params = {
