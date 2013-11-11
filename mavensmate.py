@@ -211,6 +211,17 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
     def is_visible(command):
         return util.is_mm_project()
 
+class SyntaxHandler(sublime_plugin.EventListener):
+    def on_load_async(self, view):
+        try:
+            ext = util.get_file_extension(view.file_name())
+            if ext == '.cls' or ext == '.trigger':
+                view.set_syntax_file(os.path.join("Packages","MavensMate","themes","Apex.tmLanguage"))
+            elif ext == '.page' or ext == '.component':
+                view.set_syntax_file(os.path.join("Packages","HTML","HTML.tmLanguage"))
+        except:
+            pass
+
 #handles compiling to server on save
 class RemoteEdit(sublime_plugin.EventListener):
     def on_post_save(self, view):
