@@ -497,7 +497,7 @@ def handle_result(operation, process_id, printer, result, thread):
 def print_result_message(operation, process_id, status_region, res, printer, thread):
     try:
         if 'State' in res and res['State'] == 'Error' and 'ErrorMsg' in res:
-            printer.panel.run_command('write_operation_status', {"text": " [OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\''), 'region': [status_region.end(), status_region.end()+10] })
+            printer.panel.run_command('write_operation_status', {"text": " [OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\' or cleaning your project.'), 'region': [status_region.end(), status_region.end()+10] })
         elif 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
             #here we're parsing a response from the tooling endpoint
             errors = json.loads(res['CompilerErrors'])
