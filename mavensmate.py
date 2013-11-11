@@ -1426,10 +1426,6 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
         if ext != '.cls' and ext != '.trigger':
             return []
 
-        full_file_path = os.path.splitext(util.get_active_file())[0]
-        base = os.path.basename(full_file_path)
-        file_name = os.path.splitext(base)[0]
-
         # print('prefix: ',prefix)
         # print('locations: ',locations)
         # pt1 = locations[0] - len(prefix) + 1
@@ -1439,7 +1435,11 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
         #now get the autocomplete context
         #if not dot notation, ignore
         pt = locations[0] - len(prefix) - 1
-        if 'string.quoted.single.java' in view.scope_name(pt):
+        # print(view.scope_name(pt))
+        scope_name = view.scope_name(pt)
+        if 'string.quoted.single.java' in scope_name:
+            return []
+        if 'soql.query.java' in scope_name:
             return []
 
         ch = view.substr(sublime.Region(pt, pt + 1))
@@ -1507,6 +1507,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         )
 
         data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
+
         #full_data = view.substr(sublime.Region(0, view.size()))
         typedef = parsehelp.get_type_definition(data)
         print('[MAVENSMATE] autocomplete type definition: ', typedef)
@@ -1559,6 +1560,18 @@ class ApexCompletions(sublime_plugin.EventListener):
             for method in pd:
                 _completions.append((method, method))
             return sorted(_completions)
+
+        if word == 'Page' and os.path.isdir(os.path.join(util.mm_project_directory(),"src","pages")):
+            for (dirpath, dirnames, filenames) in os.walk(os.path.join(util.mm_project_directory(),"src","pages")):
+                for f in filenames:
+                    if '-meta.xml' in f: continue
+                    base_page_name = f.replace(".page", "")
+                    _completions.append((base_page_name+"\t[Visualforce Page]", base_page_name))
+            completion_flags = (
+                sublime.INHIBIT_WORD_COMPLETIONS |
+                sublime.INHIBIT_EXPLICIT_COMPLETIONS
+            )
+            return (_completions, completion_flags)
 
         #need to return symbol table for this class
         if lower_word == 'this':           

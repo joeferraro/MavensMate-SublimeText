@@ -478,9 +478,9 @@ def get_symbol_table_completions(symbol_table):
                 for i, p in enumerate(params):
                     paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
                 paramString = ", ".join(paramStrings)
-                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+");"))
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+")"))
             else:
-                completions.append((c["visibility"] + " " + c["name"]+"()", c["name"]+"();${1:}"))
+                completions.append((c["visibility"] + " " + c["name"]+"()", c["name"]+"()${1:}"))
     if 'properties' in symbol_table:
         for c in symbol_table['properties']:
             if not 'visibility' in c:
@@ -498,15 +498,15 @@ def get_symbol_table_completions(symbol_table):
                 for p in c['parameters']:
                     params.append(p["type"] + " " + p["name"])
             if len(params) == 1:
-                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"(${1:"+", ".join(params)+"});"))
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"(${1:"+", ".join(params)+"})"))
             elif len(params) > 1:
                 paramStrings = []
                 for i, p in enumerate(params):
                     paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
                 paramString = ", ".join(paramStrings)
-                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"("+paramString+");"))
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"("+paramString+")"))
             else:
-                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"();${1:}"))
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"()${1:}"))
     if 'innerClasses' in symbol_table:
         for c in symbol_table["innerClasses"]:
             if 'constructors' in c and len(c['constructors']) > 0:
@@ -521,11 +521,11 @@ def get_symbol_table_completions(symbol_table):
                         for i, p in enumerate(params):
                             paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
                         paramString = ", ".join(paramStrings)
-                        completions.append((con["visibility"] + " " + con["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+");"))
+                        completions.append((con["visibility"] + " " + con["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+")"))
                     else:
-                        completions.append((con["visibility"] + " " + con["name"]+"()", c["name"]+"();${1:}"))
+                        completions.append((con["visibility"] + " " + con["name"]+"()", c["name"]+"()${1:}"))
             else:
-                completions.append(("INNER CLASS " + c["name"]+"() \t", c["name"]+"();${1:}"))
+                completions.append(("INNER CLASS " + c["name"]+"() \t", c["name"]+"()${1:}"))
     return sorted(completions) 
 
 #returns suggestions based on tooling api symbol table
