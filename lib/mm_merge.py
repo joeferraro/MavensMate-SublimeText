@@ -34,19 +34,6 @@ except:
 
 mmDiffView = None
 
-def lookForVcs(path):
-    if not config.merge_settings.get('vcs_support'):
-        return False
-
-    if os.path.isdir(path + '/.svn'):
-        return 'svn'
-    elif os.path.exists(path + '/.git'):
-        return 'git'
-    else:
-        sp = os.path.split(path)
-        if sp[0] != path and sp[0] != '':
-            return lookForVcs(sp[0])
-
 def executeShellCmd(exe, cwd):
     print ("Cmd: %s" % (exe))
     print ("Dir: %s" % (cwd))
@@ -256,12 +243,12 @@ class MavensMateDiffView():
 
     def __init__(self, window, left, right, diff, leftTmp=False, rightTmp=False):
         print('viewing diff')
-        print(window)
-        print(left)
-        print(right)
-        print(diff)
-        print(leftTmp)
-        print(rightTmp)
+        #print(window)
+        #print(left)
+        #print(right)
+        #print(diff)
+        #print(leftTmp)
+        #print(rightTmp)
         self.origin_window = window
         window.run_command('new_window')
         self.window = sublime.active_window()
@@ -366,7 +353,9 @@ class MavensMateDiffView():
 
                 if config.merge_settings.get('ignore_whitespace'):
                     trimRe = '(^\s+)|(\s+$)'
-                    if re.sub(trimRe, '', part['+']) == re.sub(trimRe, '', part['-']):
+                    #print('>>>>> START ',re.sub(trimRe, '', part['+']))
+                    #print('>>>>> END ',re.sub(trimRe, '', part['-']))
+                    if re.sub(trimRe, '', part['+'], flags=re.MULTILINE) == re.sub(trimRe, '', part['-'], flags=re.MULTILINE):
                         ignore = True
 
                 if ignore:
@@ -750,6 +739,13 @@ class MavensMateDiffThread(threading.Thread):
             self.text1 = re.sub('\r', '\n', self.text1)
             self.text2 = re.sub('\r', '\n', self.text2)
 
+        #print(self.text1)
+        #print('---------')
+        #print(self.text2)
+        # config.logger.debug(self.text1)
+        # config.logger.debug('\n---------------------\n')
+        # config.logger.debug(self.text2)
+
         if config.merge_settings.get('ignore_whitespace'):
             regexp = re.compile('(^\s+)|(\s+$)', re.MULTILINE)
             if re.sub(regexp, '', self.text1) != re.sub(regexp, '', self.text2):
@@ -852,7 +848,6 @@ class MavensMateDiffCommand(sublime_plugin.WindowCommand):
             return
 
         sp = os.path.split(self.active.file_name())
-        vcs = lookForVcs(sp[0])
 
         def onMenuSelect(index):
             if index == 0:
@@ -860,7 +855,7 @@ class MavensMateDiffCommand(sublime_plugin.WindowCommand):
 
         items = ['Compare to other file...']
 
-        if len(items) > 1 or vcs:
+        if len(items) > 1:
             sublime.set_timeout(lambda: self.window.show_quick_panel(items, onMenuSelect), 0)
         else:
             self.getComparableFiles()

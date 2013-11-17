@@ -18,7 +18,7 @@ MavensMate Merge (diff) settings
 	"hide_side_bar": true,
 
 	//set to true if you want to ignore whitespace differences:
-	"ignore_whitespace": false,
+	"ignore_whitespace": true,
 
 	//set to true if you want to ignore differences in new line characters (CR/LF)
 	"ignore_crlf": true,

@@ -24,41 +24,41 @@
 				"command": "mavens_mate_diff"
 			},
 			{
-	            "caption": "Overwrite Server Copy",
+	            "caption": "Overwrite Server Copy -->",
 	            "command": "mavens_mate_diff_overwrite_server_copy"
 	        },
 	        {
-	            "caption": "Go to previous difference",
-	            "command": "mavens_mate_diff_go_up"
-	        },
-	        {
-	            "caption": "Go to next difference",
+	            "caption": "Go to next difference >>",
 	            "command": "mavens_mate_diff_go_down"
 	        },
 	        {
+	            "caption": "<< Go to previous difference",
+	            "command": "mavens_mate_diff_go_up"
+	        },
+	        {
 	            "caption": "-"
 	        }, 
 	        {
-	            "caption": "Merge change from right (server) to left (local)",
-	            "command": "mavens_mate_diff_merge_left"
-	        },
-	        {
-	            "caption": "Merge change from left (local) to right (server)",
+	            "caption": "Merge change from left (local) to right (server) -->",
 	            "command": "mavens_mate_diff_merge_right"
 	        },
 	        {
+	            "caption": "Merge change from right (server) to left (local) <--",
+	            "command": "mavens_mate_diff_merge_left"
+	        },
+	        {
 	            "caption": "-"
 	        },
 	        {
-	            "caption": "Merge all from right (server) to left (local)",
+	            "caption": "Merge all from left (local) to right (server) -->",
+	            "command": "mavens_mate_diff_merge_right",
+	            "args": {"mergeAll": true}
+	        },
+	        {
+	            "caption": "Merge all from right (server) to left (local) <--",
 	            "command": "mavens_mate_diff_merge_left",
 	            "args": {"mergeAll": true}
 	        }, 
-	        {
-	            "caption": "Merge all from left (local) to right (server)",
-	            "command": "mavens_mate_diff_merge_right",
-	            "args": {"mergeAll": true}
-	        }
         ]
 	},
 	{ "caption": "-" }
