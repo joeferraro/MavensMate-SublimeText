@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.1.5",
-						"release_notes": "Minor fix/enhancement to 'Open File' command which assists Project Health Check. OSX Users: 0.35.7 of MavensMate.app is also available, so please update.",
+						"version": "3.2.0",
+						"release_notes": "Major update! Code assist UX enhancements, unicode support for OSX users, support for API v29.0, minor UI updates. OSX Users: 0.35.7 of MavensMate.app is also available, so please update.",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
