@@ -11,6 +11,7 @@ try:
     from .printer import PanelPrinter
     import MavensMate.lib.command_helper as command_helper
     import MavensMate.util as util
+    import MavensMate.lib.mm_interface as mm
 except:
     from lib.threads import ThreadTracker
     from lib.threads import ThreadProgress
@@ -51,14 +52,20 @@ def create(self, files, refresh=False):
             fz = zipfile.ZipFile(f, 'r')
             for fileinfo in fz.infolist():
                 path = os.path.join(util.mm_project_directory(),'resource-bundles',baseFileName+fileExtension)
-                directories = fileinfo.filename.decode('utf8').split('\\')
+                directories = fileinfo.filename.split('/')
+                #directories = fileinfo.filename.split('\\')
                 for directory in directories:
+                    if directory.startswith('__MACOSX'):
+                        continue
                     path = os.path.join(path, directory)
                     if directory == directories[-1]: break # the file
                     if not os.path.exists(path):
                         os.makedirs(path)
-                outputfile = open(path, "wb")
-                shutil.copyfileobj(f.open(fileinfo.filename), outputfile)
+                try:
+                    outputfile = open(path, "wb")
+                    shutil.copyfileobj(fz.open(fileinfo.filename), outputfile)
+                except:
+                    pass
         else:
             cmd = 'unzip \''+f+'\' -d \''+util.mm_project_directory()+'/resource-bundles/'+baseFileName+fileExtension+'\''
             os.system(cmd)
@@ -66,6 +73,33 @@ def create(self, files, refresh=False):
     printer.write('[Resource bundle creation complete]\n')
     printer.hide()
     util.send_usage_statistics('Create Resource Bundle') 
+
+def deploy(bundle_name):
+    if '.resource' not in bundle_name:
+        bundle_name = bundle_name + '.resource'
+    message = 'Bundling and deploying to server: ' + bundle_name
+    # delete existing sr
+    if os.path.exists(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)):
+        os.remove(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name))
+    # zip bundle to static resource dir 
+    os.chdir(os.path.join(util.mm_project_directory(),"resource-bundles",bundle_name))
+    if 'darwin' in sys.platform or 'linux' in sys.platform:
+        #cmd = "zip -r -X '"+util.mm_project_directory()+"/src/staticresources/"+bundle_name+"' *"      
+        #os.system(cmd)
+        zip_file = util.zip_directory(os.path.join(util.mm_project_directory(),"resource-bundles",bundle_name), os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name))
+    elif 'win32' in sys.platform:
+        zip_file = util.zip_directory(os.path.join(util.mm_project_directory(),"resource-bundles",bundle_name), os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name))
+    print(zip_file)
+    if zip_file.endswith(".zip"):
+        os.rename(zip_file, zip_file[:-4])
+    #compile
+    file_path = os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)
+    params = {
+        "files" : [file_path]
+    }
+    mm.call('compile', params=params, message=message)
+    util.send_usage_statistics('Deploy Resource Bundle')
+
 
 def refresh(self, dirs):
     files = []

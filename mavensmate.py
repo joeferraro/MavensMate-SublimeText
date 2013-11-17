@@ -1171,22 +1171,25 @@ class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
             resource_bundle.refresh(self, dirs) 
             util.send_usage_statistics('Refresh Resource Bundle (Sidebar)')
     def is_visible(self, dirs, files):
-        if files != None and type(files) is list and len(files) > 0:
-            return False
+        try:
+            if files != None and type(files) is list and len(files) > 0:
+                return False
 
-        if not util.is_mm_project():
-            return False
-        is_ok = True
-        if dirs != None and type(dirs) is list and len(dirs) > 0:
-            for d in dirs:
-                basename = os.path.basename(d)
-                if "." not in basename:
-                    is_ok = False
-                    return
-                if "." in basename and basename.split(".")[-1] != "resource":
-                    is_ok = False
-                    break
-        return is_ok   
+            if not util.is_mm_project():
+                return False
+            is_ok = True
+            if dirs != None and type(dirs) is list and len(dirs) > 0:
+                for d in dirs:
+                    basename = os.path.basename(d)
+                    if "." not in basename:
+                        is_ok = False
+                        return
+                    if "." in basename and basename.split(".")[-1] != "resource":
+                        is_ok = False
+                        break
+            return is_ok  
+        except:
+            return False 
 
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
@@ -1691,6 +1694,23 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         ps.append(os.path.join(util.mm_project_directory(),"src","staticresources",self.results[picked]))
         resource_bundle.create(self, ps)
 
+#deploys selected resource bundle to the server
+class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        self.rbs_map = {}
+        rbs = []
+        for dirname in os.listdir(os.path.join(util.mm_project_directory(),"resource-bundles")):
+            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
+            rbs.append(dirname)
+        self.results = rbs
+        self.window.show_quick_panel(rbs, self.panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked < len(self.results):
+            return
+        resource_bundle.deploy(self.results[picked])
+
 #opens a file 
 class OpenFileInProject(sublime_plugin.ApplicationCommand):
     def run(self, project_name, file_name, line_number):       
@@ -1710,23 +1730,6 @@ class OpenFileInProject(sublime_plugin.ApplicationCommand):
     def mark_line(self, view, line_number):
         view.add_regions("health_item", [view.line(view.text_point(line_number-1, 0))], "foo", "bookmark", sublime.DRAW_OUTLINED)
 
-#deploys selected resource bundle to the server
-class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
-    def run(self):
-        self.rbs_map = {}
-        rbs = []
-        for dirname in os.listdir(os.path.join(util.mm_project_directory(),"resource-bundles")):
-            if dirname == '.DS_Store' or dirname == '.' or dirname == '..' : continue
-            rbs.append(dirname)
-        self.results = rbs
-        self.window.show_quick_panel(rbs, self.panel_done,
-            sublime.MONOSPACE_FONT)
-
-    def panel_done(self, picked):
-        if 0 > picked < len(self.results):
-            return
-        deploy_resource_bundle(self.results[picked])
-
 class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('project_health_check')
@@ -1734,22 +1737,3 @@ class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(command):
         return util.is_mm_project()
-
-def deploy_resource_bundle(bundle_name):
-    if '.resource' not in bundle_name:
-        bundle_name = bundle_name + '.resource'
-    message = 'Bundling and deploying to server: ' + bundle_name
-    # delete existing sr
-    if os.path.exists(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)):
-        os.remove(os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name))
-    # zip bundle to static resource dir 
-    os.chdir(os.path.join(util.mm_project_directory(),"resource-bundles",bundle_name))
-    cmd = "zip -r -X '"+util.mm_project_directory()+"/src/staticresources/"+bundle_name+"' *"      
-    os.system(cmd)
-    #compile
-    file_path = os.path.join(util.mm_project_directory(),"src","staticresources",bundle_name)
-    params = {
-        "files" : [file_path]
-    }
-    mm.call('compile', params=params, message=message)
-    util.send_usage_statistics('Deploy Resource Bundle')

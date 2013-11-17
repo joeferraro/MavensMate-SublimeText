@@ -9,6 +9,7 @@ import shutil
 import codecs
 import string
 import random
+import zipfile
 # from datetime import datetime, date, time
 
 # try: 
@@ -544,6 +545,9 @@ def get_apex_completions(search_name, search_name_extra=None):
                 for inner in symbol_table['innerClasses']:
                     if inner["name"] == search_name_extra:
                         return get_completions_for_inner_class(inner)
+
+def zip_directory(directory_to_zip, where_to_put_zip_file=None):
+    return shutil.make_archive(where_to_put_zip_file, 'zip', os.path.join(directory_to_zip))
 
 def get_version_number():
     try:
