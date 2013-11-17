@@ -216,9 +216,15 @@ class SyntaxHandler(sublime_plugin.EventListener):
         try:
             ext = util.get_file_extension(view.file_name())
             if ext == '.cls' or ext == '.trigger':
-                view.set_syntax_file(os.path.join("Packages","MavensMate","themes","Apex.tmLanguage"))
+                if "linux" in sys.platform or "darwin" in sys.platform:
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","Apex.tmLanguage"))
+                else:
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/Apex.tmLanguage"))
             elif ext == '.page' or ext == '.component':
-                view.set_syntax_file(os.path.join("Packages","HTML","HTML.tmLanguage"))
+                if "linux" in sys.platform or "darwin" in sys.platform:
+                    view.set_syntax_file(os.path.join("Packages","HTML","HTML.tmLanguage"))
+                else:
+                    view.set_syntax_file(os.path.join("Packages/HTML/HTML.tmLanguage"))
         except:
             pass
 
