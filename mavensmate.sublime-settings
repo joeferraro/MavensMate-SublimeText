@@ -155,7 +155,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	            "url"           : "UrlRewriterApexClass.html",
 	            "webservice"    : "WebserviceClass.html",
 	            "empty"         : "ApexClassNoConstructor.html",
-	            "default"       : "ApexClass.html"
+	            "default"       : "ApexClass.html",
+	            "apexrest"      : "ApexRest.html"
 	        },
         "ApexTrigger"   : 
 	        {
