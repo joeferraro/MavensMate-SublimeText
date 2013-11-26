@@ -532,9 +532,12 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
             elif "ErrorMsg" in res:
                 printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
 
-        elif 'success' in res and util.to_bool(res['success']) == False and ('messages' in res or 'Messages' in res):
-            if 'Messages' in res:
+        elif 'success' in res and util.to_bool(res['success']) == False and (('messages' in res or 'Messages' in res) or 'details' in res):
+            if 'details' in res and 'componentFailures' in res['details']:
+                res['messages'] = res['details'].pop('componentFailures')
+            elif 'Messages' in res:
                 res['messages'] = res.pop('Messages')
+            
             #here we're parsing a response from the metadata endpoint
             failures = None
             messages = res['messages']
