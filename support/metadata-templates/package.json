@@ -59,6 +59,12 @@
 			"file_name" 	: "WebserviceClass.cls",
 			"description" 	: "Web service class",
 			"author" 		: "MavensMate"
+		},
+		{
+			"name" 			: "Apex Rest Resource",
+			"file_name" 	: "ApexRest.cls",
+			"description" 	: "Template for custom Apex REST endpoints",
+			"author" 		: "Chris Bland @ChrisBland"
 		}
 	],
 	"ApexComponent" : [
