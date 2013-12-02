@@ -457,7 +457,9 @@ def handle_result(operation, process_id, printer, result, thread):
         else:
             print_result_message(operation, process_id, status_region, result, printer, thread) 
             if operation == 'new_metadata' and 'success' in result and util.to_bool(result['success']) == True:
-                if 'messages' in result:
+                if 'messages' in result or 'details' in result:
+                    if 'details' in result and 'componentSuccesses' in result['details']:
+                        result['messages'] = result['details'].pop('componentSuccesses')
                     if type(result['messages']) is not list:
                         result['messages'] = [result['messages']]
                     for m in result['messages']:
