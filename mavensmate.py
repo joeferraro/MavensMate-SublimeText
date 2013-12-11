@@ -1361,14 +1361,16 @@ class VisualforceCompletions(sublime_plugin.EventListener):
 
         pt = locations[0] - len(prefix) - 1
         ch = view.substr(sublime.Region(pt, pt + 1))
+        ch2 = view.substr(sublime.Region(pt, pt + 2))
         
-        if ch == '<':
+        if ch2 == '<a' or ch2 == '<c':
             _completions = []
             for t in vf.tag_list:
                  _completions.append((t, t))
             return _completions
 
         elif ch == ':':
+            print('SCOPE: ', view.scope_name(pt))
             word = view.substr(view.word(pt))        
             _completions = []
             for t in vf.tag_list:
@@ -1446,9 +1448,10 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
         pt = locations[0] - len(prefix) - 1
         # print(view.scope_name(pt))
         scope_name = view.scope_name(pt)
+        #print(scope_name)
         if 'string.quoted.single.java' in scope_name:
             return []
-        if 'soql.query.java' in scope_name:
+        if 'string.quoted.brackets.soql.apex' in scope_name:
             return []
 
         ch = view.substr(sublime.Region(pt, pt + 1))
@@ -1468,9 +1471,15 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
         if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".apex_file_properties")): #=> parse org metadata, looking for object names
             jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".apex_file_properties"))
             for element in jsonData.keys():
+                if "unpackaged/classes" or "unpackaged\classes" in element:
+                    continue
                 if ".cls" in element:
-                        class_name = element.replace(".cls", "")
-                        _completions.append((class_name+"\t[Custom Apex Class]", class_name))
+                    class_name = element.replace(".cls", "")
+                    if "/" in class_name:
+                        class_name = class_name.split("/")[-1]
+                    if "\\" in class_name:
+                        class_name = class_name.split("\\")[-1]
+                    _completions.append((class_name+"\t[Custom Apex Class]", class_name))
 
         #print(apex_system_completions)
         _completions.extend(apex_system_completions)
@@ -1498,12 +1507,16 @@ class ApexCompletions(sublime_plugin.EventListener):
         pt = locations[0] - len(prefix) - 1
         ch = view.substr(sublime.Region(pt, pt + 1))
         if not ch == '.': return []
+        scope_name = view.scope_name(pt)
+        print(scope_name)
+        if 'string.quoted.brackets.soql.apex' in scope_name:
+            return []
 
         #myVariable.
         #if we cant find myVariable properly, exit out
         word = view.substr(view.word(pt))        
         if word == None or word == '':
-            return []
+            return [] 
 
         print('[MAVENSMATE] autocomplete word: ', word)
         
@@ -1559,7 +1572,6 @@ class ApexCompletions(sublime_plugin.EventListener):
         print('[MAVENSMATE] autocomplete type: ', typedef_class) #String
         print('[MAVENSMATE] autocomplete type extra: ', typedef_class_extra) #String
 
-        legacy_classes = ['system', 'search', 'limits', 'enum']
         legacy_classes = ['system', 'search', 'limits', 'enum', 'trigger']
 
         if typedef_class_lower in legacy_classes and os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
@@ -1569,6 +1581,11 @@ class ApexCompletions(sublime_plugin.EventListener):
             pd = data["static_methods"]
             for method in pd:
                 _completions.append((method, method))
+            completion_flags = (
+                sublime.INHIBIT_WORD_COMPLETIONS |
+                sublime.INHIBIT_EXPLICIT_COMPLETIONS
+            )
+            #return (_completions, completion_flags)
             return sorted(_completions)
 
         if word == 'Page' and os.path.isdir(os.path.join(util.mm_project_directory(),"src","pages")):
@@ -1593,21 +1610,30 @@ class ApexCompletions(sublime_plugin.EventListener):
             #TODO 
             return []
 
-        if typedef_class in apex_completions["publicDeclarations"] and typedef_class_extra_lower == '':
-            comp_def = apex_completions["publicDeclarations"].get(word)
+        apex_class_key = typedef_class
+        if apex_class_key == 'DateTime':
+            apex_class_key = 'Datetime'
+
+        if apex_class_key in apex_completions["publicDeclarations"] and typedef_class_extra_lower == '':
+            apex_class_key = word
+            if apex_class_key == 'DateTime':
+                apex_class_key = 'Datetime'
+            comp_def = apex_completions["publicDeclarations"].get(apex_class_key)
             for i in comp_def:
                 _completions.append((i, i))
             return sorted(_completions)
-        elif apex_completions["publicDeclarations"].get(typedef_class) != None:
+        elif apex_completions["publicDeclarations"].get(apex_class_key) != None:
             top_level = apex_completions["publicDeclarations"].get(typedef_class)
             sub_def = top_level.get(word)
             if sub_def == None:
                 sub_def = top_level.get(typedef_class_extra)
             _completions = util.get_symbol_table_completions(sub_def)
             return sorted(_completions)
-        elif typedef_class in apex_completions["publicDeclarations"]["System"]:
+        elif apex_class_key in apex_completions["publicDeclarations"]["System"]:
+            if typedef_class == 'DateTime':
+                typedef_class = 'Datetime'
             if word == typedef_class: #static
-                comp_def = apex_completions["publicDeclarations"]["System"].get(word)
+                comp_def = apex_completions["publicDeclarations"]["System"].get(apex_class_key)
             else: #instance
                 comp_def = apex_completions["publicDeclarations"]["System"].get(typedef_class)
             _completions = util.get_symbol_table_completions(comp_def)

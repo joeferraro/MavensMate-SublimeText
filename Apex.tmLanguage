@@ -18,6 +18,36 @@
 	<key>patterns</key>
 	<array>
 		<dict>
+            <key>match</key>
+            <string>\b(?i:package|trigger|class|interface)\b</string>
+            <key>name</key>
+            <string>storage.type.apex</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\b(?i:webservice|testmethod)\b</string>
+            <key>name</key>
+            <string>keyword.control.annotation.apex</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\b(?i:commit|rollback)\b</string>
+            <key>name</key>
+            <string>keyword.control.transaction.apex</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\b(?i:insert|update|delete)\b</string>
+            <key>name</key>
+            <string>keyword.control.dml.apex</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\b(?i:webservice|testmethod)\b</string>
+            <key>name</key>
+            <string>keyword.control.annotation.apex</string>
+        </dict>                
+		<dict>
 			<key>captures</key>
 			<dict>
 				<key>1</key>
@@ -510,9 +540,53 @@
 					<string>#strings</string>
 				</dict>
 				<dict>
-					<key>include</key>
-					<string>#soql</string>
-				</dict>
+                    <key>begin</key>
+                    <string>\[</string>
+                    <key>beginCaptures</key>
+                    <dict>
+                        <key>0</key>
+                        <dict>
+                            <key>name</key>
+                            <string>punctuation.definition.soql.begin.apex</string>
+                        </dict>
+                    </dict>
+                    <key>end</key>
+                    <string>\]</string>
+                    <key>endCaptures</key>
+                    <dict>
+                        <key>0</key>
+                        <dict>
+                            <key>name</key>
+                            <string>punctuation.definition.soql.end.apex</string>
+                        </dict>
+                    </dict>
+                    
+                    <key>name</key>
+                    <string>string.quoted.brackets.soql.apex</string>
+
+                    <key>patterns</key>
+                    <array>
+                    	<dict>
+                    		<key>match</key>
+                    		<string>\\.</string>
+                    		<key>name</key>
+                    		<string>constant.character.escape.java</string>
+                    	</dict>
+                    	<dict>
+                    		<key>match</key>
+	                    	<string>\b(?i:SELECT|FROM|WHERE)\b</string>
+	                    	<key>name</key>
+	                    	<string>keyword.control.dml.apex</string>
+                    	</dict>
+                    	<dict>
+                    		<key>match</key>
+	                    	<string>:[A-Z,a-z,0-9]*</string>
+	                    	<key>name</key>
+	                    	<string>variable.language.java.soql</string>
+                    	</dict>
+
+                    </array>
+                </dict>
 				<dict>
 					<key>include</key>
 					<string>#all-types</string>
