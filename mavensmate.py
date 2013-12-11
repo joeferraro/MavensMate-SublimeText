@@ -1560,6 +1560,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         print('[MAVENSMATE] autocomplete type extra: ', typedef_class_extra) #String
 
         legacy_classes = ['system', 'search', 'limits', 'enum']
+        legacy_classes = ['system', 'search', 'limits', 'enum', 'trigger']
 
         if typedef_class_lower in legacy_classes and os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
             json_data = open(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json"))
