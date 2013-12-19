@@ -121,7 +121,7 @@
 	         	]
 	     	},
      		{
-				"caption": "MavensMate Diff",
+				"caption": "Server Diff",
 				"children": [
 					{
 						"caption": "Compare to...",
@@ -204,12 +204,22 @@
 	    		"caption": "Run Apex Script",  
 	         	"command": "run_apex_script"
 	     	},
-	     	// {
-	      //   	"id": "delete_active", 
-	    		// "caption": "Delete Active File",  
-	      //    	"command": "mavens_mate"
-	     	// },
 	     	{"caption":"-"},
+	     	{
+	        	"id": "github", 
+	    		"caption": "GitHub (beta)",  
+	         	"children":
+	         	[
+					{ 
+						"caption": "Sign in with GitHub",  
+	         			"command": "sign_in_with_github"
+					},
+					{ 
+						"caption": "Connect Project",  
+	         			"command": "connect_project_with_github"
+					}	
+	         	]
+	     	},
 	     	{
 	        	"id": "settings", 
 	    		"caption": "Settings",  
