@@ -22,31 +22,7 @@
             <string>\b(?i:package|trigger|class|interface)\b</string>
             <key>name</key>
             <string>storage.type.apex</string>
-        </dict>
-        <dict>
-            <key>match</key>
-            <string>\b(?i:webservice|testmethod)\b</string>
-            <key>name</key>
-            <string>keyword.control.annotation.apex</string>
-        </dict>
-        <dict>
-            <key>match</key>
-            <string>\b(?i:commit|rollback)\b</string>
-            <key>name</key>
-            <string>keyword.control.transaction.apex</string>
-        </dict>
-        <dict>
-            <key>match</key>
-            <string>\b(?i:insert|update|delete)\b</string>
-            <key>name</key>
-            <string>keyword.control.dml.apex</string>
-        </dict>
-        <dict>
-            <key>match</key>
-            <string>\b(?i:webservice|testmethod)\b</string>
-            <key>name</key>
-            <string>keyword.control.annotation.apex</string>
-        </dict>                
+        </dict>            
 		<dict>
 			<key>captures</key>
 			<dict>
@@ -377,7 +353,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>(class|(?:@)?interface|enum)\s+(\w+)</string>
+					<string>(class|(?:@)?interface|enum|trigger)\s+(\w+)</string>
 					<key>name</key>
 					<string>meta.class.identifier.java</string>
 				</dict>
@@ -474,6 +450,10 @@
 				</dict>
 				<dict>
 					<key>include</key>
+					<string>#properties</string>
+				</dict>
+				<dict>
+					<key>include</key>
 					<string>#annotations</string>
 				</dict>
 				<dict>
@@ -560,10 +540,8 @@
                             <string>punctuation.definition.soql.end.apex</string>
                         </dict>
                     </dict>
-                    
                     <key>name</key>
                     <string>string.quoted.brackets.soql.apex</string>
-
                     <key>patterns</key>
                     <array>
                     	<dict>
@@ -574,17 +552,56 @@
                     	</dict>
                     	<dict>
                     		<key>match</key>
-	                    	<string>\b(?i:SELECT|FROM|WHERE)\b</string>
-	                    	<key>name</key>
-	                    	<string>keyword.control.dml.apex</string>
-                    	</dict>
-                    	<dict>
-                    		<key>match</key>
-	                    	<string>:[A-Z,a-z,0-9]*</string>
+	                    	<string>\b(?i:SELECT|FROM|WHERE|OR|AND|LIKE|CONTAINS)\b</string>
 	                    	<key>name</key>
 	                    	<string>variable.language.java.soql</string>
                     	</dict>
-
+                    	<dict>
+                    		<key>match</key>
+	                    	<string>:</string>
+	                    	<key>name</key>
+	                    	<string>variable.language.java.soql</string>
+                    	</dict>
+                    	<dict>
+                    		<key>match</key>
+	                    	<string>(\,)</string>
+	                    	<key>name</key>
+	                    	<string>keyword.operator.assignment.java</string>
+                    	</dict>
+                    	<dict>
+    						<key>include</key>
+    						<string>#strings</string>
+    					</dict>
+    					<dict>
+    						<key>include</key>
+    						<string>#object-types</string>
+    					</dict>
+    					<dict>
+    						<key>include</key>
+    						<string>#object-types-inherited</string>
+    					</dict>
+                    	<dict>
+                    		<key>include</key>
+                    		<string>#constants-and-special-vars</string>
+                    	</dict>
+                    	<dict>
+                    		<key>include</key>
+                    		<string>#primitive-arrays</string>
+                    	</dict>
+                    	<dict>
+                    		<key>include</key>
+                    		<string>#primitive-types</string>
+                    	</dict>
+                    	<dict>
+                    		<key>include</key>
+                    		<string>#keywords</string>
+                    	</dict>
+                    	<dict>
+                    		<key>match</key>
+	                    	<string>(\(|\))</string>
+	                    	<key>name</key>
+	                    	<string>punctuation.definition</string>
+                    	</dict>
                     </array>
                 </dict>
 				<dict>
@@ -762,10 +779,34 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(return|break|case|continue|default|do|while|for|switch|if|else)\b</string>
+					<string>\b(return|break|case|continue|default|do|while|for|switch|if|else|beforeinsert|beforeupdate|beforedelete|beforeundelete|afterinsert|afterupdate|afterdelete|afterundelete|before insert|before update|before delete|before undelete|after insert|after update|after undelete|after delete|)\b</string>
 					<key>name</key>
 					<string>keyword.control.java</string>
 				</dict>
+				<dict>
+				    <key>match</key>
+				    <string>\b(?i:webservice|testmethod)\b</string>
+				    <key>name</key>
+				    <string>keyword.control.annotation.apex</string>
+				</dict>
+				<dict>
+				    <key>match</key>
+				    <string>\b(?i:commit|rollback)\b</string>
+				    <key>name</key>
+				    <string>keyword.control.transaction.apex</string>
+				</dict>
+				<dict>
+				    <key>match</key>
+				    <string>\b(?i:insert|update|delete)\b</string>
+				    <key>name</key>
+				    <string>keyword.control.dml.apex</string>
+				</dict>
+				<dict>
+				    <key>match</key>
+				    <string>\b(?i:webservice|testmethod)\b</string>
+				    <key>name</key>
+				    <string>keyword.control.annotation.apex</string>
+				</dict>    
 				<dict>
 					<key>match</key>
 					<string>\b(instanceof)\b</string>
@@ -838,7 +879,7 @@
 						<key>1</key>
 						<dict>
 							<key>name</key>
-							<string>entity.name.function.java</string>
+							<string>entity.name.function.apex</string>
 						</dict>
 					</dict>
 					<key>end</key>
@@ -871,6 +912,52 @@
 				<dict>
 					<key>include</key>
 					<string>#throws</string>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>{</string>
+					<key>end</key>
+					<string>(?=})</string>
+					<key>name</key>
+					<string>meta.method.body.java</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#code</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
+		<key>properties</key>
+		<dict>
+			<key>begin</key>
+			<string>(?!new)(?=\w.*\s+)(?=[^=]+\()</string>
+			<key>end</key>
+			<string>}|(?=;)</string>
+			<key>name</key>
+			<string>meta.method.java</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>#storage-modifiers</string>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>(?=\w.*\s+\w+\s*\()</string>
+					<key>end</key>
+					<string>(?=\w+\s*\()</string>
+					<key>name</key>
+					<string>meta.method.return-type.java</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#all-types</string>
+						</dict>
+					</array>
 				</dict>
 				<dict>
 					<key>begin</key>
@@ -1151,45 +1238,6 @@
 							<string>\\.</string>
 							<key>name</key>
 							<string>constant.character.escape.java</string>
-						</dict>
-					</array>
-				</dict>
-			</array>
-		</dict>
-		<key>soql</key>
-		<dict>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>begin</key>
-					<string>\[</string>
-					<key>beginCaptures</key>
-					<dict>
-						<key>0</key>
-						<dict>
-							<key>name</key>
-							<string>soql.query.begin.java</string>
-						</dict>
-					</dict>
-					<key>end</key>
-					<string>\]</string>
-					<key>endCaptures</key>
-					<dict>
-						<key>0</key>
-						<dict>
-							<key>name</key>
-							<string>soql.query.end.java</string>
-						</dict>
-					</dict>
-					<key>name</key>
-					<string>soql.query.java</string>
-					<key>patterns</key>
-					<array>
-						<dict>
-							<key>match</key>
-							<string>\\.</string>
-							<key>name</key>
-							<string>soq.constant.character.escape.java</string>
 						</dict>
 					</array>
 				</dict>
