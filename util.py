@@ -260,6 +260,8 @@ def get_apex_file_properties():
 def is_mm_file(filename=None):
     try :
         if is_mm_project():
+            if "src/documents" or "src\\documents" in filename:
+                return True
             if not filename: 
                 filename = get_active_file()
             if os.path.exists(filename):
