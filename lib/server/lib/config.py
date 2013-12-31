@@ -2,6 +2,10 @@ import logging
 import os.path
 import sys
 import tempfile 
+import sublime
+from logging.handlers import RotatingFileHandler
+
+logger = None
 
 def __get_base_path():
     if hasattr(sys, 'frozen'):
@@ -15,13 +19,22 @@ def __get_is_frozen():
     else:
         return False
 
+def setup_logging():
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+
+    logging.raiseExceptions = False
+    logging.basicConfig(level=logging.DEBUG)
+
+    log_location = settings.get('mm_log_location', tempfile.gettempdir())
+    logging_handler = RotatingFileHandler(os.path.join(log_location, "mmui.log"), maxBytes=1*1024*1024, backupCount=5)
+
+    #mm log setup
+    global logger
+    logger = logging.getLogger('mmui')
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False 
+    logger.addHandler(logging_handler)
+
 mm_path = None
 frozen = __get_is_frozen()
 base_path = __get_base_path()
-
-handler = logging.FileHandler(os.path.join(tempfile.gettempdir(),"mmserver.log"))
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('mmserver')
-logging.getLogger('mmserver').propagate = False 
-logging.getLogger('mmserver').addHandler(handler)
-logger.setLevel(logging.DEBUG)
