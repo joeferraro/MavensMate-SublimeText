@@ -45,6 +45,8 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
 
+debug = config.debug
+
 def mm_plugin_location():
     return os.path.join(packages_path,"MavensMate")
 
@@ -57,7 +59,7 @@ def package_check():
         pass
 
 def is_project_legacy(window=None):
-    #print(mm_project_directory(window))
+    #debug(mm_project_directory(window))
     if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
     if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
@@ -322,8 +324,8 @@ def clear_marked_line_numbers(view, mark_type="compile_issue"):
     try:
         sublime.set_timeout(lambda: view.erase_regions(mark_type), 100)
     except Exception as e:
-        print(e.message)
-        print('no regions to clean up')
+        debug(e.message)
+        debug('no regions to clean up')
 
 def get_window_and_view_based_on_context(context):
     if isinstance(context, sublime.View):
@@ -410,7 +412,7 @@ def get_tab_file_names():
     return tabs 
 
 def get_file_as_string(file_path):
-    #print(file_path)
+    #debug(file_path)
     try:
         f = codecs.open(file_path, "r", "utf8")
         file_body = f.read()
@@ -447,7 +449,7 @@ def start_mavensmate_app():
            os.system("open '"+settings.get('mm_app_location')+"'")
         else:
            #sublime.error_message("MavensMate.app is not running, please start it from your Applications folder.")
-           print('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
+           debug('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
 
 def get_symbol_table(class_name):
     try:
