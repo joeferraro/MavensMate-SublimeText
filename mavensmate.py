@@ -17,6 +17,7 @@ if sys.version_info >= (3, 0):
     import MavensMate.lib.upgrader as upgrader
     import MavensMate.lib.resource_bundle as resource_bundle
     import MavensMate.lib.server.lib.server_threaded as server
+    import MavensMate.lib.server.lib.config as server_config
     from MavensMate.lib.printer import PanelPrinter
     from MavensMate.lib.threads import ThreadTracker
     import MavensMate.lib.parsehelp as parsehelp
@@ -38,11 +39,12 @@ else:
 import sublime
 import sublime_plugin
 
+debug = None
 settings = sublime.load_settings('mavensmate.sublime-settings')
 sublime_version = int(float(sublime.version()))
 
 completioncommon = imp.load_source("completioncommon", os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib","completioncommon.py"))
-apex_completions = util.parse_json_from_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "support", "lib", "completions.json"))
+apex_completions = util.parse_json_from_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib", "apex", "completions.json"))
 apex_system_completions = []
 for top_level_class_name in apex_completions["publicDeclarations"]["System"].keys():
     apex_system_completions.append((top_level_class_name+"\t[Standard Apex Class]", top_level_class_name))
@@ -79,12 +81,17 @@ except (ValueError):
     import lib.reloader as reloader
 
 def plugin_loaded():
+    config.setup_logging()
+    server_config.setup_logging()
+    global debug
+    debug = config.debug
+    debug('Loading MavensMate for Sublime Text')
     settings = sublime.load_settings('mavensmate.sublime-settings')
     merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
     try:
         server.run(port=settings.get('mm_server_port'))
     except Exception as e:
-        print(e)
+        debug(e)
     config.settings = settings
     config.merge_settings = merge_settings
     util.package_check()
@@ -173,7 +180,7 @@ class MavensStubCommand(sublime_plugin.WindowCommand):
 #deploys the currently active file
 class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
     def run(self, files=None):       
-        print('FORCE COMPILING!')
+        debug('FORCE COMPILING!')
         if files == None:
             files = [util.get_active_file()]
         params = {
@@ -188,7 +195,7 @@ class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
 #deploys the currently active file
 class ForceCompileFileCommand(sublime_plugin.WindowCommand):
     def run(self, files=None):       
-        print('FORCE COMPILING!')
+        debug('FORCE COMPILING!')
         if files == None:
             files = [util.get_active_file()]
         params = {
@@ -326,7 +333,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         import os
         self.dir_map = {}
         dirs = [] 
-        #print(util.mm_workspace())
+        #debug(util.mm_workspace())
         workspaces = util.mm_workspace()
         if type(workspaces) is not list:
             workspaces = [workspaces]
@@ -345,7 +352,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 dirs.append([dirname, "Workspace: "+os.path.basename(w)])
                 self.dir_map[dirname] = [dirname, sublime_project_file, w]
         self.results = dirs
-        #print(self.results)
+        #debug(self.results)
         self.window.show_quick_panel(dirs, self.panel_done,
             sublime.MONOSPACE_FONT)
 
@@ -357,7 +364,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         project_name = self.dir_map[self.picked_project[0]][0]
         workspace = self.dir_map[self.picked_project[0]][2]
         project_file_location = os.path.join(workspace,project_name,project_file)
-        #print(project_file_location)
+        #debug(project_file_location)
         
         if not os.path.isfile(project_file_location):
             sublime.message_dialog("Cannot find project file for: "+project_name)
@@ -1029,7 +1036,7 @@ class HideApexCheckpoints(sublime_plugin.WindowCommand):
         try:
             util.clear_marked_line_numbers(self.window.active_view(), "overlay")
         except Exception:
-            print('[MAVENSMATE]: error hidding checkpoints')
+            debug('error hidding checkpoints')
 
     def is_enabled(self):
         return util.is_apex_class_file() 
@@ -1037,12 +1044,12 @@ class HideApexCheckpoints(sublime_plugin.WindowCommand):
 #when a class or trigger file is opened, adds execution overlay markers if applicable
 class ShowApexCheckpoints(sublime_plugin.WindowCommand):
     def run(self):
-        print('[MAVENSMATE]: attempting to load apex overlays for current file')
+        debug('attempting to load apex overlays for current file')
         try:
             active_view = self.window.active_view()
             fileName, ext = os.path.splitext(active_view.file_name())
-            print(fileName)
-            print(ext)
+            debug(fileName)
+            debug(ext)
             if ext == ".cls" or ext == ".trigger":
                 api_name = fileName.split("/")[-1] 
                 overlays = util.parse_json_from_file(util.mm_project_directory()+"/config/.overlays")
@@ -1052,8 +1059,8 @@ class ShowApexCheckpoints(sublime_plugin.WindowCommand):
                         lines.append(int(o["Line"]))
                 sublime.set_timeout(lambda: util.mark_overlays(active_view, lines), 10)
         except Exception as e:
-            print('[MAVENSMATE]: execution overlay loader error')
-            print('[MAVENSMATE]: ', e)
+            debug('execution overlay loader error')
+            debug('', e)
 
     def is_enabled(self):
         return util.is_apex_class_file() 
@@ -1083,7 +1090,7 @@ class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
         util.send_usage_statistics('Delete Apex Checkpoint') 
 
     def reload(self, cmd=None):
-        print("[MAVENSMATE]: Reloading Apex Checkpoints")
+        debug("Reloading Apex Checkpoints")
         cmd.window.run_command("show_apex_checkpoints") 
 
     def is_enabled(self):
@@ -1100,7 +1107,7 @@ class IndexApexCheckpointsCommand(sublime_plugin.WindowCommand):
         return util.is_mm_project()
 
     def reload(self, cmd=None):
-        print("[MAVENSMATE]: Reloading Apex Checkpoints")
+        debug("Reloading Apex Checkpoints")
         cmd.window.run_command("show_apex_checkpoints")
 
 #creates a new overlay
@@ -1140,7 +1147,7 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
         util.send_usage_statistics('New Apex Overlay')  
 
     def reload(self, cmd=None):
-        print("[MAVENSMATE]: Reloading Apex Checkpoints")
+        debug("Reloading Apex Checkpoints")
         cmd.window.run_command("show_apex_checkpoints")
 
     def is_enabled(self):
@@ -1370,7 +1377,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             return _completions
 
         elif ch == ':':
-            print('SCOPE: ', view.scope_name(pt))
+            debug('SCOPE: ', view.scope_name(pt))
             word = view.substr(view.word(pt))        
             _completions = []
             for t in vf.tag_list:
@@ -1379,7 +1386,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             return _completions
 
         elif ch == ' ':
-            print('SCOPE: ', view.scope_name(pt))
+            debug('SCOPE: ', view.scope_name(pt))
             scope_names = view.scope_name(pt).split(' ')
             if 'string.quoted.double.html' in scope_names or 'string.quoted.single.html' in scope_names:
                 return []
@@ -1397,7 +1404,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
                     tag_def = line_contents.split('<')[-1].split(' ')[0]
                     break
 
-                #print(tag_def)
+                #debug(tag_def)
                 if tag_def in vf.tag_defs:
                     def_entry = vf.tag_defs[tag_def]
 
@@ -1437,18 +1444,18 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
         if ext != '.cls' and ext != '.trigger':
             return []
 
-        # print('prefix: ',prefix)
-        # print('locations: ',locations)
+        # debug('prefix: ',prefix)
+        # debug('locations: ',locations)
         # pt1 = locations[0] - len(prefix) + 1
         # right_of_point = view.substr(pt1)
-        # print('right of pt: ',right_of_point)
+        # debug('right of pt: ',right_of_point)
 
         #now get the autocomplete context
         #if not dot notation, ignore
         pt = locations[0] - len(prefix) - 1
-        # print(view.scope_name(pt))
+        # debug(view.scope_name(pt))
         scope_name = view.scope_name(pt)
-        #print(scope_name)
+        #debug(scope_name)
         if 'string.quoted.single.java' in scope_name:
             return []
         if 'string.quoted.brackets.soql.apex' in scope_name:
@@ -1481,7 +1488,7 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
                         class_name = class_name.split("\\")[-1]
                     _completions.append((class_name+"\t[Custom Apex Class]", class_name))
 
-        #print(apex_system_completions)
+        #debug(apex_system_completions)
         _completions.extend(apex_system_completions)
 
         return _completions
@@ -1508,7 +1515,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         ch = view.substr(sublime.Region(pt, pt + 1))
         if not ch == '.': return []
         scope_name = view.scope_name(pt)
-        print(scope_name)
+        debug(scope_name)
         if 'string.quoted.brackets.soql.apex' in scope_name:
             return []
 
@@ -1518,7 +1525,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         if word == None or word == '':
             return [] 
 
-        print('[MAVENSMATE] autocomplete word: ', word)
+        debug('autocomplete word: ', word)
         
         ##OK START COMPLETIONS
         _completions = []
@@ -1532,7 +1539,7 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         #full_data = view.substr(sublime.Region(0, view.size()))
         typedef = parsehelp.get_type_definition(data)
-        print('[MAVENSMATE] autocomplete type definition: ', typedef)
+        debug('autocomplete type definition: ', typedef)
 
         if '<' not in typedef[2] and '[' not in typedef[2]:
             if '.' in typedef[2] and '<' not in typedef[2]:
@@ -1569,8 +1576,8 @@ class ApexCompletions(sublime_plugin.EventListener):
 
 
 
-        print('[MAVENSMATE] autocomplete type: ', typedef_class) #String
-        print('[MAVENSMATE] autocomplete type extra: ', typedef_class_extra) #String
+        debug('autocomplete type: ', typedef_class) #String
+        debug('autocomplete type extra: ', typedef_class_extra) #String
 
         legacy_classes = ['system', 'search', 'limits', 'enum', 'trigger']
 
@@ -1700,7 +1707,7 @@ class ApexCompletions(sublime_plugin.EventListener):
                         }
                         mm.call('refresh_metadata_index', False, params=params)
                 except:
-                    print('[MAVENSMATE]: failed to index custom object metadata')
+                    debug('Failed to index custom object metadata')
             else:
                 _completions.append(('Id', 'Id'))
                 return (sorted(_completions), completion_flags)
