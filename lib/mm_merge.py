@@ -786,8 +786,10 @@ class MavensMateDiffCommand(sublime_plugin.WindowCommand):
         view = sublime.active_window().active_view();
         if mmDiffView and  mmDiffView.left and mmDiffView.right and view and (view.id() == mmDiffView.left.id() or view.id() == mmDiffView.right.id()):
             return False
-
-        return True
+        if mmDiffView:
+            return True
+        else:
+            return False
 
     def getComparableFiles(self):
         self.viewsList = []
