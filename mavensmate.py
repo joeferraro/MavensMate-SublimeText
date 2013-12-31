@@ -1777,3 +1777,26 @@ class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(command):
         return util.is_mm_project()
+
+class SignInWithGithub(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('github')
+        util.send_usage_statistics('Github Sign In')
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+class ConnectProjectWithGithub(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('github_connect_project')
+        util.send_usage_statistics('Github Project Connect')
+
+    def is_enabled(command):
+        if util.is_mm_project():
+            if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".github")):
+                return True
+        return False
+
+
+
+
