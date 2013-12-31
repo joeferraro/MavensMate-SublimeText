@@ -434,17 +434,11 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         self.github_template    = None
 
     def run(self, edit, api_name="MyClass", class_type="default"): 
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        use_github = settings.get('mm_use_github_templates', True)
-        if use_github:
-            self.template_options = []
-            self.github_templates = util.parse_templates_package("ApexClass")
-            for t in self.github_templates:
-                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
-            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        else:
-            templates = get_merged_apex_templates("ApexClass")
-            sublime.active_window().show_input_panel("Apex Class Name, Template "+str(sorted(templates.keys())), api_name+", "+class_type, self.on_input, None, None)
+        self.template_options = []
+        self.github_templates = util.parse_templates_package("ApexClass")
+        for t in self.github_templates:
+            self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+        sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Apex Class')
 
     def on_input(self, input): 
@@ -492,17 +486,11 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         self.github_template    = None
 
     def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"): 
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        use_github = settings.get('mm_use_github_templates', True)
-        if use_github:
-            self.template_options = []
-            self.github_templates = util.parse_templates_package("ApexTrigger")
-            for t in self.github_templates:
-                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
-            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        else:
-            templates = get_merged_apex_templates("ApexTrigger")
-            sublime.active_window().show_input_panel("Apex Trigger Name, SObject Name, Template "+str(sorted(templates.keys())), api_name+", "+sobject_name+", "+class_type, self.on_input, None, None)
+        self.template_options = []
+        self.github_templates = util.parse_templates_package("ApexTrigger")
+        for t in self.github_templates:
+            self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+        sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Apex Trigger')
 
     def on_input(self, input):
@@ -524,7 +512,6 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
                 if t["name"] == template_name:
                     self.github_template = t
                     break
-
             sublime.active_window().show_input_panel("Apex Trigger Name, Trigger Object API Name", "MyTriggerName, Account", self.finish_github_template_selection, None, None)
              
     def finish_github_template_selection(self, api_name):
@@ -550,18 +537,13 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         self.github_template    = None
 
     def run(self, edit, api_name="MyPage", class_type="default"): 
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        use_github = settings.get('mm_use_github_templates', True)
-        if use_github:
-            self.template_options = []
-            self.github_templates = util.parse_templates_package("ApexPage")
-            for t in self.github_templates:
-                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
-            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        else:
-            sublime.active_window().show_input_panel("Visualforce Page Name, Template", api_name+", "+class_type, self.on_input, None, None)
+        self.template_options = []
+        self.github_templates = util.parse_templates_package("ApexPage")
+        for t in self.github_templates:
+            self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+        sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Visualforce Page')
-    
+
     def on_input(self, input): 
         api_name, class_type = [x.strip() for x in input.split(',')]
         if not check_apex_templates(get_merged_apex_templates("ApexPage"), { "api_name":api_name, "class_type":class_type }, "new_apex_page"):
@@ -606,18 +588,13 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         self.github_template    = None
 
     def run(self, edit, api_name="MyComponent", class_type="default"): 
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        use_github = settings.get('mm_use_github_templates', True)
-        if use_github:
-            self.template_options = []
-            self.github_templates = util.parse_templates_package("ApexComponent")
-            for t in self.github_templates:
-                self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
-            sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        else:
-            sublime.active_window().show_input_panel("Visualforce Component Name, Template", api_name+", "+class_type, self.on_input, None, None)
+        self.template_options = []
+        self.github_templates = util.parse_templates_package("ApexComponent")
+        for t in self.github_templates:
+            self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
+        sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Visualforce Component')
-    
+
     def on_input(self, input): 
         api_name, class_type = [x.strip() for x in input.split(',')]
         if not check_apex_templates(get_merged_apex_templates("ApexComponent"), { "api_name":api_name, "class_type":class_type }, "new_apex_component"):
@@ -1581,8 +1558,8 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         legacy_classes = ['system', 'search', 'limits', 'enum', 'trigger']
 
-        if typedef_class_lower in legacy_classes and os.path.isfile(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json")): #=> apex instance methods
-            json_data = open(os.path.join(config.mm_dir,"support","lib","apex",typedef_class_lower+".json"))
+        if typedef_class_lower in legacy_classes and os.path.isfile(os.path.join(config.mm_dir,"lib","apex","classes",typedef_class_lower+".json")): #=> apex instance methods
+            json_data = open(os.path.join(config.mm_dir,"lib","apex","classes",typedef_class_lower+".json"))
             data = json.load(json_data)
             json_data.close()
             pd = data["static_methods"]

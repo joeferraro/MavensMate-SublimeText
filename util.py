@@ -84,13 +84,24 @@ def parse_json_from_file(location):
 
 def parse_templates_package(mtype=None):
     try:
-        if 'linux' in sys.platform:
-            response = os.popen('wget https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json -q -O -').read()
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        template_source = settings.get('mm_template_source', 'joeferraro/MavensMate-Templates/master')
+        template_location = settings.get('mm_template_location', 'remote')
+        if template_location == 'remote':
+            if 'linux' in sys.platform:
+                response = os.popen('wget https://raw.github.com/{0}/{1} -q -O -'.format(template_source, "package.json")).read()
+            else:
+                response = urllib.request.urlopen('https://raw.github.com/{0}/{1}'.format(template_source, "package.json")).read().decode('utf-8')
+            j = json.loads(response)
         else:
-            response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-Templates/master/package.json').read().decode('utf-8')
-        j = json.loads(response)
-    except:
-        local_template_path = os.path.join(config.mm_dir,"support","metadata-templates","package.json")
+            local_template_path = os.path.join(template_source,"package.json")
+            j = parse_json_from_file(local_template_path)
+            if j == None or j == {}:
+                raise Exception('Could not load local templates. Check your "mm_template_source" setting.')
+    except Exception as e:
+        debug('Failed to load templates, reverting to local template store.')
+        debug(e)
+        local_template_path = os.path.join(config.mm_dir,"lib","apex","metadata-templates","package.json")
         j = parse_json_from_file(local_template_path)
     if mtype != None:
         return j[mtype]
