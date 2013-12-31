@@ -21,14 +21,14 @@ import urllib.request
 if sys.version_info >= (3, 0):
     #python 3
     import MavensMate.config as config
-    import MavensMate.lib.apex_extensions as apex_extensions
+    import MavensMate.lib.apex.apex_extensions as apex_extensions
     from MavensMate.lib.usage_reporter import UsageReporter
     from MavensMate.lib.upgrader import AutomaticUpgrader
     #from MavensMate.lib.printer import PanelPrinter
 else:
     #python 2
     import config
-    import lib.apex_extensions as apex_extensions
+    import lib.apex.apex_extensions as apex_extensions
     from lib.usage_reporter import UsageReporter
     from lib.upgrader import AutomaticUpgrader
     #from lib.printer import PanelPrinter
