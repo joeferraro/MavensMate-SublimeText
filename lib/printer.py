@@ -40,9 +40,7 @@ class PanelPrinter(object):
             printer.window_id = window_id
             printer.init()
             cls.printers[window_id] = printer
-            printer.write('==============================================\n')
-            printer.write('<---- MavensMate for Sublime Text v'+util.get_version_number()+' ---->\n')
-            printer.write('==============================================\n')
+            printer.write('MavensMate for Sublime Text v'+util.get_version_number()+'\n')
         return printer
 
     def error(self, string):
@@ -78,8 +76,8 @@ class PanelPrinter(object):
             self.window = sublime.active_window()
             self.panel = self.window.get_output_panel(self.name)
             self.panel.set_read_only(True)
-            self.panel.settings().set('syntax', 'Packages/MavensMate/themes/MavensMate.hidden-tmLanguage')
-            self.panel.settings().set('color_scheme', 'Packages/MavensMate/themes/MavensMate.hidden-tmTheme')
+            self.panel.settings().set('syntax', 'Packages/MavensMate/sublime/panel/MavensMate.hidden-tmLanguage')
+            self.panel.settings().set('color_scheme', 'Packages/MavensMate/sublime/panel/MavensMate.hidden-tmTheme')
             self.panel.settings().set('word_wrap', True)
             self.panel.settings().set('gutter', True)
             self.panel.settings().set('line_numbers', True)
