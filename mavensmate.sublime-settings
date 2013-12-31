@@ -2,7 +2,7 @@
 
 MavensMate settings
 NOTE: MavensMate user settings will override MavensMate default settings
-To override default MavensMate settings, modify user-specific settings (MavensMate --> Open --> Settings - User) 
+To override default MavensMate settings, modify user-specific settings (MavensMate --> Settings --> User) 
 ** Most changes require a SublimeText restart **
 */
 
@@ -32,8 +32,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
 	"mm_compile_on_save" : true,
 
-	//if true, MavensMate will check if the lastmodifiedbyid of apex metadata is different than running user
-	"mm_compile_check_conflicts": false,
+	//if true, MavensMate will check for server conflicts and present a server diff when it finds a conflict
+	"mm_compile_check_conflicts": true,
 
 	//if true, MavensMate will present local/server diff view when conflict is found for the purposes of merging changes (beta)
 	"mm_diff_server_conflicts": true,
@@ -86,6 +86,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 
 	//OSX only: the location of your Sublime Text install
 	"mm_plugin_client_location" : "/Applications",
+
+	//OSX only: the name of your plugin client app (Sublime Text.app, Sublime Text 3.app, etc.)
+	"mm_osx_plugin_client_app_name" : "Sublime Text 3.app",
 
 	//set to true to use the tooling api to compile apex metadata (if you're experiencing any compile issues, set this to false to use the metadata api)
 	"mm_compile_with_tooling_api" : true,
@@ -142,36 +145,17 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".html"
 	],
 
-	"mm_use_github_templates" : true,
+	//template location, e.g. "remote" or "local" ("remote" refers to templates located on github)
+	"mm_template_location": "remote",
 
-	"mm_default_apex_templates_map" : {
-        "ApexClass"     : 
-	        {
-	            "test"          : "UnitTestApexClass.html",
-	            "exception"     : "ExceptionApexClass.html",
-	            "batch"         : "BatchApexClass.html",
-	            "schedulable"   : "SchedulableApexClass.html",
-	            "email"         : "EmailServiceApexClass.html",
-	            "url"           : "UrlRewriterApexClass.html",
-	            "webservice"    : "WebserviceClass.html",
-	            "empty"         : "ApexClassNoConstructor.html",
-	            "default"       : "ApexClass.html",
-	            "apexrest"      : "ApexRest.html"
-	        },
-        "ApexTrigger"   : 
-	        {
-	            "default"       : "ApexTrigger.html"
-	        },
-        "ApexComponent" :  
-	        {
-	            "default"       : "ApexComponent.html"
-	        },
-        "ApexPage"      : 
-	        {
-	            "default"       : "ApexPage.html"
-	        }
-    },
-
+	//template location 
+	//if "mm_template_location" is set to "local", set to absolute location of the directory where you've forked the MavensMate-Templates project
+		//example: "mm_template_source" : "/path/to/templates"
+	//if "mm_template_location" is set to "remote", set to github location)
+		//example: "mm_template_source" : "username/reponame/branchname"
+	//project directory/repository must be in the format found here: https://github.com/joeferraro/MavensMate-Templates
+	"mm_template_source": "joeferraro/MavensMate-Templates/master",
+	
 	//if true, MavensMate.app will start when Sublime Text starts
 	"mm_start_app_on_st_startup" : true,
 
@@ -201,5 +185,4 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	
 	//if true, mavensmate will set the purgeOnDelete to true during metadata deletes (a hard delete)
 	"mm_purge_on_delete" : false
-	
 }
