@@ -312,8 +312,10 @@ def is_apex_test_file(filename=None):
         content = content_file.read()
         p = re.compile("@isTest\s", re.I + re.M)
         if p.search(content):
-            p = re.compile("\stestMethod\s", re.I + re.M)
-            if p.search(content): return True
+            return True
+        p = re.compile("\sstatic testMethod\s", re.I + re.M)
+        if p.search(content):
+            return True
     return False
 
 def mark_overlays(view, lines):
