@@ -125,7 +125,7 @@ class PanelThreadProgress():
         #we need to recalculate this every run in case a thread has responded and added
         #text to the panel
         process_region = self.thread.printer.panel.find(self.thread.process_id,0)
-        status_region = self.thread.printer.panel.find('Result:',process_region.begin())
+        status_region = self.thread.printer.panel.find('Result: ',process_region.begin())
         
         before = i % self.size
         after = (self.size - 1) - before
