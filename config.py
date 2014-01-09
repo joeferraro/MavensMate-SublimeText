@@ -33,5 +33,8 @@ def debug(msg, obj=None):
         print('[MAVENSMATE]: ' + msg + ' ', obj)
     elif obj == None and type(msg) is str:
         logger.debug(msg)
-        print('[MAVENSMATE]: ',msg)
+        print('[MAVENSMATE]:',msg)
+    else:
+        logger.debug(msg)
+        print('[MAVENSMATE]:',msg) 
        
