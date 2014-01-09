@@ -452,7 +452,7 @@ def handle_result(operation, process_id, printer, result, thread):
                 printer.panel.run_command('write_operation_status', {'text': "Success", 'region': [status_region.end(), status_region.end()+10] })
                 thread.window.open_file(result["log_location"], sublime.TRANSIENT)
             elif result["success"] == False:
-                message = " [OPERATION FAILED]: "
+                message = "[OPERATION FAILED]: "
                 if "compileProblem" in result and result["compileProblem"] != None:
                     message += "[Line: "+str(result["line"]) + ", Column: "+str(result["column"])+"] " + result["compileProblem"] + "\n"
                 if "exceptionMessage" in result and result["exceptionMessage"] != None:
@@ -487,7 +487,7 @@ def handle_result(operation, process_id, printer, result, thread):
     except AttributeError as e:   
         if printer != None:
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
-            msg = ' [OPERATION FAILED]: Whoops, unable to parse the response. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
+            msg = '[OPERATION FAILED]: Whoops, unable to parse the response. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
             msg += '[RESPONSE FROM MAVENSMATE]: '+result
             debug(e)
             debug(sys.exc_info()[0])
@@ -495,7 +495,7 @@ def handle_result(operation, process_id, printer, result, thread):
     except Exception as e:
         if printer != None:
             printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
-            msg = ' [OPERATION FAILED]: Whoops, unable to parse the response. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
+            msg = '[OPERATION FAILED]: Whoops, unable to parse the response. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
             msg += '[RESPONSE FROM MAVENSMATE]: '+result
             debug(e)
             debug(sys.exc_info()[0])
@@ -505,7 +505,7 @@ def handle_result(operation, process_id, printer, result, thread):
 def print_result_message(operation, process_id, status_region, res, printer, thread):
     try:
         if 'State' in res and res['State'] == 'Error' and 'ErrorMsg' in res:
-            printer.panel.run_command('write_operation_status', {"text": " [OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\' or cleaning your project.'), 'region': [status_region.end(), status_region.end()+10] })
+            printer.panel.run_command('write_operation_status', {"text": "[OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\' or cleaning your project.'), 'region': [status_region.end(), status_region.end()+10] })
         elif 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
             #here we're parsing a response from the tooling endpoint
             errors = json.loads(res['CompilerErrors'])
@@ -538,7 +538,7 @@ def print_result_message(operation, process_id, status_region, res, printer, thr
                     problem = html_parser.unescape(problem)
                     printer.panel.run_command('write_operation_status', {"text": "[COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], problem, line_col), 'region': [status_region.end(), status_region.end()+10] })
             elif "ErrorMsg" in res:
-                printer.panel.run_command('write_operation_status', {"text": " [COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
+                printer.panel.run_command('write_operation_status', {"text": "[COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
 
         elif 'success' in res and util.to_bool(res['success']) == False and (('messages' in res or 'Messages' in res) or 'details' in res):
             if 'details' in res and 'componentFailures' in res['details']:
