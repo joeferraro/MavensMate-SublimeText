@@ -1087,6 +1087,15 @@ class IndexApexCheckpointsCommand(sublime_plugin.WindowCommand):
         debug("Reloading Apex Checkpoints")
         cmd.window.run_command("show_apex_checkpoints")
 
+#refreshes the currently active file from the server
+class ResetMetadataContainerCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('reset_metadata_container', True, context=self, message="Fetching new MetadataContainer...")
+        util.send_usage_statistics('Reset Metadata Container')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #creates a new overlay
 class NewApexCheckpoint(sublime_plugin.WindowCommand):
     def run(self):

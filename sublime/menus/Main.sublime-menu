@@ -204,6 +204,11 @@
 	    		"caption": "Run Apex Script",  
 	         	"command": "run_apex_script"
 	     	},
+	     	{"caption":"-"},
+	     	{
+        		"command": "reset_metadata_container", 
+        		"caption": "Reset Metadata Container" 
+        	},
 			{"caption":"-"},
 	    //  	{
 	    //     	"id": "github", 
