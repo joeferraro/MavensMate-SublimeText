@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>MMLog</string>
+    <key>patterns</key>
+    <array>
+        <dict>
+            <key>match</key>
+            <string>\s*Result: Success</string>
+            <key>name</key>
+            <string>markup.inserted</string>
+        </dict> 
+        <dict>
+            <key>match</key>
+            <string>([0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]\s)</string>
+            <key>name</key>
+            <string>keyword</string>
+        </dict>  
+        <dict>
+            <key>match</key>
+            <string>\|["USER_DEBUG"]+\|</string>
+            <key>name</key>
+            <string>string</string>
+        </dict> 
+        <dict>
+            <key>match</key>
+            <string>\|[A-Z,_]+\|</string>
+            <key>name</key>
+            <string>variable</string>
+        </dict>  
+        <dict>
+            <key>match</key>
+            <string>\[[0-9]{0,5}\]</string>
+            <key>name</key>
+            <string>variable.language</string>
+        </dict>   
+        <dict>
+            <key>match</key>
+            <string>(true|false)</string>
+            <key>name</key>
+            <string>keyword</string>
+        </dict>       
+    </array>
+    <key>scopeName</key>
+    <string>source.log</string>
+    <key>uuid</key>
+    <string>2B449DF6-6B1D-11D9-94EC-000D9358MMLOG</string>
+</dict>
+</plist>
