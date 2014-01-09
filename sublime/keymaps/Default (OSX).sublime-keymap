@@ -9,6 +9,6 @@
     {  "keys": ["super+shift+m"], "command": "show_debug_panel" },
     {  "keys": ["super+shift+d"], "command": "compile_tabs" },
     {  "keys": ["super+shift+a"], "command": "run_async_apex_tests" },
-    {  "keys": ["super+shift+l"], "command": "new_quick_log" },
-    {  "keys": ["super+shift+k"], "command": "fetch_logs" }
+    {  "keys": ["ctrl+shift+l"], "command": "new_quick_log" },
+    {  "keys": ["ctrl+shift+k"], "command": "fetch_logs" }
 ]  
