@@ -233,7 +233,7 @@ class SyntaxHandler(sublime_plugin.EventListener):
                     view.set_syntax_file(os.path.join("Packages","HTML","HTML.tmLanguage"))
                 else:
                     view.set_syntax_file(os.path.join("Packages/HTML/HTML.tmLanguage"))
-            elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\logs\\' in fn or '/logs/' in fn):
+            elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\logs\\' in fn or '/apex-scripts/logs/' in fn):
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.tmLanguage"))
                 else:
