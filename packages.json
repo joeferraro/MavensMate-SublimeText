@@ -11,7 +11,7 @@
 				"osx": [
 					{
 						"version": "3.3.0",
-						"release_notes": "Release notes: http://mavensmate.com/Getting_Started/Release_Notes",
+						"release_notes": "http://mavensmate.com/Getting_Started/Release_Notes",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
