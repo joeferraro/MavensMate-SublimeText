@@ -1188,7 +1188,7 @@ class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
                     basename = os.path.basename(d)
                     if "." not in basename:
                         is_ok = False
-                        return
+                        break
                     if "." in basename and basename.split(".")[-1] != "resource":
                         is_ok = False
                         break
