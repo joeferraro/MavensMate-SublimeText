@@ -1101,7 +1101,7 @@ class MavensMateDiffListener(sublime_plugin.EventListener):
                 #if wnd:
                     sublime.set_timeout(lambda: wnd.run_command('close_window'), 0)
 
-    def on_pre_close(view):
+    def on_pre_close(self, view):
         global mmDiffView
         wnd = view.window()
         if mmDiffView != None:
