@@ -12,20 +12,23 @@ merge_settings = None
 logger = None
 
 def setup_logging():
-    settings = sublime.load_settings('mavensmate.sublime-settings')
+    try:
+        settings = sublime.load_settings('mavensmate.sublime-settings')
 
-    logging.raiseExceptions = False
-    logging.basicConfig(level=logging.DEBUG)
+        logging.raiseExceptions = False
+        logging.basicConfig(level=logging.DEBUG)
 
-    log_location = settings.get('mm_log_location', tempfile.gettempdir())
-    logging_handler = RotatingFileHandler(os.path.join(log_location, "mmst.log"), maxBytes=1*1024*1024, backupCount=5)
+        log_location = settings.get('mm_log_location', tempfile.gettempdir())
+        logging_handler = RotatingFileHandler(os.path.join(log_location, "mmst.log"), maxBytes=1*1024*1024, backupCount=5)
 
-    #mm log setup
-    global logger
-    logger = logging.getLogger('mmst')
-    logger.setLevel(logging.DEBUG)
-    logger.propagate = False 
-    logger.addHandler(logging_handler)
+        #mm log setup
+        global logger
+        logger = logging.getLogger('mmst')
+        logger.setLevel(logging.DEBUG)
+        logger.propagate = False 
+        logger.addHandler(logging_handler)
+    except:
+        pass #TODO: need to handle this permission denied error (https://github.com/joeferraro/MavensMate-SublimeText/issues/293)
 
 def debug(msg, obj=None):
     if obj != None and type(msg) is str:
