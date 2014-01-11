@@ -33,7 +33,18 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 <img src="http://cdn.mavensconsulting.com/mavensmate/img/git.png" class="flat doc" style="width:400px;"/>
 
+#####Installer
 1. Download and run the <a href="http://push.mavensconsulting.netdna-cdn.com/mavensmate/builds/windows/MavensMate.exe">MavensMate.exe Windows Installer</a>
+
+#####Manual Install
+If you have trouble installing via the MavensMate.exe installer, you can run MavensMate with a system Python install:
+
+1. You must have python 2.7 and git installed
+2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
+3. Download and run install script: `https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py`
+`$ python install.py`
+4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"C:\\Python27\\python.exe"`
+5. Set `"mm_debug_mode"` to `true`
 
 ####Linux (beta)
 1. You must have python 2.7 and git installed
