@@ -1470,7 +1470,7 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
         if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".apex_file_properties")): #=> parse org metadata, looking for object names
             jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".apex_file_properties"))
             for element in jsonData.keys():
-                if "unpackaged/classes" or "unpackaged\classes" in element:
+                if "unpackaged/classes" in element or "unpackaged\classes" in element:
                     continue
                 if ".cls" in element:
                     class_name = element.replace(".cls", "")
