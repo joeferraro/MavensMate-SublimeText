@@ -78,6 +78,13 @@ def collapse_generic(before, open, close):
             end = -1
     return before
 
+@debug
+def collapse_getter_setters(before):
+    after = re.sub(r'\s*{\s*get\s*;\s*set\s*;\s*}', ';', before)
+    after = re.sub(r'\s*{\s*get\s*;\s*private set\s*;\s*}', ';', after)
+    after = re.sub(r'\s*{\s*private get\s*;\s*private set\s*;\s*}', ';', after)
+    after = re.sub(r'\s*{\s*private get\s*;\s*set\s*;\s*}', ';', after)
+    return after
 
 @debug
 def collapse_brackets(before):
@@ -161,6 +168,7 @@ def collapse_strings(before):
 
 @debug
 def extract_completion(before):
+    before = collapse_getter_setters(before)
     before = collapse_parenthesis(before)
     before = collapse_square_brackets(before)
     before = collapse_ltgt(before)
@@ -381,9 +389,9 @@ def patch_up_variable(origdata, data, origtype, var, ret):
 @debug
 def extract_variables(data):
     origdata = data
-
     data = remove_preprocessing(data)
     data = remove_includes(data)
+    data = collapse_getter_setters(data)
     data = collapse_brackets(data)
     data = collapse_square_brackets(data)
     data = collapse_strings(data)
@@ -473,12 +481,13 @@ def get_var_type(data, var):
     regex = re.compile(r"(const\s*)?\b([^%s]+[ \s\*\&]+)(\s*[^%s]+\,\s*)*(%s)\s*(\[|\(|\;|,|\)|=|:|in\s+)" % (_invalid, _invalid, re.escape(var)), re.MULTILINE)
     origdata = data
     data = remove_preprocessing(data)
+    data = collapse_getter_setters(data)
     data = collapse_ltgt(data)
     data = collapse_brackets(data)
     data = collapse_square_brackets(data)
     data = collapse_strings(data)
     data = remove_functions(data)
-
+    #print(data)
     match = None
 
     for m in regex.finditer(data):
@@ -609,7 +618,6 @@ def get_type_definition(data):
         match = get_var_type(data, var)
     if match == None:
         return -1, -1, var, None, extra+tocomplete
-
     line = data[:match.start(3)].count("\n") + 1
     column = len(data[:match.start(3)].split("\n")[-1])+1
     typename = match.group(1).strip()
