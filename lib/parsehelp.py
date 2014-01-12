@@ -202,7 +202,7 @@ def extract_completion_objc(before):
         before = before[:-len(match.group(1))]
     return ret
 
-_keywords = ["return", "new", "delete", "class", "define", "using", "void", "template", "public:", "protected:", "private:", "public", "private", "protected", "typename", "in", "case", "default", "goto", "typedef", "struct", "else"]
+_keywords = ["trigger", "insert", "update", "delete", "upsert", "return", "new", "delete", "class", "define", "using", "void", "template", "public:", "protected:", "private:", "public", "private", "protected", "typename", "in", "case", "default", "goto", "typedef", "struct", "else"]
 
 
 @debug
