@@ -1599,11 +1599,6 @@ class ApexCompletions(sublime_plugin.EventListener):
             )
             return (_completions, completion_flags)
 
-        #need to return symbol table for this class
-        if lower_word == 'this':           
-            _completions = util.get_apex_completions(file_name) 
-            return sorted(_completions)
-
         if len(typedef[4]) > 1 and '.' in typedef[4]:
             #deeply nested, need to look for properties
             #TODO 
