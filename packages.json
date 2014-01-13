@@ -11,7 +11,7 @@
 				"osx": [
 					{
 						"version": "3.3.4",
-						"release_notes": "Adds enhancements to code assist. Includes patch for certain Windows/Linux users who were experiencing a syntax error when setting up logging.",
+						"release_notes": "Adds enhancements to code assist. Includes patch for certain Windows/Linux users who were experiencing a syntax error when setting up logging. http://mavensmate.com/Getting_Started/Release_Notes",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
