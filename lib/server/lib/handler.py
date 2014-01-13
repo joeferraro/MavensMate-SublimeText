@@ -9,8 +9,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def main_handler(self, method='GET'):
         # get request url (without url params) and remove trailing /
-        config.logger.debug('>>> handling request')
-        config.logger.debug(self.path)
+        config.debug('>>> handling request')
+        config.debug(self.path)
 
         request_url = self.path.split('?')[0]
         if request_url is not '/':

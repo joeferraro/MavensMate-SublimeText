@@ -42,8 +42,8 @@ class BackgroundWorker(threading.Thread):
     def run(self):
         mm_response = None
         args = self.get_arguments()
-        global_config.logger.debug('>>> running thread arguments on next line!')
-        global_config.logger.debug(args)
+        global_config.debug('>>> running thread arguments on next line!')
+        global_config.debug(args)
         if self.debug_mode or 'darwin' not in sys.platform:
             print('RUNNING DEBUG BACKGROUND WORKER!!!')
             print(self.payload)
@@ -90,8 +90,8 @@ class BackgroundWorker(threading.Thread):
             strs.append(line.decode('utf-8'))   
         response_body = '\n'.join(strs)
 
-        global_config.logger.debug('>>> got a response body')
-        global_config.logger.debug(response_body)
+        global_config.debug('>>> got a response body')
+        global_config.debug(response_body)
 
         if '--html' not in args:
             try:

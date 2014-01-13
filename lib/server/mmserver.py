@@ -11,7 +11,7 @@ def main():
     try:
         server_threaded.run()
     except:
-        config.logger.warn("Server at port 9000 already running")
+        config.debug("Server at port 9000 already running")
 
 if __name__ == '__main__':
     main() 
