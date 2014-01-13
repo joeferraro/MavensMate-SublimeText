@@ -1662,8 +1662,8 @@ class ApexCompletions(sublime_plugin.EventListener):
         
         if typedef_class.endswith('__r'):
             typedef_class = typedef_class.replace('__r', '__c')
-        if os.path.isfile(util.mm_project_directory()+"/src/objects/"+typedef_class+".object"): #=> object fields from src directory (more info on field metadata, so is primary)
-            object_dom = parse(util.mm_project_directory()+"/src/objects/"+typedef_class+".object")
+        if os.path.isfile(os.path.join(util.mm_project_directory(),"src","objects",typedef_class+".object")): #=> object fields from src directory (more info on field metadata, so is primary)
+            object_dom = parse(os.path.join(util.mm_project_directory(),"src","objects",typedef_class+".object"))
             for node in object_dom.getElementsByTagName('fields'):
                 field_name = ''
                 field_type = ''

@@ -31,13 +31,21 @@ def setup_logging():
         pass #TODO: need to handle this permission denied error (https://github.com/joeferraro/MavensMate-SublimeText/issues/293)
 
 def debug(msg, obj=None):
-    if obj != None and type(msg) is str:
-        logger.debug(msg + ' ', obj)
-        print('[MAVENSMATE]: ' + msg + ' ', obj)
-    elif obj == None and type(msg) is str:
-        logger.debug(msg)
-        print('[MAVENSMATE]:',msg)
-    else:
-        logger.debug(msg)
-        print('[MAVENSMATE]:',msg) 
+    try:
+        if obj != None and type(msg) is str:
+            logger.debug(msg + ' ', obj)
+            print('[MAVENSMATE]: ' + msg + ' ', obj)
+        elif obj == None and type(msg) is str:
+            logger.debug(msg)
+            print('[MAVENSMATE]:',msg)
+        else:
+            logger.debug(msg)
+            print('[MAVENSMATE]:',msg) 
+    except:
+        if obj != None and type(msg) is str:
+            print('[MAVENSMATE]: ' + msg + ' ', obj)
+        elif obj == None and type(msg) is str:
+            print('[MAVENSMATE]:',msg)
+        else:
+            print('[MAVENSMATE]:',msg) 
        

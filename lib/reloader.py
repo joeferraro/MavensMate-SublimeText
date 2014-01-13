@@ -32,7 +32,6 @@ if st_version == 3:
 
 mods_load_order = [
     '',
-
     '.apex_extensions',
     '.command_helper',
     '.commands',
@@ -47,7 +46,8 @@ mods_load_order = [
     '.completioncommon',
     '.vf',
     '.parsehelp',
-    '.resource_bundle'
+    '.resource_bundle',
+    '.apexparsehelp'
 ]
 
 for suffix in mods_load_order:

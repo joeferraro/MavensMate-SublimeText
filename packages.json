@@ -6,12 +6,12 @@
 			"description": "MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE.",
 			"author": "joeferraro",
 			"homepage": "https://github.com/joeferraro/MavensMate-SublimeText",
-			"last_modified": "2013-01-11 15:39:00",
+			"last_modified": "2013-01-13 08:00:00",
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.3.3",
-						"release_notes": "Additional patch for logging issue for Windows 8.1 users. Resolves issue on Windows where logging permission error prevents plugin from loading. Fixes issue where custom Apex classes were being ignored during autocomplete",
+						"version": "3.3.4",
+						"release_notes": "Adds enhancements to code assist. Includes patch for certain Windows/Linux users who were experiencing a syntax error when setting up logging.",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
