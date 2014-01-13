@@ -19,7 +19,7 @@ class Handler(BaseHTTPRequestHandler):
         handler = None
         try:
             handler = self.mappings[request_url][method]
-            #config.logger.debug(handler)
+            #config.debug(handler)
         except KeyError:
             # no mapping found for the request
             self.send_response(404)

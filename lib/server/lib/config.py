@@ -38,6 +38,25 @@ def setup_logging():
     except:
         pass #todo: https://github.com/joeferraro/MavensMate-SublimeText/issues/293
 
+def debug(msg, obj=None):
+    try:
+        if obj != None and type(msg) is str:
+            logger.debug(msg + ' ', obj)
+            print('[MAVENSMATE UI]: ' + msg + ' ', obj)
+        elif obj == None and type(msg) is str:
+            logger.debug(msg)
+            print('[MAVENSMATE UI]:',msg)
+        else:
+            logger.debug(msg)
+            print('[MAVENSMATE UI]:',msg) 
+    except:
+        if obj != None and type(msg) is str:
+            print('[MAVENSMATE UI]: ' + msg + ' ', obj)
+        elif obj == None and type(msg) is str:
+            print('[MAVENSMATE UI]:',msg)
+        else:
+            print('[MAVENSMATE UI]:',msg) 
+       
 mm_path = None
 frozen = __get_is_frozen()
 base_path = __get_base_path()

@@ -739,13 +739,6 @@ class MavensMateDiffThread(threading.Thread):
             self.text1 = re.sub('\r', '\n', self.text1)
             self.text2 = re.sub('\r', '\n', self.text2)
 
-        #print(self.text1)
-        #print('---------')
-        #print(self.text2)
-        # config.logger.debug(self.text1)
-        # config.logger.debug('\n---------------------\n')
-        # config.logger.debug(self.text2)
-
         if config.merge_settings.get('ignore_whitespace'):
             regexp = re.compile('(^\s+)|(\s+$)', re.MULTILINE)
             if re.sub(regexp, '', self.text1) != re.sub(regexp, '', self.text2):
