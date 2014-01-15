@@ -287,6 +287,9 @@ class MavensMateTerminalCall(threading.Thread):
                 payload['script_name'] = self.params.get('script_name', None)
                 payload['return_log'] = False
 
+            if o == 'index_apex' and self.params != None:
+                payload['files'] = self.params.get('files', [])
+
         #debug('>>>>>> ',payload)    
 
         if type(payload) is dict:
@@ -654,11 +657,11 @@ def compile_callback(thread, result):
         if 'success' in result and result['success'] == True:
             util.clear_marked_line_numbers(thread.view)
             #if settings.get('mm_autocomplete') == True: 
-            sublime.set_timeout(lambda: index_apex_code(thread.window), 100)
+            sublime.set_timeout(lambda: index_apex_code(thread), 100)
         elif 'State' in result and result['State'] == 'Completed':
             util.clear_marked_line_numbers(thread.view)
             #if settings.get('mm_autocomplete') == True: 
-            sublime.set_timeout(lambda: index_apex_code(thread.window), 100)
+            sublime.set_timeout(lambda: index_apex_code(thread), 100)
     except BaseException as e:
         debug('Issue handling compile result')
         debug(e.message) 
@@ -673,13 +676,15 @@ def index_overlays(window):
     if run_index_thread:
         call('index_apex_overlays', False)
 
-def index_apex_code(window):
-    pending_threads = ThreadTracker.get_pending(window)
+def index_apex_code(thread):
+    pending_threads = ThreadTracker.get_pending(thread.window)
     run_index_thread = True
     for t in pending_threads:
         if t.operation == 'index_apex':
             run_index_thread = False
             break
     if run_index_thread:
-        call('index_apex', False)   
-
+        params = {
+            "files" : thread.params.get('files', [])
+        }
+        call('index_apex', False, params=params)  

@@ -471,6 +471,11 @@ def start_mavensmate_app():
 
 def get_symbol_table(class_name):
     try:
+        if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols')):
+            class_name_json = os.path.basename(class_name).replace(".cls","json")
+            if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols', class_name_json+".json")):
+                return parse_json_from_file(os.path.join(mm_project_directory(), "config", ".symbols", class_name_json+".json"))
+
         if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
             return None
 
@@ -555,16 +560,10 @@ def get_apex_completions(search_name, search_name_extra=None):
     debug('search_name: ',search_name)
     debug('search_name_extra: ',search_name_extra)
 
-    if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
-        return []
-
-    apex_props = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".apex_file_properties"))
-
-    for p in apex_props.keys():
-        if p == search_name+".cls" and 'symbolTable' in apex_props[p]:
-            symbol_table = apex_props[p]['symbolTable']
-            debug('symbol table: ')
-            debug(symbol_table)
+    if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols')):
+        #class_name_json = os.path.basename(class_name).replace(".cls","json")
+        if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols', search_name+".json")):
+            symbol_table = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".symbols", search_name+".json"))
             if search_name_extra == None or search_name_extra == '':
                 return get_symbol_table_completions(symbol_table)
             elif 'innerClasses' in symbol_table and len(symbol_table['innerClasses']) > 0:
@@ -572,6 +571,21 @@ def get_apex_completions(search_name, search_name_extra=None):
                     if inner["name"] == search_name_extra:
                         return get_completions_for_inner_class(inner)
 
+    if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
+        return []
+
+    apex_props = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".apex_file_properties"))
+
+    for p in apex_props.keys():
+        if p == search_name+".cls" and 'symbolTable' in apex_props[p] and apex_props[p]["symbolTable"] != None:
+            symbol_table = apex_props[p]['symbolTable']
+            if search_name_extra == None or search_name_extra == '':
+                return get_symbol_table_completions(symbol_table)
+            elif 'innerClasses' in symbol_table and len(symbol_table['innerClasses']) > 0:
+                for inner in symbol_table['innerClasses']:
+                    if inner["name"] == search_name_extra:
+                        return get_completions_for_inner_class(inner)
+    
     debug('no symbol table found for '+search_name)
 
 def zip_directory(directory_to_zip, where_to_put_zip_file=None):

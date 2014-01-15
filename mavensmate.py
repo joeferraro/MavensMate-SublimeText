@@ -949,6 +949,45 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
         return util.is_mm_file()
 
 #deletes selected metadata
+class RefreshApexSymbols(sublime_plugin.WindowCommand):
+    def run(self, files, dirs):
+        
+        if dirs != None and type(dirs) is list and len(dirs) == 1:
+            if os.path.join(util.mm_project_directory(),"config",".symbols") == dirs[0]:
+                mm.call('index_apex', context=self, message="Refreshing Symbol Tables")
+                util.send_usage_statistics('Refresh Apex Symbols') 
+        elif files != None and type(files) is list and len(files) > 0:
+            class_names = []
+            for f in files:
+                class_names.append(os.path.basename(f).replace(".json",".cls"))
+            params = {
+                "files" : class_names
+            }
+            mm.call('index_apex', context=self, params=params, message="Refreshing Symbol Table(s) for selected Apex Classes")
+            util.send_usage_statistics('Refresh Apex Symbols') 
+
+    def is_visible(self, dirs, files):
+        try:
+            if not util.is_mm_project():
+                return False
+
+            if files != None and type(files) is list and len(files) > 0:
+                for f in files:
+                    if os.path.join(util.mm_project_directory(),"config",".symbols") not in f:
+                        return False 
+            
+            if dirs != None and type(dirs) is list and len(dirs) > 1:
+                return False
+
+            if dirs != None and type(dirs) is list and len(dirs) == 1:
+                if os.path.join(util.mm_project_directory(),"config",".symbols") != dirs[0]:
+                    return False  
+
+            return True
+        except:
+            return False 
+
+#deletes selected metadata
 class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
     def run(self):
         active_path = util.get_active_file()
