@@ -4,6 +4,11 @@
     "command": "mavens_stub"
   },
   {
+  {
+    "caption": "MavensMate: Refresh Apex Code Symbols",
+    "command": "refresh_project_apex_symbols"
+  },
+  {
     "caption": "MavensMate: New Project...",
     "command": "new_project"
   },

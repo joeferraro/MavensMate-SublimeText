@@ -949,9 +949,14 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
         return util.is_mm_file()
 
 #deletes selected metadata
+class RefreshProjectApexSymbols(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('index_apex', context=self, message="Refreshing Symbol Tables")
+        util.send_usage_statistics('Refresh Apex Symbols') 
+
+#deletes selected metadata
 class RefreshApexSymbols(sublime_plugin.WindowCommand):
     def run(self, files, dirs):
-        
         if dirs != None and type(dirs) is list and len(dirs) == 1:
             if os.path.join(util.mm_project_directory(),"config",".symbols") == dirs[0]:
                 mm.call('index_apex', context=self, message="Refreshing Symbol Tables")
