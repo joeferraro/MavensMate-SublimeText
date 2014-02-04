@@ -45,7 +45,6 @@ class BackgroundWorker(threading.Thread):
         global_config.debug('>>> running thread arguments on next line!')
         global_config.debug(args)
         if self.debug_mode or 'darwin' not in sys.platform:
-            print('RUNNING DEBUG BACKGROUND WORKER!!!')
             print(self.payload)
             python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
 
@@ -118,7 +117,7 @@ class BackgroundWorker(threading.Thread):
             pass
         elif self.operation == 'deploy':
             args['--html'] = None
-        elif self.operation == 'unit_test':
+        elif self.operation == 'unit_test' or self.operation == 'test_async':
             args['--html'] = None
         elif self.operation == 'project_health_check':
             args['--html'] = None    

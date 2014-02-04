@@ -233,7 +233,7 @@ class SyntaxHandler(sublime_plugin.EventListener):
                     view.set_syntax_file(os.path.join("Packages","HTML","HTML.tmLanguage"))
                 else:
                     view.set_syntax_file(os.path.join("Packages/HTML/HTML.tmLanguage"))
-            elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\logs\\' in fn or '/apex-scripts/logs/' in fn):
+            elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.tmLanguage"))
                 else:
@@ -275,7 +275,7 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
                     return True
         return False
 
-#displays unit test dialog
+#runs apex unit tests using the async api
 class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
     def run(self):
         active_file = util.get_active_file()
@@ -297,6 +297,15 @@ class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(command):
         return util.is_apex_class_file()
+
+#displays unit test dialog
+class GenerateApexTestCoverageReportCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('coverage_report', context=self, message="Generating Apex code coverage report for classes in your project...")
+        util.send_usage_statistics('Code Coverage Report')
+
+    def is_enabled(command):
+        return util.is_mm_project()
 
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
@@ -1146,6 +1155,27 @@ class ResetMetadataContainerCommand(sublime_plugin.WindowCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
+#refreshes the currently active file from the server
+class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        params = {
+            "classes" : [util.get_active_file()] 
+        }
+        mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(params["classes"][0]), params=params)
+        util.send_usage_statistics('Apex Code Coverage')  
+
+    def is_enabled(command):
+        return util.is_apex_class_file()
+
+#refreshes the currently active file from the server
+class GetOrgWideTestCoverageCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('get_org_wide_test_coverage', True, context=self, message="Retrieving org-wide test coverage...")
+        util.send_usage_statistics('Org-Wide Apex Code Coverage')  
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #creates a new overlay
 class NewApexCheckpoint(sublime_plugin.WindowCommand):
     def run(self):
@@ -1494,36 +1524,67 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
         #debug(scope_name)
         if 'string.quoted.single.java' in scope_name:
             return []
-        if 'string.quoted.brackets.soql.apex' in scope_name:
-            return []
+        #if 'string.quoted.brackets.soql.apex' in scope_name:
+        #    return []
 
         ch = view.substr(sublime.Region(pt, pt + 1))
-        if ch == '.': return []
+        if ch == '.' and 'string.quoted.brackets.soql.apex' not in scope_name: return []
         ltr = view.substr(sublime.Region(pt, pt + 2))
-        if not ltr.isupper(): return []
+        if not ltr.isupper() and 'string.quoted.brackets.soql.apex' not in scope_name: return [] #if not an uppercase letter, ignore
 
         _completions = []
 
-        if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object names
-            jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
-            for metadata_type in jsonData:
-                if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
-                    for object_type in metadata_type['children']:
-                        _completions.append((object_type['text']+"\t[Sobject Name]", object_type['text']))
+        if 'string.quoted.brackets.soql.apex' in scope_name:
+            return []
+            # if ch == '.':
+            #     word = view.substr(view.word(pt))
+            #     if not word.endswith('__r'):
+            #         return []
+            #     base_word = word.replace("__r","")
+            #     if base_word in util.standard_object_names():
+            #         object_name = base_word
+            #     else:
+            #         object_name = word.replace("__r","__c")
+            #     debug("Retrieving field completions for: ",object_name)
+            #     return util.get_field_completions(object_name)
+            # else:
+            #     #debug(view.substr(pt))
+            #     #debug(len(view.substr(pt)))
+            #     #if view.substr(pt) == " ": #TODO
+            #     #    return []
+            #     data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
+            #     lines = parsehelp.collapse_square_brackets(data).split("\n")
+            #     for line in reversed(lines):
+            #         stem  = line.split("[")[0]
+            #         if "[" in line:
+            #             if len(stem.strip()) == 0: continue
+            #         words = stem.split()
+            #         for word in reversed(words):
+            #             if re.match('^[\w-]+$', word) == None:
+            #                 continue
+            #             vartype = parsehelp.get_var_type(data, word)
+            #             if vartype != None:
+            #                 object_name = vartype.group(1).strip()
+            #                 debug("Retrieving field completions for: ",object_name)
+            #                 return util.get_field_completions(object_name)
+            #             break
+            #         break
+            #     return []
 
-        if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".apex_file_properties")): #=> parse org metadata, looking for object names
-            jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".apex_file_properties"))
-            for element in jsonData.keys():
-                if "unpackaged/classes" in element or "unpackaged\classes" in element:
-                    continue
-                if ".cls" in element:
-                    class_name = element.replace(".cls", "")
-                    if "/" in class_name:
-                        class_name = class_name.split("/")[-1]
-                    if "\\" in class_name:
-                        class_name = class_name.split("\\")[-1]
+        if settings.get('mm_use_org_metadata_for_completions', False):
+            if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object names
+                jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
+                for metadata_type in jsonData:
+                    if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                        for object_type in metadata_type['children']:
+                            _completions.append((object_type['text']+"\t[Sobject Name]", object_type['text']))
+
+        if os.path.isdir(os.path.join(util.mm_project_directory(),"config",".symbols")): #=> get list of classes
+            for (dirpath, dirnames, filenames) in os.walk(os.path.join(util.mm_project_directory(),"config",".symbols")):
+                for f in filenames:
+                    if '-meta.xml' in f: continue
+                    class_name = f.replace(".json", "")
                     _completions.append((class_name+"\t[Custom Apex Class]", class_name))
-
         #debug(apex_system_completions)
         _completions.extend(apex_system_completions)
 
@@ -1693,7 +1754,9 @@ class ApexCompletions(sublime_plugin.EventListener):
         ## MyClass foo = new MyClass()
         ## foo.??  
         symbol_table = util.get_symbol_table(file_name)
-
+        clazz = parsehelp.extract_class(data)
+        inheritance = parsehelp.extract_inheritance(data, clazz)
+        
         if symbol_table != None and "innerClasses" in symbol_table and type(symbol_table["innerClasses"] is list and len(symbol_table["innerClasses"]) > 0):
             for ic in symbol_table["innerClasses"]:
                 if ic["name"].lower() == typedef_class_lower:
@@ -1702,7 +1765,17 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
             _completions = util.get_apex_completions(typedef_class, typedef_class_extra)
-            return sorted(_completions)
+            if inheritance != None:
+                _inheritance_completions = util.get_apex_completions(inheritance, None)
+                _final_completions = _completions + _inheritance_completions
+            else:
+                _final_completions = _completions
+            return sorted(_final_completions)
+
+        if inheritance != None:
+            if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",inheritance+".cls")): #=> apex classes
+                _completions = util.get_apex_completions(inheritance, typedef_class)
+                return sorted(_completions)
         
         if typedef_class.endswith('__r'):
             typedef_class = typedef_class.replace('__r', '__c')
@@ -1719,7 +1792,7 @@ class ApexCompletions(sublime_plugin.EventListener):
                         field_type = child.firstChild.nodeValue
                 _completions.append((field_name+" \t"+field_type, field_name))
             return sorted(_completions)
-        elif os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object fields
+        elif os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")) and settings.get('mm_use_org_metadata_for_completions', False): #=> parse org metadata, looking for object fields
             jsonData = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
             for metadata_type in jsonData:
                 if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
@@ -1808,6 +1881,86 @@ class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(command):
         return util.is_mm_project()
+
+class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        self.objects = []
+        self.org_metadata = {}
+        if os.path.exists(os.path.join(util.mm_project_directory(),"src","objects")): #=> object fields from src directory (more info on field metadata, so is primary)
+            for (dirpath, dirnames, filenames) in os.walk(os.path.join(util.mm_project_directory(),"src","objects")):
+                for f in filenames:
+                    self.objects.append(f.replace(".object",""))
+        
+        if self.objects == [] and os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object names
+            self.org_metadata = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
+            for metadata_type in self.org_metadata:
+                if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                    for object_type in metadata_type['children']:
+                        self.objects.append(object_type['text'])
+
+        self.window.show_quick_panel(self.objects, self.panel_done,
+            sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        fields = []
+        selected_object = self.objects[picked]
+        if os.path.isfile(os.path.join(util.mm_project_directory(),"src","objects",selected_object+".object")):
+            object_dom = parse(os.path.join(util.mm_project_directory(),"src","objects",selected_object+".object"))
+            for node in object_dom.getElementsByTagName('fields'):
+                field_name = ''
+                field_type = ''
+                field_label = ''
+                for child in node.childNodes:                            
+                    if child.nodeName != 'fullName' and child.nodeName != 'type' and child.nodeName != 'label': continue
+                    if child.nodeName == 'fullName':
+                        field_name = child.firstChild.nodeValue
+                    elif child.nodeName == 'type':
+                        field_type = child.firstChild.nodeValue
+                    elif child.nodeName == 'label':
+                        field_label = child.firstChild.nodeValue
+                field_string = field_label+":\n   - api_name: "+field_name+"\n   - field_type: "+field_type
+                fields.append(field_string)
+        elif self.org_metadata != {}:
+            for metadata_type in self.org_metadata:
+               if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                   for object_name in metadata_type['children']:
+                       if 'text' in object_name and object_name['text'] == selected_object:
+                           for attr in object_name['children']:
+                               if 'text' in attr and attr['text'] == 'fields':
+                                   for field in attr['children']:
+                                       fields.append(field['text'])
+
+        string = "Object_Name: "+selected_object+"\n\n"
+        string += "\n".join(fields)
+        new_view = self.window.new_file()
+        if "linux" in sys.platform or "darwin" in sys.platform:
+            new_view.set_syntax_file(os.path.join("Packages","YAML","YAML.tmLanguage"))
+        else:
+            new_view.set_syntax_file(os.path.join("Packages/YAML/YAML.tmLanguage"))
+        new_view.set_scratch(True)
+        new_view.set_name("Field List: "+selected_object)
+        new_view.run_command('generic_text', {'text': string })
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+#generic handler for writing text to an output panel (sublime text 3 requirement)
+class GenericTextCommand(sublime_plugin.TextCommand):
+    def run(self, edit, text, *args, **kwargs):
+        size = self.view.size()
+        self.view.set_read_only(False)
+        self.view.insert(edit, size, text)
+        #self.view.set_read_only(True)
+        self.view.show(size)
+
+    def is_visible(self):
+        return False
+
+    def is_enabled(self):
+        return True
+
+    def description(self):
+        return
 
 class SignInWithGithub(sublime_plugin.WindowCommand):
     def run(self):

@@ -8,6 +8,7 @@
     {  "keys": ["super+shift+."], "command": "open_file", "args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"} },
     {  "keys": ["super+shift+m"], "command": "show_debug_panel" },
     {  "keys": ["super+shift+d"], "command": "compile_tabs" },
+    {  "keys": ["ctrl+shift+x"], "command": "run_apex_script" },
     {  "keys": ["ctrl+shift+a"], "command": "run_async_apex_tests" },
     {  "keys": ["ctrl+shift+l"], "command": "new_quick_log" },
     {  "keys": ["ctrl+shift+k"], "command": "fetch_logs" }

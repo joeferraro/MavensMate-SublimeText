@@ -338,23 +338,19 @@ def status_request(request_handler):
     gc.debug(async_request_queue)
 
     if request_id not in async_request_queue:
-        response = { 'status' : 'error', 'id' : request_id, 'body' : 'Request ID was not found' }
+        response = { 'status' : 'error', 'id' : request_id, 'body' : 'Request ID was not found in async request queue.' }
         response_body = json.dumps(response)
         respond(request_handler, response_body, 'text/json')
     else:
         async_thread = async_request_queue[request_id]
-        gc.debug('found async thread, is it alive????')
+        gc.debug('found thread in request queue, checking if alive')
         gc.debug(async_thread.is_alive())
         if async_thread.is_alive():
             gc.debug('>>> request is not ready')
             respond_with_async_request_id(request_handler, request_id)
         elif async_thread.is_alive() == False:
-            gc.debug('>>> request is probably ready, returning response!!')
+            gc.debug('>>> request is ready, returning response')
             async_request_queue.pop(request_id, None)
-            # result = []
-            # for i in iter(queue.get, 'STOP'):
-            #     result.append(i)
-            #     time.sleep(.1)
             respond(request_handler, async_thread.response, 'text/json')
 
 def add_to_request_queue(request_id, p, q):
@@ -401,16 +397,12 @@ def process_request_in_background(worker):
 
 #this returns the request id after an initial async request
 def respond_with_async_request_id(request_handler, request_id):
-    gc.debug('responding with async request id!')
     response = { 'status' : 'pending', 'id' : request_id }
     json_response_body = json.dumps(response)
     gc.debug(json_response_body)
     respond(request_handler, json_response_body, 'text/json')
 
 def respond(request_handler, body, type='text/json'):
-    #gc.debug('responding!')
-    #gc.debug(body)
-    #print('>>>>>>>> responding with: ', body)
     request_handler.send_response(200)
     request_handler.send_header('Content-type', type)
     request_handler.send_header('Access-Control-Allow-Origin', '*')

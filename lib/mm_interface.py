@@ -15,6 +15,7 @@ try:
     from .printer import PanelPrinter
     from .mm_merge import MavensMateDiffThread
     import MavensMate.lib.command_helper as command_helper
+    from MavensMate.lib.mm_response_handlers import MMResultHandler
     import MavensMate.util as util
     import MavensMate.config as config
 except:
@@ -172,6 +173,8 @@ class MavensMateTerminalCall(threading.Thread):
             '-o'        : self.operation,
             '--html'    : html
         }
+        if self.settings.get('mm_verbose', False):
+            args['--verbose'] = True
         if sublime_version >= 3000:
             args['-c'] = 'SUBLIME_TEXT_3'
         else:
@@ -218,40 +221,9 @@ class MavensMateTerminalCall(threading.Thread):
                 payload['workspace'] = util.get_project_settings().get("workspace")
             else:
                 payload['workspace'] = os.path.dirname(util.mm_project_directory())
-        elif o == 'new_project_from_existing_directory':
-            # no project name
-            payload = self.params
         else:
-
-            params = {
-                'selected': [
-                    'unit_test',
-                    'deploy'
-                ],
-                'files': [
-                    'compile',
-                    'synchronize',
-                    'refresh',
-                    'refresh_properties',
-                    'open_sfdc_url',
-                    'delete'
-                ],
-                'directories': [
-                    'refresh',
-                    'synchronize',
-                    'refresh_properties'
-                ],
-                'type': [
-                    'open_sfdc_url'
-                ]
-            }
-
-            # common parameters
-            if o == 'new_apex_overlay' or o == 'delete_apex_overlay':
-                payload = self.params
-            else:
-                payload = {}
-
+            payload = {}
+            
             if o != 'new_project' and o != 'new_project_from_existing_directory':
                 payload['project_name'] = self.project_name
                 workspace = util.get_project_settings().get("workspace")
@@ -259,37 +231,21 @@ class MavensMateTerminalCall(threading.Thread):
                     payload['workspace'] = util.get_project_settings().get("workspace")
                 else:
                     payload['workspace'] = os.path.dirname(util.mm_project_directory())
-
-            #selected files
-            if o in params['files']:
-                payload['files'] = self.params.get('files', [])
-            #directories
-            if o in params['directories']: 
-                payload['directories'] = self.params.get('directories', [])
-            #selected metadata
-            if o in params['selected']:
-                if self.params != None:
-                    payload['selected'] = self.params.get('selected', [])
+        
             #open type
-            if o in params['type']:
+            if o == 'open_sfdc_url':
                 payload['type'] = self.params.get('type', 'edit')
             
-            if self.params != None and 'action' in self.params:
-                payload['action'] = self.params.get('action', None)
-
-            if self.params != None and 'metadata_types' in self.params:
-                payload['metadata_types'] = self.params.get('metadata_types', None)
-
-            if self.params != None and 'classes' in self.params:
-                payload['classes'] = self.params.get('classes', None)
-
             if o == 'run_apex_script':
                 payload['script_name'] = self.params.get('script_name', None)
                 payload['return_log'] = False
 
-            if o == 'index_apex' and self.params != None:
-                payload['files'] = self.params.get('files', [])
-
+            ##catch all
+            if self.params != None:
+                for key in self.params:
+                    if key not in payload:
+                        payload[key] = self.params[key]
+                
         #debug('>>>>>> ',payload)    
 
         if type(payload) is dict:
@@ -378,278 +334,24 @@ class MavensMateTerminalCall(threading.Thread):
         ThreadTracker.remove(self)
 
 #handles the result of the mm script
-def handle_result(operation, process_id, printer, result, thread):
-    #debug(thread.process_id)
-    #debug(thread.params)
-    process_region = printer.panel.find(process_id,0)
-    status_region = printer.panel.find('   Result: ',process_region.begin())
-
+def handle_result(operation, process_id, printer, res, thread):
     try:
-        result = json.loads(result)
-        if operation == 'compile' and 'actions' in result and util.to_bool(result['success']) == False:
-            diff_merge_settings = config.settings.get('mm_diff_server_conflicts', False)
-            if diff_merge_settings:
-                if sublime.ok_cancel_dialog(result["body"], result["actions"][0].title()):
-                    printer.panel.run_command('write_operation_status', {"text": " Diffing with server", 'region': [status_region.end(), status_region.end()+10] })
-                    th = MavensMateDiffThread(thread.window, thread.view, result['tmp_file_path'])
-                    th.start()
-                    
-                else:
-                    printer.panel.run_command('write_operation_status', {"text": " "+result["actions"][1].title(), 'region': [status_region.end(), status_region.end()+10] })
-            else:
-                if sublime.ok_cancel_dialog(result["body"], "Overwrite Server Copy"):
-                    printer.panel.run_command('write_operation_status', {"text": " Overwriting server copy", 'region': [status_region.end(), status_region.end()+10] })
-                    thread.params['action'] = 'overwrite'
-                    sublime.set_timeout(lambda: call('compile', params=thread.params), 100)   
-                else:
-                    printer.panel.run_command('write_operation_status', {"text": " "+result["actions"][1].title(), 'region': [status_region.end(), status_region.end()+10] })
-   
-        elif operation == 'test_async':
-            responses = []
-            if len(result) == 1:
-                res = result[0]
-                response_string = ""
-                if 'detailed_results' in res:
-                    all_tests_passed = True
-                    for r in res['detailed_results']:
-                        if r["Outcome"] != "Pass":
-                            all_tests_passed = False
-                            break
-
-                    if all_tests_passed:
-                        response_string += '[TEST RESULT]: PASS'
-                    else:
-                        response_string += '[TEST RESULT]: FAIL'
-                    
-                    for r in res['detailed_results']:
-                        if r["Outcome"] == "Pass":
-                            pass #dont need to write anything here...
-                        else:
-                            response_string += '\n\n'
-                            rstring = " METHOD RESULT "
-                            rstring += "\n"
-                            rstring += "{0} : {1}".format(r["MethodName"], r["Outcome"])
-                            
-                            rstring += "\n\n"
-                            rstring += " STACK TRACE "
-                            rstring += "\n"
-                            rstring += r["StackTrace"]
-
-                            rstring += "\n\n"
-                            rstring += " MESSAGE "
-                            rstring += "\n"
-                            rstring += r["Message"]
-                            rstring += "\n"
-                            #responses.append("{0} | {1} | {2} | {3}\n".format(r["MethodName"], r["Outcome"], r["StackTrace"], r["Message"]))
-                            responses.append(rstring)
-                    response_string += "\n\n".join(responses)
-                    printer.panel.run_command('write_operation_status', {'text': response_string, 'region': [status_region.end(), status_region.end()+10] })
-                    printer.scroll_to_bottom()
-                else:
-                    printer.panel.run_command('write_operation_status', {'text': json.dumps(result), 'region': [status_region.end(), status_region.end()+10] })
-            else:
-                pass #TODO
-        
-        elif operation == 'run_apex_script':
-            if result["success"] == True and result["compiled"] == True:
-                printer.panel.run_command('write_operation_status', {'text': "Success", 'region': [status_region.end(), status_region.end()+10] })
-                thread.window.open_file(result["log_location"], sublime.TRANSIENT)
-            elif result["success"] == False:
-                message = "[OPERATION FAILED]: "
-                if "compileProblem" in result and result["compileProblem"] != None:
-                    message += "[Line: "+str(result["line"]) + ", Column: "+str(result["column"])+"] " + result["compileProblem"] + "\n"
-                if "exceptionMessage" in result and result["exceptionMessage"] != None:
-                    message += result["exceptionMessage"] + "\n"
-                if "exceptionStackTrace" in result and result["exceptionStackTrace"] != None:
-                    message += result["exceptionStackTrace"] + "\n"
-                printer.panel.run_command('write_operation_status', {'text': message, 'region': [status_region.end(), status_region.end()+10] })
-        else:
-            print_result_message(operation, process_id, status_region, result, printer, thread) 
-            if operation == 'new_metadata' and 'success' in result and util.to_bool(result['success']) == True:
-                if 'messages' in result or 'details' in result:
-                    if 'details' in result and 'componentSuccesses' in result['details']:
-                        result['messages'] = result['details'].pop('componentSuccesses')
-                    if type(result['messages']) is not list:
-                        result['messages'] = [result['messages']]
-                    for m in result['messages']:
-                        if 'package.xml' not in m['fileName']:
-                            file_name = m['fileName']
-                            location = os.path.join(util.mm_project_directory(),file_name.replace('unpackaged/', 'src/'))
-                            sublime.active_window().open_file(location)
-                            break
-            if 'success' in result and util.to_bool(result['success']) == True:
-                if printer != None and len(ThreadTracker.get_pending_mm_panel_threads(thread.window)) == 0:
-                    printer.hide()  
-            elif 'State' in result and result['State'] == 'Completed' and len(ThreadTracker.get_pending_mm_panel_threads(thread.window)) == 0:
-                #tooling api
-                if printer != None:
-                    printer.hide()
-            if operation == 'refresh':            
-                sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
-                util.clear_marked_line_numbers()
-    except AttributeError as e:   
-        if printer != None:
-            printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
-            msg = '[OPERATION FAILED]: Whoops, unable to parse the response. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
-            msg += '[RESPONSE FROM MAVENSMATE]: '+result
-            debug(e)
-            debug(sys.exc_info()[0])
-            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
+        context = {
+            "operation"      : operation,
+            "process_id"     : process_id,
+            "printer"        : printer,
+            "result"         : res,
+            "thread"         : thread
+        }
+        result_handler = MMResultHandler(context)
+        result_handler.execute()
+        #del result_handler
+        sublime.set_timeout(lambda: delete_result_handler(result_handler), 5000)
     except Exception as e:
-        if printer != None:
-            printer.write('\n[RESPONSE FROM MAVENSMATE]: '+result+'\n')
-            msg = '[OPERATION FAILED]: Whoops, unable to parse the response. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
-            msg += '[RESPONSE FROM MAVENSMATE]: '+result
-            debug(e)
-            debug(sys.exc_info()[0])
-            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
+        raise e
 
-#prints the result of the mm operation, can be a string or a dict
-def print_result_message(operation, process_id, status_region, res, printer, thread):
-    try:
-        if 'State' in res and res['State'] == 'Error' and 'ErrorMsg' in res:
-            printer.panel.run_command('write_operation_status', {"text": "[OPERATION FAILED]: {0}\n\n{1}".format(res['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\' or cleaning your project.'), 'region': [status_region.end(), status_region.end()+10] })
-        elif 'State' in res and res['State'] == 'Failed' and 'CompilerErrors' in res:
-            #here we're parsing a response from the tooling endpoint
-            errors = json.loads(res['CompilerErrors'])
-            if type(errors) is not list:
-                errors = [errors]
-            if len(errors) > 0:
-                for e in errors:
-                    line_col = ""
-                    line, col = 1, 1
-                    if 'line' in e:
-                        line = int(e['line'])
-                        line_col = ' (Line: '+str(line)
-                        util.mark_line_numbers(thread.view, [line], "bookmark")
-                    if 'column' in e:
-                        col = int(e['column'])
-                        line_col += ', Column: '+str(col)
-                    if len(line_col):
-                        line_col += ')'
-
-                    #scroll to the line and column of the exception
-                    #if settings.get('mm_compile_scroll_to_error', True):
-                    #open file, if already open it will bring it to focus
-                    #view = sublime.active_window().open_file(thread.active_file)
-                    view = thread.view
-                    pt = view.text_point(line-1, col-1)
-                    view.sel().clear()
-                    view.sel().add(sublime.Region(pt))
-                    view.show(pt)
-                    problem = e['problem']
-                    problem = html_parser.unescape(problem)
-                    printer.panel.run_command('write_operation_status', {"text": "[COMPILE FAILED]: ({0}) {1} {2}".format(e['name'], problem, line_col), 'region': [status_region.end(), status_region.end()+10] })
-            elif "ErrorMsg" in res:
-                printer.panel.run_command('write_operation_status', {"text": "[COMPILE FAILED]: {0}".format(res['ErrorMsg']), 'region': [status_region.end(), status_region.end()+10] })
-
-        elif 'success' in res and util.to_bool(res['success']) == False and (('messages' in res or 'Messages' in res) or 'details' in res):
-            if 'details' in res and 'componentFailures' in res['details']:
-                res['messages'] = res['details'].pop('componentFailures')
-            elif 'Messages' in res:
-                res['messages'] = res.pop('Messages')
-            
-            #here we're parsing a response from the metadata endpoint
-            failures = None
-            messages = res['messages']
-            if type( messages ) is not list:
-                messages = [messages]
-
-            problems = 0
-            for m in messages:
-                if 'problem' in m:
-                    problems += 1
-                    break
-
-            if problems == 0: #must not have been a compile error, must be a test run error
-                if 'runTestResult' in res:
-                    if 'runTestResult' in res and 'failures' in res['runTestResult'] and type( res['runTestResult']['failures'] ) == list:
-                        failures = res['runTestResult']['failures']
-                    elif 'failures' in res['runTestResult']:
-                        failures = [res['runTestResult']['failures']]
-                    
-                    if failures != None:
-                        msg = ' [DEPLOYMENT FAILED]:'
-                        for f in failures: 
-                            msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
-                        printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
-                elif 'run_test_result' in res:
-                    if 'run_test_result' in res and 'failures' in res['run_test_result'] and type( res['run_test_result']['failures'] ) == list:
-                        failures = res['run_test_result']['failures']
-                    elif 'failures' in res['run_test_result']:
-                        failures = [res['run_test_result']['failures']]
-                    
-                    if failures != None:
-                        msg = ' [DEPLOYMENT FAILED]:'
-                        for f in failures: 
-                            msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
-                        printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
-            else: #compile error, build error message
-                msg = ""
-                for m in messages:
-                    if "success" in m and m["success"] == False:
-                        line_col = ""
-                        if 'lineNumber' in m:
-                            line_col = ' (Line: '+m['lineNumber']
-                            util.mark_line_numbers(thread.view, [int(float(m['lineNumber']))], "bookmark")
-                        if 'columnNumber' in m:
-                            line_col += ', Column: '+m['columnNumber']
-                        if len(line_col) > 0:
-                            line_col += ')'
-                        filename = m['fileName']
-                        filename = re.sub(r'unpackaged/[A-Z,a-z]*/', '', filename)
-                        msg += filename + ': ' + m['problem'] + line_col + "\n"
-
-                printer.panel.run_command('write_operation_status', {'text': '[DEPLOYMENT FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
-                
-        elif 'success' in res and res["success"] == False and 'line' in res:
-            #this is a response from the apex compile api
-            line_col = ""
-            line, col = 1, 1
-            if 'line' in res:
-                line = int(res['line'])
-                line_col = ' (Line: '+str(line)
-                util.mark_line_numbers(thread.view, [line], "bookmark")
-            if 'column' in res:
-                col = int(res['column'])
-                line_col += ', Column: '+str(col)
-            if len(line_col):
-                line_col += ')'
-
-            #scroll to the line and column of the exception
-            if settings.get('mm_compile_scroll_to_error', True):
-                #open file, if already open it will bring it to focus
-                #view = sublime.active_window().open_file(thread.active_file)
-                view = thread.view
-                pt = view.text_point(line-1, col-1)
-                view.sel().clear()
-                view.sel().add(sublime.Region(pt))
-                view.show(pt)
-
-            printer.panel.run_command('write_operation_status', {'text': '[COMPILE FAILED]: ' + res['problem'] + line_col, 'region': [status_region.end(), status_region.end()+10] })
-        elif 'success' in res and util.to_bool(res['success']) == True and 'Messages' in res and len(res['Messages']) > 0:
-            msg = ' [Operation completed Successfully - With Compile Errors]\n'
-            msg += '[COMPILE ERRORS] - Count:\n'
-            for m in res['Messages']:
-                msg += ' FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber']
-            printer.panel.run_command('write_operation_status', {'text': msg, 'region': [status_region.end(), status_region.end()+10] })
-        elif 'success' in res and util.to_bool(res['success']) == True:
-            printer.panel.run_command('write_operation_status', {'text': 'Success', 'region': [status_region.end(), status_region.end()+10] })
-        elif 'success' in res and util.to_bool(res['success']) == False and 'body' in res:
-            printer.panel.run_command('write_operation_status', {'text': '[OPERATION FAILED]:' + res['body'], 'region': [status_region.end(), status_region.end()+10] })
-        elif 'success' in res and util.to_bool(res['success']) == False:
-            printer.panel.run_command('write_operation_status', {'text': '[OPERATION FAILED]', 'region': [status_region.end(), status_region.end()+10] })
-        else:
-            printer.panel.run_command('write_operation_status', {'text': 'Success', 'region': [status_region.end(), status_region.end()+10] })
-    except:
-        msg = ""
-        if type(res) is dict:
-            msg = json.dumps(res)
-        elif type(res) is str:
-            msg = res
-        else:
-            msg = "Check Sublime Text console for error and report issue to MavensMate-SublimeText GitHub project."
-        printer.panel.run_command('write_operation_status', {'text': '[OPERATION FAILED]: ' + msg, 'region': [status_region.end(), status_region.end()+10] })
+def delete_result_handler(handler):
+    del handler
 
 def compile_callback(thread, result):
     try:

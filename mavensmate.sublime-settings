@@ -64,7 +64,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_app_location" : "/Applications/MavensMate.app",
 
 	//OSX only: the location of the mm command line tool (must be inside MavensMate.app)
-	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
+	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm",
 
 	//linux/windows users: ignore this setting
 	"mm_use_browser_as_ui" : false, 
@@ -184,5 +184,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_archive_deployments" : true,
 	
 	//if true, mavensmate will set the purgeOnDelete to true during metadata deletes (a hard delete)
-	"mm_purge_on_delete" : false
+	"mm_purge_on_delete" : false,
+
+	"mm_verbose" : false,
+
+	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
+	"mm_use_org_metadata_for_completions" : true
 }

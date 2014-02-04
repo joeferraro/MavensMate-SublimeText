@@ -8,4 +8,4 @@
     {  "keys": ["super+shift+."], "command": "open_file", "args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"} },
     {  "keys": ["super+shift+m"], "command": "show_debug_panel" },
     {  "keys": ["super+shift+d"], "command": "compile_tabs" }
-]  
+]

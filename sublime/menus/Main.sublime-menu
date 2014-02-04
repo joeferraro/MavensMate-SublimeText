@@ -41,36 +41,33 @@
 	         	"children":
 	         	[
 	         		{
-	         			"caption": "New Apex Class",
+	         			"caption": "New Apex Class...",
 	         			"command": "new_apex_class"
 	         		},
 	         		{
-	         			"caption": "New Apex Trigger",
+	         			"caption": "New Apex Trigger...",
 	         			"command": "new_apex_trigger"
 	         		},
 	         		{
-	         			"caption": "New Visualforce Page",
+	         			"caption": "New Visualforce Page...",
 	         			"command": "new_apex_page"
 	         		},
 	         		{
-	         			"caption": "New Visualforce Component",
+	         			"caption": "New Visualforce Component...",
 	         			"command": "new_apex_component"
 	         		},
+	         		{"caption":"-"},
  	         		{
-	         			"caption": "Index Metadata",
+	         			"caption": "Update Project Metadata Index (.org_metadata)",
 	         			"command": "index_metadata"
 	         		}
 	         	]
 	     	},
 	     	{
 	        	"id": "debug", 
-	    		"caption": "Debug",  
+	    		"caption": "Debugging",  
 	         	"children":
 	         	[
- 	         		{
-	         			"caption": "Run Async Apex Tests For This Class",
-	         			"command": "run_async_apex_tests"
-	         		},
  	         		{
 	         			"caption": "New Debug Log...",
 	         			"command": "new_debug_log"
@@ -83,14 +80,7 @@
 	         			"caption": "Fetch Logs",
 	         			"command": "fetch_logs"
 	         		},
-	         		{
-	         			"caption": "Fetch Checkpoints",
-	         			"command": "fetch_checkpoints"
-	         		},
- 	         		{
-	         			"caption": "Index Apex File Properties",
-	         			"command": "index_apex_file_properties"
-	         		},
+	         		{"caption":"-"},
 	         		{
 	         			"caption": "New Apex Checkpoint...",
 	         			"command": "new_apex_checkpoint"
@@ -98,6 +88,10 @@
 	         		{
 	         			"caption": "Delete Apex Checkpoint...",
 	         			"command": "delete_apex_checkpoint"
+	         		},
+	         		{
+	         			"caption": "Fetch Checkpoints",
+	         			"command": "fetch_checkpoints"
 	         		},
  	         		{
 	         			"caption": "Show Apex Checkpoints For This File",
@@ -110,14 +104,49 @@
 	         	]
 	     	},
 	     	{
-	        	"id": "deploy", 
-	    		"caption": "Deploy",  
+	        	"id": "testing", 
+	    		"caption": "Unit Testing",  
 	         	"children":
 	         	[
 	         		{
-	         			"caption": "Deploy to Server...",
-	         			"command": "deploy_to_server"
-	         		}
+	         			"caption": "Open Apex Test Runner UI...",  
+	         			"command": "run_apex_unit_tests"
+	         		},
+	         		{
+		     			"caption": "Run Async Apex Tests For This Class",
+		     			"command": "run_async_apex_tests"
+		     		},
+		     		{
+		     		  	"caption": "Get Apex Code Coverage For This Apex Class",
+		     		  	"command": "get_apex_code_coverage"
+		     		},
+		     		{
+		     			"caption": "Get Apex Test Coverage Report",
+		     			"command": "generate_apex_test_coverage_report"
+		     		},
+		     		{
+		     			"caption": "Get Org Wide Test Coverage",
+		     			"command": "get_org_wide_test_coverage"
+		     		}
+	         	]
+	     	},
+	     	{
+	        	"id": "scripting", 
+	    		"caption": "Apex Scripting",  
+	         	"children":
+ 				[
+ 			     	{
+ 			    		"caption": "Execute Apex...",  
+ 			         	"command": "execute_anonymous"
+ 			     	},
+ 			     	{
+ 			    		"caption": "New Apex Script...",  
+ 			         	"command": "new_apex_script"
+ 			     	},
+ 			     	{
+ 			    		"caption": "Run Apex Script",  
+ 			         	"command": "run_apex_script"
+ 			     	}
 	         	]
 	     	},
      		{
@@ -167,6 +196,11 @@
 			},
 	     	{"caption":"-"},
 	     	{
+	     		"caption": "Deploy to Server...",
+	     		"command": "deploy_to_server"
+	     	},
+	     	{"caption":"-"},
+	     	{
 	        	"id": "compile_active", 
 	    		"caption": "Compile Active File",  
 	         	"command": "compile_active_file"
@@ -182,33 +216,21 @@
 	         	"command": "refresh_active_file"
 	     	},
 	     	{"caption":"-"},
-	     	{
-	        	"id": "run_tests", 
-	    		"caption": "Run Apex Tests...",  
-	         	"command": "run_apex_unit_tests"
+        	{
+	        	"id": "utils", 
+	    		"caption": "Utilities",  
+	         	"children":
+	         	[
+					{
+		        		"command": "reset_metadata_container", 
+		        		"caption": "Reset Metadata Container" 
+		        	},
+    				{
+    	        		"command": "refresh_project_apex_symbols", 
+    	        		"caption": "Refresh Apex Symbol Tables For This Project" 
+    	        	}
+	         	]
 	     	},
-	     	{
-     			"caption": "Run Async Apex Tests For This Class",
-     			"command": "run_async_apex_tests"
-     		},
-     		{"caption":"-"},
-	     	{
-	    		"caption": "Execute Apex...",  
-	         	"command": "execute_anonymous"
-	     	},
-	     	{
-	    		"caption": "New Apex Script...",  
-	         	"command": "new_apex_script"
-	     	},
-	     	{
-	    		"caption": "Run Apex Script",  
-	         	"command": "run_apex_script"
-	     	},
-	     	{"caption":"-"},
-	     	{
-        		"command": "reset_metadata_container", 
-        		"caption": "Reset Metadata Container" 
-        	},
 			{"caption":"-"},
 	    //  	{
 	    //     	"id": "github", 

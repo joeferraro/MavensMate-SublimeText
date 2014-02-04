@@ -11,6 +11,8 @@ import string
 import random
 import zipfile
 import traceback
+from xml.dom.minidom import parse, parseString
+
 # from datetime import datetime, date, time
 
 # try: 
@@ -48,6 +50,11 @@ sublime_version = int(float(sublime.version()))
 
 debug = config.debug
 
+def standard_object_names():
+    return [
+        "Account", "Opportunity", "Contact", "Lead", "Pricebook2", "Product"
+    ]
+
 def mm_plugin_location():
     return os.path.join(packages_path,"MavensMate")
 
@@ -55,13 +62,15 @@ def package_check():
     #ensure user settings are installed
     try:
         if not os.path.exists(os.path.join(packages_path,"User","mavensmate.sublime-settings")):
-            shutil.copyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
+            shcopyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
     except:
         pass
 
 def is_project_legacy(window=None):
     #debug(mm_project_directory(window))
     if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
+        return True
+    if not os.path.exists(os.path.join(mm_project_directory(window),"config",".symbols")):
         return True
     if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
         return True
@@ -96,6 +105,7 @@ def parse_templates_package(mtype=None):
             j = json.loads(response)
         else:
             local_template_path = os.path.join(template_source,"package.json")
+            debug(local_template_path)
             j = parse_json_from_file(local_template_path)
             if j == None or j == {}:
                 raise Exception('Could not load local templates. Check your "mm_template_source" setting.')
@@ -468,6 +478,33 @@ def start_mavensmate_app():
         else:
            #sublime.error_message("MavensMate.app is not running, please start it from your Applications folder.")
            debug('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
+
+def get_field_completions(object_name):
+    _completions = []
+    if os.path.isfile(os.path.join(mm_project_directory(),"src","objects",object_name+".object")): #=> object fields from src directory (more info on field metadata, so is primary)
+        object_dom = parse(os.path.join(mm_project_directory(),"src","objects",object_name+".object"))
+        for node in object_dom.getElementsByTagName('fields'):
+            field_name = ''
+            field_type = ''
+            for child in node.childNodes:                            
+                if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                if child.nodeName == 'fullName':
+                    field_name = child.firstChild.nodeValue
+                elif child.nodeName == 'type':
+                    field_type = child.firstChild.nodeValue
+            _completions.append((field_name+" \t"+field_type, field_name))
+        return sorted(_completions)
+    elif os.path.isfile(os.path.join(mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object fields
+        jsonData = parse_json_from_file(os.path.join(mm_project_directory(),"config",".org_metadata"))
+        for metadata_type in jsonData:
+            if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                for object_type in metadata_type['children']:
+                    if 'text' in object_type and object_type['text'].lower() == object_name.lower():
+                        for attr in object_type['children']:
+                            if 'text' in attr and attr['text'] == 'fields':
+                                for field in attr['children']:
+                                    _completions.append((field['text'], field['text']))
+    return _completions
 
 def get_symbol_table(class_name):
     try:

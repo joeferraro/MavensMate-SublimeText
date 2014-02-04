@@ -4,6 +4,17 @@
     "command": "mavens_stub"
   },
   {
+    "caption": "MavensMate: Get Apex Code Coverage For This Apex Class",
+    "command": "get_apex_code_coverage"
+  },
+  {
+    "caption": "MavensMate: Generate Apex Test Coverage Report For This Org",
+    "command": "generate_apex_test_coverage_report"
+  },
+  {
+    "caption": "MavensMate: List Fields For Object",
+    "command": "list_fields_for_object"
+  },
   {
     "caption": "MavensMate: Refresh Apex Code Symbols",
     "command": "refresh_project_apex_symbols"
