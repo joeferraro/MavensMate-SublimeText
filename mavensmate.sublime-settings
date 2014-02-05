@@ -192,5 +192,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_use_org_metadata_for_completions" : true,
 
 	//set to false if index symbol indexing during project creation/upgrade is causing timeouts
-	"mm_mass_index_apex_symbols" : false
+	"mm_mass_index_apex_symbols" : false,
+
+	//set to true if you have issues with the new testing UI
+	"mm_use_legacy_test_ui" : false
 }
