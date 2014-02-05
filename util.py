@@ -70,7 +70,8 @@ def is_project_legacy(window=None):
     #debug(mm_project_directory(window))
     if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
-    if not os.path.exists(os.path.join(mm_project_directory(window),"config",".symbols")):
+    mass_index_apex_symbols = settings.get('mm_mass_index_apex_symbols', True)
+    if not os.path.exists(os.path.join(mm_project_directory(window),"config",".symbols")) and mass_index_apex_symbols:
         return True
     if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
         return True
