@@ -965,12 +965,8 @@ class RefreshProjectApexSymbols(sublime_plugin.WindowCommand):
 
 #deletes selected metadata
 class RefreshApexSymbols(sublime_plugin.WindowCommand):
-    def run(self, files, dirs):
-        if dirs != None and type(dirs) is list and len(dirs) == 1:
-            if os.path.join(util.mm_project_directory(),"config",".symbols") == dirs[0]:
-                mm.call('index_apex', context=self, message="Refreshing Symbol Tables")
-                util.send_usage_statistics('Refresh Apex Symbols') 
-        elif files != None and type(files) is list and len(files) > 0:
+    def run(self, files):
+        if files != None and type(files) is list and len(files) == 1:
             class_names = []
             for f in files:
                 class_names.append(os.path.basename(f).replace(".json",".cls"))
@@ -980,23 +976,20 @@ class RefreshApexSymbols(sublime_plugin.WindowCommand):
             mm.call('index_apex', context=self, params=params, message="Refreshing Symbol Table(s) for selected Apex Classes")
             util.send_usage_statistics('Refresh Apex Symbols') 
 
-    def is_visible(self, dirs, files):
+    def is_visible(self, files):
         try:
             if not util.is_mm_project():
                 return False
 
-            if files != None and type(files) is list and len(files) > 0:
+            if files != None and type(files) is list and len(files) == 1:
                 for f in files:
-                    if os.path.join(util.mm_project_directory(),"config",".symbols") not in f:
+                    if os.path.join(util.mm_project_directory(),"src","classes") not in f:
                         return False 
-            
-            if dirs != None and type(dirs) is list and len(dirs) > 1:
+                    if "-meta.xml" in f:
+                        return False
+            elif files != None and type(files) is list and len(files) == 0:
                 return False
-
-            if dirs != None and type(dirs) is list and len(dirs) == 1:
-                if os.path.join(util.mm_project_directory(),"config",".symbols") != dirs[0]:
-                    return False  
-
+            
             return True
         except:
             return False 

@@ -13,7 +13,7 @@
 				{ "caption": "Refresh Resource Bundle(s)", "command": "refresh_resource_bundle", "args": { "dirs": [], "files":[]} },
 				{ "caption": "Refresh From Server...", "command": "refresh_from_server", "args": {"dirs": [], "files": []} },
 				{ "caption": "Delete Files from Salesforce Server...", "command": "delete_metadata", "args": {"files": []} },
-				{ "caption": "Refresh Apex Symbols", "command": "refresh_apex_symbols", "args": {"dirs":[],"files": []} }
+				{ "caption": "Refresh Apex Symbol For This Apex Class", "command": "refresh_apex_symbols", "args": {"files": []} }
 	    	]
 	 }
 ]
