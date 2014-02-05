@@ -194,6 +194,6 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to false if index symbol indexing during project creation/upgrade is causing timeouts
 	"mm_mass_index_apex_symbols" : false,
 
-	//set to true if you have issues with the new testing UI
-	"mm_use_legacy_test_ui" : false
+	//set to false if you want to use the async apex testing endpoint (beta)
+	"mm_use_legacy_test_ui" : true
 }

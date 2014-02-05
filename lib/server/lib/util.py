@@ -35,7 +35,7 @@ class BackgroundWorker(threading.Thread):
         self.payload        = payload
         self.plugin_client  = plugin_client
         self.response       = None
-        self.mm_path        = os.path.join(sublime.packages_path(),"MavensMate","mm","bin","osx","mm","mm")
+        self.mm_path        = sublime.load_settings('mavensmate.sublime-settings').get('mm_location')
         self.debug_mode     = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_mode')
         threading.Thread.__init__(self)
 

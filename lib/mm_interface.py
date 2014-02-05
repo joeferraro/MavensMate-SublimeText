@@ -49,14 +49,15 @@ def call(operation, use_mm_panel=True, **kwargs):
         return
 
     if 'darwin' in sys.platform:
-        if not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","bin","osx","mm","mm")) and settings.get('mm_debug_mode') == False:
+        if not os.path.isfile(settings.get('mm_location')) and settings.get('mm_debug_mode') == False:
             active_window_id = sublime.active_window().id()
             printer = PanelPrinter.get(active_window_id)
             printer.show()
             message = '[OPERATION FAILED]: Could not find MavensMate.app. Download MavensMate.app from mavensmate.com and place in /Applications. Also, please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
             printer.write('\n'+message+'\n')
             return
-    elif 'linux' in sys.platform:
+
+    if 'linux' in sys.platform:
         if not os.path.isfile(settings.get('mm_subl_location')):
             active_window_id = sublime.active_window().id()
             printer = PanelPrinter.get(active_window_id)
@@ -64,7 +65,8 @@ def call(operation, use_mm_panel=True, **kwargs):
             message = '[OPERATION FAILED]: Could not locate Sublime Text "subl" executable. Please set mm_subl_location to location of "subl" on the disk.'
             printer.write('\n'+message+'\n')
             return
-    elif 'win32' in sys.platform:
+
+    if 'win32' in sys.platform:
         if not os.path.isfile(settings.get('mm_windows_subl_location')):
             active_window_id = sublime.active_window().id()
             printer = PanelPrinter.get(active_window_id)
@@ -88,7 +90,7 @@ def call(operation, use_mm_panel=True, **kwargs):
     if operation != 'new_project' and operation != 'new_project_from_existing_directory' and util.is_project_legacy(window) == True:
         operation = 'upgrade_project'
     
-    mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","bin","osx","mm","mm")
+
 
     threads = []
     thread = MavensMateTerminalCall(
@@ -100,7 +102,7 @@ def call(operation, use_mm_panel=True, **kwargs):
         message=kwargs.get('message', None),
         use_mm_panel=use_mm_panel,
         process_id=util.get_random_string(10),
-        mm_location=mm_location,
+        mm_location=settings.get('mm_location'),
         callback=kwargs.get('callback', None)
     )
     if operation == 'index_apex':
@@ -302,7 +304,7 @@ class MavensMateTerminalCall(threading.Thread):
         else:
             debug('executing mm terminal call:')
             debug("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
-            process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         self.submit_payload(process)
         if process.stdout is not None: 
             mm_response = process.stdout.readlines()
