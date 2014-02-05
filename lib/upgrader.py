@@ -43,13 +43,13 @@ class ManualUpgrader(threading.Thread):
         self.printer.show()
         self.printer.writeln(' ')
         self.printer.writeln('==============================================')
-        self.printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete.")
+        self.printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete. If you have any issues updating, open a terminal and run the python installer script located here: https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py. Example (from the terminal): $ python install.py")
         self.printer.writeln('Timestamp: '+self.process_id)
 
         threading.Thread.__init__(self)
 
     def run(self):
-        if 'linux' in sys.platform:
+        if 'linux' in sys.platform or 'darwin' in sys.platform:
             ThreadProgress(self, "Updating MavensMate for Sublime Text", 'MavensMate update complete. Please restart Sublime Text.')
             process = None
             
@@ -108,7 +108,7 @@ class AutomaticUpgrader(threading.Thread):
                 if 'linux' in sys.platform:
                     sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select MavensMate > Update MavensMate from the Sublime Text menu.")
                 elif 'darwin' in sys.platform:
-                    sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select 'Plugins' from the MavensMate.app status bar menu, then \"Update Plugin\".\n\nYou will need to restart Sublime Text after updating.")
+                    sublime.message_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"To update, select MavensMate > Update MavensMate from the Sublime Text menu.")
                 else: #windows
                     if sublime.ok_cancel_dialog("A new version of MavensMate for Sublime Text ("+latest_version+") is available."+release_notes+"Would you like to update?"):
                         updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")

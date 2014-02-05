@@ -1372,13 +1372,12 @@ class CancelCurrentCommand(sublime_plugin.WindowCommand):
     #def is_visible(self, paths = None):
     #    return ThreadTracker.get_current(self.window.id()) != None
 
-####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
-
 #updates MavensMate plugin
 class UpdateMeCommand(sublime_plugin.ApplicationCommand):
     def run(self):
         if 'darwin' in sys.platform:
-            sublime.message_dialog("Use the \"Plugins\" option in MavensMate.app to update MavensMate for Sublime Text.")
+            printer = PanelPrinter.get(sublime.active_window().id())
+            upgrader.execute(printer)
         elif 'linux' in sys.platform:
             printer = PanelPrinter.get(sublime.active_window().id())
             upgrader.execute(printer)
@@ -1389,6 +1388,8 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
+
+####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):
