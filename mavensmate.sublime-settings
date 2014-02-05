@@ -64,7 +64,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_app_location" : "/Applications/MavensMate.app",
 
 	//OSX only: the location of the mm command line tool (must be inside MavensMate.app)
-	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm",
+	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
 
 	//linux/windows users: ignore this setting
 	"mm_use_browser_as_ui" : false, 
