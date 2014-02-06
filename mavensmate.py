@@ -1418,6 +1418,7 @@ class NewShellCommand(sublime_plugin.TextCommand):
 class VisualforceCompletions(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
         #if user has opted out of autocomplete or this isnt a mm project, ignore it
+        settings = sublime.load_settings('mavensmate.sublime-settings')
         if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
             return []
 
@@ -1496,6 +1497,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
 class SalesforceGenericCompletions(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
         #if user has opted out of autocomplete or this isnt a mm project, ignore it
+        settings = sublime.load_settings('mavensmate.sublime-settings')
         if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
             return []
 
@@ -1588,6 +1590,7 @@ class SalesforceGenericCompletions(sublime_plugin.EventListener):
 class ApexCompletions(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
         #if user has opted out of autocomplete or this isnt a mm project, ignore it
+        settings = sublime.load_settings('mavensmate.sublime-settings')
         if settings.get('mm_autocomplete') == False or util.is_mm_project() == False:
             return []
 
