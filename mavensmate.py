@@ -1752,7 +1752,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         ## foo.??  
         symbol_table = util.get_symbol_table(file_name)
         clazz = parsehelp.extract_class(data)
-        inheritance = parsehelp.extract_inheritance(data, clazz)
+        #inheritance = parsehelp.extract_inheritance(data, clazz)
         
         if symbol_table != None and "innerClasses" in symbol_table and type(symbol_table["innerClasses"] is list and len(symbol_table["innerClasses"]) > 0):
             for ic in symbol_table["innerClasses"]:
@@ -1762,17 +1762,17 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
             _completions = util.get_apex_completions(typedef_class, typedef_class_extra)
-            if inheritance != None:
-                _inheritance_completions = util.get_apex_completions(inheritance, None)
-                _final_completions = _completions + _inheritance_completions
-            else:
-                _final_completions = _completions
+            # if inheritance != None:
+            #     _inheritance_completions = util.get_apex_completions(inheritance, None)
+            #     _final_completions = _completions + _inheritance_completions
+            #else:
+            _final_completions = _completions
             return sorted(_final_completions)
 
-        if inheritance != None:
-            if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",inheritance+".cls")): #=> apex classes
-                _completions = util.get_apex_completions(inheritance, typedef_class)
-                return sorted(_completions)
+        # if inheritance != None:
+        #     if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",inheritance+".cls")): #=> apex classes
+        #         _completions = util.get_apex_completions(inheritance, typedef_class)
+        #         return sorted(_completions)
         
         if typedef_class.endswith('__r'):
             typedef_class = typedef_class.replace('__r', '__c')
