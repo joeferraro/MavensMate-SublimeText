@@ -4,6 +4,11 @@ import os
 import sys
 import subprocess
 import time
+try:
+    import plistlib
+except:
+    pass
+
 
 try:
     from .threads import ThreadTracker
@@ -117,6 +122,17 @@ class AutomaticUpgrader(threading.Thread):
                         startupinfo = subprocess.STARTUPINFO()
                         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                         subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
+            else:
+                if 'darwin' in sys.platform:
+                    settings = sublime.load_settings('mavensmate.sublime-settings')
+                    mm_app_location = settings.get("mm_app_location")
+                    plist_path = mm_app_location+"/Contents/Info.plist"
+
+                    plist = plistlib.readPlist(plist_path)
+                    version_number = plist['CFBundleVersion']
+                    installed_version_int = int(float(version_number.replace(".", "")))
+                    if installed_version_int <= 380:
+                        sublime.message_dialog("A new version of MavensMate.app is available and we strongly encourage you to update. If you are running 0.38.0, you likely need to manually download and re-install from mavensmate.com.")
 
         except BaseException as e:
             # import traceback
