@@ -57,6 +57,11 @@
 	         			"command": "new_apex_component"
 	         		},
 	         		{"caption":"-"},
+	         		{
+	         		  "caption": "List Fields For Object...",
+	         		  "command": "list_fields_for_object"
+	         		},
+	         		{"caption":"-"},
  	         		{
 	         			"caption": "Update Project Metadata Index (.org_metadata)",
 	         			"command": "index_metadata"
