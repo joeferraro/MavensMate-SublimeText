@@ -232,18 +232,26 @@ class MMResultHandler(object):
                 elif 'success' in self.result and util.to_bool(self.result['success']) == True:
                     self.__print_to_panel("Success")
                 elif 'success' in self.result and util.to_bool(self.result['success']) == False and 'body' in self.result:
-                    self.__print_to_panel('[OPERATION FAILED]:' + self.result['body'])
+                    self.__print_to_panel('[OPERATION FAILED]: ' + self.result['body'])
                 elif 'success' in self.result and util.to_bool(self.result['success']) == False:
                     self.__print_to_panel('[OPERATION FAILED]')
                 else:
                     self.__print_to_panel("Success")
             except Exception as e:
-                print(e)
+                debug(e)
+                debug(type(self.result))
                 msg = ""
                 if type(self.result) is dict:
-                    msg = json.dumps(self.result)
+                    if 'body' in self.result:
+                        msg = self.result["body"]
+                    else:
+                        msg = json.dumps(self.result)
                 elif type(self.result) is str:
-                    msg = self.result
+                    try:
+                        m = json.loads(self.result)
+                        msg = m["body"]
+                    except:
+                        msg = self.result
                 else:
                     msg = "Check Sublime Text console for error and report issue to MavensMate-SublimeText GitHub project."
                 self.__print_to_panel('[OPERATION FAILED]: ' + msg)
@@ -313,15 +321,18 @@ class MMResultHandler(object):
         return [self.status_region.end(), self.status_region.end()+10]  
 
     def __finish(self):
-        if 'success' in self.result and util.to_bool(self.result['success']) == True:
-            if self.printer != None and len(ThreadTracker.get_pending_mm_panel_threads(self.thread.window)) == 0:
-                self.printer.hide() 
-        elif 'State' in self.result and self.result['State'] == 'Completed' and len(ThreadTracker.get_pending_mm_panel_threads(self.thread.window)) == 0:
-            if self.printer != None:
-                self.printer.hide()
-        if self.operation == 'refresh':            
-            sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
-            util.clear_marked_line_numbers()
+        try:
+            if 'success' in self.result and util.to_bool(self.result['success']) == True:
+                if self.printer != None and len(ThreadTracker.get_pending_mm_panel_threads(self.thread.window)) == 0:
+                    self.printer.hide() 
+            elif 'State' in self.result and self.result['State'] == 'Completed' and len(ThreadTracker.get_pending_mm_panel_threads(self.thread.window)) == 0:
+                if self.printer != None:
+                    self.printer.hide()
+            if self.operation == 'refresh':            
+                sublime.set_timeout(lambda: sublime.active_window().active_view().run_command('revert'), 200)
+                util.clear_marked_line_numbers()
+        except:
+            pass #TODO
 
     def __handle_new_metadata(self):
         self.__handle_compile_response()

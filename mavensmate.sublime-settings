@@ -20,6 +20,20 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	// ]
 	"mm_workspace" : "",
 
+	//set if you're behind a proxy (you can also set via export HTTP_PROXY, export HTTPS_PROXY)
+	//----IMPORTANT: you MUST escape the 2 slashes after http: and https: as shown below (dont ask, it's a dumb JSON-with-comments parsing issue)
+	//examples: 
+	// 	"mm_http_proxy"  : "http:\/\/10.10.1.10:3128",
+	// 	"mm_https_proxy" : "http:\/\/10.10.1.10:1080"
+	//
+	// HTTP Basic Auth
+	// 	"mm_http_proxy"  : "http:\/\/user:pass@10.10.1.10:3128/",
+	// 	"mm_https_proxy" : "http:\/\/user:pass@10.10.1.10:1080/"
+
+	"mm_http_proxy" : "",
+
+	"mm_https_proxy" : "",
+
 	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
 	"mm_api_version" : "28.0",
 

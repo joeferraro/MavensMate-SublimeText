@@ -367,8 +367,8 @@ def compile_callback(thread, result):
             #if settings.get('mm_autocomplete') == True: 
             sublime.set_timeout(lambda: index_apex_code(thread), 100)
     except BaseException as e:
-        debug('Issue handling compile result')
-        debug(e.message) 
+        debug('Issue handling compile result in callback')
+        debug(e) 
 
 def index_overlays(window):
     pending_threads = ThreadTracker.get_pending(window)
