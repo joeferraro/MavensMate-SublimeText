@@ -1901,21 +1901,42 @@ class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
     def panel_done(self, picked):
         fields = []
         selected_object = self.objects[picked]
+        nodes = ['fullName', 'description', 'type', 'label', 'picklist']
         if os.path.isfile(os.path.join(util.mm_project_directory(),"src","objects",selected_object+".object")):
             object_dom = parse(os.path.join(util.mm_project_directory(),"src","objects",selected_object+".object"))
             for node in object_dom.getElementsByTagName('fields'):
                 field_name = ''
                 field_type = ''
                 field_label = ''
+                field_description = ''
+                field_picklists = ''
+                is_picklist = False
                 for child in node.childNodes:                            
-                    if child.nodeName != 'fullName' and child.nodeName != 'type' and child.nodeName != 'label': continue
+                    if child.nodeName not in nodes: continue
                     if child.nodeName == 'fullName':
                         field_name = child.firstChild.nodeValue
                     elif child.nodeName == 'type':
                         field_type = child.firstChild.nodeValue
                     elif child.nodeName == 'label':
                         field_label = child.firstChild.nodeValue
-                field_string = field_label+":\n   - api_name: "+field_name+"\n   - field_type: "+field_type
+                    elif child.nodeName == 'description':
+                        field_description = child.firstChild.nodeValue
+                        field_description = field_description.replace("\n"," - ")
+                    elif child.nodeName == 'picklist':
+                        is_picklist = True
+                        pvalues = []
+                        for picklist_values_tag in child.childNodes:
+                            for tag in picklist_values_tag.childNodes:
+                                if tag.nodeName == 'fullName':
+                                    pvalues.append(tag.firstChild.nodeValue)
+                        debug(pvalues)
+                        field_picklists = '\n      - value: '.join(pvalues)
+
+
+
+                field_string = field_label+":\n   - description: "+field_description+"+\n   - api_name: "+field_name+"\n   - field_type: "+field_type
+                if is_picklist:
+                    field_string += "\n   - picklist:"+field_picklists
                 fields.append(field_string)
         elif self.org_metadata != {}:
             for metadata_type in self.org_metadata:
