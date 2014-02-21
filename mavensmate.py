@@ -667,6 +667,9 @@ class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
         if util.is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(True)
 
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #hides mavensmate panel
 class HideDebugPanelCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -963,6 +966,9 @@ class RefreshProjectApexSymbols(sublime_plugin.WindowCommand):
         mm.call('index_apex', context=self, message="Refreshing Symbol Tables")
         util.send_usage_statistics('Refresh Apex Symbols') 
 
+    def is_enabled(self):
+        return util.is_mm_project()
+
 #deletes selected metadata
 class RefreshApexSymbols(sublime_plugin.WindowCommand):
     def run(self, files):
@@ -992,7 +998,10 @@ class RefreshApexSymbols(sublime_plugin.WindowCommand):
             
             return True
         except:
-            return False 
+            return False
+
+    def is_enabled(self):
+        return util.is_mm_project()
 
 #deletes selected metadata
 class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
@@ -1046,18 +1055,26 @@ class NewQuickLogCommand(sublime_plugin.WindowCommand):
         mm.call('new_quick_log', True)
         util.send_usage_statistics('New Quick Log')
 
+    def is_enabled(self):
+        return util.is_mm_project()
+
 #refreshes the currently active file from the server
 class FetchLogsCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('fetch_logs', True)
-        util.send_usage_statistics('Fetch Apex Logs')  
+        util.send_usage_statistics('Fetch Apex Logs') 
+
+    def is_enabled(self):
+        return util.is_mm_project() 
 
 #refreshes the currently active file from the server
 class FetchCheckpointsCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('fetch_checkpoints', True)
-        util.send_usage_statistics('Fetch Apex Checkpoints')  
+        util.send_usage_statistics('Fetch Apex Checkpoints') 
 
+    def is_enabled(self):
+        return util.is_mm_project() 
 
 #when a class or trigger file is opened, adds execution overlay markers if applicable
 class HideApexCheckpoints(sublime_plugin.WindowCommand):
@@ -1997,6 +2014,6 @@ class ConnectProjectWithGithub(sublime_plugin.WindowCommand):
                 return True
         return False
 
-
-
-
+class ShowSublimeConsole(sublime_plugin.WindowCommand):
+    def run(self):
+        sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": True})

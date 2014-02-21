@@ -317,11 +317,21 @@
 
 	         	]
 	     	},
+ 	     	{"caption":"-"},
 	     	{ 
-				"caption": "Debug Panel",  
+				"caption": "Show Sublime Text Console",  
+     			"command": "show_sublime_console"
+			},
+	     	{ 
+				"caption": "Show MavensMate Panel",  
      			"command": "show_debug_panel"
 			},
 			{"caption":"-"},
+			{
+				"caption": "Report Issue on GitHub",
+				"command": "open_url", 
+				"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}
+			},
 	     	{
 	     		"caption": "Update MavensMate",
 	     		"command": "update_me"
