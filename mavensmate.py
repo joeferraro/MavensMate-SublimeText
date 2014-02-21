@@ -1932,8 +1932,6 @@ class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
                         debug(pvalues)
                         field_picklists = '\n      - value: '.join(pvalues)
 
-
-
                 field_string = field_label+":\n   - description: "+field_description+"+\n   - api_name: "+field_name+"\n   - field_type: "+field_type
                 if is_picklist:
                     field_string += "\n   - picklist:"+field_picklists
