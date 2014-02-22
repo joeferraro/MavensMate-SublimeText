@@ -10,8 +10,8 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.4.4",
-						"release_notes": "Adds prompt to update for out-of-date MavensMate.app users. Release notes: http://mavensmate.com/Getting_Started/Release_Notes",
+						"version": "3.4.5",
+						"release_notes": "Adds explicit proxy settings, better request exception handling. Release notes: http://mavensmate.com/Getting_Started/Release_Notes",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]

@@ -114,7 +114,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_play_sounds" : true,
 
 	//local server port
-	"mm_server_port" : 9876,
+	"mm_server_port" : 7777,
 
 	//mavensmate will attempt to compile when savings files with the following extensions
 	"mm_apex_file_extensions": [
