@@ -552,7 +552,7 @@
                     	</dict>
                     	<dict>
                     		<key>match</key>
-	                    	<string>\b(?i:SELECT|FROM|WHERE|OR|AND|LIKE|CONTAINS|ORDER BY)\b</string>
+	                    	<string>\b(?i:SELECT|FROM|WHERE|OR|AND|LIKE|NOT|IN|CONTAINS|ORDER BY|ALL ROWS|LIMIT)\b</string>
 	                    	<key>name</key>
 	                    	<string>variable.language.java.soql</string>
                     	</dict>
