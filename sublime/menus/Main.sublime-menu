@@ -237,21 +237,6 @@
 	         	]
 	     	},
 			{"caption":"-"},
-	    //  	{
-	    //     	"id": "github", 
-	    // 		"caption": "GitHub (beta)",  
-	    //      	"children":
-	    //      	[
-					// { 
-					// 	"caption": "Sign in with GitHub",  
-	    //      			"command": "sign_in_with_github"
-					// },
-					// { 
-					// 	"caption": "Connect Project",  
-	    //      			"command": "connect_project_with_github"
-					// }	
-	    //      	]
-	    //  	},
 	     	{
 	        	"id": "settings", 
 	    		"caption": "Settings",  
