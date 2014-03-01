@@ -58,7 +58,7 @@
 	         		},
 	         		{"caption":"-"},
 	         		{
-	         		  "caption": "List Fields For Object...",
+	         		  "caption": "List Fields For Object... (beta)",
 	         		  "command": "list_fields_for_object"
 	         		},
 	         		{"caption":"-"},
