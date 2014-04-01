@@ -1,0 +1,10 @@
+{
+    "instance_methods": [], 
+    "static_methods": [
+        "addMessage(sObject_ApexPages.Message)", 
+        "addMessages(Exception_ex)", 
+        "getMessages()", 
+        "hasMessages()", 
+        "hasMessages()"
+    ]
+}

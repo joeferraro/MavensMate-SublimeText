@@ -1,0 +1,12 @@
+{
+    "static_methods":  [
+        "createGenerator(Boolean_b)", 
+        "createParser(String)", 
+        "deserialize(String_s, System.Type_st)",
+        "deserializeStrict(String_s, System.Type_st)",
+        "deserializeUntyped(String_s)",
+        "serialize(Object_o)",
+        "serializePretty(Object_o)"
+    ], 
+    "instance_methods": []
+}

@@ -1,0 +1,25 @@
+{
+    "instance_methods": [], 
+    "static_methods": [
+        "getDefaultCurrency()", 
+        "getFirstName()", 
+        "getLanguage()", 
+        "getLastName()", 
+        "getLocale()", 
+        "getName()", 
+        "getOrganizationId()", 
+        "getOrganizationName()", 
+        "getProfileId()", 
+        "getSessionId()", 
+        "getTimeZone()", 
+        "getUiTheme()", 
+        "getUiThemeDisplayed()", 
+        "getUserEmail()", 
+        "getUserId()", 
+        "getUserName()", 
+        "getUserRoleId()", 
+        "getUserType()", 
+        "isCurrentUserLicensed()", 
+        "isMultiCurrencyOrganization()"
+    ]
+}

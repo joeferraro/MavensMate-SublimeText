@@ -13,7 +13,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""
 
 def run(context_path='', port=9000):
-    gc.logger.debug('>>> starting threaded MavensMate server!')
+    gc.debug('>>> starting threaded MavensMate server!')
     base_dir = os.path.normpath(os.path.abspath(os.path.curdir))
     sys.path.insert(0, base_dir)
     handler.Handler.mappings = endpoints.mappings

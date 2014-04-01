@@ -40,9 +40,7 @@ class PanelPrinter(object):
             printer.window_id = window_id
             printer.init()
             cls.printers[window_id] = printer
-            printer.write('==============================================\n')
-            printer.write('<---- MavensMate for Sublime Text v'+util.get_version_number()+' ---->\n')
-            printer.write('==============================================\n')
+            printer.write('MavensMate for Sublime Text v'+util.get_version_number()+'\n')
         return printer
 
     def error(self, string):
@@ -78,8 +76,8 @@ class PanelPrinter(object):
             self.window = sublime.active_window()
             self.panel = self.window.get_output_panel(self.name)
             self.panel.set_read_only(True)
-            self.panel.settings().set('syntax', 'Packages/MavensMate/themes/MavensMate.hidden-tmLanguage')
-            self.panel.settings().set('color_scheme', 'Packages/MavensMate/themes/MavensMate.hidden-tmTheme')
+            self.panel.settings().set('syntax', 'Packages/MavensMate/sublime/panel/MavensMate.hidden-tmLanguage')
+            self.panel.settings().set('color_scheme', 'Packages/MavensMate/sublime/panel/MavensMate.hidden-tmTheme')
             self.panel.settings().set('word_wrap', True)
             self.panel.settings().set('gutter', True)
             self.panel.settings().set('line_numbers', True)
@@ -91,6 +89,15 @@ class PanelPrinter(object):
         self.init()
         settings = sublime.load_settings('mavensmate.sublime-settings')
         hide = settings.get('hide_output_panel', 1)
+        
+        # TODO
+        # if settings.get('mm_compile_scroll_to_error', True):
+        #     view = self.window.active_view()
+        #     pt = view.text_point(line-1, col-1)
+        #     view.sel().clear()
+        #     view.sel().add(sublime.Region(pt))
+        #     view.show(pt)
+
         if force or hide != True or not isinstance(hide, bool):
             self.visible = True
             self.window.run_command('show_panel', {'panel': 'output.' + self.name})
@@ -136,6 +143,10 @@ class PanelPrinter(object):
             self.strings[key].append(None)
         sublime.set_timeout(self.write_callback, 0)
         return key
+
+    def scroll_to_bottom(self):
+        size = self.panel.size()
+        sublime.set_timeout(lambda : self.panel.show(size, True), 2)
 
     def write_callback(self):
         if config.sublime_version >= 3000:

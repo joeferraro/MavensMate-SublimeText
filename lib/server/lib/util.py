@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import string
 import json
@@ -7,6 +8,7 @@ import subprocess
 import pipes
 import sublime
 import MavensMate.lib.server.lib.config as global_config
+import MavensMate.config as config
 
 #this function is only used on async requests
 def generate_request_id():
@@ -40,14 +42,34 @@ class BackgroundWorker(threading.Thread):
     def run(self):
         mm_response = None
         args = self.get_arguments()
-        global_config.logger.debug('>>> running thread arguments on next line!')
-        global_config.logger.debug(args)
-        if self.debug_mode:
-            print('RUNNING DEBUG BACKGROUND WORKER!!!')
+        global_config.debug('>>> running thread arguments on next line!')
+        global_config.debug(args)
+        if self.debug_mode or 'darwin' not in sys.platform:
             print(self.payload)
             python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
-            mm_loc = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location')
-            p = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+            if 'darwin' in sys.platform or sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location') != None:
+                mm_loc = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location')
+            else:
+                mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
+            #p = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        
+            if 'linux' in sys.platform or 'darwin' in sys.platform:
+                #osx, linux
+                p = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            else:
+                #windows
+                if sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_mode', False):
+                    #user wishes to use system python
+                    python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
+                    p = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                else:
+                    python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python.exe")
+                    if not os.path.isfile(python_path):
+                        python_path = python_path.replace("Program Files", "Program Files (x86)")
+                    p = subprocess.Popen('"{0}" -E "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+            #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             p = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_path), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         #print("PAYLOAD: ",self.payload)
@@ -67,8 +89,8 @@ class BackgroundWorker(threading.Thread):
             strs.append(line.decode('utf-8'))   
         response_body = '\n'.join(strs)
 
-        global_config.logger.debug('>>> got a response body')
-        global_config.logger.debug(response_body)
+        global_config.debug('>>> got a response body')
+        global_config.debug(response_body)
 
         if '--html' not in args:
             try:
@@ -95,8 +117,10 @@ class BackgroundWorker(threading.Thread):
             pass
         elif self.operation == 'deploy':
             args['--html'] = None
-        elif self.operation == 'unit_test':
+        elif self.operation == 'unit_test' or self.operation == 'test_async':
             args['--html'] = None
+        elif self.operation == 'project_health_check':
+            args['--html'] = None    
         #elif self.operation == 'index_metadata':
         #    args['--html'] = None    
                 

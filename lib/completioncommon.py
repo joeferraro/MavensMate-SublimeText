@@ -354,7 +354,6 @@ class CompletionCommon(object):
         return ret
 
     def on_query_completions(self, view, prefix, locations):
-        #print('foo')
         bs = time.time()
         start = time.time()
         #if not self.is_supported_language(view):

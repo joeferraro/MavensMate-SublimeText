@@ -1,0 +1,15 @@
+{
+    "instance_methods": [
+        "addHours(Integer_addlHours)", 
+        "addMilliseconds(Integer_addlMilliseconds)", 
+        "addMinutes(Integer_addlMinutes)", 
+        "addSeconds(Integer_addlSeconds)", 
+        "hour()", 
+        "millisecond()", 
+        "minute()", 
+        "second()"
+    ], 
+    "static_methods": [
+        "newInstance(Integer_hour, Integer_minutes, Integer_seconds, Integer_milliseconds)"
+    ]
+}

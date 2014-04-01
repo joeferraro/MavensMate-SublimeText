@@ -1,0 +1,20 @@
+{
+    "static_methods": [], 
+    "instance_methods": [
+        "add(Setelement_e)", 
+        "addAll(List_l)", 
+        "addAll(Set_s)", 
+        "clear()", 
+        "clone()", 
+        "contains(Setelement_e)", 
+        "containsAll(List_l)", 
+        "containsAll(Set_s)", 
+        "isEmpty()", 
+        "remove(SetElement_e)", 
+        "removeAll(List_l)", 
+        "removeAll(Set_s)", 
+        "retainAll(List_l)", 
+        "retainAll(Set_s)", 
+        "size()"
+    ]
+}

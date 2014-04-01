@@ -106,7 +106,7 @@ def unit_test_request(request_handler):
             "run_all_tests" : false
         }
     '''
-    gc.logger.debug('in unit test method!')
+    gc.debug('in unit test method!')
     run_async_operation(request_handler, 'unit_test')
     
 def metadata_index_request(request_handler):
@@ -132,6 +132,20 @@ def metadata_list_request_async(request_handler):
         call to get a list of metadata of a certain type
     '''
     run_async_operation(request_handler, 'list_metadata')
+
+def generic_endpoint(request_handler):
+    request_id = util.generate_request_id()
+    params, json_body, plugin_client = get_request_params(request_handler)
+    worker_thread = BackgroundWorker(params["command"], params, False, request_id, json_body, plugin_client)
+    worker_thread.start()
+    worker_thread.join()
+    response = worker_thread.response
+    respond(request_handler, response)
+
+def generic_async_endpoint(request_handler):
+    #params, raw_post_body, plugin_client = get_request_params(request_handler)
+    run_async_operation(request_handler, None)
+
 
 ##########################
 ## SYNCHRONOUS REQUESTS ##
@@ -268,6 +282,21 @@ def refresh_metadata_index(request_handler):
     response = worker_thread.response
     respond(request_handler, response) 
 
+def connect_to_github(request_handler):
+    '''
+        POST /github/connect
+        {
+            "username"      : "myusername",
+            "password"      : "mypassword"
+        }
+    '''
+    request_id = util.generate_request_id()
+    params, json_body, plugin_client = get_request_params(request_handler)
+    worker_thread = BackgroundWorker('sign_in_with_github', params, False, request_id, json_body, plugin_client)
+    worker_thread.start()
+    worker_thread.join()
+    response = worker_thread.response
+    respond(request_handler, response) 
 
 ##########################
 ## END REQUEST HANDLERS ##
@@ -275,55 +304,53 @@ def refresh_metadata_index(request_handler):
 
 
 def run_async_operation(request_handler, operation_name):
-    gc.logger.debug('>>> running an async operation')
+    gc.debug('>>> running an async operation')
     request_id = util.generate_request_id()
     params, raw_post_body, plugin_client = get_request_params(request_handler)
-    gc.logger.debug(request_id)
-    gc.logger.debug(params)
-    gc.logger.debug(raw_post_body)
+    if operation_name == None and "command" in params:
+        operation_name = params["command"]
+    gc.debug(request_id)
+    gc.debug(params)
+    gc.debug(raw_post_body)
     
     worker_thread = BackgroundWorker(operation_name, params, True, request_id, raw_post_body, plugin_client)
-    gc.logger.debug('worker created')
+    gc.debug('worker created')
     worker_thread.start()
-    gc.logger.debug('worker thread started')
+    gc.debug('worker thread started')
     async_request_queue[request_id] = worker_thread
-    gc.logger.debug('placed into queue')
+    gc.debug('placed into queue')
 
     return respond_with_async_request_id(request_handler, request_id)
 
 #client polls this servlet to determine whether the request is done
 #if the request IS done, it will respond with the body of the request
 def status_request(request_handler):
-    gc.logger.debug('>>> status request')
+    gc.debug('>>> status request')
     params, json_string, plugin_client = get_request_params(request_handler)
-    gc.logger.debug('>>> params: ')
-    gc.logger.debug(params)
+    gc.debug('>>> params: ')
+    gc.debug(params)
     try:
         request_id = params['id']
     except:
         request_id = params['id'][0]
-    gc.logger.debug('>>> request id: ' + request_id)
-    gc.logger.debug('>>> async queue: ')
-    gc.logger.debug(async_request_queue)
+    gc.debug('>>> request id: ' + request_id)
+    gc.debug('>>> async queue: ')
+    gc.debug(async_request_queue)
 
     if request_id not in async_request_queue:
-        response = { 'status' : 'error', 'id' : request_id, 'body' : 'Request ID was not found' }
+        response = { 'status' : 'error', 'id' : request_id, 'body' : 'Request ID was not found in async request queue.' }
         response_body = json.dumps(response)
         respond(request_handler, response_body, 'text/json')
     else:
         async_thread = async_request_queue[request_id]
-        gc.logger.debug('found async thread, is it alive????')
-        gc.logger.debug(async_thread.is_alive())
+        gc.debug('found thread in request queue, checking if alive')
+        gc.debug(async_thread.is_alive())
         if async_thread.is_alive():
-            gc.logger.debug('>>> request is not ready')
+            gc.debug('>>> request is not ready')
             respond_with_async_request_id(request_handler, request_id)
         elif async_thread.is_alive() == False:
-            gc.logger.debug('>>> request is probably ready, returning response!!')
+            gc.debug('>>> request is ready, returning response')
             async_request_queue.pop(request_id, None)
-            # result = []
-            # for i in iter(queue.get, 'STOP'):
-            #     result.append(i)
-            #     time.sleep(.1)
             respond(request_handler, async_thread.response, 'text/json')
 
 def add_to_request_queue(request_id, p, q):
@@ -370,16 +397,12 @@ def process_request_in_background(worker):
 
 #this returns the request id after an initial async request
 def respond_with_async_request_id(request_handler, request_id):
-    gc.logger.debug('responding with async request id!')
     response = { 'status' : 'pending', 'id' : request_id }
     json_response_body = json.dumps(response)
-    gc.logger.debug(json_response_body)
+    gc.debug(json_response_body)
     respond(request_handler, json_response_body, 'text/json')
 
 def respond(request_handler, body, type='text/json'):
-    gc.logger.debug('responding!')
-    #gc.logger.debug(body)
-    #print('>>>>>>>> responding with: ', body)
     request_handler.send_response(200)
     request_handler.send_header('Content-type', type)
     request_handler.send_header('Access-Control-Allow-Origin', '*')
@@ -413,5 +436,8 @@ mappings = {
     '/session'                  : { 'GET'   : get_active_session_request },
     '/apex/execute'             : { 'POST'  : execute_apex_request },
     '/metadata/list'            : { 'GET'   : metadata_list_request },
-    '/metadata/list/async'      : { 'GET'   : metadata_list_request_async }
+    '/metadata/list/async'      : { 'GET'   : metadata_list_request_async },
+    '/github/connect'           : { 'POST'  : connect_to_github },
+    '/generic'                  : { 'POST'  : generic_endpoint },
+    '/generic/async'            : { 'POST'  : generic_async_endpoint }
 }

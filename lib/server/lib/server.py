@@ -8,7 +8,7 @@ import lib.config as gc
 server = None
 
 def run(context_path='', port=9000):
-    gc.logger.debug('>>> starting local MavensMate server!')
+    gc.debug('>>> starting local MavensMate server!')
     # set current working dir on python path
     base_dir = os.path.normpath(os.path.abspath(os.path.curdir))
     sys.path.insert(0, base_dir)

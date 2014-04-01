@@ -71,13 +71,22 @@ def get_message(params, operation):
         message = 'Opening Selected Metadata'
     elif operation == 'new_apex_overlay':
         message = 'Creating Apex Overlay' 
+    elif operation == 'debug_log':
+        message = 'Opening debug log interface (this could take a while...)'
     elif operation == 'delete_apex_overlay':
         message = 'Deleting Apex Overlay'  
     elif operation == 'fetch_logs':
-        message = 'Fetching Apex Logs'  
+        message = 'Fetching Apex Logs (will be placed in project/debug/logs)'  
+    elif operation == 'fetch_checkpoints':
+        message = 'Fetching Apex Logs (will be placed in project/debug/checkpoints)'  
     elif operation == 'project_from_existing_directory':
         message = 'Opening New Project Dialog'  
     elif operation == 'index_apex':
         message = 'Indexing Project Apex Metadata'
-
+    elif operation == 'test_async':
+        message = 'Running Apex tests for this class...'
+    elif operation == 'new_quick_log':
+        message = 'Setting up logs for debug users (logs can be configured in project/config/.debug)'
+    elif operation == 'run_apex_script':
+        message = 'Running Apex script (logs can be found in project/apex-scripts/log)'
     return message 

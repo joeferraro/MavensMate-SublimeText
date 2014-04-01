@@ -1,0 +1,26 @@
+{
+    "instance_methods":  [
+        "clearCurrentToken()", 
+        "getBlobValue()",
+        "getBooleanValue()",
+        "getCurrentName()",
+        "getCurrentToken()",
+        "getDateTimeValue()",
+        "getDateValue()",
+        "getDecimalValue()",
+        "getDoubleValue()",
+        "getIdValue()",
+        "getIntegerValue()",
+        "getLastClearedToken()",
+        "getLongValue()",
+        "getText()",
+        "getTimeValue()",
+        "hasCurrentToken()",
+        "nextToken()",
+        "nextValue()",
+        "readValueAs(System.Type_type)",
+        "readValueAsStrict(System.Type_type)",
+        "skipChildren()"
+    ], 
+    "static_methods": []
+}

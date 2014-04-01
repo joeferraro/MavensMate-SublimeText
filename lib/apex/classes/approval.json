@@ -1,0 +1,9 @@
+{
+    "instance_methods": [], 
+    "static_methods": [
+        "process(Approval.ProcessRequest_ProcessRequest)", 
+        "process(Approval.ProcessRequest_processrequests, Boolean_opt_allornone)", 
+        "process(Approval.ProcessRequest[]_ProcessRequests)", 
+        "process(Approval.ProcessRequest[]_processrequests, Boolean_opt_allornone)"
+    ]
+}

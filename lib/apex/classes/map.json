@@ -1,0 +1,19 @@
+{
+    "static_methods": [], 
+    "instance_methods": [
+        "clear()", 
+        "clone()", 
+        "containsKey(Keytype_key)", 
+        "deepClone()", 
+        "get(Keytype_key)", 
+        "getSObjectType()", 
+        "isEmpty()", 
+        "keySet()", 
+        "put()", 
+        "putAll(Map_m)", 
+        "putAll(sObject[]_l)", 
+        "remove(Key_key)", 
+        "size()", 
+        "values()"
+    ]
+}

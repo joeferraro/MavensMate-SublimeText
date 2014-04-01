@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>foldingStartMarker</key>
+    <string>(\{\s*(//.*)?$|^\s*// \{\{\{)</string>
+    <key>foldingStopMarker</key>
+    <string>^\s*(\}|// \}\}\}$)</string>
+    <key>keyEquivalent</key>
+    <string>^~J</string>
+    <key>name</key>
+    <string>MM</string>
+    <key>patterns</key>
+    <array>
+        <dict>
+            <key>match</key>
+            <string>\s*Result: Success</string>
+            <key>name</key>
+            <string>markup.inserted</string>
+        </dict> 
+        <dict>
+            <key>match</key>
+            <string>\s*Result: \[TEST RESULT\]: PASS</string>
+            <key>name</key>
+            <string>markup.inserted</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>(\sMETHOD RESULT\s|\sSTACK TRACE\s|\sMESSAGE\s)</string>
+            <key>name</key>
+            <string>markup.raw</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>.*====.*====*.</string>
+            <key>name</key>
+            <string>comment</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\[.*FAILED\]</string>
+            <key>name</key>
+            <string>invalid</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\[ERROR: COULD NOT PARSE RESPONSE FROM MM\]</string>
+            <key>name</key>
+            <string>operation.fail</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>^\[RESPONSE FROM MAVENSMATE\]?</string>
+            <key>name</key>
+            <string>operation.fail</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s</string>
+            <key>name</key>
+            <string>markup.quote</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>^\[COMPILE FAILED\]?</string>
+            <key>name</key>
+            <string>operation.fail</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>^\Unrecognized command?</string>
+            <key>name</key>
+            <string>operation.fail</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>^\[ERROR\]?</string>
+            <key>name</key>
+            <string>operation.fail</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>^Compiling?</string>
+            <key>name</key>
+            <string>operation.go</string>
+        </dict>  
+        <dict>
+            <key>match</key>
+            <string>Timestamp:.*</string>
+            <key>name</key>
+            <string>text source, string.unquoted.heredoc, source source, meta.embedded</string>
+        </dict> 
+        <dict>
+            <key>match</key>
+            <string>Operation:.*</string>
+            <key>name</key>
+            <string>meta.preprocessor.c keyword</string>
+        </dict> 
+        <dict>
+            <key>match</key>
+            <string>MavensMate for Sublime Text v.*</string>
+            <key>name</key>
+            <string>markup.raw</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>Result:</string>
+            <key>name</key>
+            <string>keyword.operator</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\b(?i:package|trigger|class|interface)\b</string>
+            <key>name</key>
+            <string>storage.type.apex</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\b\(.*\)\b</string>
+            <key>name</key>
+            <string>entity</string>
+        </dict>  
+        <dict>
+            <key>match</key>
+            <string>\b\[.*\]\b</string>
+            <key>name</key>
+            <string>support</string>
+        </dict>               
+    </array>
+    <key>scopeName</key>
+    <string>source.mm</string>
+    <key>uuid</key>
+    <string>2B449DF6-6B1D-11D9-94EC-000D9358MM</string>
+</dict>
+</plist>

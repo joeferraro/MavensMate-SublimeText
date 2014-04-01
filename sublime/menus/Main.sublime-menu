@@ -1,0 +1,330 @@
+[  
+	{  
+	    "id": "MavensMate",
+	    "caption": "MavensMate",  
+	    "children":  
+	    [  
+	        {
+	        	"id": "projects", 
+	    		"caption": "Project",  
+	         	"children":
+	         	[
+	         		{
+	         		  "caption": "Open Project...",          
+	         		  "command": "open_project"
+	         		},
+	         		{
+	         			"caption": "New Project...",
+	         			"command": "new_project"
+	         		},
+	         		{
+	         			"caption": "Edit Project...",
+	         			"command": "edit_project"
+	         		},
+	         		{
+	         			"caption": "Compile Project",
+	         			"command": "compile_project"
+	         		},
+	         		{
+	         			"caption": "Clean Project",
+	         			"command": "clean_project"
+	         		},
+	         		{
+	         			"caption": "Health Check (beta)",
+	         			"command": "project_health_check"
+	         		}
+	         	]
+	     	},
+			{
+	        	"id": "metadata", 
+	    		"caption": "Metadata",  
+	         	"children":
+	         	[
+	         		{
+	         			"caption": "New Apex Class...",
+	         			"command": "new_apex_class"
+	         		},
+	         		{
+	         			"caption": "New Apex Trigger...",
+	         			"command": "new_apex_trigger"
+	         		},
+	         		{
+	         			"caption": "New Visualforce Page...",
+	         			"command": "new_apex_page"
+	         		},
+	         		{
+	         			"caption": "New Visualforce Component...",
+	         			"command": "new_apex_component"
+	         		},
+	         		{"caption":"-"},
+ 	         		{
+	         			"caption": "Update Project Metadata Index (.org_metadata)",
+	         			"command": "index_metadata"
+	         		}
+	         	]
+	     	},
+	     	{
+	        	"id": "debug", 
+	    		"caption": "Debugging",  
+	         	"children":
+	         	[
+ 	         		{
+	         			"caption": "New Debug Log...",
+	         			"command": "new_debug_log"
+	         		},
+	         		{
+	         			"caption": "New Quick Log",
+	         			"command": "new_quick_log"
+	         		},
+ 	         		{
+	         			"caption": "Fetch Logs",
+	         			"command": "fetch_logs"
+	         		},
+	         		{"caption":"-"},
+	         		{
+	         			"caption": "New Apex Checkpoint...",
+	         			"command": "new_apex_checkpoint"
+	         		},
+	         		{
+	         			"caption": "Delete Apex Checkpoint...",
+	         			"command": "delete_apex_checkpoint"
+	         		},
+	         		{
+	         			"caption": "Fetch Checkpoints",
+	         			"command": "fetch_checkpoints"
+	         		},
+ 	         		{
+	         			"caption": "Show Apex Checkpoints For This File",
+	         			"command": "show_apex_checkpoints"
+	         		},
+	         		{
+	         			"caption": "Hide Apex Checkpoints For This File",
+	         			"command": "hide_apex_checkpoints"
+	         		}
+	         	]
+	     	},
+	     	{
+	        	"id": "testing", 
+	    		"caption": "Unit Testing",  
+	         	"children":
+	         	[
+	         		{
+	         			"caption": "Open Apex Test Runner UI...",  
+	         			"command": "run_apex_unit_tests"
+	         		},
+	         		{
+		     			"caption": "Run Async Apex Tests For This Class",
+		     			"command": "run_async_apex_tests"
+		     		},
+		     		{
+		     		  	"caption": "Get Apex Code Coverage For This Apex Class",
+		     		  	"command": "get_apex_code_coverage"
+		     		},
+		     		{
+		     			"caption": "Get Apex Test Coverage Report",
+		     			"command": "generate_apex_test_coverage_report"
+		     		},
+		     		{
+		     			"caption": "Get Org Wide Test Coverage",
+		     			"command": "get_org_wide_test_coverage"
+		     		}
+	         	]
+	     	},
+	     	{
+	        	"id": "scripting", 
+	    		"caption": "Apex Scripting",  
+	         	"children":
+ 				[
+ 			     	{
+ 			    		"caption": "Execute Apex...",  
+ 			         	"command": "execute_anonymous"
+ 			     	},
+ 			     	{
+ 			    		"caption": "New Apex Script...",  
+ 			         	"command": "new_apex_script"
+ 			     	},
+ 			     	{
+ 			    		"caption": "Run Apex Script",  
+ 			         	"command": "run_apex_script"
+ 			     	}
+	         	]
+	     	},
+     		{
+				"caption": "Server Diff",
+				"children": [
+					{
+						"caption": "Compare to...",
+						"command": "mavens_mate_diff"
+					},
+					{
+			            "caption": "Overwrite Server Copy",
+			            "command": "mavens_mate_diff_overwrite_server_copy"
+			        },
+			        {
+			            "caption": "Go to previous difference",
+			            "command": "mavens_mate_diff_go_up"
+			        },
+			        {
+			            "caption": "Go to next difference",
+			            "command": "mavens_mate_diff_go_down"
+			        },
+			        {
+			            "caption": "-"
+			        }, 
+			        {
+			            "caption": "Merge change from right (server) to left (local)",
+			            "command": "mavens_mate_diff_merge_left"
+			        },
+			        {
+			            "caption": "Merge change from left (local) to right (server)",
+			            "command": "mavens_mate_diff_merge_right"
+			        },
+			        {
+			            "caption": "-"
+			        },
+			        {
+			            "caption": "Merge all from right (server) to left (local)",
+			            "command": "mavens_mate_diff_merge_left",
+			            "args": {"mergeAll": true}
+			        }, 
+			        {
+			            "caption": "Merge all from left (local) to right (server)",
+			            "command": "mavens_mate_diff_merge_right",
+			            "args": {"mergeAll": true}
+			        }
+		        ]
+			},
+	     	{"caption":"-"},
+	     	{
+	     		"caption": "Deploy to Server...",
+	     		"command": "deploy_to_server"
+	     	},
+	     	{"caption":"-"},
+	     	{
+	        	"id": "compile_active", 
+	    		"caption": "Compile Active File",  
+	         	"command": "compile_active_file"
+	     	},
+	     	{
+	        	"id": "force_compile_file", 
+	    		"caption": "Force Save Active File (Skip server check)",  
+	         	"command": "force_compile_file_main_menu"
+	     	},
+	     	{
+	        	"id": "refresh_active", 
+	    		"caption": "Refresh File From Server",  
+	         	"command": "refresh_active_file"
+	     	},
+	     	{"caption":"-"},
+        	{
+	        	"id": "utils", 
+	    		"caption": "Utilities",  
+	         	"children":
+	         	[
+					{
+		        		"command": "reset_metadata_container", 
+		        		"caption": "Reset Metadata Container" 
+		        	},
+    				{
+    	        		"command": "refresh_project_apex_symbols", 
+    	        		"caption": "Refresh Apex Symbol Tables For This Project" 
+    	        	}
+	         	]
+	     	},
+			{"caption":"-"},
+	    //  	{
+	    //     	"id": "github", 
+	    // 		"caption": "GitHub (beta)",  
+	    //      	"children":
+	    //      	[
+					// { 
+					// 	"caption": "Sign in with GitHub",  
+	    //      			"command": "sign_in_with_github"
+					// },
+					// { 
+					// 	"caption": "Connect Project",  
+	    //      			"command": "connect_project_with_github"
+					// }	
+	    //      	]
+	    //  	},
+	     	{
+	        	"id": "settings", 
+	    		"caption": "Settings",  
+	         	"children":
+	         	[
+					{ 
+						"command": "open_file", 
+						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
+						"caption": "User" 
+					},
+					{ 
+						"command": "open_file", 
+						"args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"}, 
+						"caption": "Default" 
+					}	
+	         	]
+	     	},
+	     	{
+	        	"id": "docs", 
+	    		"caption": "Documentation",  
+	         	"children":
+	         	[
+					{ 
+						"command": "open_url", 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Overview"}, 
+						"caption": "Overview" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Installation"}, 
+						"caption": "Installation" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Syntax-Highlighting"}, 
+						"caption": "Syntax Highlighting" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Code_Completion"}, 
+						"caption": "Code Completion" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Shortcuts"}, 
+						"caption": "Shortcut Keys" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging"}, 
+						"caption": "Logging" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Known-Issues"}, 
+						"caption": "Known Issues" 
+					},
+					{ 
+						"command": "open_url", 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}, 
+						"caption": "Issues" 
+					}
+
+	         	]
+	     	},
+	     	{ 
+				"caption": "Debug Panel",  
+     			"command": "show_debug_panel"
+			},
+			{"caption":"-"},
+	     	{
+	     		"caption": "Update MavensMate",
+	     		"command": "update_me"
+	     	},
+	     	{
+	     		"caption": "About MavensMate",
+	     		"command": "show_version"
+	     	}
+	    ]  
+	}  
+]  

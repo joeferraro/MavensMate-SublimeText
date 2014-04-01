@@ -1,0 +1,12 @@
+{
+    "instance_methods": [
+        "addError(String_errorMsg)", 
+        "addError(String_errormsg, Boolean_escape)", 
+        "addError(Exception_e)", 
+        "addError(Exception_e, Boolean_escape)", 
+        "getSObjectType()"
+    ], 
+    "static_methods": [
+        "valueOf(String_s)"
+    ]
+}

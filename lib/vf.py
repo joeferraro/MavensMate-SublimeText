@@ -133,6 +133,38 @@ tag_list = [
 ]
 
 tag_defs = {
+  "apex:attribute": {
+    "simple": True,
+    "attribs": {
+      "access": {
+        "type": "String"
+      },
+      "assignTo": {
+        "type": "Object"
+      },
+      "default": {
+        "type": "String"
+      },
+      "description": {
+        "type": "String"
+      },
+      "encode": {
+        "type": "Boolean"
+      },
+      "id": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "required": {
+        "type": "Boolean"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
   "apex:actionFunction": {
     "simple": True,
     "attribs": {

@@ -1,0 +1,10 @@
+{
+    "instance_methods": [
+        "size()", 
+        "toString()"
+    ], 
+    "static_methods": [
+        "toPdf(String_S)", 
+        "valueOf(String_S)"
+    ]
+}

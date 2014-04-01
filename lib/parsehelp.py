@@ -78,6 +78,13 @@ def collapse_generic(before, open, close):
             end = -1
     return before
 
+@debug
+def collapse_getter_setters(before):
+    after = re.sub(r'\s*{\s*get\s*;\s*set\s*;\s*}', ';', before)
+    after = re.sub(r'\s*{\s*get\s*;\s*private set\s*;\s*}', ';', after)
+    after = re.sub(r'\s*{\s*private get\s*;\s*private set\s*;\s*}', ';', after)
+    after = re.sub(r'\s*{\s*private get\s*;\s*set\s*;\s*}', ';', after)
+    return after
 
 @debug
 def collapse_brackets(before):
@@ -144,10 +151,10 @@ def collapse_strings(before):
     count = 0
     end = -1
     while i >= 0:
-        i = before.rfind("\"", 0, i)
+        i = before.rfind("'", 0, i)
         if i == -1:
             break
-        if before[i] == '\"':
+        if before[i] == "'":
             if i > 0 and before[i-1] == '\\':
                 i -= 1
             elif count > 0:
@@ -161,6 +168,7 @@ def collapse_strings(before):
 
 @debug
 def extract_completion(before):
+    before = collapse_getter_setters(before)
     before = collapse_parenthesis(before)
     before = collapse_square_brackets(before)
     before = collapse_ltgt(before)
@@ -194,7 +202,7 @@ def extract_completion_objc(before):
         before = before[:-len(match.group(1))]
     return ret
 
-_keywords = ["return", "new", "delete", "class", "define", "using", "void", "template", "public:", "protected:", "private:", "public", "private", "protected", "typename", "in", "case", "default", "goto", "typedef", "struct", "else"]
+_keywords = ["trigger", "insert", "update", "delete", "upsert", "return", "new", "delete", "class", "define", "using", "void", "template", "public:", "protected:", "private:", "public", "private", "protected", "typename", "in", "case", "default", "goto", "typedef", "struct", "else"]
 
 
 @debug
@@ -222,6 +230,7 @@ def extract_used_namespaces(data):
 def extract_namespace(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = remove_namespaces(data)
     regex = re.compile(r"namespace\s+([^{\s]+)\s*\{", re.MULTILINE)
     ret = ""
@@ -243,6 +252,7 @@ def extract_namespace(data):
 def extract_class_from_function(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = collapse_parenthesis(data)
     data = remove_functions(data)
     ret = None
@@ -256,6 +266,7 @@ def extract_class_from_function(data):
 def extract_class(data):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = collapse_strings(data)
     data = remove_classes(data)
     regex = re.compile(r"class\s+([^;{\s:]+)\s*(:|;|\{|extends|implements)", re.MULTILINE)
@@ -273,6 +284,7 @@ def extract_class(data):
 def extract_inheritance(data, classname):
     data = remove_preprocessing(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
     data = remove_classes(data)
     regex = re.compile(r"class\s+%s\s*(:|extends)\s+([^\s,{]+)" % classname, re.MULTILINE)
     match = regex.search(data)
@@ -321,6 +333,7 @@ def sub(exp, data):
 @debug
 def remove_preprocessing(data):
     data = data.replace("\\\n", " ")
+    data = data.replace(",", " ")
     data = sub(r"\#\s*define[^\n]+\n", data)
     data = sub(r"\#\s*(ifndef|ifdef|if|endif|else|elif|pragma|include)[^\n]*\n", data)
     data = sub(r"//[^\n]+\n", data)
@@ -376,11 +389,12 @@ def patch_up_variable(origdata, data, origtype, var, ret):
 @debug
 def extract_variables(data):
     origdata = data
-
     data = remove_preprocessing(data)
     data = remove_includes(data)
+    data = collapse_getter_setters(data)
     data = collapse_brackets(data)
     data = collapse_square_brackets(data)
+    data = collapse_strings(data)
     data = collapse_ltgt(data)
     data = remove_functions(data)
     data = remove_namespaces(data)
@@ -467,10 +481,13 @@ def get_var_type(data, var):
     regex = re.compile(r"(const\s*)?\b([^%s]+[ \s\*\&]+)(\s*[^%s]+\,\s*)*(%s)\s*(\[|\(|\;|,|\)|=|:|in\s+)" % (_invalid, _invalid, re.escape(var)), re.MULTILINE)
     origdata = data
     data = remove_preprocessing(data)
+    data = collapse_getter_setters(data)
     data = collapse_ltgt(data)
     data = collapse_brackets(data)
+    data = collapse_square_brackets(data)
+    data = collapse_strings(data)
     data = remove_functions(data)
-
+    #print(data)
     match = None
 
     for m in regex.finditer(data):
@@ -601,7 +618,6 @@ def get_type_definition(data):
         match = get_var_type(data, var)
     if match == None:
         return -1, -1, var, None, extra+tocomplete
-
     line = data[:match.start(3)].count("\n") + 1
     column = len(data[:match.start(3)].split("\n")[-1])+1
     typename = match.group(1).strip()

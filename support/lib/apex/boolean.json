@@ -1,7 +1,0 @@
-{
-    "instance_methods": [
-        "valueOf(String_s)", 
-        "valueOf(Object_fieldValue)"
-    ], 
-    "static_methods": []
-}

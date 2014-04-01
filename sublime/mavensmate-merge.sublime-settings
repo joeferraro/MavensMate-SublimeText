@@ -1,0 +1,60 @@
+/* 
+
+MavensMate Merge (diff) settings
+
+*/
+
+{
+	//this will limit the list of comparable files to the files with the same syntax
+	"same_syntax_only": false,
+
+	//this will order the list of comparable files by file's names similiarity
+	"intelligent_files_sort": true,
+
+	//this will display compact view of comparable files
+	"compact_files_list": true,
+
+	//set to true if you want to hide sidebar in comparison window:
+	"hide_side_bar": true,
+
+	//set to true if you want to ignore whitespace differences:
+	"ignore_whitespace": true,
+
+	//set to true if you want to ignore differences in new line characters (CR/LF)
+	"ignore_crlf": true,
+
+	//the text that expands lines in difference regions:
+	"diff_region_expander_text": "?",
+
+	//Scopes are color configurations as defined in your color scheme.
+	//These scopes are set to work properly with the Monokai scheme,
+	//which is Sublime's default. You can change them to any you want.
+	//The list of available scopes can be found in your current scheme
+	//file (.tmTheme)
+
+	//border color when content of difference exists in both files:
+	"diff_region_scope": "selection",
+
+	//border color when content of difference exists in left file, but does not exist
+	//in right one:
+	"diff_region_added_scope": "markup.inserted",
+
+	//border color when content of difference exists in right file, but does not exist
+	//in left file:
+	"diff_region_removed_scope": "markup.deleted",
+
+	//fill color for inline changes marks:
+	"diff_region_change_scope": "markup.changed",
+
+	//fill color for selected difference:
+	"selected_diff_region_scope": "selection",
+
+	//type of gutter icon that is displayed near difference region
+	//(dot|circle|bookmark|cross):
+	"diff_region_gutter_icon": "dot",
+
+	//type of gutter icon that is displayed near selected difference region
+	//(dot|circle|bookmark|cross):
+	"selected_diff_region_gutter_icon": "bookmark"
+
+}

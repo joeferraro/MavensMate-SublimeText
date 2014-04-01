@@ -9,19 +9,29 @@ import shutil
 import codecs
 import string
 import random
+import zipfile
+import traceback
+from xml.dom.minidom import parse, parseString
+
 # from datetime import datetime, date, time
+
+# try: 
+#     import urllib
+# except ImportError:
+#     import urllib.request as urllib
+import urllib.request
 
 if sys.version_info >= (3, 0):
     #python 3
     import MavensMate.config as config
-    import MavensMate.lib.apex_extensions as apex_extensions
+    import MavensMate.lib.apex.apex_extensions as apex_extensions
     from MavensMate.lib.usage_reporter import UsageReporter
     from MavensMate.lib.upgrader import AutomaticUpgrader
     #from MavensMate.lib.printer import PanelPrinter
 else:
     #python 2
     import config
-    import lib.apex_extensions as apex_extensions
+    import lib.apex.apex_extensions as apex_extensions
     from lib.usage_reporter import UsageReporter
     from lib.upgrader import AutomaticUpgrader
     #from lib.printer import PanelPrinter
@@ -34,30 +44,44 @@ else:
 #sublime.packages_path()
 
 import sublime
-
-
 settings = sublime.load_settings('mavensmate.sublime-settings')
 packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
 
+debug = config.debug
+
+def standard_object_names():
+    return [
+        "Account", "Opportunity", "Contact", "Lead", "Pricebook2", "Product"
+    ]
+
+def mm_plugin_location():
+    return os.path.join(packages_path,"MavensMate")
+
 def package_check():
     #ensure user settings are installed
     try:
-        if not os.path.exists(packages_path+"/User/mavensmate.sublime-settings"):
-            shutil.copyfile(config.mm_dir+"/mavensmate.sublime-settings", packages_path+"/User/mavensmate.sublime-settings")
+        if not os.path.exists(os.path.join(packages_path,"User","mavensmate.sublime-settings")):
+            shcopyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
     except:
         pass
 
-def is_project_legacy():
-    if os.path.exists(mm_project_directory()+"/config/settings.yaml"):
+def is_project_legacy(window=None):
+    #debug(mm_project_directory(window))
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+    if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
-    elif os.path.exists(mm_project_directory()+"/config/.settings"):
-        current_settings = parse_json_from_file(mm_project_directory()+"/config/.settings")
-        if 'subscription' not in current_settings:
+    if settings.get('mm_mass_index_apex_symbols', True):
+        if not os.path.exists(os.path.join(mm_project_directory(window),"config",".symbols")):
+            return True
+    if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
+        return True
+    elif os.path.exists(os.path.join(mm_project_directory(window),"config",".settings")):
+        current_settings = parse_json_from_file(os.path.join(mm_project_directory(window),"config",".settings"))
+        if 'subscription' not in current_settings or 'workspace' not in current_settings:
             return True
         else:
             return False
-
     else:
         return False
  
@@ -69,6 +93,34 @@ def parse_json_from_file(location):
         return data
     except:
         return {}
+
+def parse_templates_package(mtype=None):
+    try:
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        template_source = settings.get('mm_template_source', 'joeferraro/MavensMate-Templates/master')
+        template_location = settings.get('mm_template_location', 'remote')
+        if template_location == 'remote':
+            if 'linux' in sys.platform:
+                response = os.popen('wget https://raw.github.com/{0}/{1} -q -O -'.format(template_source, "package.json")).read()
+            else:
+                response = urllib.request.urlopen('https://raw.github.com/{0}/{1}'.format(template_source, "package.json")).read().decode('utf-8')
+            j = json.loads(response)
+        else:
+            local_template_path = os.path.join(template_source,"package.json")
+            debug(local_template_path)
+            j = parse_json_from_file(local_template_path)
+            if j == None or j == {}:
+                raise Exception('Could not load local templates. Check your "mm_template_source" setting.')
+    except Exception as e:
+        debug('Failed to load templates, reverting to local template store.')
+        debug(e)
+        local_template_path = os.path.join(config.mm_dir,"lib","apex","metadata-templates","package.json")
+        j = parse_json_from_file(local_template_path)
+    if mtype != None:
+        return j[mtype]
+    else:
+        return j
+
 
 def get_number_of_lines_in_file(file_path):
     f = open(file_path)
@@ -99,13 +151,12 @@ def get_active_file():
     except Exception:
         return ''
 
+def get_file_name_no_extension(path):
+    base=os.path.basename(path)
+    return os.path.splitext(base)[0]
+
 def get_project_name(context=None):
-    if context == None:
-        try:
-            return os.path.basename(sublime.active_window().folders()[0])
-        except:
-            return None
-    else:
+    if context != None:
         if isinstance(context, sublime.View):
             view = context
             window = view.window()
@@ -115,10 +166,38 @@ def get_project_name(context=None):
         else:
             window = sublime.active_window()
             view = window.active_view()
-        try:
-            return os.path.basename(window.folders()[0])
-        except:
-            return None
+    else:
+        window = sublime.active_window()
+        view = window.active_view()
+
+    if is_mm_project(window):
+        if context == None:
+            try:
+                return os.path.basename(sublime.active_window().folders()[0])
+            except:
+                return None
+        else:
+            try:
+                return os.path.basename(window.folders()[0])
+            except:
+                return None
+    else:
+        return None
+
+def valid_workspace():
+    workspace = mm_workspace()
+    if workspace == None or workspace == "":
+        return False
+    elif type(workspace) is list and len(workspace) > 0:
+        workspaces = workspace
+        for w in workspaces:
+            if not os.path.exists(w):
+                return False
+    elif type(workspace) is list and len(workspace) == 0:
+        return False
+    elif type(workspace) is not list and not os.path.exists(workspace):
+        return False
+    return True
 
 def check_for_workspace():
     workspace = mm_workspace()
@@ -128,30 +207,51 @@ def check_for_workspace():
         sublime.error_message(msg)  
         raise BaseException
 
-    if not os.path.exists(workspace):
-        #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
+    selected_workspace = None
+    if type(workspace) is list and len(workspace) > 0:
+        selected_workspace = workspace[0]
+    elif type(workspace) is list and len(workspace) == 0:
         msg = 'Your [mm_workspace] directory \''+workspace+'\' does not exist. Please create the directory then try your operation again. Thx!'
+        sublime.error_message(msg)  
+        raise BaseException
+    else:
+        selected_workspace = workspace
+
+    if not os.path.exists(selected_workspace):
+        #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
+        msg = 'Your [mm_workspace] setting is not configured properly. Please ensure any locations specified in mm_workspace exist on the system, then try your operation again.'
         sublime.error_message(msg)  
         raise BaseException
 
 def sublime_project_file_path():
     project_directory = sublime.active_window().folders()[0]
-    if os.path.isfile(project_directory+"/.sublime-project"):
-        return project_directory+"/.sublime-project"
-    elif os.path.isfile(project_directory+"/"+get_project_name()+".sublime-project"):
-        return project_directory+"/"+get_project_name()+".sublime-project"
+    if os.path.isfile(os.path.join(project_directory,".sublime-project")):
+        return os.path.join(project_directory,".sublime-project")
+    elif os.path.isfile(os.path.join(project_directory,get_project_name(),".sublime-project")):
+        return os.path.join(project_directory,get_project_name(),".sublime-project")
     else:
         return None 
 
-# check for mavensmate .settings file
-def is_mm_project():
-    workspace = mm_workspace();
-    if workspace == "" or workspace == None or not os.path.exists(workspace):
-        return False
+def get_project_settings(window=None):
+    if window == None:
+        window = sublime.active_window()
     try:
-        if os.path.isfile(sublime.active_window().folders()[0]+"/config/.settings"):
+       return parse_json_from_file(os.path.join(window.folders()[0],"config",".settings"))
+    except:
+        raise BaseException("Could not load project settings")
+
+# check for mavensmate .settings file
+def is_mm_project(window=None):
+    if window == None:
+        window = sublime.active_window()
+    #workspace = mm_workspace();
+    #commented out bc it's confusing to users to see commands grayed out with no error 
+    #if workspace == "" or workspace == None or not os.path.exists(workspace):
+    #    return False
+    try:
+        if os.path.isfile(os.path.join(window.folders()[0],"config",".settings")):
             return True
-        elif os.path.isfile(sublime.active_window().folders()[0]+"/config/settings.yaml"):
+        elif os.path.isfile(os.path.join(window.folders()[0],"config","settings.yaml")):
             return True 
         else:
             return False
@@ -168,21 +268,25 @@ def get_file_extension(filename=None):
     return None
 
 def get_apex_file_properties():
-    return parse_json_from_file(mm_project_directory()+"/config/.apex_file_properties")
+    return parse_json_from_file(os.path.join(mm_project_directory(),"config",".apex_file_properties"))
 
 def is_mm_file(filename=None):
-    try :
+    try:
         if is_mm_project():
             if not filename: 
                 filename = get_active_file()
-            if os.path.exists(filename):
+            project_directory = mm_project_directory(sublime.active_window())
+            if os.path.join(project_directory,"src","documents") in filename:
+                return True
+            if os.path.exists(filename) and os.path.join(project_directory,"src") in filename:
                 settings = sublime.load_settings('mavensmate.sublime-settings')
                 valid_file_extensions = settings.get("mm_apex_file_extensions", [])
-                if get_file_extension(filename) in valid_file_extensions:
+                if get_file_extension(filename) in valid_file_extensions and 'apex-scripts' not in get_active_file():
                     return True
                 elif "-meta.xml" in filename:
                     return True
-    except:
+    except Exception as e:
+        #traceback.print_exc()
         pass
     return False
 
@@ -223,8 +327,10 @@ def is_apex_test_file(filename=None):
         content = content_file.read()
         p = re.compile("@isTest\s", re.I + re.M)
         if p.search(content):
-            p = re.compile("\stestMethod\s", re.I + re.M)
-            if p.search(content): return True
+            return True
+        p = re.compile("\sstatic testMethod\s", re.I + re.M)
+        if p.search(content):
+            return True
     return False
 
 def mark_overlays(view, lines):
@@ -237,34 +343,50 @@ def write_overlays(view, overlay_result):
             sublime.set_timeout(lambda: mark_line_numbers(view, [int(r["Line"])], "dot", "overlay"), 100)
 
 def mark_line_numbers(view, lines, icon="dot", mark_type="compile_issue"):
-    points = [view.text_point(l - 1, 0) for l in lines]
-    regions = [sublime.Region(p, p) for p in points]
-    view.add_regions(mark_type, regions, "operation.fail", icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
+    try:
+        view.add_regions(mark_type, [view.line(view.text_point(lines[0]-1, 0))], "invalid.illegal", icon, sublime.DRAW_EMPTY_AS_OVERWRITE)
+    except:
+        points = [view.text_point(l - 1, 0) for l in lines]
+        regions = [sublime.Region(p, p) for p in points]
+        view.add_regions(mark_type, regions, "operation.fail", icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
 
 def clear_marked_line_numbers(view, mark_type="compile_issue"):
     try:
         sublime.set_timeout(lambda: view.erase_regions(mark_type), 100)
     except Exception as e:
-        print(e.message)
-        print('no regions to clean up')
+        debug(e.message)
+        debug('no regions to clean up')
 
+def get_window_and_view_based_on_context(context):
+    if isinstance(context, sublime.View):
+        view = context
+        window = view.window()
+    elif isinstance(context, sublime.Window):
+        window = context
+        view = window.active_view()
+    else:
+        window = sublime.active_window()
+        view = window.active_view()
+    return window, view
 
 def is_apex_webservice_file(filename=None):
     if not filename: filename = get_active_file()
     if not is_apex_class_file(filename): return False
     with codecs.open(filename, "r", "utf-8") as content_file:
         content = content_file.read()
-        p = re.compile("global\s+class\s", re.I + re.M)
+        p = re.compile("global\s+(abstract\s+)?class\s", re.I + re.M)
         if p.search(content):
             p = re.compile("\swebservice\s", re.I + re.M)
             if p.search(content): return True
     return False
 
-def mm_project_directory():
+def mm_project_directory(window=None):
     #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
-    folders = sublime.active_window().folders()
+    if window == None:
+        window = sublime.active_window()
+    folders = window.folders()
     if len(folders) > 0:
-        return sublime.active_window().folders()[0]
+        return window.folders()[0]
     else:
         return mm_workspace()
 
@@ -320,7 +442,7 @@ def get_tab_file_names():
     return tabs 
 
 def get_file_as_string(file_path):
-    #print(file_path)
+    #debug(file_path)
     try:
         f = codecs.open(file_path, "r", "utf8")
         file_body = f.read()
@@ -357,40 +479,160 @@ def start_mavensmate_app():
            os.system("open '"+settings.get('mm_app_location')+"'")
         else:
            #sublime.error_message("MavensMate.app is not running, please start it from your Applications folder.")
-           print('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
+           debug('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
+
+def get_field_completions(object_name):
+    _completions = []
+    if os.path.isfile(os.path.join(mm_project_directory(),"src","objects",object_name+".object")): #=> object fields from src directory (more info on field metadata, so is primary)
+        object_dom = parse(os.path.join(mm_project_directory(),"src","objects",object_name+".object"))
+        for node in object_dom.getElementsByTagName('fields'):
+            field_name = ''
+            field_type = ''
+            for child in node.childNodes:                            
+                if child.nodeName != 'fullName' and child.nodeName != 'type': continue
+                if child.nodeName == 'fullName':
+                    field_name = child.firstChild.nodeValue
+                elif child.nodeName == 'type':
+                    field_type = child.firstChild.nodeValue
+            _completions.append((field_name+" \t"+field_type, field_name))
+        return sorted(_completions)
+    elif os.path.isfile(os.path.join(mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object fields
+        jsonData = parse_json_from_file(os.path.join(mm_project_directory(),"config",".org_metadata"))
+        for metadata_type in jsonData:
+            if 'xmlName' in metadata_type and metadata_type['xmlName'] == 'CustomObject':
+                for object_type in metadata_type['children']:
+                    if 'text' in object_type and object_type['text'].lower() == object_name.lower():
+                        for attr in object_type['children']:
+                            if 'text' in attr and attr['text'] == 'fields':
+                                for field in attr['children']:
+                                    _completions.append((field['text'], field['text']))
+    return _completions
+
+def get_symbol_table(class_name):
+    try:
+        if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols')):
+            class_name_json = os.path.basename(class_name).replace(".cls","json")
+            if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols', class_name_json+".json")):
+                return parse_json_from_file(os.path.join(mm_project_directory(), "config", ".symbols", class_name_json+".json"))
+
+        if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
+            return None
+
+        apex_props = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".apex_file_properties"))
+        for p in apex_props.keys():
+            if p == class_name+".cls" and 'symbolTable' in apex_props[p]:
+                return apex_props[p]['symbolTable']
+        return None
+    except:
+        return None
+
+def get_completions_for_inner_class(symbol_table):
+    return get_symbol_table_completions(symbol_table)
+
+def get_symbol_table_completions(symbol_table):
+    completions = []
+    if 'constructors' in symbol_table:
+        for c in symbol_table['constructors']:
+            params = []
+            if not 'visibility' in c:
+                c['visibility'] = 'PUBLIC'
+            if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
+                for p in c['parameters']:
+                    params.append(p["type"] + " " + p["name"])
+                paramStrings = []
+                for i, p in enumerate(params):
+                    paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
+                paramString = ", ".join(paramStrings)
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+")"))
+            else:
+                completions.append((c["visibility"] + " " + c["name"]+"()", c["name"]+"()${1:}"))
+    if 'properties' in symbol_table:
+        for c in symbol_table['properties']:
+            if not 'visibility' in c:
+                c['visibility'] = 'PUBLIC'
+            if "type" in c and c["type"] != None and c["type"] != "null":
+                completions.append((c["visibility"] + " " + c["name"] + "\t" + c["type"], c["name"]))
+            else:
+                completions.append((c["visibility"] + " " + c["name"], c["name"]))
+    if 'methods' in symbol_table:
+        for c in symbol_table['methods']:
+            params = []
+            if not 'visibility' in c:
+                c['visibility'] = 'PUBLIC'
+            if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
+                for p in c['parameters']:
+                    params.append(p["type"] + " " + p["name"])
+            if len(params) == 1:
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"(${1:"+", ".join(params)+"})"))
+            elif len(params) > 1:
+                paramStrings = []
+                for i, p in enumerate(params):
+                    paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
+                paramString = ", ".join(paramStrings)
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"("+paramString+")"))
+            else:
+                completions.append((c["visibility"] + " " + c["name"]+"("+", ".join(params)+") \t"+c['returnType'], c["name"]+"()${1:}"))
+    if 'innerClasses' in symbol_table:
+        for c in symbol_table["innerClasses"]:
+            if 'constructors' in c and len(c['constructors']) > 0:
+                for con in c['constructors']:
+                    if not 'visibility' in con:
+                        con['visibility'] = 'PUBLIC'
+                    params = []
+                    if 'parameters' in con and type(con['parameters']) is list and len(con['parameters']) > 0:
+                        for p in con['parameters']:
+                            params.append(p["type"] + " " + p["name"])
+                        paramStrings = []
+                        for i, p in enumerate(params):
+                            paramStrings.append("${"+str(i+1)+":"+params[i]+"}")
+                        paramString = ", ".join(paramStrings)
+                        completions.append((con["visibility"] + " " + con["name"]+"("+", ".join(params)+")", c["name"]+"("+paramString+")"))
+                    else:
+                        completions.append((con["visibility"] + " " + con["name"]+"()", c["name"]+"()${1:}"))
+            else:
+                completions.append(("INNER CLASS " + c["name"]+"() \t", c["name"]+"()${1:}"))
+    return sorted(completions) 
 
 #returns suggestions based on tooling api symbol table
-def get_apex_completions(search_name):
-    completions = []
+def get_apex_completions(search_name, search_name_extra=None):
+    debug('Attempting to get completions')
+    debug('search_name: ',search_name)
+    debug('search_name_extra: ',search_name_extra)
+
+    if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols')):
+        #class_name_json = os.path.basename(class_name).replace(".cls","json")
+        if os.path.exists(os.path.join(mm_project_directory(), 'config', '.symbols', search_name+".json")):
+            symbol_table = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".symbols", search_name+".json"))
+            if search_name_extra == None or search_name_extra == '':
+                return get_symbol_table_completions(symbol_table)
+            elif 'innerClasses' in symbol_table and len(symbol_table['innerClasses']) > 0:
+                for inner in symbol_table['innerClasses']:
+                    if inner["name"] == search_name_extra:
+                        return get_completions_for_inner_class(inner)
+
     if not os.path.exists(os.path.join(mm_project_directory(), 'config', '.apex_file_properties')):
         return []
 
     apex_props = parse_json_from_file(os.path.join(mm_project_directory(), "config", ".apex_file_properties"))
 
     for p in apex_props.keys():
-        if p == search_name+".cls" and 'symbolTable' in apex_props[p]:
+        if p == search_name+".cls" and 'symbolTable' in apex_props[p] and apex_props[p]["symbolTable"] != None:
             symbol_table = apex_props[p]['symbolTable']
-            if 'constructors' in symbol_table:
-                for c in symbol_table['constructors']:
-                    completions.append((c["visibility"] + " " + c["name"], c["name"]))
-            if 'properties' in symbol_table:
-                for c in symbol_table['properties']:
-                    if "type" in c and c["type"] != None and c["type"] != "null":
-                        completions.append((c["visibility"] + " " + c["name"] + "\t" + c["type"], c["name"]))
-                    else:
-                        completions.append((c["visibility"] + " " + c["name"], c["name"]))
-            if 'methods' in symbol_table:
-                for c in symbol_table['methods']:
-                    params = ''
-                    if 'parameters' in c and type(c['parameters']) is list and len(c['parameters']) > 0:
-                        for p in c['parameters']:
-                            params += p['name'] + " (" + p["type"] + ")"
-                    completions.append((c["visibility"] + " " + c["name"]+"("+params+") "+c['returnType'], c["name"]))
-    return sorted(completions) 
+            if search_name_extra == None or search_name_extra == '':
+                return get_symbol_table_completions(symbol_table)
+            elif 'innerClasses' in symbol_table and len(symbol_table['innerClasses']) > 0:
+                for inner in symbol_table['innerClasses']:
+                    if inner["name"] == search_name_extra:
+                        return get_completions_for_inner_class(inner)
+    
+    debug('no symbol table found for '+search_name)
+
+def zip_directory(directory_to_zip, where_to_put_zip_file=None):
+    return shutil.make_archive(where_to_put_zip_file, 'zip', os.path.join(directory_to_zip))
 
 def get_version_number():
     try:
-        json_data = open(config.mm_dir+"/packages.json")
+        json_data = open(os.path.join(config.mm_dir,"packages.json"))
         data = json.load(json_data)
         json_data.close()
         version = data["packages"][0]["platforms"]["osx"][0]["version"]

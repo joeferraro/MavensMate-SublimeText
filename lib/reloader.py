@@ -1,8 +1,7 @@
 import sys
-
 import sublime
+st_version = 3
 
-st_version = 2
 # With the way ST3 works, the sublime module is not "available" at startup
 # which results in an empty version number
 if sublime.version() == '' or int(sublime.version()) > 3000:
@@ -33,7 +32,6 @@ if st_version == 3:
 
 mods_load_order = [
     '',
-
     '.apex_extensions',
     '.command_helper',
     '.commands',
@@ -46,7 +44,10 @@ mods_load_order = [
     '.views',
     '.mm_merge',
     '.completioncommon',
-    '.vf'
+    '.vf',
+    '.parsehelp',
+    '.resource_bundle',
+    '.mm_response_handlers'
 ]
 
 for suffix in mods_load_order:

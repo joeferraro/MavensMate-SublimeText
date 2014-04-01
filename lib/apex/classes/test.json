@@ -1,0 +1,16 @@
+{
+    "instance_methods": [], 
+    "static_methods": [
+        "isRunningTest()", 
+        "loadData(Schema.SObjectType_sobjecttoken, String_resourcename)", 
+        "setCurrentPage(PageReference_page)", 
+        "setCurrentPageReference(PageReference_page)", 
+        "setFixedSearchResults(ID[]_opt_set_search_results)", 
+        "setMock(Type_interfacetype, Object_instance)", 
+        "setReadOnlyApplicationMode(Boolean_application_mode)", 
+        "startTest()", 
+        "stopTest()", 
+        "testInstall()", 
+        "testUninstall()"
+    ]
+}

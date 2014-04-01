@@ -1,0 +1,30 @@
+{
+    "instance_methods": [], 
+    "static_methods": [
+        "abortJob(String_Job_ID)", 
+        "assert()", 
+        "assertEquals()", 
+        "assertNotEquals()", 
+        "currentPageReference()", 
+        "currentTimeMillis()", 
+        "debug(Anydatatype_msg)", 
+        "debug(Enum_loglevel, Anydatatype_msg)", 
+        "getApplication ReadWriteMode()", 
+        "isBatch()", 
+        "isFuture()", 
+        "isScheduled()", 
+        "now()", 
+        "process(List_WorkItemIDs__workitemids, String_action, String_comments, String_nextapprover)", 
+        "purgeOldAsyncJobs(Date_dt)", 
+        "requestVersion()", 
+        "resetPassword(ID_userid, Boolean_send_user_email)", 
+        "runAs(System.Version_version)", 
+        "runAs(User_user_var)", 
+        "schedule(String_jobname, String_cronexpression, Object_schedulable_class)", 
+        "scheduleBatch(Database.Batchable_batchable, String_jobname, Integer_minutesfromnow)", 
+        "scheduleBatch(Database.Batchable_batchable, String_jobname, Integer_minutesfromnow, Integer_scopesize)", 
+        "setPassword(ID_userid, String_password)", 
+        "submit(List_WorkItemIDs__workitemids, String_comments, String_nextapprover)", 
+        "today()"
+    ]
+}

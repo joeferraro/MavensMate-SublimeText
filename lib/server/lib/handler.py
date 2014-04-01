@@ -9,8 +9,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def main_handler(self, method='GET'):
         # get request url (without url params) and remove trailing /
-        config.logger.debug('>>> handling request')
-        config.logger.debug(self.path)
+        config.debug('>>> handling request')
+        config.debug(self.path)
 
         request_url = self.path.split('?')[0]
         if request_url is not '/':
@@ -19,7 +19,7 @@ class Handler(BaseHTTPRequestHandler):
         handler = None
         try:
             handler = self.mappings[request_url][method]
-            #config.logger.debug(handler)
+            #config.debug(handler)
         except KeyError:
             # no mapping found for the request
             self.send_response(404)
@@ -41,6 +41,17 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         print(self)
         self.main_handler('POST')
+        return
+
+    #to enable CORS
+    def do_OPTIONS(self):
+        self.send_response(200, "ok")
+        self.send_header('Access-Control-Allow-Origin', "*")
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header("Access-Control-Allow-Headers", "accept,origin,mm_plugin_client,content-type")
+        self.send_header('Content-Length',0)
+        self.send_header('Connection','close')
+        self.end_headers()
         return
 
     def log_message(self, format, *args):

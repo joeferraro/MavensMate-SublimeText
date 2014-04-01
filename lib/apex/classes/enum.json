@@ -1,0 +1,9 @@
+{
+    "instance_methods": [
+        "values()"
+    ], 
+    "static_methods": [
+        "name()", 
+        "ordinal()"
+    ]
+}

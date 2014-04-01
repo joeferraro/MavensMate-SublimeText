@@ -1,0 +1,11 @@
+{
+    "instance_methods": [
+        "getComponentLabel()", 
+        "getDetail()", 
+        "getSeverity()", 
+        "getSummary()"
+    ], 
+    "static_methods": [
+       
+    ]
+}

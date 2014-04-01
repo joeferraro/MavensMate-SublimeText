@@ -1,0 +1,20 @@
+{
+    "static_methods": [], 
+    "instance_methods": [
+        "add(Anytype_e)", 
+        "add(Integer_i, Anytype_e)", 
+        "addAll(List_l)", 
+        "addAll(Set_s)", 
+        "clear()", 
+        "clone()", 
+        "deepClone(Boolean_opt_preserve_id, Boolean_opt_preserve_readonly_timestamps, Boolean_opt_preserve_autonumber)", 
+        "get(Integer_i)", 
+        "getSObjectType()", 
+        "isEmpty()", 
+        "iterator()", 
+        "remove(Integer_i)", 
+        "set(Integer_i, Anytype_e)", 
+        "size()", 
+        "sort()"
+    ]
+}

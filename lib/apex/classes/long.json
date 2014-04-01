@@ -1,0 +1,9 @@
+{
+    "instance_methods": [
+        "format()", 
+        "intValue()"
+    ], 
+    "static_methods": [
+        "valueOf(String_s)"
+    ]
+}

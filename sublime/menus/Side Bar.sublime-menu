@@ -1,0 +1,19 @@
+[
+	{  
+	    "id": "MavensMate",
+	    "caption": "MavensMate",  
+	    "children":
+	    	[
+				{ "caption": "Create MavensMate Project...", "command": "create_mavens_mate_project", "args": {"dirs": []} },
+				{ "caption": "Compile Selected Files", "command": "compile_selected_files", "args": {"files": []} },
+				{ "caption": "Open Files in Web Browser", "command": "open_selected_sfdc_url", "args": {"files": []} },
+				{ "caption": "Open WSDLs in Web Browser", "command": "open_selected_sfdc_wsdl_url", "args": {"files": []} },
+				{ "caption": "Run Apex Tests...", "command": "run_selected_apex_tests", "args": {"files": []} },
+				{ "caption": "Create Resource Bundle(s)", "command": "new_resource_bundle", "args": {"files": [], "dirs":[]} },
+				{ "caption": "Refresh Resource Bundle(s)", "command": "refresh_resource_bundle", "args": { "dirs": [], "files":[]} },
+				{ "caption": "Refresh From Server...", "command": "refresh_from_server", "args": {"dirs": [], "files": []} },
+				{ "caption": "Delete Files from Salesforce Server...", "command": "delete_metadata", "args": {"files": []} },
+				{ "caption": "Refresh Apex Symbol For This Apex Class", "command": "refresh_apex_symbols", "args": {"files": []} }
+	    	]
+	 }
+]

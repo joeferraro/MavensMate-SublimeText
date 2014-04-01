@@ -106,7 +106,7 @@ class PanelThreadProgress():
         self.addend = 1
         self.size = 8
         self.callback = None
-        sublime.set_timeout(lambda: self.run(0), 100)
+        sublime.set_timeout(lambda: self.run(0), 50)
 
     def run(self, i):
         if not self.thread.is_alive():
@@ -121,10 +121,11 @@ class PanelThreadProgress():
                 self.callback()
             return
 
+        #print(">>> POLLING PROGRESS")
         #we need to recalculate this every run in case a thread has responded and added
         #text to the panel
         process_region = self.thread.printer.panel.find(self.thread.process_id,0)
-        status_region = self.thread.printer.panel.find('Result:',process_region.begin())
+        status_region = self.thread.printer.panel.find('Result: ',process_region.begin())
         
         before = i % self.size
         after = (self.size - 1) - before
@@ -140,7 +141,7 @@ class PanelThreadProgress():
             self.addend = 1
         i += self.addend
 
-        sublime.set_timeout(lambda: self.run(i), 100)
+        sublime.set_timeout(lambda: self.run(i), 50)
 
 class ThreadProgress():
     """
