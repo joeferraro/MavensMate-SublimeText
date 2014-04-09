@@ -287,10 +287,16 @@ class MMResultHandler(object):
         else:
             if 'records' in self.result:
                 self.result = self.result['records']
-            msg = ""
+            apex_names = []
+            new_dict = {}
             for record in self.result:
-                msg += (record["ApexClassOrTriggerName"] or record["ApexClassOrTriggerId"])+ ": "+ str(record["percentCovered"]) + "%\n"
-            
+                apex_names.append(record["ApexClassOrTriggerName"])
+                new_dict[record["ApexClassOrTriggerName"]] = record
+            apex_names.sort()
+            msg = ""
+            for apex_name in apex_names:
+                record = new_dict[apex_name]
+                msg += apex_name+ ": "+ str(record["percentCovered"]) + "% ("+str(record["NumLinesCovered"])+"/"+str(record["NumLinesCovered"]+record["NumLinesUncovered"])+")\n"            
             self.__print_to_panel('Success')
             new_view = self.thread.window.new_file()
             new_view.set_scratch(True)
