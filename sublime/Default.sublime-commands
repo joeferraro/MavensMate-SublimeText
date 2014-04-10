@@ -4,6 +4,10 @@
     "command": "mavens_stub"
   },
   {
+    "caption": "MavensMate: Scrub Log",
+    "command": "scrub_log"
+  },
+  {
     "caption": "MavensMate: Get Apex Code Coverage For This Apex Class",
     "command": "get_apex_code_coverage"
   },

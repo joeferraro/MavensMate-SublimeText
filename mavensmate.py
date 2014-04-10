@@ -1896,6 +1896,44 @@ class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
+class ScrubLogCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        util.send_usage_statistics('Scrub log')  
+        active_view = self.window.active_view()
+        fileName, ext = os.path.splitext(active_view.file_name())
+
+        lines = []
+        new_lines = []
+
+        with open(active_view.file_name()) as f:
+            lines = f.readlines()
+
+        for file_line in lines:
+            if '|USER_DEBUG|' in file_line and '|DEBUG|' in file_line:
+                new_lines.append(file_line)
+
+        string = "\n".join(new_lines)
+        new_view = self.window.new_file()
+        if "linux" in sys.platform or "darwin" in sys.platform:
+            new_view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.tmLanguage"))
+        else:
+            new_view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/MMLog.tmLanguage"))
+        new_view.set_scratch(True)
+        new_view.set_name("Scrubbed Log")
+        new_view.run_command('generic_text', {'text': string })
+
+
+    def is_enabled(command):
+        active_view = sublime.active_window().active_view()
+        fn, ext = os.path.splitext(active_view.file_name())
+        if util.is_mm_project():
+            if ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
+                return True
+            else:
+                return False
+        else:
+            return False
+
 class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         self.objects = []

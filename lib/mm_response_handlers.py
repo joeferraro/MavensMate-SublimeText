@@ -296,7 +296,10 @@ class MMResultHandler(object):
             msg = ""
             for apex_name in apex_names:
                 record = new_dict[apex_name]
-                msg += apex_name+ ": "+ str(record["percentCovered"]) + "% ("+str(record["NumLinesCovered"])+"/"+str(record["NumLinesCovered"]+record["NumLinesUncovered"])+")\n"            
+                yaml_key = apex_name
+                if record["percentCovered"] == 0:
+                    yaml_key = '!! '+apex_name
+                msg += yaml_key+ ": "+ str(record["percentCovered"]) + "% ("+str(record["NumLinesCovered"])+"/"+str(record["NumLinesCovered"]+record["NumLinesUncovered"])+")\n"            
             self.__print_to_panel('Success')
             new_view = self.thread.window.new_file()
             new_view.set_scratch(True)

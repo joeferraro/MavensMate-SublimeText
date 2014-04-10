@@ -85,6 +85,10 @@
 	         			"caption": "Fetch Logs",
 	         			"command": "fetch_logs"
 	         		},
+	         		{
+	         			"caption": "Scrub Log",
+	         			"command": "scrub_log"
+	         		},
 	         		{"caption":"-"},
 	         		{
 	         			"caption": "New Apex Checkpoint...",
