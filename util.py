@@ -350,6 +350,12 @@ def mark_line_numbers(view, lines, icon="dot", mark_type="compile_issue"):
         regions = [sublime.Region(p, p) for p in points]
         view.add_regions(mark_type, regions, "operation.fail", icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
 
+def mark_uncovered_lines(view, lines, icon="bookmark", mark_type="no_apex_coverage"):
+    regions = []
+    for line in lines:
+        regions.append(view.line(view.text_point(line-1, 0)))
+    view.add_regions(mark_type, regions, "invalid.illegal", icon, sublime.DRAW_EMPTY_AS_OVERWRITE)
+
 def clear_marked_line_numbers(view, mark_type="compile_issue"):
     try:
         sublime.set_timeout(lambda: view.erase_regions(mark_type), 100)

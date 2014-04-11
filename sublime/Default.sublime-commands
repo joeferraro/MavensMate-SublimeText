@@ -8,6 +8,10 @@
     "command": "scrub_log"
   },
   {
+    "caption": "MavensMate: Hide Coverage Indicators For This Class",
+    "command": "hide_coverage"
+  },
+  {
     "caption": "MavensMate: Get Apex Code Coverage For This Apex Class",
     "command": "get_apex_code_coverage"
   },

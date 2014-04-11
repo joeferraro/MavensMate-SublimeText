@@ -269,9 +269,9 @@ class MMResultHandler(object):
             else:
                 record = self.result
             msg = str(record["percentCovered"]) + "%"
+            util.mark_uncovered_lines(self.thread.view, record["Coverage"]["uncoveredLines"])
             self.__print_to_panel('[PERCENT COVERED]: ' + msg)
  
-
     def __handle_org_wide_coverage_result(self):
         if 'PercentCovered' not in self.result:
             self.__print_to_panel("No coverage information available")
@@ -299,6 +299,8 @@ class MMResultHandler(object):
                 yaml_key = apex_name
                 if record["percentCovered"] == 0:
                     yaml_key = '!! '+apex_name
+                elif record["percentCovered"] < 75:
+                    yaml_key = '! '+apex_name
                 msg += yaml_key+ ": "+ str(record["percentCovered"]) + "% ("+str(record["NumLinesCovered"])+"/"+str(record["NumLinesCovered"]+record["NumLinesUncovered"])+")\n"            
             self.__print_to_panel('Success')
             new_view = self.thread.window.new_file()

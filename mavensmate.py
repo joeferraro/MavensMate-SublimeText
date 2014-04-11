@@ -1022,6 +1022,15 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
     def is_visible(self):
         return util.is_mm_project()
 
+#deletes selected metadata
+class DeleteTraceFlagsForThisUser(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('delete_trace_flags', context=self, message="Deleting Trace Flags")
+        util.send_usage_statistics('Delete Trace Flags')
+
+    def is_enabled(self):
+        return util.is_mm_project()
+
 #attempts to compile the entire project
 class CompileProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -1165,7 +1174,7 @@ class ResetMetadataContainerCommand(sublime_plugin.WindowCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
-#refreshes the currently active file from the server
+#gets apex code coverage for the current class
 class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
@@ -1173,6 +1182,15 @@ class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
         }
         mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(params["classes"][0]), params=params)
         util.send_usage_statistics('Apex Code Coverage')  
+
+    def is_enabled(command):
+        return util.is_apex_class_file()
+
+#gets apex code coverage for the current class
+class HideCoverageCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        util.clear_marked_line_numbers(self.window.active_view(), "no_apex_coverage")
+        util.send_usage_statistics('Hide Apex Coverage')  
 
     def is_enabled(command):
         return util.is_apex_class_file()

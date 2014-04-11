@@ -89,6 +89,10 @@
 	         			"caption": "Scrub Log",
 	         			"command": "scrub_log"
 	         		},
+	         		{
+	         			"caption": "Delete Trace Flags For This User",
+	         			"command": "delete_trace_flags_for_this_user"
+	         		},
 	         		{"caption":"-"},
 	         		{
 	         			"caption": "New Apex Checkpoint...",
@@ -136,6 +140,10 @@
 		     		{
 		     			"caption": "Get Org Wide Test Coverage",
 		     			"command": "get_org_wide_test_coverage"
+		     		},
+		     		{
+		     			"caption": "Hide Coverage Indicators For This Class",
+		     			"command": "hide_coverage"
 		     		}
 	         	]
 	     	},
