@@ -464,17 +464,6 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Apex Class')
 
-    def on_input(self, input): 
-        api_name, class_type = [x.strip() for x in input.split(',')]
-        if not check_apex_templates(get_merged_apex_templates("ApexClass"), { "api_name":api_name, "class_type":class_type }, "new_apex_class"):
-            return
-        options = {
-            'metadata_type'     : 'ApexClass',
-            'metadata_name'     : api_name,
-            'apex_class_type'   : class_type
-        }
-        mm.call('new_metadata', params=options) 
-
     def on_select_from_github_template(self, selection):
         if selection != -1:
             template_name = self.template_options[selection][0]
@@ -483,15 +472,22 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
                     self.github_template = t
                     break
 
-            sublime.active_window().show_input_panel("Apex Class Name", "MyClassName", self.finish_github_template_selection, None, None)
-             
-    def finish_github_template_selection(self, api_name):
-        if '.cls' in api_name:
-            api_name = api_name.replace('.cls', '')
+            sublime.active_window().show_input_panel(util.get_new_metadata_input_label(self.github_template), util.get_new_metadata_input_placeholders(self.github_template), self.finish_github_template_selection, None, None)
+
+    def finish_github_template_selection(self, input):
+        template_params = util.get_template_params(self.github_template)
+        input_list = [x.strip() for x in input.split(',')]
+        template_params_payload = {}
+        debug(template_params)
+        idx = 0
+        for tp in template_params:
+            template_params_payload[tp["name"]] = input_list[idx]
+            idx = idx + 1
+        debug(template_params)
         params = {
             'metadata_type'     : 'ApexClass',
-            'metadata_name'     : api_name,
-            'github_template'   : self.github_template
+            'github_template'   : self.github_template,
+            'params'            : template_params_payload
         }
         mm.call('new_metadata', params=params)
 
@@ -516,18 +512,6 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Apex Trigger')
 
-    def on_input(self, input):
-        api_name, sobject_name, class_type = [x.strip() for x in input.split(',')]
-        if not check_apex_templates(get_merged_apex_templates("ApexTrigger"), { "api_name":api_name, "sobject_name":sobject_name, "class_type":class_type }, "new_apex_trigger"):
-            return
-        options = {
-            'metadata_type'     : 'ApexTrigger',
-            'metadata_name'     : api_name,
-            'object_api_name'   : sobject_name,
-            'apex_class_type'   : class_type
-        }
-        mm.call('new_metadata', params=options) 
-
     def on_select_from_github_template(self, selection):
         if selection != -1:
             template_name = self.template_options[selection][0]
@@ -535,15 +519,22 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
                 if t["name"] == template_name:
                     self.github_template = t
                     break
-            sublime.active_window().show_input_panel("Apex Trigger Name, Trigger Object API Name", "MyTriggerName, Account", self.finish_github_template_selection, None, None)
-             
-    def finish_github_template_selection(self, api_name):
-        api_name, sobject_name = [x.strip() for x in api_name.split(',')]
+
+            sublime.active_window().show_input_panel(util.get_new_metadata_input_label(self.github_template), util.get_new_metadata_input_placeholders(self.github_template), self.finish_github_template_selection, None, None)
+
+    def finish_github_template_selection(self, input):
+        template_params = util.get_template_params(self.github_template)
+        input_list = [x.strip() for x in input.split(',')]
+        template_params_payload = {}
+        idx = 0
+        for tp in template_params:
+            template_params_payload[tp["name"]] = input_list[idx]
+            idx = idx + 1
+        debug(template_params)
         params = {
             'metadata_type'     : 'ApexTrigger',
-            'object_api_name'   : sobject_name,
-            'metadata_name'     : api_name,
-            'github_template'   : self.github_template
+            'github_template'   : self.github_template,
+            'params'            : template_params_payload
         }
         mm.call('new_metadata', params=params)
 
@@ -567,17 +558,6 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Visualforce Page')
 
-    def on_input(self, input): 
-        api_name, class_type = [x.strip() for x in input.split(',')]
-        if not check_apex_templates(get_merged_apex_templates("ApexPage"), { "api_name":api_name, "class_type":class_type }, "new_apex_page"):
-            return
-        options = {
-            'metadata_type'     : 'ApexPage',
-            'metadata_name'     : api_name,
-            'apex_class_type'   : class_type
-        }
-        mm.call('new_metadata', params=options) 
-
     def on_select_from_github_template(self, selection):
         if selection != -1:
             template_name = self.template_options[selection][0]
@@ -586,15 +566,21 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
                     self.github_template = t
                     break
 
-            sublime.active_window().show_input_panel("Visualforce Page Name", "MyVisualforcePageName", self.finish_github_template_selection, None, None)
+            sublime.active_window().show_input_panel(util.get_new_metadata_input_label(self.github_template), util.get_new_metadata_input_placeholders(self.github_template), self.finish_github_template_selection, None, None)
              
     def finish_github_template_selection(self, api_name):
-        if '.cls' in api_name:
-            api_name = api_name.replace('.page', '')
+        template_params = util.get_template_params(self.github_template)
+        input_list = [x.strip() for x in input.split(',')]
+        template_params_payload = {}
+        idx = 0
+        for tp in template_params:
+            template_params_payload[tp["name"]] = input_list[idx]
+            idx = idx + 1
+        debug(template_params)
         params = {
             'metadata_type'     : 'ApexPage',
-            'metadata_name'     : api_name,
-            'github_template'   : self.github_template
+            'github_template'   : self.github_template,
+            'params'            : template_params_payload
         }
         mm.call('new_metadata', params=params)
 
@@ -618,17 +604,6 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
         util.send_usage_statistics('New Visualforce Component')
 
-    def on_input(self, input): 
-        api_name, class_type = [x.strip() for x in input.split(',')]
-        if not check_apex_templates(get_merged_apex_templates("ApexComponent"), { "api_name":api_name, "class_type":class_type }, "new_apex_component"):
-            return
-        options = {
-            'metadata_type'     : 'ApexComponent',
-            'metadata_name'     : api_name,
-            'apex_class_type'   : class_type
-        }
-        mm.call('new_metadata', params=options) 
-
     def on_select_from_github_template(self, selection):
         if selection != -1:
             template_name = self.template_options[selection][0]
@@ -637,15 +612,21 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
                     self.github_template = t
                     break
 
-            sublime.active_window().show_input_panel("Visualforce Component Name", "MyComponentName", self.finish_github_template_selection, None, None)
-             
-    def finish_github_template_selection(self, api_name):
-        if '.cls' in api_name:
-            api_name = api_name.replace('.component', '')
+            sublime.active_window().show_input_panel(util.get_new_metadata_input_label(self.github_template), util.get_new_metadata_input_placeholders(self.github_template), self.finish_github_template_selection, None, None)
+
+    def finish_github_template_selection(self, input):
+        template_params = util.get_template_params(self.github_template)
+        input_list = [x.strip() for x in input.split(',')]
+        template_params_payload = {}
+        idx = 0
+        for tp in template_params:
+            template_params_payload[tp["name"]] = input_list[idx]
+            idx = idx + 1
+        debug(template_params)
         params = {
             'metadata_type'     : 'ApexComponent',
-            'metadata_name'     : api_name,
-            'github_template'   : self.github_template
+            'github_template'   : self.github_template,
+            'params'            : template_params_payload
         }
         mm.call('new_metadata', params=params)
 

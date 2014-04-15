@@ -13,7 +13,7 @@ dict = {
 def get_message(params, operation):
     message = 'Handling requested operation...'
     if operation == 'new_metadata':
-        message = 'Creating New '+params['metadata_type']+': ' + params['metadata_name']
+        message = 'Creating New '+params['metadata_type']+': ' + params['params']['api_name']
     elif operation == 'synchronize':
         if 'files' in params and len(params['files'])>0:
             kind = params['files'][0]

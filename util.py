@@ -356,6 +356,30 @@ def mark_uncovered_lines(view, lines, icon="bookmark", mark_type="no_apex_covera
         regions.append(view.line(view.text_point(line-1, 0)))
     view.add_regions(mark_type, regions, "invalid.illegal", icon, sublime.DRAW_EMPTY_AS_OVERWRITE)
 
+def get_template_params(github_template):
+    return github_template["params"]
+
+def get_new_metadata_input_label(github_template):
+    if "params" in github_template:
+        params = []
+        for param in github_template["params"]:
+            params.append(param["description"])
+        label = ", ".join(params)
+    else:
+        label = ""
+    return label
+
+def get_new_metadata_input_placeholders(github_template):
+    if "params" in github_template:
+        placeholders = []
+        for param in github_template["params"]:
+            if "default" in param:
+                placeholders.append(param["default"])
+        label = ", ".join(placeholders)
+    else:
+        label = "Default"
+    return label
+
 def clear_marked_line_numbers(view, mark_type="compile_issue"):
     try:
         sublime.set_timeout(lambda: view.erase_regions(mark_type), 100)

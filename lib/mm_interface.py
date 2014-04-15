@@ -212,11 +212,9 @@ class MavensMateTerminalCall(threading.Thread):
             # unique payload parameters
             payload = {
                 'project_name'                  : self.project_name,
-                'api_name'                      : self.params.get('metadata_name', None),
                 'metadata_type'                 : self.params.get('metadata_type', None),
-                'apex_trigger_object_api_name'  : self.params.get('object_api_name', None),
-                'apex_class_type'               : self.params.get('apex_class_type', None),
-                'github_template'               : self.params.get('github_template', None)
+                'github_template'               : self.params.get('github_template', None),
+                'params'                        : self.params.get('params', [])
             }
             workspace = util.get_project_settings().get("workspace")
             if workspace != None:
