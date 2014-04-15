@@ -1937,6 +1937,8 @@ class ScrubLogCommand(sublime_plugin.WindowCommand):
         for file_line in lines:
             if '|USER_DEBUG|' in file_line and '|DEBUG|' in file_line:
                 new_lines.append(file_line)
+            elif '|EXCEPTION_THROWN|' in file_line or '|FATAL_ERROR|' in file_line:
+                new_lines.append(file_line)
 
         string = "\n".join(new_lines)
         new_view = self.window.new_file()

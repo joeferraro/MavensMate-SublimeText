@@ -23,7 +23,19 @@
             <string>\|["USER_DEBUG"]+\|</string>
             <key>name</key>
             <string>string</string>
-        </dict> 
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\|["EXCEPTION_THROWN"]+\|</string>
+            <key>name</key>
+            <string>support.type.exception</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>\|["FATAL_ERROR"]+\|</string>
+            <key>name</key>
+            <string>support.type.exception</string>
+        </dict>  
         <dict>
             <key>match</key>
             <string>\|[A-Z,_]+\|</string>
