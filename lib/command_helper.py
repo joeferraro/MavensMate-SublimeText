@@ -89,4 +89,6 @@ def get_message(params, operation):
         message = 'Setting up logs for debug users (logs can be configured in project/config/.debug)'
     elif operation == 'run_apex_script':
         message = 'Running Apex script (logs can be found in project/apex-scripts/log)'
+    elif operation == 'run_all_tests':
+        message = 'Running all tests...'
     return message 

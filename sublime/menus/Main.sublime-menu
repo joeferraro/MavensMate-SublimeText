@@ -130,6 +130,10 @@
 		     			"command": "run_async_apex_tests"
 		     		},
 		     		{
+		     			"caption": "Run All Tests",
+		     			"command": "run_all_tests_async"
+		     		},
+		     		{
 		     		  	"caption": "Get Apex Code Coverage For This Apex Class",
 		     		  	"command": "get_apex_code_coverage"
 		     		},

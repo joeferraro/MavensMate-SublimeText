@@ -8,6 +8,10 @@
     "command": "scrub_log"
   },
   {
+    "caption": "MavensMate: Run All Tests",
+    "command": "run_all_tests_async"
+  },
+  {
     "caption": "MavensMate: Hide Coverage Indicators For This Class",
     "command": "hide_coverage"
   },

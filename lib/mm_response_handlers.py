@@ -44,7 +44,7 @@ class MMResultHandler(object):
         try:
             if self.operation == 'compile' or self.operation == 'compile_project':
                 self.__handle_compile_response()
-            elif self.operation == "test_async":
+            elif self.operation == "test_async" or self.operation == "run_all_tests":
                 self.__handle_test_result()
             elif self.operation == "run_apex_script":
                 self.__handle_apex_script_result()
@@ -293,15 +293,29 @@ class MMResultHandler(object):
                 apex_names.append(record["ApexClassOrTriggerName"])
                 new_dict[record["ApexClassOrTriggerName"]] = record
             apex_names.sort()
-            msg = ""
+            cls_msg = "Apex Classes:\n"
+            trg_msg = "Apex Triggers:\n"
             for apex_name in apex_names:
+                msg = ''
                 record = new_dict[apex_name]
-                yaml_key = apex_name
+                coverage_key = ''
                 if record["percentCovered"] == 0:
-                    yaml_key = '!! '+apex_name
+                    coverage_key = ' !!'
                 elif record["percentCovered"] < 75:
-                    yaml_key = '! '+apex_name
-                msg += yaml_key+ ": "+ str(record["percentCovered"]) + "% ("+str(record["NumLinesCovered"])+"/"+str(record["NumLinesCovered"]+record["NumLinesUncovered"])+")\n"            
+                    coverage_key = ' !'
+                if record["ApexClassOrTrigger"] == "ApexClass":
+                    apex_name += '.cls'
+                else:
+                    apex_name += '.trigger'
+                coverage_bar = '[{0}{1}] {2}%'.format('='*(round(record["percentCovered"]/10)), ' '*(10-(round(record["percentCovered"]/10))), record["percentCovered"])
+                msg += '   - '+apex_name+ ':'
+                msg += '\n'
+                msg += '      - coverage: '+coverage_bar + "\t("+str(record["NumLinesCovered"])+"/"+str(record["NumLinesCovered"]+record["NumLinesUncovered"])+")"+coverage_key 
+                msg += '\n'
+                if record["ApexClassOrTrigger"] == "ApexClass":
+                    cls_msg += msg
+                else:
+                    trg_msg += msg
             self.__print_to_panel('Success')
             new_view = self.thread.window.new_file()
             new_view.set_scratch(True)
@@ -310,7 +324,7 @@ class MMResultHandler(object):
                 new_view.set_syntax_file(os.path.join("Packages","YAML","YAML.tmLanguage"))
             else:
                 new_view.set_syntax_file(os.path.join("Packages/YAML/YAML.tmLanguage"))
-            sublime.set_timeout(new_view.run_command('generic_text', {'text': msg }), 1)
+            sublime.set_timeout(new_view.run_command('generic_text', {'text': cls_msg+trg_msg }), 1)
 
     def __print_result(self):
         msg = ''
@@ -431,5 +445,58 @@ class MMResultHandler(object):
                 self.printer.scroll_to_bottom()
             else:
                 self.__print_to_panel(json.dumps(self.result))
-        else:
-            pass #TODO
+        elif len(self.result) > 1:
+            #run multiple tests
+            response_string = ''
+            for res in self.result:
+                if 'detailed_results' in res:
+                    all_tests_passed = True
+                    for r in res['detailed_results']:
+                        if r["Outcome"] != "Pass":
+                            all_tests_passed = False
+                            break
+
+                    if all_tests_passed:
+                        response_string += res['ApexClass']['Name']+':\n\tTEST RESULT: PASS'
+                    else:
+                        response_string += res['ApexClass']['Name']+':\n\tTEST RESULT: FAIL'
+                    
+                    for r in res['detailed_results']:
+                        if r["Outcome"] == "Pass":
+                            pass #dont need to write anything here...
+                        else:
+                            response_string += '\n\n'
+                            response_string += "\t METHOD RESULT "
+                            response_string += "\t\n"
+                            response_string += "\t{0} : {1}".format(r["MethodName"], r["Outcome"])
+                            
+                            if "StackTrace" in r and r["StackTrace"] != None:
+                                response_string += "\n\n"
+                                response_string += "\t STACK TRACE "
+                                response_string += "\t\n"
+                                response_string += "\t"+r["StackTrace"].replace("\n","\t\n")
+                            
+                            if "Message" in r and r["Message"] != None:
+                                response_string += "\n\n"
+                                response_string += "\t MESSAGE "
+                                response_string += "\t\n"
+                                response_string += "\t"+r["Message"].replace("\n","\t\n")
+                                response_string += "\n"
+                response_string += "\n\n"
+            #self.__print_to_panel(response_string)
+            #self.printer.scroll_to_bottom()
+
+            self.__print_to_panel('Success')
+            new_view = self.thread.window.new_file()
+            new_view.set_scratch(True)
+            new_view.set_name("Run All Tests Result")
+            if "linux" in sys.platform or "darwin" in sys.platform:
+                new_view.set_syntax_file(os.path.join("Packages","YAML","YAML.tmLanguage"))
+                new_view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","panel","MavensMate.hidden-tmLanguage"))
+            else:
+                new_view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/panel/MavensMate.hidden-tmLanguage"))
+
+            sublime.set_timeout(new_view.run_command('generic_text', {'text': response_string }), 1)
+
+        elif 'body' in self.result:
+            self.__print_to_panel(json.dumps(self.result['body']))

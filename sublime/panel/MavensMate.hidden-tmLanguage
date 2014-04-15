@@ -26,6 +26,18 @@
         </dict>
         <dict>
             <key>match</key>
+            <string>TEST RESULT: PASS</string>
+            <key>name</key>
+            <string>markup.inserted</string>
+        </dict>
+        <dict>
+            <key>match</key>
+            <string>TEST RESULT: FAIL</string>
+            <key>name</key>
+            <string>invalid</string>
+        </dict>
+        <dict>
+            <key>match</key>
             <string>(\sMETHOD RESULT\s|\sSTACK TRACE\s|\sMESSAGE\s)</string>
             <key>name</key>
             <string>markup.raw</string>

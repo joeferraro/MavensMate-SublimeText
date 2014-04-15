@@ -275,6 +275,14 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
                     return True
         return False
 
+class RunAllTestsAsyncCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        mm.call('run_all_tests', context=self)
+        util.send_usage_statistics('Run All Tests')
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 #runs apex unit tests using the async api
 class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
     def run(self):
