@@ -41,30 +41,34 @@ class MMResultHandler(object):
 
     def execute(self):
         #describe_object
-        try:
-            if self.operation == 'compile' or self.operation == 'compile_project':
-                self.__handle_compile_response()
-            elif self.operation == "test_async" or self.operation == "run_all_tests":
-                self.__handle_test_result()
-            elif self.operation == "run_apex_script":
-                self.__handle_apex_script_result()
-            elif self.operation == "new_metadata":
-                self.__handle_new_metadata()
-            elif self.operation == "get_coverage":
-                self.__handle_coverage_result()
-            elif self.operation == "coverage_report":
-                self.__handle_coverage_report_result()
-            elif self.operation == "get_org_wide_test_coverage":
-                self.__handle_org_wide_coverage_result()
-            else:
-                self.__handle_generic_command_result()
-        except:
-            self.__print_result()
+        if self.result == None:
+            self.__print_to_panel("[OPERATION FAILED]: No response from mm. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate")
+        else:
+            try:
+                if self.operation == 'compile' or self.operation == 'compile_project':
+                    self.__handle_compile_response()
+                elif self.operation == "test_async" or self.operation == "run_all_tests":
+                    self.__handle_test_result()
+                elif self.operation == "run_apex_script":
+                    self.__handle_apex_script_result()
+                elif self.operation == "new_metadata":
+                    self.__handle_new_metadata()
+                elif self.operation == "get_coverage":
+                    self.__handle_coverage_result()
+                elif self.operation == "coverage_report":
+                    self.__handle_coverage_report_result()
+                elif self.operation == "get_org_wide_test_coverage":
+                    self.__handle_org_wide_coverage_result()
+                else:
+                    self.__handle_generic_command_result()
+            except:
+                self.__print_result()
 
-        self.__finish()
+            self.__finish()
 
     def __handle_compile_response(self, **kwargs):  
-        #print("HANDLING COMPILE!")
+        debug("HANDLING COMPILE!")
+        debug(self.result)
 
         #diffing with server
         if 'actions' in self.result and util.to_bool(self.result['success']) == False:
