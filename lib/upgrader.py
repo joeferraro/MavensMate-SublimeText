@@ -131,7 +131,7 @@ class AutomaticUpgrader(threading.Thread):
                     plist = plistlib.readPlist(plist_path)
                     version_number = plist['CFBundleVersion']
                     installed_version_int = int(float(version_number.replace(".", "")))
-                    if installed_version_int <= 382:
+                    if installed_version_int <= 383:
                         sublime.message_dialog("A new version of MavensMate.app is available and we strongly encourage you to update. If you are running 0.38.0, you likely need to manually download and re-install from mavensmate.com.")
 
         except BaseException as e:
