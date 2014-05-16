@@ -62,7 +62,7 @@ def package_check():
     #ensure user settings are installed
     try:
         if not os.path.exists(os.path.join(packages_path,"User","mavensmate.sublime-settings")):
-            shcopyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
+            shutil.copyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
     except:
         pass
 
@@ -74,6 +74,8 @@ def is_project_legacy(window=None):
     if settings.get('mm_mass_index_apex_symbols', True):
         if not os.path.exists(os.path.join(mm_project_directory(window),"config",".symbols")):
             return True
+    if not os.path.exists(os.path.join(mm_project_directory(window),get_project_name()+'.sublime-settings')):
+        return True
     if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
         return True
     elif os.path.exists(os.path.join(mm_project_directory(window),"config",".settings")):
