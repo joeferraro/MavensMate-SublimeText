@@ -259,6 +259,10 @@
 	         	"children":
 	         	[
 					{ 
+						"command": "open_project_settings", 
+						"caption": "Project" 
+					},
+					{ 
 						"command": "open_file", 
 						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
 						"caption": "User" 
