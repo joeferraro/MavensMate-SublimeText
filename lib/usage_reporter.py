@@ -12,6 +12,10 @@ try:
     import urllib
 except ImportError:
     import urllib.request as urllib
+try:
+    from uuid import getnode as get_mac
+except:
+    pass
 
 
 class UsageReporter(threading.Thread):
@@ -52,13 +56,16 @@ class UsageReporter(threading.Thread):
 
             if ip_address == None:
                 ip_address = 'unknown'        
-
+            try:
+                mac = str(get_mac())
+            except:
+                mac = 'unknown'
             if 'linux' in sys.platform:
-                b = 'foo=bar&ip_address='+ip_address+'&action='+self.action+'&platform='+sys.platform+'&version='+current_version
+                b = 'foo=bar&ip_address='+ip_address+'&action='+self.action+'&platform='+sys.platform+'&version='+current_version+'&mac_address='+mac
                 req = os.popen("curl https://mavensmate.appspot.com/usage -d='"+b+"'").read()
                 self.response = req
             else:
-                b = 'version='+current_version+'&ip_address='+ip_address.decode('utf-8')+'&action='+self.action+'&mm_version='+mm_version+'&platform='+sys.platform
+                b = 'mac_address='+mac+'&version='+current_version+'&ip_address='+ip_address.decode('utf-8')+'&action='+self.action+'&mm_version='+mm_version+'&platform='+sys.platform
                 b = b.encode('utf-8')
                 #post to usage servlet
                 headers = { "Content-Type":"application/x-www-form-urlencoded" }
