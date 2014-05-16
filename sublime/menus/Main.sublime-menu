@@ -130,24 +130,24 @@
 		     			"command": "run_async_apex_tests"
 		     		},
 		     		{
-		     			"caption": "Run All Tests",
+		     			"caption": "Run All Tests (beta)",
 		     			"command": "run_all_tests_async"
 		     		},
 		     		{
-		     		  	"caption": "Get Apex Code Coverage For This Apex Class",
+		     		  	"caption": "Show Apex Code Coverage For This Apex Class",
 		     		  	"command": "get_apex_code_coverage"
-		     		},
-		     		{
-		     			"caption": "Get Apex Test Coverage Report",
-		     			"command": "generate_apex_test_coverage_report"
-		     		},
-		     		{
-		     			"caption": "Get Org Wide Test Coverage",
-		     			"command": "get_org_wide_test_coverage"
 		     		},
 		     		{
 		     			"caption": "Hide Coverage Indicators For This Class",
 		     			"command": "hide_coverage"
+		     		},
+		     		{
+		     			"caption": "Generate Apex Test Coverage Report",
+		     			"command": "generate_apex_test_coverage_report"
+		     		},
+		     		{
+		     			"caption": "Show Org Wide Test Coverage",
+		     			"command": "get_org_wide_test_coverage"
 		     		}
 	         	]
 	     	},

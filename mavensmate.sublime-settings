@@ -212,5 +212,5 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_use_legacy_test_ui" : true,
 
 	//if true, a log will be generated for every test run during "run all tests" command
-	"mm_generate_logs_during_run_all_tests" : false
+	"mm_download_logs_during_run_all_tests" : false,
 }
