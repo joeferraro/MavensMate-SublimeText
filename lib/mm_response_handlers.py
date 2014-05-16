@@ -141,7 +141,12 @@ class MMResultHandler(object):
                                     util.mark_line_numbers(self.thread.view, [line], "bookmark")
                                     self.__print_to_panel("[COMPILE FAILED]: ({0}) {1} {2}".format(file_base_name, problem, line_col))
                     elif "ErrorMsg" in self.result:
-                        self.__print_to_panel("[COMPILE FAILED]: {0}".format(self.result['ErrorMsg']))
+                        msg = ''
+                        if 'object has been modified on server' in self.result['ErrorMsg']:
+                            msg = self.result['ErrorMsg'] + '. You may try resetting your MetadataContainer to clear this error: MavensMate > Utilities > Reset MetadataContainer.'
+                        else:
+                            msg = self.result['ErrorMsg']
+                        self.__print_to_panel("[COMPILE FAILED]: {0}".format(msg))
 
                 elif 'success' in self.result and util.to_bool(self.result['success']) == False and (('messages' in self.result or 'Messages' in self.result) or 'details' in self.result):
                     if 'details' in self.result and 'componentFailures' in self.result['details']:
