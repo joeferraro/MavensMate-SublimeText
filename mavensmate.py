@@ -576,7 +576,7 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
 
             sublime.active_window().show_input_panel(util.get_new_metadata_input_label(self.github_template), util.get_new_metadata_input_placeholders(self.github_template), self.finish_github_template_selection, None, None)
              
-    def finish_github_template_selection(self, api_name):
+    def finish_github_template_selection(self, input):
         template_params = util.get_template_params(self.github_template)
         input_list = [x.strip() for x in input.split(',')]
         template_params_payload = {}
