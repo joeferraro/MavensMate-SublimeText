@@ -76,19 +76,19 @@ class MMResultHandler(object):
             diff_merge_settings = config.settings.get('mm_diff_server_conflicts', False)
             if diff_merge_settings:
                 if sublime.ok_cancel_dialog(self.result["body"], self.result["actions"][0].title()):
-                    self.__print_to_panel("Diffing with server", "")
+                    self.__print_to_panel("Diffing with server", "general")
                     th = MavensMateDiffThread(self.thread.window, self.thread.view, self.result['tmp_file_path'])
                     th.start()
                 else:
-                    self.__print_to_panel(self.result["actions"][1].title(), "")
+                    self.__print_to_panel(self.result["actions"][1].title(), "general")
             else:
                 if sublime.ok_cancel_dialog(self.result["body"], "Overwrite Server Copy"):
-                    self.__print_to_panel("Overwriting server copy", "")
+                    self.__print_to_panel("Overwriting server copy", "general")
                     self.thread.params['action'] = 'overwrite'
                     if kwargs.get("callback", None) != None:
                         sublime.set_timeout(lambda: self.callback('compile', params=self.thread.params), 100)   
                 else:
-                    self.__print_to_panel(self.result["actions"][1].title(), "")
+                    self.__print_to_panel(self.result["actions"][1].title(), "general")
         else:
             try:
                 if 'State' in self.result and self.result['State'] == 'Error' and 'ErrorMsg' in self.result:
