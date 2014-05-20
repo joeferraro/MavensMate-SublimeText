@@ -8,6 +8,7 @@ import sys
 import time
 import html.parser
 import re
+from .sound import Sound
 from .threads import ThreadTracker
 from .threads import ThreadProgress
 from .threads import PanelThreadProgress
@@ -42,7 +43,7 @@ class MMResultHandler(object):
     def execute(self):
         #describe_object
         if self.result == None:
-            self.__print_to_panel("[OPERATION FAILED]: No response from mm. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate")
+            self.__print_to_panel("[OPERATION FAILED]: No response from mm. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate", "failure")
         else:
             try:
                 if self.operation == 'compile' or self.operation == 'compile_project':
@@ -75,23 +76,23 @@ class MMResultHandler(object):
             diff_merge_settings = config.settings.get('mm_diff_server_conflicts', False)
             if diff_merge_settings:
                 if sublime.ok_cancel_dialog(self.result["body"], self.result["actions"][0].title()):
-                    self.__print_to_panel("Diffing with server")
+                    self.__print_to_panel("Diffing with server", "general")
                     th = MavensMateDiffThread(self.thread.window, self.thread.view, self.result['tmp_file_path'])
                     th.start()
                 else:
-                    self.__print_to_panel(self.result["actions"][1].title())
+                    self.__print_to_panel(self.result["actions"][1].title(), "general")
             else:
                 if sublime.ok_cancel_dialog(self.result["body"], "Overwrite Server Copy"):
-                    self.__print_to_panel("Overwriting server copy")
+                    self.__print_to_panel("Overwriting server copy", "general")
                     self.thread.params['action'] = 'overwrite'
                     if kwargs.get("callback", None) != None:
                         sublime.set_timeout(lambda: self.callback('compile', params=self.thread.params), 100)   
                 else:
-                    self.__print_to_panel(self.result["actions"][1].title())
+                    self.__print_to_panel(self.result["actions"][1].title(), "general")
         else:
             try:
                 if 'State' in self.result and self.result['State'] == 'Error' and 'ErrorMsg' in self.result:
-                    self.__print_to_panel("[OPERATION FAILED]: {0}\n\n{1}".format(self.result['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\' or cleaning your project.'))
+                    self.__print_to_panel("[OPERATION FAILED]: {0}\n\n{1}".format(self.result['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\' or cleaning your project.'), "failure")
                 elif 'State' in self.result and self.result['State'] == 'Failed' and 'CompilerErrors' in self.result:
                     #here we're parsing a response from the tooling endpoint
                     errors = json.loads(self.result['CompilerErrors'])
@@ -136,17 +137,17 @@ class MMResultHandler(object):
                                     msg += "\n\nThe Tooling API has failed to compile a separate element of metadata in your current MetadataContainer. You can either:"
                                     msg += "\n1. Fix the compilation error on "+file_base_name
                                     msg += "\n2. Reset your MetadataContainer to clear this error: MavensMate > Utilities > Reset MetadataContainer"
-                                    self.__print_to_panel(msg)
+                                    self.__print_to_panel(msg, "failure")
                                 elif current_active_view_file_name == file_base_name:
                                     util.mark_line_numbers(self.thread.view, [line], "bookmark")
-                                    self.__print_to_panel("[COMPILE FAILED]: ({0}) {1} {2}".format(file_base_name, problem, line_col))
+                                    self.__print_to_panel("[COMPILE FAILED]: ({0}) {1} {2}".format(file_base_name, problem, line_col), "failure")
                     elif "ErrorMsg" in self.result:
                         msg = ''
                         if 'object has been modified on server' in self.result['ErrorMsg']:
                             msg = self.result['ErrorMsg'] + '. You may try resetting your MetadataContainer to clear this error: MavensMate > Utilities > Reset MetadataContainer.'
                         else:
                             msg = self.result['ErrorMsg']
-                        self.__print_to_panel("[COMPILE FAILED]: {0}".format(msg))
+                        self.__print_to_panel("[COMPILE FAILED]: {0}".format(msg), "failure")
 
                 elif 'success' in self.result and util.to_bool(self.result['success']) == False and (('messages' in self.result or 'Messages' in self.result) or 'details' in self.result):
                     if 'details' in self.result and 'componentFailures' in self.result['details']:
@@ -177,7 +178,7 @@ class MMResultHandler(object):
                                 msg = ' [DEPLOYMENT FAILED]:'
                                 for f in failures: 
                                     msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
-                                    self.__print_to_panel(msg)
+                                    self.__print_to_panel(msg, "failure")
                         elif 'run_test_result' in self.result:
                             if 'run_test_result' in self.result and 'failures' in self.result['run_test_result'] and type( self.result['run_test_result']['failures'] ) == list:
                                 failures = self.result['run_test_result']['failures']
@@ -188,7 +189,7 @@ class MMResultHandler(object):
                                 msg = ' [DEPLOYMENT FAILED]:'
                                 for f in failures: 
                                     msg += f['name'] + ', ' + f['methodName'] + ': ' + f['message'] + '\n'
-                                self.__print_to_panel(msg)
+                                self.__print_to_panel(msg, "failure")
                     else: #compile error, build error message
                         msg = ""
                         for m in messages:
@@ -205,7 +206,7 @@ class MMResultHandler(object):
                                 filename = re.sub(r'unpackaged/[A-Z,a-z]*/', '', filename)
                                 msg += filename + ': ' + m['problem'] + line_col + "\n"
 
-                        self.__print_to_panel('[DEPLOYMENT FAILED]: ' + msg)
+                        self.__print_to_panel('[DEPLOYMENT FAILED]: ' + msg, "failure")
                         
                 elif 'success' in self.result and self.result["success"] == False and 'line' in self.result:
                     #this is a response from the apex compile api
@@ -231,21 +232,21 @@ class MMResultHandler(object):
                         view.sel().add(sublime.Region(pt))
                         view.show(pt)
 
-                        self.__print_to_panel('[COMPILE FAILED]: ' + self.result['problem'] + line_col)
+                        self.__print_to_panel('[COMPILE FAILED]: ' + self.result['problem'] + line_col, "failure")
                 elif 'success' in self.result and util.to_bool(self.result['success']) == True and 'Messages' in self.result and len(self.result['Messages']) > 0:
                     msg = ' [Operation completed Successfully - With Compile Errors]\n'
                     msg += '[COMPILE ERRORS] - Count:\n'
                     for m in self.result['Messages']:
                         msg += ' FileName: ' + m['fileName'] + ': ' + m['problem'] + 'Line: ' + m['lineNumber']
-                    self.__print_to_panel(msg)
+                    self.__print_to_panel(msg, "failure")
                 elif 'success' in self.result and util.to_bool(self.result['success']) == True:
-                    self.__print_to_panel("Success")
+                    self.__print_to_panel("Success", "success")
                 elif 'success' in self.result and util.to_bool(self.result['success']) == False and 'body' in self.result:
-                    self.__print_to_panel('[OPERATION FAILED]: ' + self.result['body'])
+                    self.__print_to_panel('[OPERATION FAILED]: ' + self.result['body'], "failure")
                 elif 'success' in self.result and util.to_bool(self.result['success']) == False:
-                    self.__print_to_panel('[OPERATION FAILED]')
+                    self.__print_to_panel('[OPERATION FAILED]', "failure")
                 else:
-                    self.__print_to_panel("Success")
+                    self.__print_to_panel("Success", "success")
             except Exception as e:
                 debug(e)
                 debug(type(self.result))
@@ -263,13 +264,13 @@ class MMResultHandler(object):
                         msg = self.result
                 else:
                     msg = "Check Sublime Text console for error and report issue to MavensMate-SublimeText GitHub project."
-                self.__print_to_panel('[OPERATION FAILED]: ' + msg)
+                self.__print_to_panel('[OPERATION FAILED]: ' + msg, "failure")
 
     def __handle_coverage_result(self):
         if self.result == []:
-            self.__print_to_panel("No coverage information for the requested Apex Class")
+            self.__print_to_panel("No coverage information for the requested Apex Class", "general")
         elif 'records' in self.result and self.result["records"] == []:
-            self.__print_to_panel("No coverage information for the requested Apex Class")
+            self.__print_to_panel("No coverage information for the requested Apex Class", "general")
         else:
             if 'records' in self.result:
                 self.result = self.result['records']
@@ -279,20 +280,20 @@ class MMResultHandler(object):
                 record = self.result
             msg = str(record["percentCovered"]) + "%"
             util.mark_uncovered_lines(self.thread.view, record["Coverage"]["uncoveredLines"])
-            self.__print_to_panel('[PERCENT COVERED]: ' + msg)
+            self.__print_to_panel('[PERCENT COVERED]: ' + msg, "general")
  
     def __handle_org_wide_coverage_result(self):
         if 'PercentCovered' not in self.result:
-            self.__print_to_panel("No coverage information available")
+            self.__print_to_panel("No coverage information available", "general")
         else:
             msg = str(self.result["PercentCovered"]) + "%"
-            self.__print_to_panel('[ORG-WIDE TEST COVERAGE]: ' + msg)
+            self.__print_to_panel('[ORG-WIDE TEST COVERAGE]: ' + msg, "general")
 
     def __handle_coverage_report_result(self):
         if self.result == []:
-            self.__print_to_panel("No coverage information available")
+            self.__print_to_panel("No coverage information available", "general")
         elif 'records' in self.result and self.result["records"] == []:
-            self.__print_to_panel("No coverage information available")
+            self.__print_to_panel("No coverage information available", "general")
         else:
             if 'records' in self.result:
                 self.result = self.result['records']
@@ -325,7 +326,7 @@ class MMResultHandler(object):
                     cls_msg += msg
                 else:
                     trg_msg += msg
-            self.__print_to_panel('Success')
+            self.__print_to_panel('Success', "general")
             new_view = self.thread.window.new_file()
             new_view.set_scratch(True)
             new_view.set_name("Apex Code Coverage")
@@ -346,10 +347,11 @@ class MMResultHandler(object):
             msg += '[OPERATION FAILED]: Whoops, unable to parse the response. Please enable logging (http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging) and post relevant log(s) to a new issue at https://github.com/joeferraro/MavensMate-SublimeText\n'
             msg += '[RESPONSE FROM MAVENSMATE]: '+json.dumps(self.result, indent=4)
         #debug(self.result)
-        self.__print_to_panel(msg)
+        self.__print_to_panel(msg, "failure")
 
-    def __print_to_panel(self, msg):
+    def __print_to_panel(self, msg, soundType):
         self.printer.panel.run_command('write_operation_status', {'text': msg, 'region': self.__get_print_region() })
+        Sound.play( soundType )
 
     def __get_print_region(self):
         return [self.status_region.end(), self.status_region.end()+10]  
@@ -385,10 +387,10 @@ class MMResultHandler(object):
 
     def __handle_generic_command_result(self):
         if self.result["success"] == True:
-            self.__print_to_panel("Success")
+            self.__print_to_panel("Success", "general")
         elif self.result["success"] == False:
             message = "[OPERATION FAILED]: "+self.result["body"]
-            self.__print_to_panel(message)
+            self.__print_to_panel(message, "failure")
         try:
             if self.thread.alt_callback != None:
                 self.thread.alt_callback(self.result["body"])
@@ -397,7 +399,7 @@ class MMResultHandler(object):
 
     def __handle_apex_script_result(self):
         if self.result["success"] == True and self.result["compiled"] == True:
-            self.__print_to_panel("Success")
+            self.__print_to_panel("Success", "success")
             self.thread.window.open_file(self.result["log_location"], sublime.TRANSIENT)
         elif self.result["success"] == False:
             message = "[OPERATION FAILED]: "
@@ -407,7 +409,7 @@ class MMResultHandler(object):
                 message += self.result["exceptionMessage"] + "\n"
             if "exceptionStackTrace" in self.result and self.result["exceptionStackTrace"] != None:
                 message += self.result["exceptionStackTrace"] + "\n"
-            self.__print_to_panel(message)
+            self.__print_to_panel(message, "failure")
 
     def __handle_test_result(self):
         responses = []
@@ -450,10 +452,10 @@ class MMResultHandler(object):
                         #responses.append("{0} | {1} | {2} | {3}\n".format(r["MethodName"], r["Outcome"], r["StackTrace"], r["Message"]))
                         responses.append(rstring)
                 response_string += "\n\n".join(responses)
-                self.__print_to_panel(response_string)
+                self.__print_to_panel(response_string, "general")
                 self.printer.scroll_to_bottom()
             else:
-                self.__print_to_panel(json.dumps(self.result))
+                self.__print_to_panel(json.dumps(self.result), "general")
         elif len(self.result) > 1:
             #run multiple tests
             response_string = ''
@@ -492,10 +494,10 @@ class MMResultHandler(object):
                                 response_string += "\t"+r["Message"].replace("\n","\t\n")
                                 response_string += "\n"
                 response_string += "\n\n"
-            #self.__print_to_panel(response_string)
+            #self.__print_to_panel(response_string, "general")
             #self.printer.scroll_to_bottom()
 
-            self.__print_to_panel('Success')
+            self.__print_to_panel('Success', "general")
             new_view = self.thread.window.new_file()
             new_view.set_scratch(True)
             new_view.set_name("Run All Tests Result")
@@ -508,4 +510,4 @@ class MMResultHandler(object):
             sublime.set_timeout(new_view.run_command('generic_text', {'text': response_string }), 1)
 
         elif 'body' in self.result:
-            self.__print_to_panel(json.dumps(self.result['body']))
+            self.__print_to_panel(json.dumps(self.result['body']), "general")
