@@ -22,7 +22,7 @@
             <string>\b(?i:package|trigger|class|interface)\b</string>
             <key>name</key>
             <string>storage.type.apex</string>
-        </dict>            
+        </dict>
 		<dict>
 			<key>captures</key>
 			<dict>
@@ -797,7 +797,7 @@
 				</dict>
 				<dict>
 				    <key>match</key>
-				    <string>\b(?i:insert|update|delete)\b</string>
+				    <string>\b(?i:insert|upsert|update|delete)\b</string>
 				    <key>name</key>
 				    <string>keyword.control.dml.apex</string>
 				</dict>
@@ -806,7 +806,7 @@
 				    <string>\b(?i:webservice|testmethod)\b</string>
 				    <key>name</key>
 				    <string>keyword.control.annotation.apex</string>
-				</dict>    
+				</dict>
 				<dict>
 					<key>match</key>
 					<string>\b(instanceof)\b</string>
