@@ -215,5 +215,18 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_download_logs_during_run_all_tests" : false,
 
 	//timeout (in seconds) for calls to the Salesforce.com servers
-	"mm_timeout" : 10
+	"mm_timeout" : 10,
+	//global switch; set to play sounds on MM events, such as compile successes/failures,
+	//file refreshes, code coverage updates etc
+	"mm_play_sounds" : true,
+
+	//set paths and events that should have sounds for different types of notifications; if empty/absent,
+	//then default will be used. Windows users should use double backslash for path: \\
+	//only .wav files allowed
+	"mm_play_general_sounds" : true,
+	"mm_play_success_sounds" : true,
+	"mm_play_failure_sounds" : true,
+	"mm_general_sound_path" : "",
+	"mm_success_sound_path" : "",
+	"mm_failure_sound_path" : ""
 }
