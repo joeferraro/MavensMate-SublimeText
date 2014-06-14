@@ -95,7 +95,9 @@ def plugin_loaded():
     config.settings = settings
     config.merge_settings = merge_settings
     util.package_check()
-    util.start_mavensmate_app()  
+    if settings.get('mm_start_app_on_st_startup', True):
+        util.start_mavensmate_app()
+
     util.check_for_updates()
     util.send_usage_statistics('Startup')
 
