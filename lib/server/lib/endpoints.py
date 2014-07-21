@@ -438,6 +438,7 @@ mappings = {
     '/metadata/list'            : { 'GET'   : metadata_list_request },
     '/metadata/list/async'      : { 'GET'   : metadata_list_request_async },
     '/github/connect'           : { 'POST'  : connect_to_github },
-    '/generic'                  : { 'POST'  : generic_endpoint },
-    '/generic/async'            : { 'POST'  : generic_async_endpoint }
+    '/generic'                  : { 'GET'   : generic_endpoint, 'POST' : generic_endpoint },
+    '/generic/async'            : { 'GET'   : generic_async_endpoint, 'POST' : generic_async_endpoint }
+
 }
