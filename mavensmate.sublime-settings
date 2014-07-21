@@ -215,5 +215,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_download_logs_during_run_all_tests" : false,
 
 	//timeout (in seconds) for calls to the Salesforce.com servers
-	"mm_timeout" : 10
+	"mm_timeout" : 10,
+
+	//*BETA* if true, MavensMate will compare the state of the destination org(s) before deployment
+	"mm_compare_before_deployment" : true
 }
