@@ -68,7 +68,7 @@ def package_check():
 
 def is_project_legacy(window=None):
     settings = sublime.load_settings('mavensmate.sublime-settings')
-    if not settings.get('mm_legacy_project_check', True): #if user wishes to skip legacy project check, then never return legacy flag
+    if settings.get('mm_skip_legacy_check', False): #if user wishes to skip legacy project check, then never return legacy flag
         return False
     if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
