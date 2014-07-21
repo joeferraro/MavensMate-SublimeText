@@ -218,5 +218,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_timeout" : 10,
 
 	//*BETA* if true, MavensMate will compare the state of the destination org(s) before deployment
-	"mm_compare_before_deployment" : true
+	"mm_compare_before_deployment" : true,
+
+	//Advanced users only: if true, MavensMate will not check if your project was created using an older version of MavensMate
+	"mm_skip_legacy_check" : false
 }
