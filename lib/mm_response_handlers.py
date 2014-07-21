@@ -8,6 +8,7 @@ import sys
 import time
 import html.parser
 import re
+import traceback
 from .threads import ThreadTracker
 from .threads import ThreadProgress
 from .threads import PanelThreadProgress
@@ -102,10 +103,16 @@ class MMResultHandler(object):
                             line_col = ""
                             line, col = 1, 1
                             if 'line' in e:
-                                line = int(e['line'])
+                                if type(e['line']) is list:
+                                    line = int(e['line'][0])
+                                else:
+                                    line = int(e['line'])
                                 line_col = ' (Line: '+str(line)
                             if 'column' in e:
-                                col = int(e['column'])
+                                if type(e['column']) is list:
+                                    line = int(e['column'][0])
+                                else:
+                                    col = int(e['column'])
                                 line_col += ', Column: '+str(col)
                             if len(line_col):
                                 line_col += ')'
@@ -120,8 +127,12 @@ class MMResultHandler(object):
                             view.sel().add(sublime.Region(pt))
                             view.show(pt)
                             problem = e['problem']
+                            if type(problem) is list:
+                                problem = problem[0]
                             problem = html_parser.unescape(problem)
                             file_base_name = e['name']
+                            if type(file_base_name) is list:
+                                file_base_name = file_base_name[0]
                             #if self.thread.window.active_view().name():
                             current_active_view = sublime.active_window().active_view()
                             if current_active_view.file_name() != None:
@@ -248,6 +259,7 @@ class MMResultHandler(object):
                     self.__print_to_panel("Success")
             except Exception as e:
                 debug(e)
+                debug(traceback.print_exc())
                 debug(type(self.result))
                 msg = ""
                 if type(self.result) is dict:
