@@ -74,11 +74,11 @@
 	         	"children":
 	         	[
  	         		{
-	         			"caption": "New Debug Log...",
+	         			"caption": "New Trace Flag...",
 	         			"command": "new_debug_log"
 	         		},
 	         		{
-	         			"caption": "New Quick Log",
+	         			"caption": "Quick Trace Flag",
 	         			"command": "new_quick_log"
 	         		},
  	         		{

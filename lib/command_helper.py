@@ -72,7 +72,7 @@ def get_message(params, operation):
     elif operation == 'new_apex_overlay':
         message = 'Creating Apex Overlay' 
     elif operation == 'debug_log':
-        message = 'Opening debug log interface (this could take a while...)'
+        message = 'Opening trace flag UI (this could take a while...)'
     elif operation == 'delete_apex_overlay':
         message = 'Deleting Apex Overlay'  
     elif operation == 'fetch_logs':
@@ -92,7 +92,7 @@ def get_message(params, operation):
         else:
             message = 'Running Apex unit tests for this class...'
     elif operation == 'new_quick_log':
-        message = 'Setting up logs for debug users (logs can be configured in project/config/.debug)'
+        message = 'Setting up trace flags for debug users (logs can be configured in project/config/.debug)'
     elif operation == 'run_apex_script':
         message = 'Running Apex script (logs can be found in project/apex-scripts/log)'
     elif operation == 'run_all_tests':
