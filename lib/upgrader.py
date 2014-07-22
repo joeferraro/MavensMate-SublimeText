@@ -48,7 +48,7 @@ class ManualUpgrader(threading.Thread):
         self.printer.show()
         self.printer.writeln(' ')
         self.printer.writeln('==============================================')
-        self.printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete. If you have any issues updating, open a terminal and run the python installer script located here: https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py. Example (from the terminal): $ python install.py")
+        self.printer.writeln("Reloading MavensMate for Sublime Text Plugin. You will need to restart Sublime Text when update is complete. If you have any issues updating, open a terminal and run the python installer script located here: https://raw.githubusercontent.com/joeferraro/MavensMate-SublimeText/master/install.py. Example (from the terminal): $ python install.py")
         self.printer.writeln('Timestamp: '+self.process_id)
 
         threading.Thread.__init__(self)
@@ -91,9 +91,9 @@ class AutomaticUpgrader(threading.Thread):
             json_data.close()
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
             if 'linux' in sys.platform:
-                response = os.popen('curl https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json').read()
+                response = os.popen('curl https://raw.githubusercontent.com/joeferraro/MavensMate-SublimeText/master/packages.json').read()
             else:
-                response = urllib.request.urlopen('https://raw.github.com/joeferraro/MavensMate-SublimeText/master/packages.json').read().decode('utf-8')
+                response = urllib.request.urlopen('https://raw.githubusercontent.com/joeferraro/MavensMate-SublimeText/master/packages.json').read().decode('utf-8')
             j = json.loads(response)
             latest_version = j["packages"][0]["platforms"]["osx"][0]["version"]
             release_notes = "\n\nRelease Notes: "

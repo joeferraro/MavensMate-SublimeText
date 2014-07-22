@@ -104,9 +104,9 @@ def parse_templates_package(mtype=None):
         template_location = settings.get('mm_template_location', 'remote')
         if template_location == 'remote':
             if 'linux' in sys.platform:
-                response = os.popen('wget https://raw.github.com/{0}/{1} -q -O -'.format(template_source, "package.json")).read()
+                response = os.popen('wget https://raw.githubusercontent.com/{0}/{1} -q -O -'.format(template_source, "package.json")).read()
             else:
-                response = urllib.request.urlopen('https://raw.github.com/{0}/{1}'.format(template_source, "package.json")).read().decode('utf-8')
+                response = urllib.request.urlopen('https://raw.githubusercontent.com/{0}/{1}'.format(template_source, "package.json")).read().decode('utf-8')
             j = json.loads(response)
         else:
             local_template_path = os.path.join(template_source,"package.json")
