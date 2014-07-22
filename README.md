@@ -41,7 +41,7 @@ If you have trouble installing via the MavensMate.exe installer, you can run Mav
 
 1. You must have python 2.7 and git installed
 2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Download and run install script: `https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py`
+3. Download and run install script: `https://raw.githubusercontent.com/joeferraro/MavensMate-SublimeText/master/install.py`
 `$ python install.py`
 4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"C:\\Python27\\python.exe"`
 5. Set `"mm_debug_mode"` to `true`
@@ -49,7 +49,7 @@ If you have trouble installing via the MavensMate.exe installer, you can run Mav
 ####Linux (tested on Ubuntu 12)
 1. You must have python 2.7 and git installed
 2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Run install script `$ python < <(curl -s https://raw.github.com/joeferraro/MavensMate-SublimeText/master/install.py)`
+3. Run install script `$ python < <(curl -s https://raw.githubusercontent.com/joeferraro/MavensMate-SublimeText/master/install.py)`
 4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"/usr/bin/python"`
 5. Alias your `subl` command line tool to `/usr/local/bin`
 
