@@ -108,6 +108,24 @@ def parse_templates_package(mtype=None):
             else:
                 response = urllib.request.urlopen('https://raw.githubusercontent.com/{0}/{1}'.format(template_source, "package.json")).read().decode('utf-8')
             j = json.loads(response)
+        # TODO: Migrate the username, password and location to mavensmate settings.
+        elif template_location == 'bitbucket':
+            # create a password manager
+            password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+            # Add the username and password.
+            # If we knew the realm, we could use it instead of None.
+            top_level_url = "https://bitbucket.org/"
+            password_mgr.add_password(None, top_level_url, 'bitbucketusername', 'bitbucketpassword')
+            handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+            # create "opener" (OpenerDirector instance)
+            opener = urllib.request.build_opener(handler)
+            # use the opener to fetch a URL
+            opener.open("https://bitbucket.org/tquila-ondemand/mavensmate-templates/raw/master/package.json")
+            # Install the opener.
+            # Now all calls to urllib.request.urlopen use our opener.
+            urllib.request.install_opener(opener)
+            response = urllib.request.urlopen("https://bitbucket.org/tquila-ondemand/mavensmate-templates/raw/master/package.json").read().decode('utf-8')
+            j = json.loads(response)
         else:
             local_template_path = os.path.join(template_source,"package.json")
             debug(local_template_path)
