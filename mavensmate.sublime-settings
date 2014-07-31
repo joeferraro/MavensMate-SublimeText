@@ -159,17 +159,26 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".html"
 	],
 
-	//template location, e.g. "remote" or "local" ("remote" refers to templates located on github)
+	//template location, e.g. "github" or "bitbucket" or "local". "remote" is synonymous with "github"
 	"mm_template_location": "remote",
 
 	//template location 
 	//if "mm_template_location" is set to "local", set to absolute location of the directory where you've forked the MavensMate-Templates project
-		//example: "mm_template_source" : "/path/to/templates"
-	//if "mm_template_location" is set to "remote", set to github location)
-		//example: "mm_template_source" : "username/reponame/branchname"
-	//project directory/repository must be in the format found here: https://github.com/joeferraro/MavensMate-Templates
-	"mm_template_source": "joeferraro/MavensMate-Templates/master",
-	
+	"mm_template_source" : "/path/to/templates",
+
+	//if "mm_template_location" is set to "remote","github" or "bitbucket" set the repository owner, name and branch
+	"mm_template_repo_owner" : "joeferraro",
+	"mm_template_repo_name" : "MavensMate-Templates",
+	"mm_template_repo_branch" : "master",
+
+	//if you need to access a secured repository, set mm_template_auth to true, and set username and password as appropriate
+	//if using github, it is recommended that you generate an OAuth token here https://github.com/settings/applications#personal-access-tokens
+	//and set that as your username, leaving the password blank
+	//bitbucket does not appear to offer this capability at present
+	"mm_template_auth" : false,
+	"mm_template_username" : "",
+	"mm_template_password" : "",
+
 	//if true, MavensMate.app will start when Sublime Text starts
 	"mm_start_app_on_st_startup" : true,
 
