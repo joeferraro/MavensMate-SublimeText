@@ -156,7 +156,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".customApplicationComponent",
 		".quickAction",
 		".approvalProcess",
-		".html"
+		".html",
+		".apxc",
+		".apxt"
 	],
 
 	//template location, e.g. "remote" or "local" ("remote" refers to templates located on github)
