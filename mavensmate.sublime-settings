@@ -46,6 +46,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
 	"mm_compile_on_save" : true,
 
+	//if false, mavensmate will store/retrieve sensitive data like passwords in a less secure way
+	//use only if having issues specifically with keyring or gnome-keyring
+	"mm_use_keyring" : true,
+
 	//if true, MavensMate will check for server conflicts and present a server diff when it finds a conflict
 	"mm_compile_check_conflicts": true,
 
