@@ -413,7 +413,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         elif 'linux' in sys.platform:
             subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
-            subprocess.Popen("'{0}' --project '"+project_file_location+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            subprocess.Popen([subl_location,'--project',project_file_location], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         else:
             subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
             if not os.path.isfile(subl_location) and "x86" not in subl_location:
