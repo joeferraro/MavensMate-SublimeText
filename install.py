@@ -28,19 +28,13 @@ try:
         if 'linux' in sys.platform or 'darwin' in sys.platform:
             os.system("git clone --recursive {0} {1}".format(git_url, pipes.quote(install_path)))
             os.chdir(install_path)
-            try:
-                os.system("git checkout -b {0} origin/{0}".format(pipes.quote(branch)))
-            except:
-                pass #this is inconsistent, so pass for now
+            os.system("git checkout -B {0} origin/{0}".format(pipes.quote(branch)))
             os.system("git submodule init")
             os.system("git submodule update")
         else:
             os.system('git clone --recursive {0} "{1}"'.format(git_url, install_path))
             os.chdir(install_path)
-            try:
-                os.system("git checkout -b {0} origin/{0}".format(branch))
-            except:
-                pass #this is inconsistent, so pass for now
+            os.system("git checkout -B {0} origin/{0}".format(branch))
             os.system("git submodule init")
             os.system("git submodule update")
 
@@ -58,7 +52,6 @@ try:
         if 'linux' in sys.platform or 'darwin' in sys.platform:
             os.system("rm -rf {0}".format(pipes.quote(install_path)))
         else:
-            #shutil.rmtree('{0}'.format(install_path))
             os.system('rmdir /S /Q \"{}\"'.format(install_path))
 
     def install():
