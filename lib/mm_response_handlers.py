@@ -60,12 +60,19 @@ class MMResultHandler(object):
                     self.__handle_coverage_report_result()
                 elif self.operation == "get_org_wide_test_coverage":
                     self.__handle_org_wide_coverage_result()
+                elif self.operation == "delete":
+                    self.__handle_delete_metadata_result()
                 else:
                     self.__handle_generic_command_result()
             except:
                 self.__print_result()
 
             self.__finish()
+
+    def __handle_delete_metadata_result(self, **kwargs):
+        debug("HANDLING DELETE!")
+        debug(self.result)
+        self.__handle_compile_response()
 
     def __handle_compile_response(self, **kwargs):  
         debug("HANDLING COMPILE!")
