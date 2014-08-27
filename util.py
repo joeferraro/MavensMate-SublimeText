@@ -27,6 +27,7 @@ if sys.version_info >= (3, 0):
     import MavensMate.lib.apex.apex_extensions as apex_extensions
     from MavensMate.lib.usage_reporter import UsageReporter
     from MavensMate.lib.upgrader import AutomaticUpgrader
+    from MavensMate.lib.mm_installer import MmInstaller
     #from MavensMate.lib.printer import PanelPrinter
 else:
     #python 2
@@ -498,21 +499,7 @@ def check_for_updates():
     settings = sublime.load_settings('mavensmate.sublime-settings')
     if settings.get('mm_check_for_updates') == True:
         sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
-
-def start_mavensmate_app():
-    p = subprocess.Popen("pgrep -fl \"MavensMate \"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-    msg = None
-    if p.stdout is not None: 
-        msg = p.stdout.readlines()
-    elif p.stderr is not None:
-        msg = p.stdout.readlines() 
-    if msg == '' or len(msg) == 0:
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        if settings != None and settings.get('mm_app_location') != None:
-           os.system("open '"+settings.get('mm_app_location')+"'")
-        else:
-           #sublime.error_message("MavensMate.app is not running, please start it from your Applications folder.")
-           debug('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
+        sublime.set_timeout(lambda: MmInstaller().start(), 1000)
 
 def get_field_completions(object_name):
     _completions = []

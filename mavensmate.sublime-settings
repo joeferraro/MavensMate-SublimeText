@@ -78,20 +78,25 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
 	"mm_send_usage_statistics" : true,
 
-	//OSX only: the location of MavensMate.app
+	//OSX only: the location of MavensMate.app TODO: remove
 	"mm_app_location" : "/Applications/MavensMate.app",
 
-	//OSX only: the location of the mm command line tool (must be inside MavensMate.app)
-	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
+	//the location of the mm command line tool
+	//"default" means the mm directory is a top-level directory in the package root (MavensMate/mm)
+	//if you want MavensMate for Sublime Text to point to a different mm install, please set its location here (some/other/directory/mm)
+	"mm_location" : "default",
 
 	//linux/windows users: ignore this setting
 	"mm_use_browser_as_ui" : false, 
 
-	//(advanced users only) set to location of your python 2.7 install (mm_debug_mode must be set to true)
+	//(advanced users only) set to true if you want to use python 2.7 to run mm.py (mm_python_location and mm_py_location must be set)
+	"mm_developer_mode" : false,
+
+	//set to location of your python 2.7 install (mm_developer_mode must be set to true)
 	"mm_python_location" : "/usr/bin/python",
 
-	//(advanced users only) set to true if you want to use system python (mm_python_location must be set)
-	"mm_debug_mode" : false,
+	//if you wish to run mm via python, you must set this to the location of your mm.py file
+	"mm_mm_py_location" : "/path/to/mm.py",
 
 	//linux users: the location of your "subl" executable
 	"mm_subl_location" : "/usr/local/bin/subl",

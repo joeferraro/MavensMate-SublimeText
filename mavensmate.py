@@ -8,33 +8,21 @@ import re
 #sys.path.insert(0, dist_dir)
 from xml.dom.minidom import parse, parseString
 
-if sys.version_info >= (3, 0):
-    # Python 3
-    import MavensMate.config as config
-    import MavensMate.util as util
-    import MavensMate.lib.command_helper as command_helper
-    import MavensMate.lib.mm_interface as mm
-    import MavensMate.lib.upgrader as upgrader
-    import MavensMate.lib.resource_bundle as resource_bundle
-    import MavensMate.lib.server.lib.server_threaded as server
-    import MavensMate.lib.server.lib.config as server_config
-    from MavensMate.lib.printer import PanelPrinter
-    from MavensMate.lib.threads import ThreadTracker
-    import MavensMate.lib.parsehelp as parsehelp
-    import MavensMate.lib.vf as vf
-    from MavensMate.lib.mm_merge import *
-    from MavensMate.lib.completioncommon import *
-else:
-    # Python 2
-    import config
-    import util 
-    import lib.command_helper as command_helper
-    import lib.mm_interface as mm
-    import lib.resource_bundle as resource_bundle
-    import lib.vf as vf
-    from lib.printer import PanelPrinter
-    from lib.threads import ThreadTracker
-    from lib.mm_merge import *
+import MavensMate.config as config
+import MavensMate.util as util
+import MavensMate.lib.command_helper as command_helper
+import MavensMate.lib.mm_interface as mm
+import MavensMate.lib.upgrader as upgrader
+import MavensMate.lib.mm_installer as mm_installer
+import MavensMate.lib.resource_bundle as resource_bundle
+import MavensMate.lib.server.lib.server_threaded as server
+import MavensMate.lib.server.lib.config as server_config
+from MavensMate.lib.printer import PanelPrinter
+from MavensMate.lib.threads import ThreadTracker
+import MavensMate.lib.parsehelp as parsehelp
+import MavensMate.lib.vf as vf
+from MavensMate.lib.mm_merge import *
+from MavensMate.lib.completioncommon import *
 
 import sublime
 import sublime_plugin
@@ -95,7 +83,6 @@ def plugin_loaded():
     config.settings = settings
     config.merge_settings = merge_settings
     util.package_check()
-    util.start_mavensmate_app()  
     util.check_for_updates()
     util.send_usage_statistics('Startup')
 
@@ -1414,6 +1401,11 @@ class UpdateMeCommand(sublime_plugin.ApplicationCommand):
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
 
+#updates mm
+class UpdateMmCommand(sublime_plugin.ApplicationCommand):
+    def run(self):
+        mm_installer.execute()
+
 ####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
 
 #opens the MavensMate shell
@@ -1662,7 +1654,8 @@ class ApexCompletions(sublime_plugin.EventListener):
         )
 
         data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
-
+        debug('data: ')
+        debug(data)
         #full_data = view.substr(sublime.Region(0, view.size()))
         typedef = parsehelp.get_type_definition(data)
         debug('autocomplete type definition: ', typedef)
