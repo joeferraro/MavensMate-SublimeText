@@ -48,11 +48,20 @@ def get_latest_release(release_data):
 
 # extracts mm.zip into a top-level subdirectory called 'mm'
 def extract_mm_zip():
-    file_location = os.path.join(sublime.packages_path(),"MavensMate","mm.zip")
+    zip_name = 'mm.zip'
+    if 'linux' in sys.platform:
+        zip_name = 'mm.tar.gz'
+
+    file_location = os.path.join(sublime.packages_path(),"MavensMate",zip_name)
     dest_dir = os.path.join(sublime.packages_path(),"MavensMate")
     
-    with ZipFile(file_location) as zf:
-        zf.extractall(dest_dir)
+    if 'linux' in sys.platform:
+        import tarfile
+        with tarfile.open(file_location) as tarf:
+            tarf.extractall(dest_dir)
+    else:
+        with ZipFile(file_location) as zf:
+            zf.extractall(dest_dir)
 
 # chmod +x any platform-specific executables
 def ensure_executable_perms():
@@ -219,7 +228,11 @@ class MmInstaller(threading.Thread):
         debug('latest asset ---->')
         debug(latest_asset)
 
-        with urllib.request.urlopen(latest_asset['browser_download_url']) as response, open(os.path.join(sublime.packages_path(),"MavensMate","mm.zip"), 'wb') as out_file:
+        zip_name = 'mm.zip'
+        if 'linux' in sys.platform:
+            zip_name = 'mm.tar.gz'
+
+        with urllib.request.urlopen(latest_asset['browser_download_url']) as response, open(os.path.join(sublime.packages_path(),"MavensMate",zip_name), 'wb') as out_file:
             data = response.read() # a `bytes` object
             out_file.write(data)
 
@@ -230,5 +243,5 @@ class MmInstaller(threading.Thread):
 
         ensure_executable_perms()
 
-        if os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm.zip")):
-            os.remove(os.path.join(sublime.packages_path(),"MavensMate","mm.zip"))
+        if os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate",zip_name)):
+            os.remove(os.path.join(sublime.packages_path(),"MavensMate",zip_name))
