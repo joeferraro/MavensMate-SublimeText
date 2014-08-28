@@ -6,13 +6,12 @@ import sys
 import re
 #dist_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.insert(0, dist_dir)
-from xml.dom.minidom import parse, parseString
+from xml.dom.minidom import parse
 
 import MavensMate.config as config
 import MavensMate.util as util
 import MavensMate.lib.command_helper as command_helper
 import MavensMate.lib.mm_interface as mm
-import MavensMate.lib.upgrader as upgrader
 import MavensMate.lib.mm_installer as mm_installer
 import MavensMate.lib.resource_bundle as resource_bundle
 import MavensMate.lib.server.lib.server_threaded as server
@@ -1384,27 +1383,14 @@ class CancelCurrentCommand(sublime_plugin.WindowCommand):
     #def is_visible(self, paths = None):
     #    return ThreadTracker.get_current(self.window.id()) != None
 
-#updates MavensMate plugin
-class UpdateMeCommand(sublime_plugin.ApplicationCommand):
-    def run(self):
-        if 'darwin' in sys.platform:
-            printer = PanelPrinter.get(sublime.active_window().id())
-            upgrader.execute(printer)
-        elif 'linux' in sys.platform:
-            printer = PanelPrinter.get(sublime.active_window().id())
-            upgrader.execute(printer)
-        elif 'win32' in sys.platform or 'win64' in sys.platform:
-            updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
-            if not os.path.isfile(updater_path):
-                updater_path = updater_path.replace("Program Files", "Program Files (x86)")
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
-
-#updates mm
+#installs/updates mm
 class UpdateMmCommand(sublime_plugin.ApplicationCommand):
     def run(self):
-        mm_installer.execute()
+        printer = PanelPrinter.get(sublime.active_window().id())
+        mm_installer.execute(printer)
+
+    def is_enabled(self):
+        return True
 
 ####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
 

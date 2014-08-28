@@ -56,15 +56,21 @@ class BackgroundWorker(threading.Thread):
                 process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_mm_py_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         else: #running mm executable normally
-            if mm_location == 'default':
-                mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
-            if 'win32' in sys.platform and '.exe' not in mm_location:
-                process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_location+'.exe'), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            else:
-                print('-======>')
-                print("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()))
+            if mm_location == 'default': #default location is in plugin root 'mm' directory
+                if sys.platform == 'linux' or sys.platform == 'darwin':
+                    mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
+                else:
+                    mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")
+            
+            if 'linux' in sys.platform or 'darwin' in sys.platform:
+                global_config.debug('mm command: ')
+                global_config.debug("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()))
                 process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        
+            else: #windows
+                global_config.debug('mm command: ')
+                global_config.debug('"{0}" {1}'.format(mm_location, self.get_arguments()))
+                process = subprocess.Popen('"{0}" {1}'.format(mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
         if self.payload != None and type(self.payload) is str:
             self.payload = self.payload.encode('utf-8')
         process.stdin.write(self.payload)

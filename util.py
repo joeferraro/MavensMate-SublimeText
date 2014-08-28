@@ -1,48 +1,22 @@
 import sys 
 import os
-import subprocess
+import stat
 import json
 import threading 
 import re
-#import pipes
 import shutil
 import codecs
 import string
 import random
-import zipfile
-import traceback
-from xml.dom.minidom import parse, parseString
+#import traceback
+from xml.dom.minidom import parse
 
-# from datetime import datetime, date, time
-
-# try: 
-#     import urllib
-# except ImportError:
-#     import urllib.request as urllib
 import urllib.request
 
-if sys.version_info >= (3, 0):
-    #python 3
-    import MavensMate.config as config
-    import MavensMate.lib.apex.apex_extensions as apex_extensions
-    from MavensMate.lib.usage_reporter import UsageReporter
-    from MavensMate.lib.upgrader import AutomaticUpgrader
-    from MavensMate.lib.mm_installer import MmInstaller
-    #from MavensMate.lib.printer import PanelPrinter
-else:
-    #python 2
-    import config
-    import lib.apex.apex_extensions as apex_extensions
-    from lib.usage_reporter import UsageReporter
-    from lib.upgrader import AutomaticUpgrader
-    #from lib.printer import PanelPrinter
-
-#if os.name != 'nt':
-#    import unicodedata
-
-#PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
-#for future reference (windows/linux support)
-#sublime.packages_path()
+import MavensMate.config as config
+import MavensMate.lib.apex.apex_extensions as apex_extensions
+from MavensMate.lib.usage_reporter import UsageReporter
+from MavensMate.lib.mm_installer import MmInstaller
 
 import sublime
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -498,7 +472,6 @@ def refresh_active_view():
 def check_for_updates():
     settings = sublime.load_settings('mavensmate.sublime-settings')
     if settings.get('mm_check_for_updates') == True:
-        sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
         sublime.set_timeout(lambda: MmInstaller().start(), 1000)
 
 def get_field_completions(object_name):
@@ -649,6 +622,7 @@ def get_apex_completions(search_name, search_name_extra=None):
 
 def zip_directory(directory_to_zip, where_to_put_zip_file=None):
     return shutil.make_archive(where_to_put_zip_file, 'zip', os.path.join(directory_to_zip))
+
 
 def get_version_number():
     try:

@@ -2,17 +2,21 @@ import sublime
 import os
 import unicodedata
 import time
-
-try:
-    import MavensMate.config as config
-    import MavensMate.util as util
-    from .threads import ThreadTracker
-except:
-    import config
-    import util
-    from lib.threads import ThreadTracker
+import json
+import MavensMate.config as config
+from .threads import ThreadTracker
 
 settings = sublime.load_settings('mavensmate.sublime-settings')
+
+def get_version_number():
+    try:
+        json_data = open(os.path.join(config.mm_dir,"packages.json"))
+        data = json.load(json_data)
+        json_data.close()
+        version = data["packages"][0]["platforms"]["osx"][0]["version"]
+        return version
+    except:
+        return ''
 
 #class representing the MavensMate activity/debug panel in Sublime Text
 class PanelPrinter(object):
@@ -40,7 +44,7 @@ class PanelPrinter(object):
             printer.window_id = window_id
             printer.init()
             cls.printers[window_id] = printer
-            printer.write('MavensMate for Sublime Text v'+util.get_version_number()+'\n')
+            printer.write('MavensMate for Sublime Text v'+get_version_number()+'\n')
         return printer
 
     def error(self, string):
