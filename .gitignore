@@ -24,3 +24,5 @@ bin/.DS_Store
 command_helper.pyc
 
 *.lock
+
+mm/*
