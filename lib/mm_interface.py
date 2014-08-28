@@ -49,28 +49,28 @@ def call(operation, use_mm_panel=True, **kwargs):
         printer.write('\n'+message+'\n')
         return
 
-    if settings.get('mm_location', 'default') != 'default' and not os.path.isfile(settings.get('mm_location')):
+    if settings.get('mm_path', 'default') != 'default' and not os.path.isfile(settings.get('mm_path')):
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
-        message = '[OPERATION FAILED]: Could not find the mm executable. Please ensure mm_location is set to the location of the mm executable.'
+        message = '[OPERATION FAILED]: Could not find the mm executable. If you wish to use the default location, ensure your mm_path setting is set to "default", then run MavensMate > Install/Update MavensMate API (mm). If you wish to run mm from a different location, ensure mm_path is pointed to that location on your local drive.'
         printer.write('\n'+message+'\n')
         return
 
     if sys.platform == 'linux' or sys.platform == 'darwin':
-        if settings.get('mm_location', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm")):
+        if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm")):
             active_window_id = sublime.active_window().id()
             printer = PanelPrinter.get(active_window_id)
             printer.show()
-            message = '[OPERATION FAILED]: Could not find the mm executable. Please ensure the mm executable is installed in the Packages/MavensMate directory.'
+            message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
             printer.write('\n'+message+'\n')
             return
     else:
-        if settings.get('mm_location', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")):
+        if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")):
             active_window_id = sublime.active_window().id()
             printer = PanelPrinter.get(active_window_id)
             printer.show()
-            message = '[OPERATION FAILED]: Could not find the mm executable. Please ensure the mm executable is installed in the Packages/MavensMate directory.'
+            message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
             printer.write('\n'+message+'\n')
             return 
 
@@ -117,7 +117,7 @@ def call(operation, use_mm_panel=True, **kwargs):
         message=kwargs.get('message', None),
         use_mm_panel=use_mm_panel,
         process_id=util.get_random_string(10),
-        mm_location=settings.get('mm_location'),
+        mm_path=settings.get('mm_path'),
         callback=kwargs.get('callback', None)
     )
     if operation == 'index_apex':
@@ -134,7 +134,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.active_file    = kwargs.get('active_file', None)
         self.params         = kwargs.get('params', None)
         self.context        = kwargs.get('context', None)
-        self.mm_location    = kwargs.get('mm_location', None)
+        self.mm_path    = kwargs.get('mm_path', None)
         self.message        = kwargs.get('message', None)
         self.view           = None
         self.window         = None
@@ -305,23 +305,23 @@ class MavensMateTerminalCall(threading.Thread):
                 process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_mm_py_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         else: # otherwise, run mm executable normally
-            if self.mm_location == 'default': #default location is in plugin root 'mm' directory
+            if self.mm_path == 'default': #default location is in plugin root 'mm' directory
                 if sys.platform == 'linux' or sys.platform == 'darwin':
-                    self.mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
+                    self.mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
                 else:
-                    self.mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")
+                    self.mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")
             
-            # if 'win32' in sys.platform and '.exe' not in self.mm_location:
-            #     self.mm_location = self.mm_location+'.exe'
+            # if 'win32' in sys.platform and '.exe' not in self.mm_path:
+            #     self.mm_path = self.mm_path+'.exe'
 
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 debug('mm command: ')
-                debug("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
-                process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                debug("{0} {1}".format(pipes.quote(self.mm_path), self.get_arguments()))
+                process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_path), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 debug('mm command: ')
-                debug('"{0}" {1}'.format(self.mm_location, self.get_arguments()))
-                process = subprocess.Popen('"{0}" {1}'.format(self.mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                debug('"{0}" {1}'.format(self.mm_path, self.get_arguments()))
+                process = subprocess.Popen('"{0}" {1}'.format(self.mm_path, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         self.submit_payload(process)
         if process.stdout is not None: 

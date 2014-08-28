@@ -43,7 +43,7 @@ class BackgroundWorker(threading.Thread):
         args = self.get_arguments()
         global_config.debug('>>> running thread arguments on next line!')
         global_config.debug(args)
-        mm_location = self.settings.get('mm_location')
+        mm_path = self.settings.get('mm_path')
         if self.settings.get('mm_developer_mode', False): #user wishes to run mm.py via python install
             python_path = self.settings.get('mm_python_location')
             mm_mm_py_location = self.settings.get('mm_mm_py_location')
@@ -56,20 +56,20 @@ class BackgroundWorker(threading.Thread):
                 process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_mm_py_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         else: #running mm executable normally
-            if mm_location == 'default': #default location is in plugin root 'mm' directory
+            if mm_path == 'default': #default location is in plugin root 'mm' directory
                 if sys.platform == 'linux' or sys.platform == 'darwin':
-                    mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
+                    mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
                 else:
-                    mm_location = os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")
+                    mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")
             
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 global_config.debug('mm command: ')
-                global_config.debug("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()))
-                process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_location), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                global_config.debug("{0} {1}".format(pipes.quote(mm_path), self.get_arguments()))
+                process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_path), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else: #windows
                 global_config.debug('mm command: ')
-                global_config.debug('"{0}" {1}'.format(mm_location, self.get_arguments()))
-                process = subprocess.Popen('"{0}" {1}'.format(mm_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                global_config.debug('"{0}" {1}'.format(mm_path, self.get_arguments()))
+                process = subprocess.Popen('"{0}" {1}'.format(mm_path, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
         if self.payload != None and type(self.payload) is str:
             self.payload = self.payload.encode('utf-8')

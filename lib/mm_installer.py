@@ -115,7 +115,7 @@ class MmInstaller(threading.Thread):
                 os.remove(os.path.join(sublime.packages_path(),"MavensMate","mm.zip"))
 
             settings = sublime.load_settings('mavensmate.sublime-settings')
-            mm_location = settings.get('mm_location', 'default')
+            mm_path = settings.get('mm_path', 'default')
 
             if self.force:
                 debug('forcing mm installation')
@@ -123,12 +123,12 @@ class MmInstaller(threading.Thread):
                     fsutil.rmtree(os.path.join(sublime.packages_path(),"MavensMate","mm"))
                 self.install()
 
-            elif not os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")) and mm_location == 'default':
+            elif not os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")) and mm_path == 'default':
                 # need to download and install
-                debug('user mm_location value is default, but mm not installed, forcing install')
+                debug('user mm_path value is default, but mm not installed, forcing install')
                 self.install()
 
-            elif mm_location == 'default' and os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")):
+            elif mm_path == 'default' and os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")):
                 # check version
                 debug('checking for updated mm version')
                 

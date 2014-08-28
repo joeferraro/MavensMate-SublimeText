@@ -10,7 +10,7 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "3.5.2",
+						"version": "3.5.3",
 						"release_notes": "Updates github URLs. Resolves Summer '14 Tooling API parsing issues. Introduces deploy compare (beta). OSX users: MavensMate.app 0.38.6 is available now. Release notes: http://mavensmate.com/Getting_Started/Release_Notes",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}

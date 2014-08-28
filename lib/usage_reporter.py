@@ -45,14 +45,15 @@ class UsageReporter(threading.Thread):
             current_version = data["packages"][0]["platforms"]["osx"][0]["version"]
 
             mm_version = ''
-            if 'darwin' in sys.platform:
+            mm_path = settings.get('mm_path', 'default')
+            if mm_path == 'default' and os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")):
                 try:
-                    dic = plistlib.readPlist(os.path.join(settings.get('mm_app_location'), 'Contents', 'Info.plist'))
-                    if 'CFBundleVersion' in dic:
-                        mm_version = dic['CFBundleVersion']
-                except BaseException as e:
-                    print(e)
+                    with open (os.path.join(sublime.packages_path(),"MavensMate","mm","version.txt"), "r") as version_file:
+                        version_data=version_file.read().replace('\n', '')
+                    mm_version = version_data.replace('v','')
+                except:
                     pass
+
 
             if ip_address == None:
                 ip_address = 'unknown'        
@@ -61,7 +62,7 @@ class UsageReporter(threading.Thread):
             except:
                 mac = 'unknown'
             if 'linux' in sys.platform:
-                b = 'foo=bar&ip_address='+ip_address+'&action='+self.action+'&platform='+sys.platform+'&version='+current_version+'&mac_address='+mac
+                b = 'foo=bar&ip_address='+ip_address+'&action='+self.action+'&mm_version='+mm_version+'&platform='+sys.platform+'&version='+current_version+'&mac_address='+mac
                 req = os.popen("curl https://mavensmate.appspot.com/usage -d='"+b+"'").read()
                 self.response = req
             else:
