@@ -41,38 +41,38 @@ def call(operation, use_mm_panel=True, **kwargs):
 
     settings = sublime.load_settings('mavensmate.sublime-settings')
     
-    if settings.get("mm_developer_mode") and not os.path.isfile(settings.get("mm_python_location")):
+    if settings.get("mm_developer_mode", False) and not os.path.isfile(settings.get("mm_python_location")):
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
         message = '[OPERATION FAILED]: mm_developer_mode is set to true, but we could not find your system python install. Please set the location at mm_python_location'
         printer.write('\n'+message+'\n')
         return
-
-    if settings.get('mm_path', 'default') != 'default' and not os.path.isfile(settings.get('mm_path')):
-        active_window_id = sublime.active_window().id()
-        printer = PanelPrinter.get(active_window_id)
-        printer.show()
-        message = '[OPERATION FAILED]: Could not find the mm executable. If you wish to use the default location, ensure your mm_path setting is set to "default", then run MavensMate > Install/Update MavensMate API (mm). If you wish to run mm from a different location, ensure mm_path is pointed to that location on your local drive.'
-        printer.write('\n'+message+'\n')
-        return
-
-    if sys.platform == 'linux' or sys.platform == 'darwin':
-        if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm")):
+    else:
+        if settings.get('mm_path', 'default') != 'default' and not os.path.isfile(settings.get('mm_path')):
             active_window_id = sublime.active_window().id()
             printer = PanelPrinter.get(active_window_id)
             printer.show()
-            message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
+            message = '[OPERATION FAILED]: Could not find the mm executable. If you wish to use the default location, ensure your mm_path setting is set to "default", then run MavensMate > Install/Update MavensMate API (mm). If you wish to run mm from a different location, ensure mm_path is pointed to that location on your local drive.'
             printer.write('\n'+message+'\n')
             return
-    else:
-        if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")):
-            active_window_id = sublime.active_window().id()
-            printer = PanelPrinter.get(active_window_id)
-            printer.show()
-            message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
-            printer.write('\n'+message+'\n')
-            return 
+
+        if sys.platform == 'linux' or sys.platform == 'darwin':
+            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm")):
+                active_window_id = sublime.active_window().id()
+                printer = PanelPrinter.get(active_window_id)
+                printer.show()
+                message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
+                printer.write('\n'+message+'\n')
+                return
+        else:
+            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")):
+                active_window_id = sublime.active_window().id()
+                printer = PanelPrinter.get(active_window_id)
+                printer.show()
+                message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
+                printer.write('\n'+message+'\n')
+                return 
 
     if 'linux' in sys.platform:
         if not os.path.isfile(settings.get('mm_subl_location')):
