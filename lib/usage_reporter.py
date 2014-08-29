@@ -1,9 +1,9 @@
 import threading
 import json
-import plistlib
 import sublime
 import os
 import sys
+import MavensMate.lib.platform_util as platform_util
 try:
     import MavensMate.config as config
 except:
@@ -31,7 +31,8 @@ class UsageReporter(threading.Thread):
             try:
                 #get ip address
                 if 'linux' in sys.platform:
-                    ip_address = os.popen('curl http://ip.42.pl/raw').read()
+                    url_exe = platform_util.url_transfer_executable()
+                    ip_address = os.popen(url_exe+" http://ip.42.pl/raw").read()
                 else:
                     ip_address = urllib.request.urlopen('http://ip.42.pl/raw').read()
             except:
@@ -63,7 +64,8 @@ class UsageReporter(threading.Thread):
                 mac = 'unknown'
             if 'linux' in sys.platform:
                 b = 'foo=bar&ip_address='+ip_address+'&action='+self.action+'&mm_version='+mm_version+'&platform='+sys.platform+'&version='+current_version+'&mac_address='+mac
-                req = os.popen("curl https://mavensmate.appspot.com/usage -d='"+b+"'").read()
+                url_exe = platform_util.url_transfer_executable()
+                req = os.popen(url_exe+" https://mavensmate.appspot.com/usage -d='"+b+"'").read()
                 self.response = req
             else:
                 b = 'mac_address='+mac+'&version='+current_version+'&ip_address='+ip_address.decode('utf-8')+'&action='+self.action+'&mm_version='+mm_version+'&platform='+sys.platform

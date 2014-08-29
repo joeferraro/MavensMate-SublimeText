@@ -4,7 +4,7 @@ import os
 import stat
 import sys
 import MavensMate.config as config
-import MavensMate.lib.fsutil as fsutil
+import MavensMate.lib.platform_util as platform_util
 import time
 from MavensMate.lib.printer import PanelPrinter
 from .threads import PanelThreadProgress
@@ -23,6 +23,15 @@ try:
 except ImportError:
     import urllib.request as urllib
 import sublime
+
+def get_platform_flag():
+    if 'linux' in sys.platform:
+        file_name_platform_flag = 'linux'
+    elif 'darwin' in sys.platform:
+        file_name_platform_flag = 'osx'
+    else:
+        file_name_platform_flag = 'win'
+    return file_name_platform_flag
 
 # explicitly executes MmInstaller (downloads and installs latest version of mm to the plugin root)
 def execute(printer=None):
@@ -81,7 +90,8 @@ def ensure_executable_perms():
 # returns a list of releases from the joeferraro/mm repository
 def get_mm_releases():
     if 'linux' in sys.platform:
-        releases = os.popen('curl https://api.github.com/repos/joeferraro/mm/releases').read()
+        url_exe = platform_util.url_transfer_executable()
+        releases = os.popen(url_exe+" https://api.github.com/repos/joeferraro/mm/releases").read()
     else:
         releases = urllib.request.urlopen('https://api.github.com/repos/joeferraro/mm/releases').read().decode('utf-8')    
     return json.loads(releases)
@@ -129,7 +139,7 @@ class MmInstaller(threading.Thread):
             if self.force:
                 debug('forcing mm installation')
                 if os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")):
-                    fsutil.rmtree(os.path.join(sublime.packages_path(),"MavensMate","mm"))
+                    platform_util.rmtree(os.path.join(sublime.packages_path(),"MavensMate","mm"))
                 self.install()
 
             elif not os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")) and mm_path == 'default':
@@ -168,7 +178,7 @@ class MmInstaller(threading.Thread):
                     debug('mm is out of date, prompting for an update')
                     if sublime.ok_cancel_dialog("A new version of the MavensMate API (mm) is available. Would you like to update (recommended)?"):
                         if os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")):
-                            fsutil.rmtree(os.path.join(sublime.packages_path(),"MavensMate","mm"))
+                            platform_util.rmtree(os.path.join(sublime.packages_path(),"MavensMate","mm"))
 
                         self.install()
                 else:
@@ -205,36 +215,56 @@ class MmInstaller(threading.Thread):
         # https://api.github.com/repos/joeferraro/mm/releases
         if 'linux' in sys.platform:
             # https://github.com/joeferraro/mm/releases/download/v0.1.9/mm-osx.zip
-            releases = os.popen('curl https://api.github.com/repos/joeferraro/mm/releases').read()
+            url_exe = platform_util.url_transfer_executable()
+            debug(url_exe+" https://api.github.com/repos/joeferraro/mm/releases")
+            releases = os.popen(url_exe+" https://api.github.com/repos/joeferraro/mm/releases").read()
         else:
             releases = urllib.request.urlopen('https://api.github.com/repos/joeferraro/mm/releases').read().decode('utf-8')
+        debug('releases -->', releases)
         release_data = json.loads(releases)
 
         latest_release = get_latest_release(release_data)
         debug(latest_release)
 
-        file_name_platform_flag = None
-        if 'linux' in sys.platform:
-            file_name_platform_flag = 'linux'
-        elif 'darwin' in sys.platform:
-            file_name_platform_flag = 'osx'
-        else:
-            file_name_platform_flag = 'win'
-
+        file_name_platform_flag = get_platform_flag()
+        
         latest_asset = None
         for a in latest_release['assets']:
             if file_name_platform_flag in a['name']:
                 latest_asset = a
         debug('latest asset ---->')
         debug(latest_asset)
+        download_url = latest_asset['browser_download_url']
+        debug('attempting to download: ',latest_asset['browser_download_url'])
 
-        zip_name = 'mm.zip'
         if 'linux' in sys.platform:
+            import subprocess
             zip_name = 'mm.tar.gz'
+            command = "wget -O '"+os.path.join(sublime.packages_path(),"MavensMate",zip_name)+"' '"+download_url+"'"
+            process = subprocess.Popen(command, shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+            download_result = ''
+            response_body = ''
+            if process.stdout is not None: 
+                download_result = process.stdout.readlines()
+            elif process.stderr is not None:
+                download_result = process.stderr.readlines()
+            try:
+                response_body = '\n'.join(download_result)
+            except:
+                strs = []
+                for line in download_result:
+                    strs.append(line.decode('utf-8'))   
+                response_body = '\n'.join(strs)
 
-        with urllib.request.urlopen(latest_asset['browser_download_url']) as response, open(os.path.join(sublime.packages_path(),"MavensMate",zip_name), 'wb') as out_file:
-            data = response.read() # a `bytes` object
-            out_file.write(data)
+            debug('result of wget download::: ')
+            debug(response_body)
+        else:
+            zip_name = 'mm.zip'
+            with urllib.request.urlopen(download_url) as response, open(os.path.join(sublime.packages_path(),"MavensMate",zip_name), 'wb') as out_file:
+                data = response.read() # a `bytes` object
+                out_file.write(data)
 
         extract_mm_zip()
         f = open(os.path.join(sublime.packages_path(),"MavensMate","mm","version.txt"), 'wb')
