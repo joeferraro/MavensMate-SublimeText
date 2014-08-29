@@ -381,7 +381,9 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         project_name = self.dir_map[self.picked_project[0]][0]
         workspace = self.dir_map[self.picked_project[0]][2]
         project_file_location = os.path.join(workspace,project_name,project_file)
-        #debug(project_file_location)
+        
+        debug('attempting to open project at -->')
+        debug(project_file_location)
         
         if not os.path.isfile(project_file_location):
             sublime.message_dialog("Cannot find project file for: "+project_name)
@@ -399,7 +401,11 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         elif 'linux' in sys.platform:
             subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
-            subprocess.Popen("'{0}' --project '"+project_file_location+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            debug('subl location is: ', subl_location)
+            debug('running command: ')
+            command = "'{0}' --project '{1}'".format(subl_location, project_file_location)
+            debug(command)
+            subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
             if not os.path.isfile(subl_location) and "x86" not in subl_location:
@@ -1920,14 +1926,17 @@ class ScrubLogCommand(sublime_plugin.WindowCommand):
 
 
     def is_enabled(command):
-        active_view = sublime.active_window().active_view()
-        fn, ext = os.path.splitext(active_view.file_name())
-        if util.is_mm_project():
-            if ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
-                return True
+        try:
+            active_view = sublime.active_window().active_view()
+            fn, ext = os.path.splitext(active_view.file_name())
+            if util.is_mm_project():
+                if ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
+                    return True
+                else:
+                    return False
             else:
                 return False
-        else:
+        except:
             return False
 
 class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
