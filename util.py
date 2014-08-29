@@ -36,9 +36,10 @@ def mm_plugin_location():
 def package_check():
     #ensure user settings are installed
     try:
-        if not os.path.exists(os.path.join(packages_path,"User","mavensmate.sublime-settings")):
-            shutil.copyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
+        if not os.path.isfile(os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings")):
+            shutil.copyfile(os.path.join(sublime.packages_path(),"MavensMate","mavensmate.sublime-settings"), os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings"))
     except:
+        debug('could not migrate default settings to user settings')
         pass
 
 def is_project_legacy(window=None):
@@ -622,7 +623,6 @@ def get_apex_completions(search_name, search_name_extra=None):
 
 def zip_directory(directory_to_zip, where_to_put_zip_file=None):
     return shutil.make_archive(where_to_put_zip_file, 'zip', os.path.join(directory_to_zip))
-
 
 def get_version_number():
     try:
