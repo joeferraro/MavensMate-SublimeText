@@ -68,6 +68,12 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will check for updates to the mm executable when Sublime Text starts
 	"mm_check_for_updates" : true,
 
+	//if true, MavensMate will look for and download pre-releases (beta versions) of the MavensMate API, mm
+	"mm_beta_user" : false,
+
+	//if true, MavensMate will automatically install updates to the MavensMate API, mm
+	"mm_auto_install_mm_updates" : true,
+
 	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
 	"mm_log_level" : "INFO",
 

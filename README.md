@@ -20,66 +20,25 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ###Install
 
-####Mac OSX (tested on Mac OSX 10.7+)
-1. You must have MavensMate.app installed. Download MavensMate.app [here][mm_download] and place in /Applications
-2. To install the Sublime Text 3 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
+#### Sublime Text Package Control (recommended)
 
-<img src="http://wearemavens.com/images/mm/plugins-menu.png" width="300"/>
+**Sublime Text Package Control must be installed: [https://sublime.wbond.net/installation](https://sublime.wbond.net/installation)**
 
-<img src="http://wearemavens.com/images/mm/plugins.png" width="400"/>
+1. Open Sublime Text
+2. Run `Package Control: Install Package` command
+3. Search for `MavensMate`
+4. Hit `Enter`
 
-####Windows (tested on Windows 7, 8)
-**You must have git installed and it MUST be available from the command line (see screenshot for option to select when installing Git). <a href="http://git-scm.com/downloads">Download Git</a>**
-
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/git.png" class="flat doc" style="width:400px;"/>
-
-#####Installer
-1. Download and run the <a href="http://push.mavensconsulting.netdna-cdn.com/mavensmate/builds/windows/MavensMate.exe">MavensMate.exe Windows Installer</a>
-
-#####Manual Install
-If you have trouble installing via the MavensMate.exe installer, you can run MavensMate with a system Python install:
-
-1. You must have python 2.7 and git installed
-2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Download and run install script: `https://raw.githubusercontent.com/joeferraro/MavensMate-SublimeText/master/install.py`
-`$ python install.py`
-4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"C:\\Python27\\python.exe"`
-5. Set `"mm_debug_mode"` to `true`
-
-####Linux (tested on Ubuntu 12)
-1. You must have python 2.7 and git installed
-2. Install required modules `$ easy_install jinja2 suds keyring markupsafe pyyaml requests`
-3. Run install script `$ python < <(curl -s https://raw.githubusercontent.com/joeferraro/MavensMate-SublimeText/master/install.py)`
-4. Set your `"mm_python_location"` user setting (Mavensmate > Settings > User) to the location of your Python install. For example, `"/usr/bin/python"`
-5. Alias your `subl` command line tool to `/usr/local/bin`
+#### Manual
 
 ```
-$ cd /usr/local/bin
-$ sudo ln -s /usr/bin/subl subl
+cd /path/to/sublime/text/packages/directory
+git clone https://github.com/joeferraro/MavensMate-SublimeText.git 'MavensMate'
 ```
 
-##Sublime Text 2 plugin (no longer supported)
+###Update
 
-###Mac OSX (OSX 10.7+ only)
-You must have **MavensMate.app 0.34** installed. Download [MavensMate.app v0.34][mm_034_download] and place in /Applications
-
-####Install
-To install the Sublime Text 2 Plugin for MavensMate, go to the "Plugins" menu in MavensMate.app and install the plugin.
-
-##Updating MavensMate for Sublime Text
-
-If `mm_check_for_updates` is set to `true`, MavensMate will check for updates when Sublime Text starts up.
-
-###Mac OSX (OSX 10.7+ only)
-If an update is available, you can update the plugin through the "Plugins" panel in MavensMate.app.
-
-<img src="http://wearemavens.com/images/mm/plugin-update.png" width="400"/>
-
-###Windows
-If an update is available, you will be given the option to run the update installer. You will need to close Sublime Text in order to run the update.
-
-###Linux
-If an update is available, you will be given the option to run the update installer. Once the update is complete, you will need to restart Sublime Text.
+Updates to the plugin are handled automatically by Package Control. Updates can be applied manually by replacing the `MavensMate` directory in your Sublime Text `Packages` directory.
 
 ##Documentation
 <a href="MavensMate for Sublime Text Documentation">http://mavensmate.com/Plugins/Sublime_Text/Overview</a>

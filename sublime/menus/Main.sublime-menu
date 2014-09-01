@@ -338,9 +338,20 @@
 				"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}
 			},
 			{
-				"caption": "Install/Update MavensMate API (mm)",
-				"command": "update_mm"
-			},
+	        	"id": "mmapi", 
+	    		"caption": "MavensMate API (mm)",  
+	         	"children":
+	         	[
+					{
+    	        		"command": "install_mm_version", 
+    	        		"caption": "Install MavensMate API (mm) version..." 
+    	        	},
+					{
+						"caption": "Update MavensMate API (mm)",
+						"command": "update_mm"
+					}
+	         	]
+	     	},
 	     	{
 	     		"caption": "About MavensMate",
 	     		"command": "show_version"

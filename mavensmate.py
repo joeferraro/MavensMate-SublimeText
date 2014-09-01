@@ -392,13 +392,10 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         if sys.platform == 'darwin':
             sublime_path = settings.get('mm_plugin_client_location', '/Applications')
-            if sublime_version >= 3000:
-                if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
-                    subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
-                    subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            else:
-                subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            if os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
+                subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            elif os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
+                subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         elif 'linux' in sys.platform:
             subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
             debug('subl location is: ', subl_location)
@@ -1389,6 +1386,36 @@ class CancelCurrentCommand(sublime_plugin.WindowCommand):
     #def is_visible(self, paths = None):
     #    return ThreadTracker.get_current(self.window.id()) != None
 
+#installs specific mm version
+class InstallMmVersionCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return True
+
+    def run(self):
+        mm_releases = mm_installer.get_mm_releases()
+        self.release_options = mm_installer.get_platform_releases(mm_releases)
+        print(self.release_options)
+        opts = []
+        for r in self.release_options:
+            label = r['name']
+            sub_label = 'Release Date: '+r['published_at']
+            sub_sub_label = ''
+            if r['prerelease']:
+                sub_sub_label = 'beta'
+            else:
+                sub_sub_label = 'stable'
+            opts.append([label, sub_label, sub_sub_label])
+        self.window.show_quick_panel(opts, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked:
+            return
+        #print(picked)
+        #print(self.release_options[picked])
+        selected_release = self.release_options[picked]
+        printer = PanelPrinter.get(sublime.active_window().id())
+        mm_installer.execute(printer, release=selected_release)
+        
 #installs/updates mm
 class UpdateMmCommand(sublime_plugin.ApplicationCommand):
     def run(self):
