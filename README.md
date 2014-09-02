@@ -58,6 +58,4 @@ Updates to the plugin are handled automatically by Package Control. Updates can 
 <img src="http://cdn.mavensconsulting.com/mavensmate/img/vf1.png"/>
 <img src="http://cdn.mavensconsulting.com/mavensmate/img/vf2.png"/>
 
-[mm_download]: http://cdn.mavensconsulting.com/mavensmate/builds/MavensMate.zip
-[mm_034_download]: http://cdn.mavensconsulting.com/mavensmate/builds/0.34/MavensMate.zip
 [mmcom]: http://mavensmate.com/?utm_source=github&utm_medium=st-plugin&utm_campaign=st
