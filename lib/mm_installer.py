@@ -183,7 +183,7 @@ class MmInstaller(threading.Thread):
                     installed_version_int = int(float(current_version_data.replace(".", "")))
                 except:
                     self.install()
-                    self.result = 'Success -- Happy coding!!'
+                    self.result = 'Success. Please restart Sublime Text -- Happy coding!!'
                     if self.printer != None:
                         self.calculate_process_region()
                         ThreadTracker.remove(self)
@@ -207,7 +207,7 @@ class MmInstaller(threading.Thread):
                 else:
                     debug('mm is up to date ('+latest_version+'), no further action needed')
             
-            self.result = 'Success -- Happy coding!!'
+            self.result = 'Success. Please restart Sublime Text -- Happy coding!!'
             if self.printer != None:
                 self.calculate_process_region()
                 ThreadTracker.remove(self)
