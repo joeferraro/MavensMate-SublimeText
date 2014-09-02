@@ -199,7 +199,8 @@ class MmInstaller(threading.Thread):
 
                 if server_version_int > installed_version_int:
                     debug('mm is out of date, prompting for an update')
-                    if sublime.ok_cancel_dialog("A new version ("+latest_release['tag_name']+") of the MavensMate API (mm) is available, you are running "+version_data+". Would you like to update (recommended)? \n\nIf you no longer wish to see these notifications, toggle mm_check_for_updates to false.\n\nIf you would like MavensMate to automatically install updates to mm, set mm_auto_install_mm_updates to true."):
+                    #if sublime.ok_cancel_dialog("A new version ("+latest_release['tag_name']+") of the MavensMate API (mm) is available, you are running "+version_data+". Would you like to update (recommended)? \n\nIf you no longer wish to see these notifications, toggle mm_check_for_updates to false.\n\nIf you would like MavensMate to automatically install updates to mm, set mm_auto_install_mm_updates to true."):
+                    if sublime.ok_cancel_dialog("A new version ("+latest_release['tag_name']+") of the MavensMate API (mm) is available, you are running "+version_data+". Would you like to update (recommended)? \n\nIf you no longer wish to see these notifications, toggle mm_check_for_updates to false."):
                         if os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")):
                             platform_util.rmtree(os.path.join(sublime.packages_path(),"MavensMate","mm"))
 
