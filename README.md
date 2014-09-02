@@ -18,6 +18,10 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ##Sublime Text 3 plugin (current stable version)
 
+<h2 style="color:red">IMPORTANT</h2>
+
+**If you are upgrading from 3.x.x, please follow the instructions found here: [http://mavensmate.com/Upgrade_Help](http://mavensmate.com/Upgrade_Help)**
+
 ###Install
 
 #### Sublime Text Package Control (recommended)
