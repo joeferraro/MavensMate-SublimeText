@@ -323,7 +323,7 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
 class OpenProjectSettingsCommand(sublime_plugin.WindowCommand):
     def run(self):
         path = os.path.join(util.mm_project_directory(),util.get_project_name()+'.sublime-settings')
-        sublime.active_window().run_command('open_file', {'file': path})
+        sublime.active_window().open_file(path)
 
     def is_enabled(command):
         return util.is_mm_project()      
