@@ -52,26 +52,6 @@ def get_platform_releases(release_data):
                 platform_releases.append(r)
     return platform_releases
 
-# iterates the list of mm releases, grabs the latest via the tag name (version number) and platform
-def get_latest_release(release_data):
-    platform_flag = get_platform_flag()
-    latest = None
-    for r in release_data:
-        if latest == None:
-            for asset in r['assets']:
-                if platform_flag in asset['name']:
-                    latest = r
-                    break
-        else:
-            latest_version = int(float(latest['tag_name'].replace("v","").replace(".", "")))
-            r_version = int(float(r['tag_name'].replace("v","").replace(".", "")))
-            if r_version > latest_version:
-                for asset in r['assets']:
-                    if platform_flag in asset['name']:
-                        latest = r
-                        break
-    return latest
-
 # extracts mm.zip into a top-level subdirectory called 'mm'
 def extract_mm_zip():
     zip_name = 'mm.zip'
@@ -135,6 +115,9 @@ class MmInstaller(threading.Thread):
         self.settings       = sublime.load_settings('mavensmate.sublime-settings')
         self.beta_user      = self.settings.get('mm_beta_user', False)
         self.release        = kwargs.get('release', None)
+        self.platform_flag  = get_platform_flag()
+        self.release_data   = get_mm_releases()
+        self.latest_release = self.get_latest_release()
 
         if self.printer == None:
             self.printer = PanelPrinter.get(self.window.id())
@@ -145,15 +128,55 @@ class MmInstaller(threading.Thread):
         process_region = self.printer.panel.find(self.process_id,0)
         self.status_region = self.printer.panel.find('   Result: ',process_region.begin())
 
+    def release_has_platform_asset(self, release):
+        if not self.beta_user and release['prerelease']:
+            return False
+        for asset in release['assets']:
+           if self.platform_flag in asset['name']:
+               return True
+        return False
+
+    # iterates the list of mm releases, grabs the latest via the tag name (version number) and platform
+    def get_latest_release(self):
+        latest = None
+        for r in self.release_data:
+            if self.beta_user == False and r['prerelease'] == True:
+                continue
+
+            if latest == None:
+                if self.beta_user and r['prerelease']:
+                    if self.release_has_platform_asset(r):
+                        latest = r
+                        continue
+                if self.release_has_platform_asset(r):
+                    latest = r
+            else:
+                if self.beta_user and r['prerelease']:
+                    if self.release_has_platform_asset(r):
+                        latest_version = int(float(latest['tag_name'].replace("v","").replace(".", "")))
+                        r_version = int(float(r['tag_name'].replace("v","").replace(".", "")))
+                        if r_version > latest_version:
+                            if self.release_has_platform_asset(r):
+                                latest = r
+                                continue    
+                           
+                latest_version = int(float(latest['tag_name'].replace("v","").replace(".", "")))
+                r_version = int(float(r['tag_name'].replace("v","").replace(".", "")))
+                if r_version > latest_version:
+                    if self.release_has_platform_asset(r):
+                        latest = r
+                        continue
+        return latest
+
     def run(self):
-        debug('MmInstaller -->')
-
-        if self.release != None:
-            ThreadProgress(self, "Installing MavensMate API (mm) "+self.release['tag_name']+". This could take a few minutes.", '')
-        else:
-            ThreadProgress(self, "Ensuring MavensMate API (mm) is up to date. This could take a few minutes.", '')
-
         try:
+            debug('mm_installer -->')
+
+            if self.release != None:
+                ThreadProgress(self, "Installing MavensMate API (mm) "+self.release['tag_name']+". This could take a few minutes.", '')
+            else:
+                ThreadProgress(self, "Ensuring MavensMate API (mm) is up to date. This could take a few minutes.", '')
+
             if os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm.zip")):
                 os.remove(os.path.join(sublime.packages_path(),"MavensMate","mm.zip"))
 
@@ -190,17 +213,14 @@ class MmInstaller(threading.Thread):
                     return
 
                 # compare local version to server (github release) version
-                release_data = get_mm_releases()
-
-                latest_release = get_latest_release(release_data)
-                latest_version = latest_release['tag_name'].replace('v','')
+                latest_version = self.latest_release['tag_name'].replace('v','')
 
                 server_version_int = int(float(latest_version.replace(".", "")))
 
                 if server_version_int > installed_version_int:
                     debug('mm is out of date, prompting for an update')
-                    #if sublime.ok_cancel_dialog("A new version ("+latest_release['tag_name']+") of the MavensMate API (mm) is available, you are running "+version_data+". Would you like to update (recommended)? \n\nIf you no longer wish to see these notifications, toggle mm_check_for_updates to false.\n\nIf you would like MavensMate to automatically install updates to mm, set mm_auto_install_mm_updates to true."):
-                    if sublime.ok_cancel_dialog("A new version ("+latest_release['tag_name']+") of the MavensMate API (mm) is available, you are running "+version_data+". Would you like to update (recommended)? \n\nIf you no longer wish to see these notifications, toggle mm_check_for_updates to false."):
+                    #if sublime.ok_cancel_dialog("A new version ("+self.latest_release['tag_name']+") of the MavensMate API (mm) is available, you are running "+version_data+". Would you like to update (recommended)? \n\nIf you no longer wish to see these notifications, toggle mm_check_for_updates to false.\n\nIf you would like MavensMate to automatically install updates to mm, set mm_auto_install_mm_updates to true."):
+                    if sublime.ok_cancel_dialog("A new version ("+self.latest_release['tag_name']+") of the MavensMate API (mm) is available, you are running "+version_data+". Would you like to update (recommended)? \n\nIf you no longer wish to see these notifications, toggle mm_check_for_updates to false."):
                         if os.path.isdir(os.path.join(sublime.packages_path(),"MavensMate","mm")):
                             platform_util.rmtree(os.path.join(sublime.packages_path(),"MavensMate","mm"))
 
@@ -240,19 +260,9 @@ class MmInstaller(threading.Thread):
             PanelThreadProgress(self)
 
         if self.release == None:
-            # https://api.github.com/repos/joeferraro/mm/releases
-            if 'linux' in sys.platform:
-                # https://github.com/joeferraro/mm/releases/download/v0.1.9/mm-osx.zip
-                url_exe = platform_util.url_transfer_executable()
-                debug(url_exe+" https://api.github.com/repos/joeferraro/mm/releases")
-                releases = os.popen(url_exe+" https://api.github.com/repos/joeferraro/mm/releases").read()
-            else:
-                releases = urllib.request.urlopen('https://api.github.com/repos/joeferraro/mm/releases').read().decode('utf-8')
-            debug('releases -->', releases)
-            release_data = json.loads(releases)
-
-            release_to_install = get_latest_release(release_data)
+            release_to_install = self.latest_release
         else:
+            # installing a specific release
             release_to_install = self.release
 
         debug(release_to_install)
