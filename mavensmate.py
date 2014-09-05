@@ -1354,7 +1354,7 @@ class InstallMmVersionCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm_releases = mm_installer.get_mm_releases()
         self.release_options = mm_installer.get_platform_releases(mm_releases)
-        print(self.release_options)
+        # print(self.release_options)
         opts = []
         for r in self.release_options:
             label = r['name']
