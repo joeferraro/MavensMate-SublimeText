@@ -4,6 +4,7 @@ import subprocess
 import json
 import sys
 import re
+import platform
 #dist_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.insert(0, dist_dir)
 from xml.dom.minidom import parse
@@ -74,6 +75,13 @@ def plugin_loaded():
     global debug
     debug = config.debug
     debug('Loading MavensMate for Sublime Text')
+
+    try:
+        if 'darwin' in sys.platform and int(float(str(platform.mac_ver()[0]).split('.')[1])) <= 7:
+            debug('WARNING: Unsupported OSX version. Please see (OPTION 3) for install help: http://mavensmate.com/Getting_Started/Users')
+    except:
+        pass
+
     settings = sublime.load_settings('mavensmate.sublime-settings')
     merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
     try:
