@@ -4,21 +4,10 @@ import sys
 import shutil
 import zipfile
 
-try:
-    from .threads import ThreadTracker
-    from .threads import ThreadProgress
-    from .threads import PanelThreadProgress
-    from .printer import PanelPrinter
-    import MavensMate.lib.command_helper as command_helper
-    import MavensMate.util as util
-    import MavensMate.lib.mm_interface as mm
-except:
-    from lib.threads import ThreadTracker
-    from lib.threads import ThreadProgress
-    from lib.threads import PanelThreadProgress
-    from lib.printer import PanelPrinter
-    import lib.command_helper as command_helper
-    import util
+from .printer import PanelPrinter
+import MavensMate.util as util
+import MavensMate.lib.mm_interface as mm
+import MavensMate.lib.community as community
 
 #creates resource-bundles for the static resource(s) selected        
 def create(self, files, refresh=False):
@@ -72,7 +61,7 @@ def create(self, files, refresh=False):
 
     printer.write('[Resource bundle creation complete]\n')
     printer.hide()
-    util.send_usage_statistics('Create Resource Bundle') 
+    community.sync_activity('new_resource_bundle')
 
 def deploy(bundle_name):
     if '.resource' not in bundle_name:
@@ -98,8 +87,7 @@ def deploy(bundle_name):
         "files" : [file_path]
     }
     mm.call('compile', params=params, message=message)
-    util.send_usage_statistics('Deploy Resource Bundle')
-
+    community.sync_activity('deploy_resource_bundle')
 
 def refresh(self, dirs):
     files = []

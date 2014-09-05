@@ -15,7 +15,6 @@ import urllib.request
 
 import MavensMate.config as config
 import MavensMate.lib.apex.apex_extensions as apex_extensions
-from MavensMate.lib.usage_reporter import UsageReporter
 from MavensMate.lib.mm_installer import MmInstaller
 
 import sublime
@@ -462,11 +461,6 @@ def get_file_as_string(file_path):
         pass
     return ""
     
-def send_usage_statistics(action):
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if settings.get('mm_send_usage_statistics') == True:
-        sublime.set_timeout(lambda: UsageReporter(action).start(), 3000)
-
 def refresh_active_view():
     sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
 

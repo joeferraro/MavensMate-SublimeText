@@ -37,6 +37,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
 	"mm_api_version" : "31.0",
 
+	//generate from https://mavensmate.herokuapp.com. used to capture high-level usage statistics for community functionality like collaboration, gamification
+	"mm_community_api_token" : "",
+
 	//if true, MavensMate will automatically hide the debug panel upon a successful operation
 	"mm_hide_panel_on_success" : true,
 
