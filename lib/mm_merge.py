@@ -14,7 +14,7 @@ try:
     lock = __file__ + '.lock'
 
     if not os.path.exists(lock):
-        print("forcing MavensMate Diff to reload itself")
+        # print("forcing MavensMate Diff to reload itself")
         handle = open(lock, 'w')
         handle.write('')
         handle.close()
@@ -29,7 +29,8 @@ try:
     else:
         os.remove(lock)
 except:
-    print("could not force MavensMate Diff to reload")
+    pass
+    # print("could not force MavensMate Diff to reload")
 # end hack
 
 mmDiffView = None

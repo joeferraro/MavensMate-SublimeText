@@ -1,0 +1,6 @@
+MavensMate-SublimeText 4.0.2 changelog
+
+- Fixes issue where incorrect version number was being displayed in Panel and About
+- mm tool now downloaded/installed to User/MavensMate directory to ensure package updates don't require mm download
+- implements mm_beta_user setting that when true will download pre-release versions of the mm command-line tool
+- implements check for OSX 10.7.x and debug message to let those users know that special setup is required

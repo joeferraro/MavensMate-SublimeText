@@ -58,9 +58,9 @@ class BackgroundWorker(threading.Thread):
         else: #running mm executable normally
             if mm_path == 'default': #default location is in plugin root 'mm' directory
                 if sys.platform == 'linux' or sys.platform == 'darwin':
-                    mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
+                    mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm")
                 else:
-                    mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")
+                    mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm.exe")
             
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 global_config.debug('mm command: ')

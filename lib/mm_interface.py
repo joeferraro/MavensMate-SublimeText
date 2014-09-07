@@ -8,25 +8,18 @@ import sys
 import time
 import html.parser
 import re
-try:
-    from .threads import ThreadTracker
-    from .threads import ThreadProgress
-    from .threads import PanelThreadProgress
-    from .printer import PanelPrinter
-    from .mm_merge import MavensMateDiffThread
-    import MavensMate.lib.command_helper as command_helper
-    from MavensMate.lib.mm_response_handlers import MMResultHandler
-    from MavensMate.lib.exceptions import *
-    import MavensMate.util as util
-    import MavensMate.config as config
-except:
-    from lib.threads import ThreadTracker
-    from lib.threads import ThreadProgress
-    from lib.threads import PanelThreadProgress
-    from lib.printer import PanelPrinter
-    from lib.mm_merge import MavensMateDiffThread
-    import lib.command_helper as command_helper
-    import util
+from .threads import ThreadTracker
+from .threads import ThreadProgress
+from .threads import PanelThreadProgress
+from .printer import PanelPrinter
+from .mm_merge import MavensMateDiffThread
+import MavensMate.lib.command_helper as command_helper
+from MavensMate.lib.mm_response_handlers import MMResultHandler
+from MavensMate.lib.exceptions import *
+import MavensMate.util as util
+import MavensMate.config as config
+import MavensMate.lib.community as community
+import shutil
 
 sublime_version = int(float(sublime.version()))
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -58,7 +51,7 @@ def call(operation, use_mm_panel=True, **kwargs):
             return
 
         if sys.platform == 'linux' or sys.platform == 'darwin':
-            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm")):
+            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm")):
                 active_window_id = sublime.active_window().id()
                 printer = PanelPrinter.get(active_window_id)
                 printer.show()
@@ -66,7 +59,7 @@ def call(operation, use_mm_panel=True, **kwargs):
                 printer.write('\n'+message+'\n')
                 return
         else:
-            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")):
+            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm.exe")):
                 active_window_id = sublime.active_window().id()
                 printer = PanelPrinter.get(active_window_id)
                 printer.show()
@@ -107,6 +100,8 @@ def call(operation, use_mm_panel=True, **kwargs):
     if operation != 'new_project' and operation != 'new_project_from_existing_directory' and util.is_project_legacy(window) == True:
         operation = 'upgrade_project'
     
+    community.sync_activity(operation)
+
     threads = []
     thread = MavensMateTerminalCall(
         operation, 
@@ -307,9 +302,9 @@ class MavensMateTerminalCall(threading.Thread):
         else: # otherwise, run mm executable normally
             if self.mm_path == 'default': #default location is in plugin root 'mm' directory
                 if sys.platform == 'linux' or sys.platform == 'darwin':
-                    self.mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm")
+                    self.mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm")
                 else:
-                    self.mm_path = os.path.join(sublime.packages_path(),"MavensMate","mm","mm.exe")
+                    self.mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm.exe")
             
             # if 'win32' in sys.platform and '.exe' not in self.mm_path:
             #     self.mm_path = self.mm_path+'.exe'

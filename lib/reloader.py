@@ -21,7 +21,6 @@ if sublime.version() == '' or int(sublime.version()) > 3000:
 reload_mods = []
 for mod in sys.modules:
     if mod[0:15].lower().replace(' ', '_') == 'mavensmate.lib.' and sys.modules[mod] != None:
-        #print(mod[0:15].lower().replace(' ', '_'))
         reload_mods.append(mod)
 
 # print(reload_mods)
@@ -34,20 +33,20 @@ mods_load_order = [
     '',
     '.apex_extensions',
     '.command_helper',
-    '.commands',
-    '.mm_interface',
-    '.printer',
-    '.threads',
-    '.times',
-    '.usage_reporter',
-    '.views',
-    '.mm_merge',
-    '.mm_installer',
+    '.community',
     '.completioncommon',
-    '.vf',
+    '.exceptions',
+    '.mm_installer',
+    '.mm_interface',
+    '.mm_merge',
+    '.mm_response_handlers',
     '.parsehelp',
-    '.resource_bundle',
-    '.mm_response_handlers'
+    '.platform_util',
+    '.printer',
+    '.resource_bundle'
+    '.threads',
+    '.vf',
+    '.views'
 ]
 
 for suffix in mods_load_order:

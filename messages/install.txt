@@ -1,0 +1,23 @@
+MavensMate Salesforce1 IDE for Sublime Text
+
+Welcome to MavensMate for Sublime Text! Our mission at MavensMate is to make building Salesforce1 applications easy and fun regardless of platform or text editor. 
+
+SUPPORTED OPERATING SYSTEMS: 
+	- OSX 10.8.x+
+	- Windows 7, 8, Server 2008
+	- Linux Ubuntu 14
+
+HOMEPAGE: http://mavensmate.com
+GITHUB: https://github.com/joeferraro/MavensMate-SublimeText
+SUPPORT: https://github.com/joeferraro/MavensMate-SublimeText/issues (SEARCH BEFORE CREATING ISSUES!)
+
+Follow us: https://twitter.com/mavensmate
+
+Star our GitHub repos: 
+	- https://github.com/joeferraro/MavensMate-SublimeText
+	- https://github.com/joeferraro/MavensMate-Atom
+	- https://github.com/joeferraro/MavensMate-Templates
+	- https://github.com/joeferraro/mm
+
+Happy coding!
+
