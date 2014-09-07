@@ -70,7 +70,8 @@ class ActivityHandler(threading.Thread):
             except:
                 mac = 'unknown'
 
-            if settings.get('mm_community_api_token', None) != None:
+            community_api_token = settings.get('mm_community_api_token', None)
+            if community_api_token != None and community_api_token != '':
                 try:
                     api_access_token = settings.get('mm_community_api_token')
                     if 'linux' in sys.platform:
