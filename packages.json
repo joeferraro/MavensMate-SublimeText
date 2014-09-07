@@ -11,7 +11,7 @@
 				"osx": [
 					{
 						"version": "4.0.2",
-						"release_notes": "IMPORTANT: 4.0.0 now available. To update, visit: http://mavensmate.com/Upgrade_Help",
+						"release_notes": "IMPORTANT: 4.0.x now available. To update, visit: http://mavensmate.com/Upgrade_Help",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
