@@ -696,12 +696,13 @@ class ThreadProgress():
         sublime.set_timeout(lambda: self.run(i), self.speed)
 
 class MavensMateDiffThread(threading.Thread):
-    def __init__(self, window, left, right, leftTmp=False, rightTmp=False):
+    def __init__(self, window, left, right, leftTmp=False, rightTmp=False, **kwargs):
         self.window = window
         self.left = left
         self.right = right
         self.leftTmp = leftTmp
         self.rightTmp = rightTmp
+        self.compile_if_no_difference = kwargs.get('compile_if_no_difference', True)
 
         #self.text1 = self.left.substr(sublime.Region(0, self.left.size()))
 
@@ -754,11 +755,11 @@ class MavensMateDiffThread(threading.Thread):
             if self.rightTmp and not isinstance(self.right, sublime.View):
                 os.remove(self.right)
             
-            args = {
-                "files"     : [self.left.file_name()]
-            }
-            self.window.run_command('force_compile_file', args)
-            
+            if self.compile_if_no_difference:
+                args = {
+                    "files"     : [self.left.file_name()]
+                }
+                self.window.run_command('force_compile_file', args)
             return
 
         diff = MavensMateDiffer().difference(self.text1, self.text2)

@@ -12,7 +12,8 @@
 			{ "caption": "Deploy To Server...", "command": "deploy_active_file" },
 			{ "caption": "Mark As Merged...", "command": "refresh_active_properties_from_server" },
 			{ "caption": "Refresh File From Server...", "command": "refresh_active_file" },
-			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" }
+			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" },
+			{ "caption": "Synchronize File With Server (beta)...", "command": "sync_with_server" }
 		]
 	},
 	{

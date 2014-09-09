@@ -1,4 +1,8 @@
 [
+  { 
+    "caption": "Synchronize Current File With Server (beta)...", 
+    "command": "sync_with_server" 
+  },
   {
     "caption": "MavensMate: Stub",
     "command": "mavens_stub"

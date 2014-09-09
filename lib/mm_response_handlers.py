@@ -62,6 +62,8 @@ class MMResultHandler(object):
                     self.__handle_org_wide_coverage_result()
                 elif self.operation == "delete":
                     self.__handle_delete_metadata_result()
+                elif self.operation == "sync_metadata_with_server":
+                    self.__handle_sync_with_server_response()
                 else:
                     self.__handle_generic_command_result()
             except:
@@ -73,6 +75,18 @@ class MMResultHandler(object):
         debug("HANDLING DELETE!")
         debug(self.result)
         self.__handle_compile_response()
+
+    def __handle_sync_with_server_response(self, **kwargs):
+        debug("DIFFING WITH SERVER!")
+        debug(self.result)
+
+        #diffing with server
+        if 'tmp_file_path' in self.result and 'body' in self.result:
+            self.__print_to_panel(self.result['body'])
+            th = MavensMateDiffThread(self.thread.window, self.thread.view, self.result['tmp_file_path'], compile_if_no_difference=False)
+            th.start()
+        else:
+            self.__print_to_panel("No difference between files.")
 
     def __handle_compile_response(self, **kwargs):  
         debug("HANDLING COMPILE!")

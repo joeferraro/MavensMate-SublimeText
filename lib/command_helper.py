@@ -14,6 +14,8 @@ def get_message(params, operation):
     message = 'Handling requested operation...'
     if operation == 'new_metadata':
         message = 'Creating New '+params['metadata_type']+': ' + params['params']['api_name']
+    elif operation == 'sync_metadata_with_server':
+        message = 'Synchronizing '+params['files'][0]+' with Salesforce.com server...'
     elif operation == 'synchronize':
         if 'files' in params and len(params['files'])>0:
             kind = params['files'][0]

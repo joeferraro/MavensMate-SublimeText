@@ -985,6 +985,22 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
         return util.is_mm_project()
 
 #deletes selected metadata
+class SyncWithServerCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        active_path = util.get_active_file()
+        active_file = os.path.basename(active_path)
+        params = {
+            "files" : [active_file]
+        }
+        result = mm.call('sync_metadata_with_server', context=self, params=params)
+
+    def is_enabled(self):
+        return util.is_mm_file()
+
+    def is_visible(self):
+        return util.is_mm_project()
+
+#deletes selected metadata
 class DeleteTraceFlagsForThisUser(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('delete_trace_flags', context=self, message="Deleting Trace Flags")
