@@ -1,48 +1,22 @@
 import sys 
 import os
-import subprocess
+import stat
 import json
 import threading 
 import re
-#import pipes
 import shutil
 import codecs
 import string
 import random
-import zipfile
-import traceback
-from xml.dom.minidom import parse, parseString
+#import traceback
+from xml.dom.minidom import parse
 
-# from datetime import datetime, date, time
-
-# try: 
-#     import urllib
-# except ImportError:
-#     import urllib.request as urllib
 import urllib.request
 import base64
 
-if sys.version_info >= (3, 0):
-    #python 3
-    import MavensMate.config as config
-    import MavensMate.lib.apex.apex_extensions as apex_extensions
-    from MavensMate.lib.usage_reporter import UsageReporter
-    from MavensMate.lib.upgrader import AutomaticUpgrader
-    #from MavensMate.lib.printer import PanelPrinter
-else:
-    #python 2
-    import config
-    import lib.apex.apex_extensions as apex_extensions
-    from lib.usage_reporter import UsageReporter
-    from lib.upgrader import AutomaticUpgrader
-    #from lib.printer import PanelPrinter
-
-#if os.name != 'nt':
-#    import unicodedata
-
-#PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
-#for future reference (windows/linux support)
-#sublime.packages_path()
+import MavensMate.config as config
+import MavensMate.lib.apex.apex_extensions as apex_extensions
+from MavensMate.lib.mm_installer import MmInstaller
 
 import sublime
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -62,9 +36,10 @@ def mm_plugin_location():
 def package_check():
     #ensure user settings are installed
     try:
-        if not os.path.exists(os.path.join(packages_path,"User","mavensmate.sublime-settings")):
-            shutil.copyfile(os.path.join(config.mm_dir,"mavensmate.sublime-settings"), os.path.join(packages_path,"User","mavensmate.sublime-settings"))
+        if not os.path.isfile(os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings")):
+            shutil.copyfile(os.path.join(sublime.packages_path(),"MavensMate","mavensmate.sublime-settings"), os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings"))
     except:
+        debug('could not migrate default settings to user settings')
         pass
 
 def is_project_legacy(window=None):
@@ -515,33 +490,13 @@ def get_file_as_string(file_path):
         pass
     return ""
     
-def send_usage_statistics(action):
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if settings.get('mm_send_usage_statistics') == True:
-        sublime.set_timeout(lambda: UsageReporter(action).start(), 3000)
-
 def refresh_active_view():
     sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
 
 def check_for_updates():
     settings = sublime.load_settings('mavensmate.sublime-settings')
     if settings.get('mm_check_for_updates') == True:
-        sublime.set_timeout(lambda: AutomaticUpgrader().start(), 5000)
-
-def start_mavensmate_app():
-    p = subprocess.Popen("pgrep -fl \"MavensMate \"", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-    msg = None
-    if p.stdout is not None: 
-        msg = p.stdout.readlines()
-    elif p.stderr is not None:
-        msg = p.stdout.readlines() 
-    if msg == '' or len(msg) == 0:
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        if settings != None and settings.get('mm_app_location') != None:
-           os.system("open '"+settings.get('mm_app_location')+"'")
-        else:
-           #sublime.error_message("MavensMate.app is not running, please start it from your Applications folder.")
-           debug('MavensMate: MavensMate.app is not running, please start it from your Applications folder.')
+        sublime.set_timeout(lambda: MmInstaller().start(), 1000)
 
 def get_field_completions(object_name):
     _completions = []

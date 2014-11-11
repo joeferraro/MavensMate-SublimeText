@@ -8,24 +8,18 @@ import sys
 import time
 import html.parser
 import re
-try:
-    from .threads import ThreadTracker
-    from .threads import ThreadProgress
-    from .threads import PanelThreadProgress
-    from .printer import PanelPrinter
-    from .mm_merge import MavensMateDiffThread
-    import MavensMate.lib.command_helper as command_helper
-    from MavensMate.lib.mm_response_handlers import MMResultHandler
-    import MavensMate.util as util
-    import MavensMate.config as config
-except:
-    from lib.threads import ThreadTracker
-    from lib.threads import ThreadProgress
-    from lib.threads import PanelThreadProgress
-    from lib.printer import PanelPrinter
-    from lib.mm_merge import MavensMateDiffThread
-    import lib.command_helper as command_helper
-    import util
+from .threads import ThreadTracker
+from .threads import ThreadProgress
+from .threads import PanelThreadProgress
+from .printer import PanelPrinter
+from .mm_merge import MavensMateDiffThread
+import MavensMate.lib.command_helper as command_helper
+from MavensMate.lib.mm_response_handlers import MMResultHandler
+from MavensMate.lib.exceptions import *
+import MavensMate.util as util
+import MavensMate.config as config
+import MavensMate.lib.community as community
+import shutil
 
 sublime_version = int(float(sublime.version()))
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -40,22 +34,38 @@ def call(operation, use_mm_panel=True, **kwargs):
 
     settings = sublime.load_settings('mavensmate.sublime-settings')
     
-    if settings.get("mm_debug_mode") and not os.path.isfile(settings.get("mm_python_location")):
+    if settings.get("mm_developer_mode", False) and not os.path.isfile(settings.get("mm_python_location")):
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
         printer.show()
-        message = '[OPERATION FAILED]: Could not find your system python install. Please set the location at mm_python_location'
+        message = '[OPERATION FAILED]: mm_developer_mode is set to true, but we could not find your system python install. Please set the location at mm_python_location'
         printer.write('\n'+message+'\n')
         return
-
-    if 'darwin' in sys.platform:
-        if not os.path.isfile(settings.get('mm_location')) and settings.get('mm_debug_mode') == False:
+    else:
+        if settings.get('mm_path', 'default') != 'default' and not os.path.isfile(settings.get('mm_path')):
             active_window_id = sublime.active_window().id()
             printer = PanelPrinter.get(active_window_id)
             printer.show()
-            message = '[OPERATION FAILED]: Could not find MavensMate.app. Download MavensMate.app from mavensmate.com and place in /Applications. Also, please ensure mm_app_location and mm_location are set properly in Sublime Text (MavensMate --> Settings --> User)'
+            message = '[OPERATION FAILED]: Could not find the mm executable. If you wish to use the default location, ensure your mm_path setting is set to "default", then run MavensMate > Install/Update MavensMate API (mm). If you wish to run mm from a different location, ensure mm_path is pointed to that location on your local drive.'
             printer.write('\n'+message+'\n')
             return
+
+        if sys.platform == 'linux' or sys.platform == 'darwin':
+            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm")):
+                active_window_id = sublime.active_window().id()
+                printer = PanelPrinter.get(active_window_id)
+                printer.show()
+                message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
+                printer.write('\n'+message+'\n')
+                return
+        else:
+            if settings.get('mm_path', 'default') == 'default' and not os.path.isfile(os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm.exe")):
+                active_window_id = sublime.active_window().id()
+                printer = PanelPrinter.get(active_window_id)
+                printer.show()
+                message = '[OPERATION FAILED]: Could not find the mm executable. Please run MavensMate > Install/Update MavensMate API (mm) to install mm to your MavensMate for Sublime Text plugin directory.'
+                printer.write('\n'+message+'\n')
+                return 
 
     if 'linux' in sys.platform:
         if not os.path.isfile(settings.get('mm_subl_location')):
@@ -90,7 +100,7 @@ def call(operation, use_mm_panel=True, **kwargs):
     if operation != 'new_project' and operation != 'new_project_from_existing_directory' and util.is_project_legacy(window) == True:
         operation = 'upgrade_project'
     
-
+    community.sync_activity(operation)
 
     threads = []
     thread = MavensMateTerminalCall(
@@ -102,7 +112,7 @@ def call(operation, use_mm_panel=True, **kwargs):
         message=kwargs.get('message', None),
         use_mm_panel=use_mm_panel,
         process_id=util.get_random_string(10),
-        mm_location=settings.get('mm_location'),
+        mm_path=settings.get('mm_path'),
         callback=kwargs.get('callback', None)
     )
     if operation == 'index_apex':
@@ -119,7 +129,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.active_file    = kwargs.get('active_file', None)
         self.params         = kwargs.get('params', None)
         self.context        = kwargs.get('context', None)
-        self.mm_location    = kwargs.get('mm_location', None)
+        self.mm_path    = kwargs.get('mm_path', None)
         self.message        = kwargs.get('message', None)
         self.view           = None
         self.window         = None
@@ -274,35 +284,40 @@ class MavensMateTerminalCall(threading.Thread):
         #last_thread = ThreadTracker.get_last_added(self.window)
         ThreadTracker.add(self)
 
-        if self.settings.get('mm_debug_mode') or 'darwin' not in sys.platform:
+        # if user wishes to run mm.py via python install, ensure mm_python_location and mm_mm_py_location are set
+        if self.settings.get('mm_developer_mode', False): 
             python_path = self.settings.get('mm_python_location')
-            if 'darwin' in sys.platform or self.settings.get('mm_debug_location') != None:
-                mm_loc = self.settings.get('mm_debug_location')
-            else:
-                mm_loc = os.path.join(config.mm_dir,"mm","mm.py") #mm.py is bundled with sublime text plugin
-            
+            mm_mm_py_location = self.settings.get('mm_mm_py_location')
+
+            debug('mm.py command: ')
+            debug('"{0}" "{1}" {2}'.format(python_path, mm_mm_py_location, self.get_arguments()))
+
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 #osx, linux
-                debug('executing mm terminal call:')
-                debug("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()))
-                process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_mm_py_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
-                if self.settings.get('mm_debug_mode', False):
-                    #user wishes to use system python
-                    python_path = self.settings.get('mm_python_location')
-                    process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_mm_py_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+        else: # otherwise, run mm executable normally
+            if self.mm_path == 'default': #default location is in plugin root 'mm' directory
+                if sys.platform == 'linux' or sys.platform == 'darwin':
+                    self.mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm")
                 else:
-                    python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python.exe")
-                    if not os.path.isfile(python_path):
-                        python_path = python_path.replace("Program Files", "Program Files (x86)")
-                    debug('executing mm terminal call:')
-                    debug('"{0}" -E "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()))
-                    process = subprocess.Popen('"{0}" -E "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        else:
-            debug('executing mm terminal call:')
-            debug("{0} {1}".format(pipes.quote(self.mm_location), self.get_arguments()))
-            process = subprocess.Popen("{0} {1}".format(self.mm_location, self.get_arguments()), cwd=sublime.packages_path(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    self.mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm.exe")
+            
+            # if 'win32' in sys.platform and '.exe' not in self.mm_path:
+            #     self.mm_path = self.mm_path+'.exe'
+
+            if 'linux' in sys.platform or 'darwin' in sys.platform:
+                debug('mm command: ')
+                debug("{0} {1}".format(pipes.quote(self.mm_path), self.get_arguments()))
+                process = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_path), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            else:
+                debug('mm command: ')
+                debug('"{0}" {1}'.format(self.mm_path, self.get_arguments()))
+                process = subprocess.Popen('"{0}" {1}'.format(self.mm_path, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
         self.submit_payload(process)
         if process.stdout is not None: 
             mm_response = process.stdout.readlines()
@@ -321,15 +336,7 @@ class MavensMateTerminalCall(threading.Thread):
         if self.operation == 'compile':
             compile_callback(self, response_body)
         
-        #if self.operation == 'new_apex_overlay' or self.operation == 'delete_apex_overlay':
-        #    sublime.set_timeout(lambda : index_overlays(self.window), 100)
-        
-        #if self.callback != None:
-        #    debug(self.callback)
-        #    self.callback(response_body)
-
-        if sys.version_info >= (3, 0):
-            self.calculate_process_region()
+        self.calculate_process_region()
             
         ThreadTracker.remove(self)
 

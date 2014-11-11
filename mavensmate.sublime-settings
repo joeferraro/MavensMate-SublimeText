@@ -35,7 +35,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_https_proxy" : "",
 
 	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
-	"mm_api_version" : "30.0",
+	"mm_api_version" : "31.0",
+
+	//generate from https://mavensmate.herokuapp.com. used to capture high-level usage statistics for community functionality like collaboration, gamification
+	"mm_community_api_token" : "",
 
 	//if true, MavensMate will automatically hide the debug panel upon a successful operation
 	"mm_hide_panel_on_success" : true,
@@ -45,6 +48,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 
 	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
 	"mm_compile_on_save" : true,
+
+	//if false, mavensmate will store/retrieve sensitive data like passwords in a less secure way
+	//set to false only if having issues specifically with keyring or gnome-keyring
+	"mm_use_keyring" : true,
 
 	//if true, MavensMate will check for server conflicts and present a server diff when it finds a conflict
 	"mm_compile_check_conflicts": true,
@@ -61,8 +68,14 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will hook into the Sublime Text completions API to offer code assistance
 	"mm_autocomplete" : true,
 
-	//if true, MavensMate will check for updates when Sublime Text starts
+	//if true, MavensMate will check for updates to the mm executable when Sublime Text starts
 	"mm_check_for_updates" : true,
+
+	//if true, MavensMate will look for and download pre-releases (beta versions) of the MavensMate API, mm
+	"mm_beta_user" : false,
+
+	//if true, MavensMate will automatically install updates to the MavensMate API, mm
+	"mm_auto_install_mm_updates" : true,
 
 	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
 	"mm_log_level" : "INFO",
@@ -74,23 +87,26 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
 	"mm_send_usage_statistics" : true,
 
-	//OSX only: the location of MavensMate.app
-	"mm_app_location" : "/Applications/MavensMate.app",
+	//the path of the mm command line tool
+	//"default" means the mm directory is a top-level directory in the package root (MavensMate/mm)
+	//if you want MavensMate for Sublime Text to point to a different mm install, please set its path here (some/other/directory/mm)
+	"mm_path" : "default",
 
-	//OSX only: the location of the mm command line tool (must be inside MavensMate.app)
-	"mm_location" : "/Applications/MavensMate.app/Contents/Resources/mm/mm",
-
-	//linux/windows users: ignore this setting
+	//if true, mavensmate will open UIs in default browser
+	//linux/windows users: mavensmate UIs are static HTML files, so ensure your browser is set up to open .HTML files by default
 	"mm_use_browser_as_ui" : false, 
 
-	//(advanced users only) set to location of your python 2.7 install (mm_debug_mode must be set to true)
+	//(advanced users only) set to true if you want to use python 2.7 to run mm.py (mm_python_location and mm_py_location must be set)
+	"mm_developer_mode" : false,
+
+	//set to location of your python 2.7 install (mm_developer_mode must be set to true)
 	"mm_python_location" : "/usr/bin/python",
 
-	//(advanced users only) set to true if you want to use system python (mm_python_location must be set)
-	"mm_debug_mode" : false,
+	//if you wish to run mm via python, you must set this to the location of your mm.py file
+	"mm_mm_py_location" : "/path/to/mm.py",
 
 	//linux users: the location of your "subl" executable
-	"mm_subl_location" : "/usr/local/bin/subl",
+	"mm_subl_location" : "/usr/bin/subl",
 
 	//windows users: set to the location of your sublime_text.exe
 	"mm_windows_subl_location" : "C:/Program Files/Sublime Text 3/sublime_text.exe",
@@ -156,7 +172,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".customApplicationComponent",
 		".quickAction",
 		".approvalProcess",
-		".html"
+		".html",
+		".apxc",
+		".apxt"
 	],
 
 	//template location, e.g. "github" or "bitbucket" or "local". "remote" is synonymous with "github"
@@ -178,9 +196,6 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_template_auth" : false,
 	"mm_template_username" : "",
 	"mm_template_password" : "",
-
-	//if true, MavensMate.app will start when Sublime Text starts
-	"mm_start_app_on_st_startup" : true,
 
 	//the default metadata available in a project (may be set on a per-project basis in the "advanced" tab of the new and edit project UIs)
 	"mm_default_subscription" : [

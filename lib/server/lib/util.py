@@ -28,15 +28,14 @@ def generate_error_response(message):
 #the main job of the backgroundworker is to submit a request for work to be done by mm
 class BackgroundWorker(threading.Thread):
     def __init__(self, operation, params, async, request_id=None, payload=None, plugin_client='SUBLIME_TEXT_2'):
-        self.operation      = operation
-        self.params         = params
-        self.request_id     = request_id
-        self.async          = async
-        self.payload        = payload
-        self.plugin_client  = plugin_client
-        self.response       = None
-        self.mm_path        = sublime.load_settings('mavensmate.sublime-settings').get('mm_location')
-        self.debug_mode     = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_mode')
+        self.operation          = operation
+        self.params             = params
+        self.request_id         = request_id
+        self.async              = async
+        self.payload            = payload
+        self.plugin_client      = plugin_client
+        self.response           = None
+        self.settings           = sublime.load_settings('mavensmate.sublime-settings')
         threading.Thread.__init__(self)
 
     def run(self):
@@ -44,44 +43,42 @@ class BackgroundWorker(threading.Thread):
         args = self.get_arguments()
         global_config.debug('>>> running thread arguments on next line!')
         global_config.debug(args)
-        if self.debug_mode or 'darwin' not in sys.platform:
-            print(self.payload)
-            python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
+        mm_path = self.settings.get('mm_path')
+        if self.settings.get('mm_developer_mode', False): #user wishes to run mm.py via python install
+            python_path = self.settings.get('mm_python_location')
+            mm_mm_py_location = self.settings.get('mm_mm_py_location')
 
-            if 'darwin' in sys.platform or sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location') != None:
-                mm_loc = sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_location')
-            else:
-                mm_loc = os.path.join(config.mm_dir,"mm","mm.py")
-            #p = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        
             if 'linux' in sys.platform or 'darwin' in sys.platform:
                 #osx, linux
-                p = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                process = subprocess.Popen('\'{0}\' \'{1}\' {2}'.format(python_path, mm_mm_py_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
             else:
                 #windows
-                if sublime.load_settings('mavensmate.sublime-settings').get('mm_debug_mode', False):
-                    #user wishes to use system python
-                    python_path = sublime.load_settings('mavensmate.sublime-settings').get('mm_python_location')
-                    p = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                else:
-                    python_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","App","python.exe")
-                    if not os.path.isfile(python_path):
-                        python_path = python_path.replace("Program Files", "Program Files (x86)")
-                    p = subprocess.Popen('"{0}" -E "{1}" {2}'.format(python_path, mm_loc, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                process = subprocess.Popen('"{0}" "{1}" {2}'.format(python_path, mm_mm_py_location, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-            #process = subprocess.Popen("{0} {1} {2}".format(python_path, pipes.quote(mm_loc), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        else:
-            p = subprocess.Popen("{0} {1}".format(pipes.quote(self.mm_path), args), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        #print("PAYLOAD: ",self.payload)
-        #print("PAYLOAD TYPE: ",type(self.payload))
+        else: #running mm executable normally
+            if mm_path == 'default': #default location is in plugin root 'mm' directory
+                if sys.platform == 'linux' or sys.platform == 'darwin':
+                    mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm")
+                else:
+                    mm_path = os.path.join(sublime.packages_path(),"User","MavensMate","mm","mm.exe")
+            
+            if 'linux' in sys.platform or 'darwin' in sys.platform:
+                global_config.debug('mm command: ')
+                global_config.debug("{0} {1}".format(pipes.quote(mm_path), self.get_arguments()))
+                process = subprocess.Popen("{0} {1}".format(pipes.quote(mm_path), self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            else: #windows
+                global_config.debug('mm command: ')
+                global_config.debug('"{0}" {1}'.format(mm_path, self.get_arguments()))
+                process = subprocess.Popen('"{0}" {1}'.format(mm_path, self.get_arguments()), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
         if self.payload != None and type(self.payload) is str:
             self.payload = self.payload.encode('utf-8')
-        p.stdin.write(self.payload)
-        p.stdin.close()
-        if p.stdout is not None: 
-            mm_response = p.stdout.readlines()
-        elif p.stderr is not None:
-            mm_response = p.stderr.readlines()
+        process.stdin.write(self.payload)
+        process.stdin.close()
+        if process.stdout is not None: 
+            mm_response = process.stdout.readlines()
+        elif process.stderr is not None:
+            mm_response = process.stderr.readlines()
         
         #response_body = '\n'.join(mm_response.decode('utf-8'))
         strs = []

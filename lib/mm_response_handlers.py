@@ -60,12 +60,19 @@ class MMResultHandler(object):
                     self.__handle_coverage_report_result()
                 elif self.operation == "get_org_wide_test_coverage":
                     self.__handle_org_wide_coverage_result()
+                elif self.operation == "delete":
+                    self.__handle_delete_metadata_result()
                 else:
                     self.__handle_generic_command_result()
             except:
                 self.__print_result()
 
             self.__finish()
+
+    def __handle_delete_metadata_result(self, **kwargs):
+        debug("HANDLING DELETE!")
+        debug(self.result)
+        self.__handle_compile_response()
 
     def __handle_compile_response(self, **kwargs):  
         debug("HANDLING COMPILE!")
@@ -93,29 +100,40 @@ class MMResultHandler(object):
             try:
                 if 'State' in self.result and self.result['State'] == 'Error' and 'ErrorMsg' in self.result:
                     self.__print_to_panel("[OPERATION FAILED]: {0}\n\n{1}".format(self.result['ErrorMsg'], 'If you are having difficulty compiling, try toggling the mm_compile_with_tooling_api setting to \'false\' or cleaning your project.'))
-                elif 'State' in self.result and self.result['State'] == 'Failed' and 'CompilerErrors' in self.result:
+                elif 'State' in self.result and self.result['State'] == 'Failed' and ('CompilerErrors' in self.result or 'DeployDetails' in self.result):
                     #here we're parsing a response from the tooling endpoint
-                    errors = json.loads(self.result['CompilerErrors'])
+                    isLegacy = False #pre 30.0
+
+                    if 'DeployDetails' in self.result: #31.0 and up
+                        errors = self.result['DeployDetails']['componentFailures']
+                        lineKey = 'lineNumber'
+                        colKey = 'columnNumber'
+                    else:
+                        errors = json.loads(self.result['CompilerErrors'])
+                        isLegacy = True
+                        lineKey = 'line'
+                        colKey = 'column'
+
                     if type(errors) is not list:
                         errors = [errors]
                     if len(errors) > 0:
                         for e in errors:
                             line_col = ""
                             line, col = 1, 1
-                            if 'line' in e:
-                                if type(e['line']) is list:
-                                    line = int(e['line'][0])
+                            if lineKey in e:
+                                if type(e[lineKey]) is list:
+                                    line = int(e[lineKey][0])
                                 else:
-                                    line = int(e['line'])
+                                    line = int(e[lineKey])
                                 line_col = ' (Line: '+str(line)
-                            if 'column' in e:
-                                if type(e['column']) is list:
-                                    line = int(e['column'][0])
+                            if colKey in e:
+                                if type(e[colKey]) is list:
+                                    line = int(e[colKey][0])
                                 else:
-                                    col = int(e['column'])
+                                    col = int(e[colKey])
                                 line_col += ', Column: '+str(col)
                             if len(line_col):
-                                line_col += ')'
+                                line_col += ')' 
 
                             #scroll to the line and column of the exception
                             #if settings.get('mm_compile_scroll_to_error', True):
@@ -130,7 +148,10 @@ class MMResultHandler(object):
                             if type(problem) is list:
                                 problem = problem[0]
                             problem = html_parser.unescape(problem)
-                            file_base_name = e['name']
+                            if isLegacy:
+                                file_base_name = e['name']
+                            else:
+                                file_base_name = e['fileName']
                             if type(file_base_name) is list:
                                 file_base_name = file_base_name[0]
                             #if self.thread.window.active_view().name():

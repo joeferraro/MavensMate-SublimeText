@@ -4,37 +4,26 @@ import subprocess
 import json
 import sys
 import re
+import platform
 #dist_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.insert(0, dist_dir)
-from xml.dom.minidom import parse, parseString
+from xml.dom.minidom import parse
 
-if sys.version_info >= (3, 0):
-    # Python 3
-    import MavensMate.config as config
-    import MavensMate.util as util
-    import MavensMate.lib.command_helper as command_helper
-    import MavensMate.lib.mm_interface as mm
-    import MavensMate.lib.upgrader as upgrader
-    import MavensMate.lib.resource_bundle as resource_bundle
-    import MavensMate.lib.server.lib.server_threaded as server
-    import MavensMate.lib.server.lib.config as server_config
-    from MavensMate.lib.printer import PanelPrinter
-    from MavensMate.lib.threads import ThreadTracker
-    import MavensMate.lib.parsehelp as parsehelp
-    import MavensMate.lib.vf as vf
-    from MavensMate.lib.mm_merge import *
-    from MavensMate.lib.completioncommon import *
-else:
-    # Python 2
-    import config
-    import util 
-    import lib.command_helper as command_helper
-    import lib.mm_interface as mm
-    import lib.resource_bundle as resource_bundle
-    import lib.vf as vf
-    from lib.printer import PanelPrinter
-    from lib.threads import ThreadTracker
-    from lib.mm_merge import *
+import MavensMate.config as config
+import MavensMate.util as util
+import MavensMate.lib.command_helper as command_helper
+import MavensMate.lib.mm_interface as mm
+import MavensMate.lib.mm_installer as mm_installer
+import MavensMate.lib.resource_bundle as resource_bundle
+import MavensMate.lib.server.lib.server_threaded as server
+import MavensMate.lib.server.lib.config as server_config
+from MavensMate.lib.printer import PanelPrinter
+from MavensMate.lib.threads import ThreadTracker
+import MavensMate.lib.parsehelp as parsehelp
+import MavensMate.lib.vf as vf
+from MavensMate.lib.mm_merge import *
+from MavensMate.lib.completioncommon import *
+import MavensMate.lib.community as community
 
 import sublime
 import sublime_plugin
@@ -86,6 +75,13 @@ def plugin_loaded():
     global debug
     debug = config.debug
     debug('Loading MavensMate for Sublime Text')
+
+    try:
+        if 'darwin' in sys.platform and int(float(str(platform.mac_ver()[0]).split('.')[1])) <= 7:
+            debug('WARNING: Unsupported OSX version. Please see (OPTION 3) for install help: http://mavensmate.com/Getting_Started/Users')
+    except:
+        pass
+
     settings = sublime.load_settings('mavensmate.sublime-settings')
     merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
     try:
@@ -95,9 +91,8 @@ def plugin_loaded():
     config.settings = settings
     config.merge_settings = merge_settings
     util.package_check()
-    util.start_mavensmate_app()  
     util.check_for_updates()
-    util.send_usage_statistics('Startup')
+    community.sync_activity('startup')
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
@@ -106,13 +101,11 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         util.check_for_workspace()
         mm.call('new_project', False)
-        util.send_usage_statistics('New Project')
 
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('edit_project', False)
-        util.send_usage_statistics('Edit Project')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -135,7 +128,6 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
         except:
             params = {}
         mm.call('unit_test', context=command, params=params)
-        util.send_usage_statistics('Apex Unit Testing')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -144,7 +136,6 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('execute_apex', False)
-        util.send_usage_statistics('Execute Anonymous')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -153,7 +144,6 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('deploy', False)
-        util.send_usage_statistics('Deploy to Server')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -162,7 +152,6 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
 class NewDebugLogCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('debug_log', True)
-        util.send_usage_statistics('New Debug Log')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -263,7 +252,6 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
             "files"         : files
         }
         mm.call('compile', context=self, params=params)
-        util.send_usage_statistics('Compile Selected Files')
 
     def is_visible(self, files):
         return util.is_mm_project()
@@ -278,7 +266,6 @@ class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
 class RunAllTestsAsyncCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('run_all_tests', context=self)
-        util.send_usage_statistics('Run All Tests')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -301,7 +288,6 @@ class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
         except:
             params = {}
         mm.call('test_async', context=self, params=params)
-        util.send_usage_statistics('Async Apex Test')
 
     def is_enabled(command):
         return util.is_apex_class_file()
@@ -310,7 +296,6 @@ class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
 class GenerateApexTestCoverageReportCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('coverage_report', context=self, message="Generating Apex code coverage report for classes in your project...")
-        util.send_usage_statistics('Code Coverage Report')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -322,14 +307,12 @@ class CompileTabsCommand(sublime_plugin.WindowCommand):
             "files"         : util.get_tab_file_names()
         }
         mm.call('compile', context=self, params=params)
-        util.send_usage_statistics('Compile Tabs')
 
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to clean this project? All local (non-server) files will be deleted and your project will be refreshed from the server", "Clean"):
             mm.call('clean_project', context=self)
-            util.send_usage_statistics('Clean Project')
 
     def is_enabled(command):
         return util.is_mm_project()  
@@ -337,7 +320,7 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
 class OpenProjectSettingsCommand(sublime_plugin.WindowCommand):
     def run(self):
         path = os.path.join(util.mm_project_directory(),util.get_project_name()+'.sublime-settings')
-        sublime.active_window().run_command('open_file', {'file': path})
+        sublime.active_window().open_file(path)
 
     def is_enabled(command):
         return util.is_mm_project()      
@@ -395,7 +378,9 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         project_name = self.dir_map[self.picked_project[0]][0]
         workspace = self.dir_map[self.picked_project[0]][2]
         project_file_location = os.path.join(workspace,project_name,project_file)
-        #debug(project_file_location)
+        
+        debug('attempting to open project at -->')
+        debug(project_file_location)
         
         if not os.path.isfile(project_file_location):
             sublime.message_dialog("Cannot find project file for: "+project_name)
@@ -404,16 +389,17 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         if sys.platform == 'darwin':
             sublime_path = settings.get('mm_plugin_client_location', '/Applications')
-            if sublime_version >= 3000:
-                if os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
-                    subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                elif os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
-                    subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            else:
-                subprocess.Popen("'/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            if os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
+                subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            elif os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
+                subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         elif 'linux' in sys.platform:
             subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
-            subprocess.Popen("'{0}' --project '"+project_file_location+"'".format(subl_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            debug('subl location is: ', subl_location)
+            debug('running command: ')
+            command = "'{0}' --project '{1}'".format(subl_location, project_file_location)
+            debug(command)
+            subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         else:
             subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
             if not os.path.isfile(subl_location) and "x86" not in subl_location:
@@ -426,7 +412,6 @@ class RunApexScriptCommand(sublime_plugin.WindowCommand):
             "script_name"         : os.path.basename(util.get_active_file())
         }
         mm.call('run_apex_script', context=self, params=params)
-        util.send_usage_statistics('Run Apex Script')
 
     def is_enabled(command):
         try:
@@ -470,7 +455,6 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         for t in self.github_templates:
             self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        util.send_usage_statistics('New Apex Class')
 
     def on_select_from_github_template(self, selection):
         if selection != -1:
@@ -518,7 +502,6 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         for t in self.github_templates:
             self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        util.send_usage_statistics('New Apex Trigger')
 
     def on_select_from_github_template(self, selection):
         if selection != -1:
@@ -564,7 +547,6 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         for t in self.github_templates:
             self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        util.send_usage_statistics('New Visualforce Page')
 
     def on_select_from_github_template(self, selection):
         if selection != -1:
@@ -610,7 +592,6 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         for t in self.github_templates:
             self.template_options.append([t["name"], t["description"], "Author: "+t["author"]])
         sublime.active_window().show_quick_panel(self.template_options, self.on_select_from_github_template)
-        util.send_usage_statistics('New Visualforce Component')
 
     def on_select_from_github_template(self, selection):
         if selection != -1:
@@ -693,7 +674,6 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
                     "files"         : files
                 }
             mm.call('refresh', context=self, params=params)
-            util.send_usage_statistics('Refresh Selected From Server')
 
     def is_visible(self, dirs, files):
         return util.is_mm_project()
@@ -716,7 +696,6 @@ class RefreshActivePropertiesFromServerCommand(sublime_plugin.WindowCommand):
                 "files"         : [util.get_active_file()]
             }
             mm.call('refresh_properties', context=self, params=params)
-            util.send_usage_statistics('Refresh Active Properties From Server')
 
     def is_visible(self):
         if not util.is_mm_file():
@@ -743,7 +722,6 @@ class RefreshPropertiesFromServerCommand(sublime_plugin.WindowCommand):
                     "files"         : files
                 }
             mm.call('refresh_properties', context=self, params=params)
-            util.send_usage_statistics('Refresh Selected Properties From Server')
 
     def is_visible(self, dirs, files):
         if not util.is_mm_project():
@@ -779,7 +757,6 @@ class RefreshActiveFileCommand(sublime_plugin.WindowCommand):
                 "files"         : [util.get_active_file()]
             }
             mm.call('refresh', context=self, params=params)
-            util.send_usage_statistics('Refresh Active File From Server')
 
     def is_visible(self):
         return util.is_mm_file()
@@ -791,7 +768,6 @@ class SynchronizeActiveMetadataCommand(sublime_plugin.WindowCommand):
             "files"         : [util.get_active_file()]
         }
         mm.call('synchronize', context=self, params=params)
-        util.send_usage_statistics('Synchronized Active File to Server')
 
     def is_visible(self):
         return util.is_mm_file()
@@ -809,7 +785,6 @@ class SynchronizeSelectedMetadataCommand(sublime_plugin.WindowCommand):
                 "files"         : files
             }
         mm.call('synchronize', context=self, params=params)
-        util.send_usage_statistics('Synchronized Selected Metadata With Server')
 
     def is_visible(self, dirs, files):
         if dirs != None and type(dirs) is list and len(dirs) > 0:
@@ -830,7 +805,6 @@ class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
             "selected"         : [filename]
         }
         mm.call('unit_test', context=self, params=params)
-        util.send_usage_statistics('Run Apex Tests in Active File')
 
     def is_visible(self):
         return util.is_apex_class_file()
@@ -851,7 +825,6 @@ class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
                 params['selected'].append(filename)
 
             mm.call('unit_test', context=self, params=params)
-            util.send_usage_statistics('Run Apex Tests in Active File')
 
     def is_visible(self, files):
         if files != None and type(files) is list and len(files) > 0:
@@ -873,7 +846,6 @@ class OpenActiveSfdcUrlCommand(sublime_plugin.WindowCommand):
             "files"         : [util.get_active_file()]
         }
         mm.call('open_sfdc_url', context=self, params=params)
-        util.send_usage_statistics('Open Active File On Server')
 
     def is_visible(self):
         return util.is_mm_file()
@@ -889,7 +861,6 @@ class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
             "type"          : "wsdl"
         }
         mm.call('open_sfdc_url', context=self, params=params)
-        util.send_usage_statistics('Open Active WSDL File On Server')
 
     def is_visible(self):
         return util.is_apex_class_file()
@@ -907,7 +878,6 @@ class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
                 "files"         : files
             }
         mm.call('open_sfdc_url', context=self, params=params)
-        util.send_usage_statistics('Open Selected File On Server')
 
     def is_visible(self, files):
         if not util.is_mm_project: return False
@@ -925,7 +895,6 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
                 "type"          : "wsdl"
             }
         mm.call('open_sfdc_url', context=self, params=params)
-        util.send_usage_statistics('Open Selected WSDL File On Server')
 
     def is_visible(self, files):
         if files != None and type(files) is list and len(files) > 0:
@@ -949,7 +918,6 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
                 "files" : files
             }
             mm.call('delete', context=self, params=params)
-            util.send_usage_statistics('Delete Metadata')
 
     def is_visible(self):
         return util.is_mm_file()
@@ -961,7 +929,6 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
 class RefreshProjectApexSymbols(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('index_apex', context=self, message="Refreshing Symbol Tables")
-        util.send_usage_statistics('Refresh Apex Symbols') 
 
     def is_enabled(self):
         return util.is_mm_project()
@@ -977,7 +944,6 @@ class RefreshApexSymbols(sublime_plugin.WindowCommand):
                 "files" : class_names
             }
             mm.call('index_apex', context=self, params=params, message="Refreshing Symbol Table(s) for selected Apex Classes")
-            util.send_usage_statistics('Refresh Apex Symbols') 
 
     def is_visible(self, files):
         try:
@@ -1011,7 +977,6 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
             }
             result = mm.call('delete', context=self, params=params)
             self.window.run_command("close")
-            util.send_usage_statistics('Delete Metadata')
 
     def is_enabled(self):
         return util.is_mm_file()
@@ -1023,7 +988,6 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
 class DeleteTraceFlagsForThisUser(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('delete_trace_flags', context=self, message="Deleting Trace Flags")
-        util.send_usage_statistics('Delete Trace Flags')
 
     def is_enabled(self):
         return util.is_mm_project()
@@ -1033,7 +997,6 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to compile the entire project?", "Compile Project"):
             mm.call('compile_project', context=self)
-            util.send_usage_statistics('Compile Project')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -1042,7 +1005,6 @@ class CompileProjectCommand(sublime_plugin.WindowCommand):
 class IndexApexFileProperties(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('index_apex', False, context=self)
-        util.send_usage_statistics('Index Apex File Properties')  
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -1051,7 +1013,6 @@ class IndexApexFileProperties(sublime_plugin.WindowCommand):
 class IndexMetadataCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('index_metadata', True, context=self)
-        util.send_usage_statistics('Index Metadata')  
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -1059,7 +1020,6 @@ class IndexMetadataCommand(sublime_plugin.WindowCommand):
 class NewQuickLogCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('new_quick_log', True)
-        util.send_usage_statistics('New Quick Log')
 
     def is_enabled(self):
         return util.is_mm_project()
@@ -1068,7 +1028,6 @@ class NewQuickLogCommand(sublime_plugin.WindowCommand):
 class FetchLogsCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('fetch_logs', True)
-        util.send_usage_statistics('Fetch Apex Logs') 
 
     def is_enabled(self):
         return util.is_mm_project() 
@@ -1077,7 +1036,6 @@ class FetchLogsCommand(sublime_plugin.WindowCommand):
 class FetchCheckpointsCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('fetch_checkpoints', True)
-        util.send_usage_statistics('Fetch Apex Checkpoints') 
 
     def is_enabled(self):
         return util.is_mm_project() 
@@ -1139,7 +1097,6 @@ class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
             "id" : self.overlay[1]
         }
         mm.call('delete_apex_overlay', context=self, params=params, message="Deleting checkpoint...", callback=self.reload)
-        util.send_usage_statistics('Delete Apex Checkpoint') 
 
     def reload(self, cmd=None):
         debug("Reloading Apex Checkpoints")
@@ -1153,7 +1110,6 @@ class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
 class IndexApexCheckpointsCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('index_apex_overlays', False, context=self, callback=self.reload)
-        util.send_usage_statistics('Index Apex Overlays')  
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -1166,7 +1122,6 @@ class IndexApexCheckpointsCommand(sublime_plugin.WindowCommand):
 class ResetMetadataContainerCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('reset_metadata_container', True, context=self, message="Fetching new MetadataContainer...")
-        util.send_usage_statistics('Reset Metadata Container')  
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -1178,7 +1133,6 @@ class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
             "classes" : [util.get_active_file()] 
         }
         mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(params["classes"][0]), params=params)
-        util.send_usage_statistics('Apex Code Coverage')  
 
     def is_enabled(command):
         return util.is_apex_class_file()
@@ -1187,7 +1141,6 @@ class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
 class HideCoverageCommand(sublime_plugin.WindowCommand):
     def run(self):
         util.clear_marked_line_numbers(self.window.active_view(), "no_apex_coverage")
-        util.send_usage_statistics('Hide Apex Coverage')  
 
     def is_enabled(command):
         return util.is_apex_class_file()
@@ -1196,7 +1149,6 @@ class HideCoverageCommand(sublime_plugin.WindowCommand):
 class GetOrgWideTestCoverageCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('get_org_wide_test_coverage', True, context=self, message="Retrieving org-wide test coverage...")
-        util.send_usage_statistics('Org-Wide Apex Code Coverage')  
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -1235,7 +1187,6 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
         }
         #util.mark_overlay(self.line_number) #cant do this here bc it removes the rest of them
         mm.call('new_apex_overlay', context=self, params=params, message="Creating new checkpoint at line "+self.line_number+"...", callback=self.reload)
-        util.send_usage_statistics('New Apex Overlay')  
 
     def reload(self, cmd=None):
         debug("Reloading Apex Checkpoints")
@@ -1249,7 +1200,6 @@ class NewResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, files, dirs):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
             resource_bundle.create(self, files) 
-            util.send_usage_statistics('New Resource Bundle (Sidebar)')
 
     def is_visible(self, files, dirs):
         if not util.is_mm_project():
@@ -1273,7 +1223,7 @@ class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, dirs, files):
         if sublime.ok_cancel_dialog("This command will refresh the resource bundle(s) based on your local project's corresponding static resource(s). Do you wish to continue?", "Refresh"):
             resource_bundle.refresh(self, dirs) 
-            util.send_usage_statistics('Refresh Resource Bundle (Sidebar)')
+
     def is_visible(self, dirs, files):
         try:
             if files != None and type(files) is list and len(files) > 0:
@@ -1336,7 +1286,6 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             "directory" : directory
         }
         mm.call('new_project_from_existing_directory', params=params)
-        util.send_usage_statistics('New Project From Existing Directory')  
 
     def is_visible(self, dirs):
         if dirs != None and type(dirs) is list and len(dirs) > 1:
@@ -1397,29 +1346,50 @@ class CancelCurrentCommand(sublime_plugin.WindowCommand):
     #def is_visible(self, paths = None):
     #    return ThreadTracker.get_current(self.window.id()) != None
 
-#updates MavensMate plugin
-class UpdateMeCommand(sublime_plugin.ApplicationCommand):
+#installs specific mm version
+class InstallMmVersionCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return True
+
     def run(self):
-        if 'darwin' in sys.platform:
-            printer = PanelPrinter.get(sublime.active_window().id())
-            upgrader.execute(printer)
-        elif 'linux' in sys.platform:
-            printer = PanelPrinter.get(sublime.active_window().id())
-            upgrader.execute(printer)
-        elif 'win32' in sys.platform or 'win64' in sys.platform:
-            updater_path = os.path.join(os.environ["ProgramFiles"],"MavensMate","MavensMate-SublimeText.exe")
-            if not os.path.isfile(updater_path):
-                updater_path = updater_path.replace("Program Files", "Program Files (x86)")
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            subprocess.Popen('"{0}"'.format(updater_path), startupinfo=startupinfo)
+        mm_releases = mm_installer.get_mm_releases()
+        self.release_options = mm_installer.get_platform_releases(mm_releases)
+        # print(self.release_options)
+        opts = []
+        for r in self.release_options:
+            label = r['name']
+            sub_label = 'Release Date: '+r['published_at']
+            sub_sub_label = ''
+            if r['prerelease']:
+                sub_sub_label = 'beta'
+            else:
+                sub_sub_label = 'stable'
+            opts.append([label, sub_label, sub_sub_label])
+        self.window.show_quick_panel(opts, self.panel_done, sublime.MONOSPACE_FONT)
+
+    def panel_done(self, picked):
+        if 0 > picked:
+            return
+        #print(picked)
+        #print(self.release_options[picked])
+        selected_release = self.release_options[picked]
+        printer = PanelPrinter.get(sublime.active_window().id())
+        mm_installer.execute(printer, release=selected_release)
+        
+#installs/updates mm
+class UpdateMmCommand(sublime_plugin.ApplicationCommand):
+    def run(self):
+        printer = PanelPrinter.get(sublime.active_window().id())
+        mm_installer.execute(printer)
+
+    def is_enabled(self):
+        return True
 
 ####### <--START--> COMMANDS THAT ARE NOT *OFFICIALLY* SUPPORTED IN 2.0 BETA ##########
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):
     def run(self, edit): 
-        util.send_usage_statistics('New Shell Command')
         sublime.active_window().show_input_panel("MavensMate Command", "", self.on_input, None, None)
     
     def on_input(self, input): 
@@ -1662,7 +1632,8 @@ class ApexCompletions(sublime_plugin.EventListener):
         )
 
         data = view.substr(sublime.Region(0, locations[0]-len(prefix)))
-
+        debug('data: ')
+        debug(data)
         #full_data = view.substr(sublime.Region(0, view.size()))
         typedef = parsehelp.get_type_definition(data)
         debug('autocomplete type definition: ', typedef)
@@ -1906,14 +1877,13 @@ class OpenFileInProject(sublime_plugin.ApplicationCommand):
 class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('project_health_check')
-        util.send_usage_statistics('Project Health Check')  
 
     def is_enabled(command):
         return util.is_mm_project()
 
 class ScrubLogCommand(sublime_plugin.WindowCommand):
     def run(self):
-        util.send_usage_statistics('Scrub log')  
+        community.sync_activity('scrub_log')  
         active_view = self.window.active_view()
         fileName, ext = os.path.splitext(active_view.file_name())
 
@@ -1939,16 +1909,18 @@ class ScrubLogCommand(sublime_plugin.WindowCommand):
         new_view.set_name("Scrubbed Log")
         new_view.run_command('generic_text', {'text': string })
 
-
     def is_enabled(command):
-        active_view = sublime.active_window().active_view()
-        fn, ext = os.path.splitext(active_view.file_name())
-        if util.is_mm_project():
-            if ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
-                return True
+        try:
+            active_view = sublime.active_window().active_view()
+            fn, ext = os.path.splitext(active_view.file_name())
+            if util.is_mm_project():
+                if ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
+                    return True
+                else:
+                    return False
             else:
                 return False
-        else:
+        except:
             return False
 
 class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
@@ -2054,7 +2026,6 @@ class GenericTextCommand(sublime_plugin.TextCommand):
 class SignInWithGithub(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('github')
-        util.send_usage_statistics('Github Sign In')
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -2062,7 +2033,6 @@ class SignInWithGithub(sublime_plugin.WindowCommand):
 class ConnectProjectWithGithub(sublime_plugin.WindowCommand):
     def run(self):
         mm.call('github_connect_project')
-        util.send_usage_statistics('Github Project Connect')
 
     def is_enabled(command):
         if util.is_mm_project():
