@@ -26,6 +26,13 @@ settings = sublime.load_settings('mavensmate.sublime-settings')
 html_parser = html.parser.HTMLParser()
 debug = config.debug
 
+def notify(title, subtitle, message, url):
+    t = '-title {!r}'.format(title)
+    s = '-subtitle {!r}'.format(subtitle)
+    m = '-message {!r}'.format(message)
+    o = '-open {!r}'.format(url)
+    os.system('terminal-notifier {}'.format(' '.join([m, t, s,o])))
+
 #prepares and submits a threaded call to the mm executable
 def call(operation, use_mm_panel=True, **kwargs):
     debug('Calling mm_interface')
@@ -335,6 +342,11 @@ class MavensMateTerminalCall(threading.Thread):
         self.result = response_body
         if self.operation == 'compile':
             compile_callback(self, response_body)
+        if self.operation == 'refresh':
+            notify(title    = 'Success',
+            subtitle = self.active_file.rsplit('/',1).pop(),
+            message  = 'Refresh was successful!',
+            url = 'file://'+self.active_file)
         
         self.calculate_process_region()
             
@@ -371,6 +383,15 @@ def compile_callback(thread, result):
             util.clear_marked_line_numbers(thread.view)
             #if settings.get('mm_autocomplete') == True: 
             sublime.set_timeout(lambda: index_apex_code(thread), 100)
+            notify(title    = 'Success',
+            subtitle = thread.active_file.rsplit('/',1).pop(),
+            message  = 'Compilation was successful!',
+            url = 'file://'+thread.active_file)
+        else:
+            notify(title    = 'Failed',
+            subtitle = thread.active_file.rsplit('/',1).pop(),
+            message  = 'Compilation failed!',
+            url = 'file://'+thread.active_file)
     except BaseException as e:
         debug('Issue handling compile result in callback')
         debug(e) 
