@@ -1,6 +1,6 @@
 MavensMate-SublimeText 4.0.4 changelog
 
-- Improvements to SOQL syntax highlighting
+- Improvements to SOQL and DML syntax highlighting
 - Fix windows issues with loading checkpoint (issue #354)
 - Ability to retrieve templates from Bitbucket and Github, including private repos repos (GitHub only) (issue #30 / pull #427)
 
