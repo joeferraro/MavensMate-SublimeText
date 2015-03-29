@@ -1,6 +1,7 @@
 MavensMate-SublimeText 4.0.4 changelog
 
 - Improvements to SOQL syntax highlighting
+- Fix windows issues with loading checkpoint (issue #354)
 
 MavensMate-SublimeText 4.0.3 changelog
 
