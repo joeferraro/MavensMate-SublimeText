@@ -249,7 +249,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 
     //global switch; set to play sounds on MM events, such as compile successes/failures,
     //file refreshes, code coverage updates etc
-    "mm_play_sounds" : true,
+    "mm_play_sounds" : false,
 
     //set paths and events that should have sounds for different types of notifications; if empty/absent,
     //then default will be used. Windows users should use double backslash for path: \\
