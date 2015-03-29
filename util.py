@@ -12,6 +12,7 @@ import random
 from xml.dom.minidom import parse
 
 import urllib.request
+import base64
 
 import MavensMate.config as config
 import MavensMate.lib.apex.apex_extensions as apex_extensions
@@ -75,16 +76,12 @@ def parse_json_from_file(location):
 def parse_templates_package(mtype=None):
     try:
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        template_source = settings.get('mm_template_source', 'joeferraro/MavensMate-Templates/master')
         template_location = settings.get('mm_template_location', 'remote')
-        if template_location == 'remote':
-            if 'linux' in sys.platform:
-                response = os.popen('wget https://raw.githubusercontent.com/{0}/{1} -q -O -'.format(template_source, "package.json")).read()
-            else:
-                response = urllib.request.urlopen('https://raw.githubusercontent.com/{0}/{1}'.format(template_source, "package.json")).read().decode('utf-8')
+        if template_location == 'remote' or template_location == 'github' or template_location == 'bitbucket':
+            response = get_remote_package_json()
             j = json.loads(response)
         else:
-            local_template_path = os.path.join(template_source,"package.json")
+            local_template_path = os.path.join(settings.get('mm_template_source'),"package.json")
             debug(local_template_path)
             j = parse_json_from_file(local_template_path)
             if j == None or j == {}:
@@ -99,6 +96,38 @@ def parse_templates_package(mtype=None):
     else:
         return j
 
+def get_remote_package_json():
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+    auth = settings.get('mm_template_auth',False)
+    template_location = settings.get('mm_template_location', 'github')
+    template_repo_owner = settings.get('mm_template_repo_owner', 'joeferraro')
+    template__repo_name = settings.get('mm_template_repo_name', 'MavensMate-Templates')
+    template_repo_branch = settings.get('mm_template_repo_branch', 'master')
+    username = settings.get('mm_template_username')
+    password = settings.get('mm_template_password')
+
+    if template_location == 'github' or template_location == 'remote':
+        if auth:
+            endpoint = ("https://api.github.com/repos/{0}/{1}/contents/package.json?ref={2}").format(template_repo_owner, template__repo_name, template_repo_branch)
+        else:
+            endpoint = ("https://raw.githubusercontent.com/{0}/{1}/{2}/package.json").format(template_repo_owner, template__repo_name, template_repo_branch)
+    elif template_location == 'bitbucket':
+        endpoint = ("https://bitbucket.org/{0}/{1}/raw/{2}/package.json").format(template_repo_owner, template__repo_name, template_repo_branch)
+
+    if 'linux' in sys.platform:
+        if auth:
+            command = "wget {0} --header='Accept: application/vnd.github.VERSION.raw' --http-user={1} --http-password={2} -q -O -".format(endpoint, username, password)
+        else:
+            command = "wget {0} --header='Accept: application/vnd.github.VERSION.raw' -q -O -".format(endpoint)
+
+        return os.popen(command).read()
+
+    else:
+        req = urllib.request.Request(endpoint)
+        if auth:
+            req.add_header('Authorization', b'Basic ' + base64.b64encode(username.encode('ascii') + b':' + password.encode('ascii')))
+        req.add_header('Accept', 'application/vnd.github.VERSION.raw')
+        return urllib.request.urlopen(req).read().decode('utf-8')
 
 def get_number_of_lines_in_file(file_path):
     f = open(file_path)
