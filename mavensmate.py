@@ -1057,11 +1057,9 @@ class ShowApexCheckpoints(sublime_plugin.WindowCommand):
         debug('attempting to load apex overlays for current file')
         try:
             active_view = self.window.active_view()
-            fileName, ext = os.path.splitext(active_view.file_name())
-            debug(fileName)
-            debug(ext)
+            fileName, ext = os.path.splitext(os.path.basename(util.get_active_file()))
             if ext == ".cls" or ext == ".trigger":
-                api_name = fileName.split("/")[-1] 
+                api_name = fileName 
                 overlays = util.parse_json_from_file(util.mm_project_directory()+"/config/.overlays")
                 lines = []
                 for o in overlays:
@@ -1080,9 +1078,9 @@ class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
     def run(self):
         #options = [['Delete All In This File', '*']]
         options = []
-        fileName, ext = os.path.splitext(util.get_active_file())
+        fileName, ext = os.path.splitext(os.path.basename(util.get_active_file()))
         if ext == ".cls" or ext == ".trigger":
-            self.api_name = fileName.split("/")[-1] 
+            self.api_name = fileName
             overlays = util.get_execution_overlays(util.get_active_file())
             for o in overlays:
                 options.append(['Line '+str(o["Line"]), str(o["Id"])])
@@ -1156,13 +1154,13 @@ class GetOrgWideTestCoverageCommand(sublime_plugin.WindowCommand):
 #creates a new overlay
 class NewApexCheckpoint(sublime_plugin.WindowCommand):
     def run(self):
-        fileName, ext = os.path.splitext(util.get_active_file())
+        fileName, ext = os.path.splitext(os.path.basename(util.get_active_file()))
         if ext == ".cls" or ext == ".trigger":
             if ext == '.cls':
                 self.object_type = 'ApexClass'
             else: 
                 self.object_type = 'ApexTrigger'
-            self.api_name = fileName.split("/")[-1] 
+            self.api_name = fileName
             number_of_lines = util.get_number_of_lines_in_file(util.get_active_file())
             lines = list(range(number_of_lines))
             options = []
