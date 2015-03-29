@@ -245,5 +245,19 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_compare_before_deployment" : true,
 
 	//Advanced users only: if true, MavensMate will not check if your project was created using an older version of MavensMate
-	"mm_skip_legacy_check" : false
+	"mm_skip_legacy_check" : false,
+
+    //global switch; set to play sounds on MM events, such as compile successes/failures,
+    //file refreshes, code coverage updates etc
+    "mm_play_sounds" : true,
+
+    //set paths and events that should have sounds for different types of notifications; if empty/absent,
+    //then default will be used. Windows users should use double backslash for path: \\
+    //only .wav files allowed
+    "mm_play_general_sounds" : true,
+    "mm_play_success_sounds" : true,
+    "mm_play_failure_sounds" : true,
+    "mm_general_sound_path" : "",
+    "mm_success_sound_path" : "",
+    "mm_failure_sound_path" : ""
 }
