@@ -531,7 +531,7 @@ class MavensMateDiffView():
 
     def merge(self, direction, mergeAll):
         print('mm merging!', direction)
-        
+
         target_is_server_copy = False
 
         if self.mergeDisabled(direction):
@@ -629,7 +629,7 @@ class MavensMateDiffView():
                 else:
                     file_name = target.file_name()
                 args = {
-                    "files"     : [file_name]
+                    "paths"     : [file_name]
                 }
                 self.origin_window.run_command('force_compile_file', args)
                 sublime.set_timeout(lambda: self.window.run_command('close_window'), 0)
@@ -754,10 +754,10 @@ class MavensMateDiffThread(threading.Thread):
                 os.remove(self.left)
             if self.rightTmp and not isinstance(self.right, sublime.View):
                 os.remove(self.right)
-            
+
             if self.compile_if_no_difference:
                 args = {
-                    "files"     : [self.left.file_name()]
+                    "paths"     : [self.left.file_name()]
                 }
                 self.window.run_command('force_compile_file', args)
             return
@@ -868,7 +868,7 @@ class MavensMateDiffCommand(sublime_plugin.WindowCommand):
             line = ""
             if len(item['msg']) > 0:
                 line = re.sub('(^\s+)|(\s+$)', '', item['msg'][0])
-            
+
             itm.append(line)
 
             self.itemsList.append(itm)
@@ -1008,7 +1008,7 @@ class MavensMateDiffMergeRightCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(self):
         return self.is_visible() and len(mmDiffView.regions) > 0
-        
+
 class MavensMateDiffSelectedFiles(sublime_plugin.WindowCommand):
     def run(self, files):
         allViews = self.window.views()
@@ -1037,7 +1037,7 @@ class MavensMateDiffOverwriteServerCopy(sublime_plugin.WindowCommand):
     def run(self):
         if mmDiffView != None:
             args = {
-                "files"     : [mmDiffView.left.file_name()]
+                "paths"     : [mmDiffView.left.file_name()]
             }
             mmDiffView.origin_window.run_command('force_compile_file', args)
             sublime.set_timeout(lambda: mmDiffView.window.run_command('close_window'), 0)
@@ -1090,7 +1090,7 @@ class MavensMateDiffListener(sublime_plugin.EventListener):
                 wnd = view.window()
                 if view.id() == mmDiffView.left.id():
                     args = {
-                        "files"     : [mmDiffView.left.file_name()]
+                        "paths"     : [mmDiffView.left.file_name()]
                     }
                     mmDiffView.origin_window.run_command('force_compile_file', args)
                 #if wnd:

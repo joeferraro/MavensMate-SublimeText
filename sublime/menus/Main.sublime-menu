@@ -28,10 +28,6 @@
 	         		{
 	         			"caption": "Clean Project",
 	         			"command": "clean_project"
-	         		},
-	         		{
-	         			"caption": "Health Check (beta)",
-	         			"command": "project_health_check"
 	         		}
 	         	]
 	     	},
@@ -69,51 +65,45 @@
 	         	]
 	     	},
 	     	{
+	        	"id": "lightning", 
+	    		"caption": "Lightning",  
+	         	"children":
+	         	[
+	         		{
+	         			"caption": "New Lighting App...",
+	         			"command": "new_lightning_app"
+	         		},
+	         		{
+	         			"caption": "New Lighting Component...",
+	         			"command": "new_lightning_component"
+	         		},
+	         		{
+	         			"caption": "New Lighting Event...",
+	         			"command": "new_lightning_event"
+	         		},
+	         		{
+	         			"caption": "New Lighting Interface...",
+	         			"command": "new_lightning_interface"
+	         		}
+	         	]
+	     	},
+	     	{
 	        	"id": "debug", 
 	    		"caption": "Debugging",  
 	         	"children":
 	         	[
- 	         		{
-	         			"caption": "New Trace Flag...",
-	         			"command": "new_debug_log"
+	         		{
+	         			"caption": "Start Logging",
+	         			"command": "start_logging"
 	         		},
 	         		{
-	         			"caption": "Quick Trace Flag",
-	         			"command": "new_quick_log"
-	         		},
- 	         		{
-	         			"caption": "Fetch Logs",
-	         			"command": "fetch_logs"
+	         			"caption": "Stop Logging",
+	         			"command": "stop_logging"
 	         		},
 	         		{
-	         			"caption": "Scrub Log",
-	         			"command": "scrub_log"
-	         		},
-	         		{
-	         			"caption": "Delete Trace Flags For This User",
-	         			"command": "delete_trace_flags_for_this_user"
-	         		},
-	         		{"caption":"-"},
-	         		{
-	         			"caption": "New Apex Checkpoint...",
-	         			"command": "new_apex_checkpoint"
-	         		},
-	         		{
-	         			"caption": "Delete Apex Checkpoint...",
-	         			"command": "delete_apex_checkpoint"
-	         		},
-	         		{
-	         			"caption": "Fetch Checkpoints",
-	         			"command": "fetch_checkpoints"
-	         		},
- 	         		{
-	         			"caption": "Show Apex Checkpoints For This File",
-	         			"command": "show_apex_checkpoints"
-	         		},
-	         		{
-	         			"caption": "Hide Apex Checkpoints For This File",
-	         			"command": "hide_apex_checkpoints"
-	         		}
+	         			"caption": "Flush Debug Logs",
+	         			"command": "flush_debug_logs"
+	         		}	         		
 	         	]
 	     	},
 	     	{
@@ -242,10 +232,6 @@
 	    		"caption": "Utilities",  
 	         	"children":
 	         	[
-					{
-		        		"command": "reset_metadata_container", 
-		        		"caption": "Reset Metadata Container" 
-		        	},
     				{
     	        		"command": "refresh_project_apex_symbols", 
     	        		"caption": "Refresh Apex Symbol Tables For This Project" 
@@ -333,25 +319,10 @@
 			},
 			{"caption":"-"},
 			{
-				"caption": "Report Issue on GitHub",
+				"caption": "Report Issue on GitHub (Please search first!)",
 				"command": "open_url", 
 				"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}
 			},
-			{
-	        	"id": "mmapi", 
-	    		"caption": "MavensMate API (mm)",  
-	         	"children":
-	         	[
-					{
-    	        		"command": "install_mm_version", 
-    	        		"caption": "Install MavensMate API (mm) version..." 
-    	        	},
-					{
-						"caption": "Update MavensMate API (mm)",
-						"command": "update_mm"
-					}
-	         	]
-	     	},
 	     	{
 	     		"caption": "About MavensMate",
 	     		"command": "show_version"

@@ -36,18 +36,18 @@ mods_load_order = [
     '.community',
     '.completioncommon',
     '.exceptions',
-    '.mm_installer',
-    '.mm_interface',
-    '.mm_merge',
-    '.mm_response_handlers',
+    '.cli',
+    '.merge',
+    '.response_handler',
     '.parsehelp',
     '.platform_util',
     '.printer',
-    '.resource_bundle'
     '.threads',
     '.vf',
     '.views'
 ]
+
+print('[MAVENSMATE]: reloading modules')
 
 for suffix in mods_load_order:
     mod = mod_prefix + suffix

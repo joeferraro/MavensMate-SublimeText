@@ -1,15 +1,7 @@
 [
-  { 
-    "caption": "Synchronize Current File With Server (beta)...", 
-    "command": "sync_with_server" 
-  },
   {
     "caption": "MavensMate: Stub",
     "command": "mavens_stub"
-  },
-  {
-    "caption": "MavensMate: Scrub Log",
-    "command": "scrub_log"
   },
   {
     "caption": "MavensMate: Run All Tests",
@@ -40,14 +32,6 @@
     "command": "new_project"
   },
   {
-    "caption": "MavensMate: Checkout Project...",
-    "command": "checkout_project"
-  },
-  {
-    "caption": "MavensMate: Project Health Check (beta)",
-    "command": "project_health_check"
-  },
-  {
     "caption": "MavensMate: Edit Project...",
     "command": "edit_project"
   },
@@ -67,25 +51,17 @@
     "caption": "MavensMate: Delete File From Server...", 
     "command": "delete_active_metadata" 
   },
-  //{
-  //   "caption": "MavensMate: Cancel Current Command",
-  //   "command": "cancel_current"
-  // },
   {
-    "caption": "MavensMate: New Debug Log...",
-    "command": "new_debug_log"
+    "caption": "MavensMate: Start Logging",
+    "command": "start_logging"
   },
   {
-    "caption": "MavensMate: New Quick Debug Log",
-    "command": "new_quick_log"
+    "caption": "MavensMate: Stop Logging",
+    "command": "stop_logging"
   },
   {
-    "caption": "MavensMate: Fetch Logs",
-    "command": "fetch_logs"
-  },
-  {
-    "caption": "MavensMate: Fetch Checkpoints",
-    "command": "fetch_checkpoints"
+    "caption": "MavensMate: Flush Debug Logs",
+    "command": "flush_debug_logs"
   },
   {
     "caption": "MavensMate: Clean Project...",
@@ -128,6 +104,22 @@
     "command": "new_apex_component"
   },
   {
+    "caption": "MavensMate: New Lightning App",
+    "command": "new_lightning_app"
+  },
+  {
+    "caption": "MavensMate: New Lightning Component",
+    "command": "new_lightning_component"
+  },
+  {
+    "caption": "MavensMate: New Lightning Event",
+    "command": "new_lightning_event"
+  },
+  {
+    "caption": "MavensMate: New Lightning Interface",
+    "command": "new_lightning_interface"
+  },
+  {
     "caption": "MavensMate: Deploy To Server...",          
     "command": "deploy_to_server"
   },
@@ -148,32 +140,12 @@
     "command": "compile_tabs"
   },
   {
-    "caption": "MavensMate: Run Async Apex Tests For This Class",          
+    "caption": "MavensMate: Run Tests For This Class",          
     "command": "run_async_apex_tests"
   },
   {
     "caption": "MavensMate: Force Save Current File",          
     "command": "force_compile_file"
-  },
-  {
-    "caption": "MavensMate: Index Apex Checkpoints",          
-    "command": "index_apex_checkpoints"
-  },
-  {
-    "caption": "MavensMate: Show Apex Checkpoints For This File",          
-    "command": "show_apex_checkpoints"
-  },
-  {
-    "caption": "MavensMate: Hide Apex Checkpoints For This File",          
-    "command": "hide_apex_checkpoints"
-  },
-  {
-    "caption": "MavensMate: New Apex Checkpoint",          
-    "command": "new_apex_checkpoint"
-  },
-  {
-    "caption": "MavensMate: Delete Apex Checkpoint",          
-    "command": "delete_apex_checkpoint"
   },
   {
     "caption": "MavensMate: Refresh Current File From Server",          

@@ -22,6 +22,22 @@ def rmtree(directory):
         shutil.rmtree(directory)
         #shutil_force_rm_tree(directory)
 
+def node_path():
+    if os.path.exists(sublime.load_settings('mavensmate.sublime-settings').get('mm_node_path')):
+        return pipes.quote(sublime.load_settings('mavensmate.sublime-settings').get('mm_node_path'))
+    elif shutil.which('node') != None:
+        return pipes.quote(shutil.which('node'))
+    else:
+        raise MMException('Cannot find node. Please ensure nodejs is installed and either a) available on your path or b) the full path of node must be set in mm_node_path.')
+
+def npm_path():
+    if os.path.exists(sublime.load_settings('mavensmate.sublime-settings').get('mm_npm_path')):
+        return pipes.quote(sublime.load_settings('mavensmate.sublime-settings').get('mm_npm_path'))
+    elif shutil.which('npm') != None:
+        return pipes.quote(shutil.which('npm'))
+    else:
+        raise MMException('Cannot find node packagemanager. Please ensure npm is installed and either a) available on your path or b) the full path of npm must be set in mm_npm_path.')
+
 def url_transfer_executable():
     if shutil.which('curl') != None:
         return pipes.quote(shutil.which('curl'))

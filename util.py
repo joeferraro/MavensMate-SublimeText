@@ -1,21 +1,22 @@
-import sys 
+import sys
 import os
 import stat
 import json
-import threading 
+import threading
 import re
 import shutil
 import codecs
 import string
 import random
+import subprocess, signal
 #import traceback
 from xml.dom.minidom import parse
+import MavensMate.lib.platform_util as platform_util
 
 import urllib.request
 
 import MavensMate.config as config
 import MavensMate.lib.apex.apex_extensions as apex_extensions
-from MavensMate.lib.mm_installer import MmInstaller
 
 import sublime
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -23,6 +24,17 @@ packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
 
 debug = config.debug
+
+def kill_mavensmate_servers():
+    if platform_util.is_windows:
+        os.system('taskkill /f /im "mavensmate ui server"')
+    else:
+        p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+        out, err = p.communicate()
+        for line in out.splitlines():
+            if 'mavensmate ui server' in str(line):
+                pid = int(line.split(None, 1)[0])
+                os.kill(pid, signal.SIGKILL)
 
 def standard_object_names():
     return [
@@ -62,7 +74,7 @@ def is_project_legacy(window=None):
             return False
     else:
         return False
- 
+
 def parse_json_from_file(location):
     try:
         json_data = open(location)
@@ -111,7 +123,7 @@ def get_execution_overlays(file_path):
         response = []
         fileName, ext = os.path.splitext(file_path)
         if ext == ".cls" or ext == ".trigger":
-            api_name = fileName.split("/")[-1] 
+            api_name = fileName.split("/")[-1]
             overlays = parse_json_from_file(mm_project_directory()+"/config/.overlays")
             for o in overlays:
                 if o['API_Name'] == api_name:
@@ -182,7 +194,7 @@ def check_for_workspace():
     if workspace == None or workspace == "":
         #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
         msg = 'Your [mm_workspace] property is not set. Open \'MavensMate > Settings > User\' or press \'Cmd+Shift+,\' and set this property to the full path of your workspace. Thx!'
-        sublime.error_message(msg)  
+        sublime.error_message(msg)
         raise BaseException
 
     selected_workspace = None
@@ -190,7 +202,7 @@ def check_for_workspace():
         selected_workspace = workspace[0]
     elif type(workspace) is list and len(workspace) == 0:
         msg = 'Your [mm_workspace] directory \''+workspace+'\' does not exist. Please create the directory then try your operation again. Thx!'
-        sublime.error_message(msg)  
+        sublime.error_message(msg)
         raise BaseException
     else:
         selected_workspace = workspace
@@ -198,7 +210,7 @@ def check_for_workspace():
     if not os.path.exists(selected_workspace):
         #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
         msg = 'Your [mm_workspace] setting is not configured properly. Please ensure any locations specified in mm_workspace exist on the system, then try your operation again.'
-        sublime.error_message(msg)  
+        sublime.error_message(msg)
         raise BaseException
 
 def sublime_project_file_path():
@@ -208,7 +220,7 @@ def sublime_project_file_path():
     elif os.path.isfile(os.path.join(project_directory,get_project_name(),".sublime-project")):
         return os.path.join(project_directory,get_project_name(),".sublime-project")
     else:
-        return None 
+        return None
 
 def get_project_settings(window=None):
     if window == None:
@@ -223,14 +235,14 @@ def is_mm_project(window=None):
     if window == None:
         window = sublime.active_window()
     #workspace = mm_workspace();
-    #commented out bc it's confusing to users to see commands grayed out with no error 
+    #commented out bc it's confusing to users to see commands grayed out with no error
     #if workspace == "" or workspace == None or not os.path.exists(workspace):
     #    return False
     try:
         if os.path.isfile(os.path.join(window.folders()[0],"config",".settings")):
             return True
         elif os.path.isfile(os.path.join(window.folders()[0],"config","settings.yaml")):
-            return True 
+            return True
         else:
             return False
     except:
@@ -251,7 +263,7 @@ def get_apex_file_properties():
 def is_mm_file(filename=None):
     try:
         if is_mm_project():
-            if not filename: 
+            if not filename:
                 filename = get_active_file()
             project_directory = mm_project_directory(sublime.active_window())
             if os.path.join(project_directory,"src","documents") in filename:
@@ -278,7 +290,7 @@ def is_mm_dir(directory):
 def is_browsable_file(filename=None):
     try :
         if is_mm_project():
-            if not filename: 
+            if not filename:
                 filename = get_active_file()
             if is_mm_file(filename):
                 basename = os.path.basename(filename)
@@ -292,7 +304,7 @@ def is_browsable_file(filename=None):
 
 def is_apex_class_file(filename=None):
     if not filename: filename = get_active_file()
-    if is_mm_file(filename): 
+    if is_mm_file(filename):
         f, ext = os.path.splitext(filename)
         if ext == ".cls":
             return True
@@ -447,7 +459,7 @@ def get_tab_file_names():
                 pass
         else:
             pass      # leave new/untitled files (for the moment)
-    return tabs 
+    return tabs
 
 def get_file_as_string(file_path):
     #debug(file_path)
@@ -460,7 +472,7 @@ def get_file_as_string(file_path):
         #print "Couldn't open "+str(file_path)+" because: "+e.message
         pass
     return ""
-    
+
 def refresh_active_view():
     sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
 
@@ -476,7 +488,7 @@ def get_field_completions(object_name):
         for node in object_dom.getElementsByTagName('fields'):
             field_name = ''
             field_type = ''
-            for child in node.childNodes:                            
+            for child in node.childNodes:
                 if child.nodeName != 'fullName' and child.nodeName != 'type': continue
                 if child.nodeName == 'fullName':
                     field_name = child.firstChild.nodeValue
@@ -579,7 +591,7 @@ def get_symbol_table_completions(symbol_table):
                         completions.append((con["visibility"] + " " + con["name"]+"()", c["name"]+"()${1:}"))
             else:
                 completions.append(("INNER CLASS " + c["name"]+"() \t", c["name"]+"()${1:}"))
-    return sorted(completions) 
+    return sorted(completions)
 
 #returns suggestions based on tooling api symbol table
 def get_apex_completions(search_name, search_name_extra=None):
@@ -612,7 +624,7 @@ def get_apex_completions(search_name, search_name_extra=None):
                 for inner in symbol_table['innerClasses']:
                     if inner["name"] == search_name_extra:
                         return get_completions_for_inner_class(inner)
-    
+
     debug('no symbol table found for '+search_name)
 
 def zip_directory(directory_to_zip, where_to_put_zip_file=None):

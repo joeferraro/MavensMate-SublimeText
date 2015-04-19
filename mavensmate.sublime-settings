@@ -6,7 +6,15 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 ** Most changes require a SublimeText restart **
 */
 
-{
+{	
+	"mm_executable_path": "default",
+
+	"mm_server_executable_path" : "default",
+
+	"mm_node_path" : "/usr/local/bin/node",
+
+	"mm_npm_path" : "/usr/local/bin/npm",
+
 	//set to absolute location where you wish your MavensMate project to reside
 	//if the location does not exist, MavensMate will attempt to create it
 	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
@@ -79,6 +87,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 
 	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
 	"mm_log_level" : "INFO",
+
+	"mm_log_soap" : false,
 
 	//location where mm debug log should be placed (must be existing path)
 	//windows users: please set like so: C:\\path\\to\\your\\logs
@@ -230,7 +240,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_download_logs_during_run_all_tests" : false,
 
 	//timeout (in seconds) for calls to the Salesforce.com servers
-	"mm_timeout" : 10,
+	"mm_timeout" : 30,
 
 	//*BETA* if true, MavensMate will compare the state of the destination org(s) before deployment
 	"mm_compare_before_deployment" : true,
