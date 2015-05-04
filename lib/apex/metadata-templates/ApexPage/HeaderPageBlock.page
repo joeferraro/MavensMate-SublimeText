@@ -1,0 +1,11 @@
+<apex:page showHeader="true" sidebar="true">
+	<apex:sectionHeader title="MyHeaderTitle" subtitle="MyHeaderSubTitle" />
+	<apex:pageBlock title="MyPageBlockTitle">
+		<apex:pageBlockButtons location="top">
+			
+		</apex:pageBlockButtons>
+		<apex:pageBlockSection title="MyPageBlockSectionTitle">
+
+		</apex:pageBlockSection>
+	</apex:pageBlock>
+</apex:page>
