@@ -230,7 +230,7 @@ class MavensMateResponseHandler(object):
         '''
 
         #diffing with server
-        if 'actions' in self.response and util.to_bool(self.response['success']) == False:
+        if 'status' in self.response['result'] and self.response['result']['status'] == 'Conflict':
             diff_merge_settings = config.settings.get('mm_diff_server_conflicts', False)
             if diff_merge_settings:
                 if sublime.ok_cancel_dialog(self.response["body"], self.response["actions"][0].title()):
