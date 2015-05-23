@@ -202,7 +202,7 @@ class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
             files = [util.get_active_file()]
         params = {
             "paths"     : files,
-            "action"    : "overwrite"
+            "force"     : True
         }
         mm.call('compile-metadata', context=self.window, params=params)
 
@@ -217,7 +217,7 @@ class ForceCompileFileCommand(sublime_plugin.WindowCommand):
             files = [util.get_active_file()]
         params = {
             "paths"     : files,
-            "action"    : "overwrite"
+            "force"     : True
         }
         mm.call('compile-metadata', context=self.window, params=params)
 
