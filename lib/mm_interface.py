@@ -154,8 +154,8 @@ class MavensMateTerminalCall(threading.Thread):
 
         if self.use_mm_panel:
             self.printer.show()
-            self.printer.writeln(' ')
-            self.printer.writeln('                                                                          ')
+            self.printer.writeln('\n')
+            self.printer.writeln('=' * 80)
             self.printer.writeln('Operation: '+self.message)
             self.printer.writeln('Timestamp: '+self.process_id)
             self.printer.writeln('   Result:           ')
