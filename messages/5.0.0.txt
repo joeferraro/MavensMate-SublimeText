@@ -1,0 +1,3 @@
+MavensMate-SublimeText 5.0.0 changelog
+
+- This is a major release

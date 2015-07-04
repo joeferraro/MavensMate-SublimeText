@@ -51,8 +51,6 @@ class MavensMateResponseHandler(object):
                     self.__handle_coverage_result()
                 elif self.operation == 'coverage-report':
                     self.__handle_coverage_report_result()
-                elif self.operation == 'get-org-wide-test-coverage':
-                    self.__handle_org_wide_coverage_result()
                 elif self.operation == 'delete-metadata':
                     self.__handle_delete_metadata_result()
                 else:
@@ -73,9 +71,9 @@ class MavensMateResponseHandler(object):
             pass #TODO
 
     def __print_error(self):
-        msg = '[ERROR]: '+self.response.error
-        if self.response.stack is not None:
-            msg += '\n\n' + self.response.stack
+        msg = '[ERROR]: '+self.response['error']
+        # if 'stack' in self.response:
+        #     msg += '\n\n' + self.response.stack
         self.__print_to_panel(msg)
 
     def __print_to_panel(self, msg):
@@ -101,16 +99,13 @@ class MavensMateResponseHandler(object):
             {'success': True, 'result': 'Started logging for debug users'}
         '''
         msg = ''
-        if 'success' in self.response and self.response['success']:
+        if 'result' in self.response:
             msg = 'Success'
-            if 'result' in self.response:
-                msg += ': '+self.response['result']
-        elif 'success' in self.response and not self.response['success']:
+            msg += ': '+self.response['result']['message']
+        elif 'error' in self.response:
             msg = '[OPERATION FAILED]'
             if 'error' in self.response:
                 msg += ': '+self.response['error']
-            elif 'result' in self.response:
-                msg += ': '+self.response['result']
         self.__print_to_panel(msg)
 
     def __handle_delete_metadata_result(self, **kwargs):
@@ -231,22 +226,27 @@ class MavensMateResponseHandler(object):
 
         #diffing with server
         if 'status' in self.response['result'] and self.response['result']['status'] == 'Conflict':
+            conflicts = self.result['details']['conflicts']
+            first_conflict_file_name = list(conflicts.keys())[0]
+            first_conflict_data = conflicts[first_conflict_file_name]
             diff_merge_settings = config.settings.get('mm_diff_server_conflicts', False)
+            conflict_message = 'A conflict has been detected. '+first_conflict_file_name+' was last modified by '+first_conflict_data['remote']['LastModifiedBy']['Name']+' on '+first_conflict_data['remote']['LastModifiedDate']
             if diff_merge_settings:
-                if sublime.ok_cancel_dialog(self.response["body"], self.response["actions"][0].title()):
-                    self.__print_to_panel("Diffing with server")
-                    th = MavensMateDiffThread(self.thread.window, self.thread.view, self.response['tmp_file_path'])
+                if sublime.ok_cancel_dialog(conflict_message, 'Diff with server'):
+                    self.__print_to_panel(conflict_message + ". Diffing with server.")
+                    th = MavensMateDiffThread(self.thread.window, self.thread.view, first_conflict_data['remote']['tempPath'])
                     th.start()
                 else:
-                    self.__print_to_panel(self.response["actions"][1].title())
+                    self.__print_to_panel('Operation canceled.')
             else:
-                if sublime.ok_cancel_dialog(self.response["body"], "Overwrite Server Copy"):
-                    self.__print_to_panel("Overwriting server copy")
-                    self.thread.params['action'] = 'overwrite'
-                    if kwargs.get("callback", None) != None:
-                        sublime.set_timeout(lambda: self.callback('compile', params=self.thread.params), 100)
+                if sublime.ok_cancel_dialog(conflict_message, "Overwrite Server Copy"):
+                    self.__print_to_panel(conflict_message + ". Overwriting server copy.")
+                    args = {
+                        "paths" : [self.thread.view.file_name()]
+                    }
+                    sublime.set_timeout(lambda: self.thread.window.run_command('force_compile_file', args), 100)
                 else:
-                    self.__print_to_panel(self.response["actions"][1].title())
+                    self.__print_to_panel('Operation canceled.')
         else:
             try:
                 success = self.response['result']['success']
@@ -312,27 +312,24 @@ class MavensMateResponseHandler(object):
                 self.__print_to_panel('[OPERATION FAILED]: ' + msg)
 
     def __handle_coverage_result(self):
-        if self.response == []:
-            self.__print_to_panel("No coverage information for the requested Apex Class")
-        elif 'records' in self.response and self.response["records"] == []:
-            self.__print_to_panel("No coverage information for the requested Apex Class")
-        else:
-            if 'records' in self.response:
-                self.response = self.response['records']
-            if type(self.response) is list:
-                record = self.response[0]
-            else:
-                record = self.response
-            msg = str(record["percentCovered"]) + "%"
-            util.mark_uncovered_lines(self.thread.view, record["Coverage"]["uncoveredLines"])
-            self.__print_to_panel('[PERCENT COVERED]: ' + msg)
-
-    def __handle_org_wide_coverage_result(self):
-        if 'PercentCovered' not in self.response:
-            self.__print_to_panel("No coverage information available")
-        else:
-            msg = str(self.response["PercentCovered"]) + "%"
+        if isinstance( self.result, int ):
+            msg = str(self.result) + "%"
             self.__print_to_panel('[ORG-WIDE TEST COVERAGE]: ' + msg)
+        else:
+            if self.response == []:
+                self.__print_to_panel("No coverage information for the requested Apex Class")
+            elif 'records' in self.response and self.response["records"] == []:
+                self.__print_to_panel("No coverage information for the requested Apex Class")
+            else:
+                if 'records' in self.response:
+                    self.response = self.response['records']
+                if type(self.response) is list:
+                    record = self.response[0]
+                else:
+                    record = self.response
+                msg = str(record["percentCovered"]) + "%"
+                util.mark_uncovered_lines(self.thread.view, record["Coverage"]["uncoveredLines"])
+                self.__print_to_panel('[PERCENT COVERED]: ' + msg)
 
     def __handle_coverage_report_result(self):
         if self.response == []:
@@ -385,7 +382,7 @@ class MavensMateResponseHandler(object):
         '''
             {
               "result": {
-                "\/Users\/josephferraro\/Desktop\/dfs\/apex-scripts\/coolscript.cls": {
+                "coolscript.cls": {
                   "line": -1,
                   "column": -1,
                   "compiled": true,
@@ -398,20 +395,22 @@ class MavensMateResponseHandler(object):
               "success": true
             }
         '''
-        debug(self.result)
-        res = self.result[ self.thread.flags[0] ]
-        debug(res)
-        if res['success'] and res['compiled']:
-            self.__print_to_panel("Success")
-        elif not res['success']:
-            message = "[OPERATION FAILED]: "
-            if "compileProblem" in res and res["compileProblem"] != None:
-                message += "[Line: "+str(res["line"]) + ", Column: "+str(res["column"])+"] " + res["compileProblem"] + "\n"
-            if "exceptionMessage" in res and res["exceptionMessage"] != None:
-                message += res["exceptionMessage"] + "\n"
-            if "exceptionStackTrace" in res and res["exceptionStackTrace"] != None:
-                message += res["exceptionStackTrace"] + "\n"
-            self.__print_to_panel(message)
+        msg = ''
+        for script_name in self.result:
+            script_res = self.result[script_name]
+            debug(script_res)
+            if script_res['success'] and script_res['compiled']:
+                self.__print_to_panel("Success")
+                msg += 'Success '+script_name+'\n'
+            elif not script_res['success']:
+                msg = "[OPERATION FAILED]: "
+                if "compileProblem" in script_res and script_res["compileProblem"] != None:
+                    msg += "[Line: "+str(script_res["line"]) + ", Column: "+str(script_res["column"])+"] " + script_res["compileProblem"] + "\n"
+                if "exceptionMessage" in script_res and script_res["exceptionMessage"] != None:
+                    msg += script_res["exceptionMessage"] + "\n"
+                if "exceptionStackTrace" in script_res and script_res["exceptionStackTrace"] != None:
+                    msg += script_res["exceptionStackTrace"] + "\n"
+        self.__print_to_panel(msg)
 
     def __handle_test_result(self):
         '''

@@ -4,7 +4,6 @@ import subprocess
 import json
 import sys
 import re
-import signal
 from xml.dom.minidom import parse
 
 import MavensMate.config as config
@@ -17,9 +16,11 @@ import MavensMate.lib.vf as vf
 from MavensMate.lib.merge import *
 from MavensMate.lib.completioncommon import *
 import MavensMate.lib.community as community
+import MavensMate.lib.installer as installer
 
 import sublime
 import sublime_plugin
+import shutil
 
 debug = None
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -33,7 +34,6 @@ for top_level_class_name in apex_completions["publicDeclarations"]["System"].key
 
 reloader_name = 'MavensMate.lib.reloader'
 from imp import reload
-
 # Make sure all dependencies are reloaded on upgrade
 if reloader_name in sys.modules and sys.version_info >= (3, 0):
     reload(sys.modules[reloader_name])
@@ -42,42 +42,73 @@ if reloader_name in sys.modules and sys.version_info >= (3, 0):
 import MavensMate.lib.reloader as reloader
 
 def plugin_loaded():
-    util.kill_mavensmate_servers()
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+
+    # installer.execute()
 
     config.setup_logging()
     global debug
     debug = config.debug
     debug('=============> Loading MavensMate for Sublime Text')
 
-    settings = sublime.load_settings('mavensmate.sublime-settings')
+    debug(shutil.which('node'))
+    debug(shutil.which('npm'))
+    debug(shutil.which('mavensmate'))
+
+    # if settings.get('mmm_node_path') == None or not os.path.isfile(settings.get('mm_node_path')):
+
+
+    #     active_window_id = sublime.active_window().id()
+    #     printer = PanelPrinter.get(active_window_id)
+    #     printer.show()
+    #     message = '[ERROR]: This version of MavensMate requires Node.js and it could not be found on your system. To continue:\n'
+    #     message += '\n1. Ensure Node.js is installed. Follow directions at http://nodejs.org/'
+    #     message += '\n2. Install MavensMate node package by running "npm install mavensmate -g" in your terminal/command line.'
+    #     message += '\n3. In your MavensMate for Sublime Text user settings, set mm_node_path to the full path of the Node.Js executable.\n\tUnix/Linux users: you can find your node path by running \'which node\').\n\tWindows users: you can find your node path by running \'where node.exe\''
+    #     printer.write('\n'+message+'\n')
+    #     return
+
+    mm.kill_servers()
+    mm.start_server()
+
     merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
     config.settings = settings
     config.merge_settings = merge_settings
     util.package_check()
 
-    # mm.start_ui_server()
-
     community.sync_activity('startup')
 
-# def plugin_unloaded():
-#     debug('Unloading MavensMate')
-#     debug('killing child processes: ')
-#     debug(mm.server_pids)
-#     for pid in mm.server_pids:
-#         os.kill(pid, signal.SIGTERM)
+def plugin_unloaded():
+    mm.kill_servers()
+
+class RestartServerCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        active_window_id = sublime.active_window().id()
+        printer = PanelPrinter.get(active_window_id)
+        printer.show()
+        message = '\nRestarting MavensMate server...'
+        printer.write(message)
+        mm.kill_servers()
+        mm.start_server()
+        printer.write('Done.\n')
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
+
+#displays new project dialog
+class OpenMavensMateUi(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('open-ui', False, body={'args': { 'ui' : True }})
 
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         util.check_for_workspace()
-        mm.call('new-project', False, flags=[ '--ui' ])
+        mm.call('new-project', False, body={'args': { 'ui' : True }})
 
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('edit-project', False, flags=[ '--ui' ])
+        mm.call('edit-project', False, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -86,20 +117,22 @@ class EditProjectCommand(sublime_plugin.ApplicationCommand):
 class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         active_file = util.get_active_file()
+        body = {}
         try:
             if os.path.exists(active_file):
                 filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
                 if ext == '.cls':
-                    params = {
+                    body = {
                         "classes"         : [filename]
                     }
                 else:
-                    params = {}
+                    body = {}
             else:
-                params = {}
+                body = {}
         except:
-            params = {}
-        mm.call('run-tests', False, context=command, params=params, flags=[ '--ui' ])
+            body = {}
+        body['args'] = { 'ui' : True }
+        mm.call('run-tests', False, context=command, body=body)
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -107,7 +140,7 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('execute-apex', False, flags=[ '--ui' ])
+        mm.call('execute-apex', False, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -115,7 +148,7 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('deploy', False, flags=[ '--ui' ])
+        mm.call('deploy', False, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -123,7 +156,7 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-metadata', False, flags=[ '--ui', '-t', 'ApexClass' ])
+        mm.call('new-metadata', False, body={'args': { 'ui': True, 'type': 'ApexClass' }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -131,7 +164,7 @@ class NewApexClassCommand(sublime_plugin.ApplicationCommand):
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-metadata', False, flags=[ '--ui', '-t', 'ApexTrigger' ])
+        mm.call('new-metadata', False, body={'args': { 'ui': True, 'type': 'ApexTrigger' }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -139,7 +172,7 @@ class NewApexTriggerCommand(sublime_plugin.ApplicationCommand):
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-metadata', False, flags=[ '--ui', '-t', 'ApexPage' ])
+        mm.call('new-metadata', False, body={'args': { 'ui': True, 'type': 'ApexPage' }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -147,7 +180,7 @@ class NewApexPageCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-metadata', False, flags=[ '--ui', '-t', 'ApexComponent' ])
+        mm.call('new-metadata', False, body={'args': { 'ui': True, 'type': 'ApexComponent' }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -155,7 +188,7 @@ class NewApexComponentCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningAppCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-app', False, flags=[ '--ui' ])
+        mm.call('new-lightning-app', False, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -163,7 +196,7 @@ class NewLightningAppCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningComponentCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-component', False, flags=[ '--ui' ])
+        mm.call('new-lightning-component', False, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -171,7 +204,7 @@ class NewLightningComponentCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningEventCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-event', False, flags=[ '--ui' ])
+        mm.call('new-lightning-event', False, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -179,7 +212,7 @@ class NewLightningEventCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningInterfaceCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-interface', False, flags=[ '--ui' ])
+        mm.call('new-lightning-interface', False, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -200,34 +233,44 @@ class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
         debug('FORCE COMPILING!')
         if files == None:
             files = [util.get_active_file()]
-        params = {
+        body = {
             "paths"     : files,
             "force"     : True
         }
-        mm.call('compile-metadata', context=self.window, params=params)
+        mm.call('compile-metadata', context=self.window, body=body)
 
     def is_enabled(self):
        return util.is_mm_project();
 
 #deploys the currently active file
 class ForceCompileFileCommand(sublime_plugin.WindowCommand):
-    def run(self, files=None):
+    def run(self, paths=None):
         debug('FORCE COMPILING!')
-        if files == None:
-            files = [util.get_active_file()]
-        params = {
-            "paths"     : files,
+        if paths == None:
+            paths = [util.get_active_file()]
+        body = {
+            "paths"     : paths,
             "force"     : True
         }
-        mm.call('compile-metadata', context=self.window, params=params)
+        mm.call('compile-metadata', context=self.window, body=body)
+
+#handles compiling to server on save
+class SaveListener(sublime_plugin.EventListener):
+    def on_post_save_async(self, view):
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        if settings.get('mm_compile_on_save') == True and util.is_mm_file() == True:
+            body = {
+                "paths" : [util.get_active_file()]
+            }
+            mm.call('compile-metadata', context=view, body=body)
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):
-        params = {
+        body = {
             "paths" : [util.get_active_file()]
         }
-        mm.call('compile-metadata', context=self, params=params)
+        mm.call('compile-metadata', context=self, body=body)
 
     def is_enabled(command):
         return util.is_mm_file()
@@ -263,16 +306,6 @@ class SyntaxHandler(sublime_plugin.EventListener):
         except:
             pass
 
-#handles compiling to server on save
-class SaveListener(sublime_plugin.EventListener):
-    def on_post_save_async(self, view):
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        if settings.get('mm_compile_on_save') == True and util.is_mm_file() == True:
-            params = {
-                "paths" : [util.get_active_file()]
-            }
-            mm.call('compile-metadata', context=view, params=params)
-
 class MenuModifier(sublime_plugin.EventListener):
     def on_activated_async(self, view):
         view.file_name()
@@ -281,10 +314,10 @@ class MenuModifier(sublime_plugin.EventListener):
 class CompileSelectedFilesCommand(sublime_plugin.WindowCommand):
     def run (self, files):
         #print files
-        params = {
+        body = {
             "paths" : files
         }
-        mm.call('compile-metadata', context=self, params=params)
+        mm.call('compile-metadata', context=self, body=body)
 
     def is_visible(self, files):
         return util.is_mm_project()
@@ -311,16 +344,16 @@ class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
             if os.path.exists(active_file):
                 filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
                 if ext == '.cls':
-                    params = {
+                    body = {
                         "paths" : [filename]
                     }
                 else:
-                    params = {}
+                    body = {}
             else:
-                params = {}
+                body = {}
         except:
-            params = {}
-        mm.call('run-tests', context=self, params=params, message="Running Apex unit test(s)...")
+            body = {}
+        mm.call('run-tests', context=self, body=body, message="Running Apex unit test(s)...")
 
     def is_enabled(command):
         return util.is_apex_class_file()
@@ -336,10 +369,10 @@ class GenerateApexTestCoverageReportCommand(sublime_plugin.WindowCommand):
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
     def run (self):
-        params = {
+        body = {
             "paths"         : util.get_tab_file_names()
         }
-        mm.call('compile-metadata', context=self, params=params)
+        mm.call('compile-metadata', context=self, body=body)
 
 #replaces local copy of metadata with latest server copies
 class CleanProjectCommand(sublime_plugin.WindowCommand):
@@ -441,10 +474,10 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
 
 class RunApexScriptCommand(sublime_plugin.WindowCommand):
     def run(self):
-        params = {
-            "paths" : [ os.path.basename(util.get_active_file()) ]
+        body = {
+            "paths" : [ util.get_active_file() ]
         }
-        mm.call('run-apex-script', context=self, flags=[ util.get_active_file() ], message='Running Apex Script: '+os.path.basename(util.get_active_file()))
+        mm.call('run-apex-script', context=self, body=body, message='Running Apex Script: '+os.path.basename(util.get_active_file()))
 
     def is_enabled(command):
         try:
@@ -457,7 +490,7 @@ class NewApexScriptCommand(sublime_plugin.TextCommand):
         sublime.active_window().show_input_panel("Apex Script Name", "MyScriptName", self.finish, None, None)
 
     def finish(self, name):
-        mm.call('new-apex-script', False, flags=[ name ], message='Creating new Apex Script: '+name)
+        mm.call('new-apex-script', False, body={ 'name': name }, message='Creating new Apex Script: '+name)
         # sublime.active_window().open_file(os.path.join(util.mm_project_directory(), "apex-scripts", name))
 
     def is_enabled(command):
@@ -490,14 +523,14 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
     def run (self, dirs, files):
         if sublime.ok_cancel_dialog("Are you sure you want to overwrite the selected files' contents from Salesforce?", "Refresh"):
             if dirs != None and type(dirs) is list and len(dirs) > 0:
-                params = {
+                body = {
                     'paths'   : dirs
                 }
             elif files != None and type(files) is list and len(files) > 0:
-                params = {
+                body = {
                     'paths'         : files
                 }
-            mm.call('refresh-metadata', context=self, params=params)
+            mm.call('refresh-metadata', context=self, body=body)
 
     def is_visible(self, dirs, files):
         return util.is_mm_project()
@@ -506,10 +539,10 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
 class RefreshActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to overwrite this file's contents from Salesforce?", "Refresh"):
-            params = {
+            body = {
                 'paths' : [util.get_active_file()]
             }
-            mm.call('refresh-metadata', context=self, params=params)
+            mm.call('refresh-metadata', context=self, body=body)
 
     def is_visible(self):
         return util.is_mm_file()
@@ -518,10 +551,10 @@ class RefreshActiveFileCommand(sublime_plugin.WindowCommand):
 class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
     def run(self):
         filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
-        params = {
+        body = {
             'classes' : [filename]
         }
-        mm.call('run-tests', context=self, params=params, message='Running Apex unit test(s)...')
+        mm.call('run-tests', context=self, body=body, message='Running Apex unit test(s)...')
 
     def is_visible(self):
         return util.is_apex_class_file()
@@ -533,10 +566,10 @@ class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
 class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
     def run(self, files):
         if files != None and type(files) is list and len(files) > 0:
-            params = {
+            body = {
                 'classes' : files
             }
-            mm.call('run-tests', context=self, params=params, message='Running Apex unit test(s)...')
+            mm.call('run-tests', context=self, body=body, message='Running Apex unit test(s)...')
 
     def is_visible(self, files):
         if files != None and type(files) is list and len(files) > 0:
@@ -554,10 +587,11 @@ class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
 #opens the apex class, trigger, component or page on the server
 class OpenActiveSfdcUrlCommand(sublime_plugin.WindowCommand):
     def run(self):
-        params = {
-            'paths'         : [util.get_active_file()]
+        body = {
+            'paths': [util.get_active_file()],
+            'callThrough': True
         }
-        mm.call('open-metadata', context=self, params=params)
+        mm.call('open-metadata', context=self, body=body)
 
     def is_visible(self):
         return util.is_mm_file()
@@ -569,10 +603,11 @@ class OpenActiveSfdcUrlCommand(sublime_plugin.WindowCommand):
 class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
     def run (self, files):
         if files != None and type(files) is list and len(files) > 0:
-            params = {
-                'paths'         : files
+            body = {
+                'paths': files,
+                'callThrough': True
             }
-        mm.call('open-metadata', context=self, params=params)
+        mm.call('open-metadata', context=self, body=body)
 
     def is_visible(self, files):
         if not util.is_mm_project: return False
@@ -583,12 +618,19 @@ class OpenSelectedSfdcUrlCommand(sublime_plugin.WindowCommand):
 
 #deletes selected metadata
 class DeleteMetadataCommand(sublime_plugin.WindowCommand):
-    def run(self, files):
-        if sublime.ok_cancel_dialog("Are you sure you want to delete the selected files from Salesforce?", "Delete"):
-            params = {
-                "paths" : files
-            }
-            mm.call('delete-metadata', context=self, params=params)
+    def run(self, dirs, files):
+        if dirs != None and len(dirs) > 0:
+            if sublime.ok_cancel_dialog("Are you sure you want to delete the selected paths from Salesforce?", "Delete"):
+                body = {
+                    "paths" : dirs
+                }
+                mm.call('delete-metadata', context=self, body=body)
+        else:
+            if sublime.ok_cancel_dialog("Are you sure you want to delete the selected files from Salesforce?", "Delete"):
+                body = {
+                    "paths" : files
+                }
+                mm.call('delete-metadata', context=self, body=body)
 
     def is_visible(self):
         return util.is_mm_file()
@@ -611,10 +653,10 @@ class RefreshApexSymbols(sublime_plugin.WindowCommand):
             class_names = []
             for f in files:
                 class_names.append(os.path.basename(f).replace(".json",".cls"))
-            params = {
+            body = {
                 "paths" : class_names
             }
-            mm.call('index-apex', context=self, params=params, message="Refreshing Symbol Table(s) for selected Apex Classes")
+            mm.call('index-apex', context=self, body=body, message="Refreshing Symbol Table(s) for selected Apex Classes")
 
     def is_visible(self, files):
         try:
@@ -643,10 +685,10 @@ class DeleteActiveMetadataCommand(sublime_plugin.WindowCommand):
         active_path = util.get_active_file()
         active_file = os.path.basename(active_path)
         if sublime.ok_cancel_dialog("Are you sure you want to delete "+active_file+" file from Salesforce?", "Delete"):
-            params = {
+            body = {
                 "paths" : [ active_path ]
             }
-            mm.call('delete-metadata', context=self, params=params)
+            mm.call('delete-metadata', context=self, body=body)
             self.window.run_command("close")
 
     def is_enabled(self):
@@ -762,10 +804,10 @@ class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.overlay = self.results[picked]
-        params = {
+        body = {
             "id" : self.overlay[1]
         }
-        mm.call('delete_apex_overlay', context=self, params=params, message="Deleting checkpoint...", callback=self.reload)
+        mm.call('delete_apex_overlay', context=self, body=body, message="Deleting checkpoint...", callback=self.reload)
 
     def reload(self, cmd=None):
         debug("Reloading Apex Checkpoints")
@@ -789,10 +831,10 @@ class IndexApexCheckpointsCommand(sublime_plugin.WindowCommand):
 #gets apex code coverage for the current class
 class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
     def run(self):
-        params = {
+        body = {
             "paths" : [util.get_active_file()]
         }
-        mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(params["classes"][0]), params=params)
+        mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(body["classes"][0]), body=body)
 
     def is_enabled(command):
         return util.is_apex_class_file()
@@ -808,7 +850,7 @@ class HideCoverageCommand(sublime_plugin.WindowCommand):
 #refreshes the currently active file from the server
 class GetOrgWideTestCoverageCommand(sublime_plugin.WindowCommand):
     def run(self):
-        mm.call('get_org_wide_test_coverage', True, context=self, message="Retrieving org-wide test coverage...")
+        mm.call('get-coverage', True, context=self, body={'global': True}, message="Retrieving org-wide test coverage...")
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -837,7 +879,7 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
             return
         self.line_number = self.results[picked]
         #print self.line_number
-        params = {
+        body = {
             "ActionScriptType"      : "None",
             "Object_Type"           : self.object_type,
             "API_Name"              : self.api_name,
@@ -846,7 +888,7 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
             "Line"                  : int(self.line_number)
         }
         #util.mark_overlay(self.line_number) #cant do this here bc it removes the rest of them
-        mm.call('new_apex_overlay', context=self, params=params, message="Creating new checkpoint at line "+self.line_number+"...", callback=self.reload)
+        mm.call('new_apex_overlay', context=self, body=body, message="Creating new checkpoint at line "+self.line_number+"...", callback=self.reload)
 
     def reload(self, cmd=None):
         debug("Reloading Apex Checkpoints")
@@ -980,10 +1022,10 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer.write('\n[OPERATION FAILED] Unable to locate package.xml in src folder \n')
             return
 
-        params = {
+        body = {
             "directory" : directory
         }
-        mm.call('new_project_from_existing_directory', params=params)
+        mm.call('new_project_from_existing_directory', body=body)
 
     def is_visible(self, dirs):
         if dirs != None and type(dirs) is list and len(dirs) > 1:
@@ -1424,10 +1466,10 @@ class ApexCompletions(sublime_plugin.EventListener):
                 try:
                     #need to index custom objects here, because it couldnt be found
                     if len(ThreadTracker.get_pending_mm_panel_threads(sublime.active_window())) == 0:
-                        params = {
+                        body = {
                             'metadata_types' : ['CustomObject']
                         }
-                        mm.call('refresh_metadata_index', False, params=params)
+                        mm.call('refresh_metadata_index', False, body=body)
                 except:
                     debug('Failed to index custom object metadata')
             else:

@@ -1,5 +1,9 @@
 [
   {
+    "command": "restart_server", 
+    "caption": "MavensMate: Restart server" 
+  },
+  {
     "caption": "MavensMate: Stub",
     "command": "mavens_stub"
   },

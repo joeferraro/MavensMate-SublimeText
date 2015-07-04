@@ -1,40 +1,22 @@
 import sys
 import os
-import stat
 import json
-import threading
 import re
 import shutil
 import codecs
 import string
 import random
-import subprocess, signal
-#import traceback
-from xml.dom.minidom import parse
-import MavensMate.lib.platform_util as platform_util
-
 import urllib.request
-
 import MavensMate.config as config
 import MavensMate.lib.apex.apex_extensions as apex_extensions
-
 import sublime
+from xml.dom.minidom import parse
+
 settings = sublime.load_settings('mavensmate.sublime-settings')
 packages_path = sublime.packages_path()
 sublime_version = int(float(sublime.version()))
 
 debug = config.debug
-
-def kill_mavensmate_servers():
-    if platform_util.is_windows:
-        os.system('taskkill /f /im "mavensmate ui server"')
-    else:
-        p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
-        out, err = p.communicate()
-        for line in out.splitlines():
-            if 'mavensmate ui server' in str(line):
-                pid = int(line.split(None, 1)[0])
-                os.kill(pid, signal.SIGKILL)
 
 def standard_object_names():
     return [
@@ -639,12 +621,3 @@ def get_version_number():
         return version
     except:
         return ''
-
-class MavensMateParserCall(threading.Thread):
-    def __init__(self):
-        self.foo = 'bar';
-
-    def run(self):
-        pass
-
-

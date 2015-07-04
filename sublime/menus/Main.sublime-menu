@@ -5,6 +5,11 @@
 	    "children":  
 	    [  
 	        {
+	        	"caption": "Open MavensMate UI...",
+	        	"command": "open_mavens_mate_ui"
+	        },
+	        {"caption":"-"},
+	        {
 	        	"id": "projects", 
 	    		"caption": "Project",  
 	         	"children":
@@ -124,14 +129,6 @@
 		     			"command": "run_all_tests_async"
 		     		},
 		     		{
-		     		  	"caption": "Show Apex Code Coverage For This Apex Class",
-		     		  	"command": "get_apex_code_coverage"
-		     		},
-		     		{
-		     			"caption": "Hide Coverage Indicators For This Class",
-		     			"command": "hide_coverage"
-		     		},
-		     		{
 		     			"caption": "Generate Apex Test Coverage Report",
 		     			"command": "generate_apex_test_coverage_report"
 		     		},
@@ -235,6 +232,10 @@
     				{
     	        		"command": "refresh_project_apex_symbols", 
     	        		"caption": "Refresh Apex Symbol Tables For This Project" 
+    	        	},
+    	        	{
+    	        		"command": "restart_server", 
+    	        		"caption": "Restart MavensMate server" 
     	        	}
 	         	]
 	     	},

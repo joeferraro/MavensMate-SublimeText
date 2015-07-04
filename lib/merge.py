@@ -152,7 +152,6 @@ class MavensMateDiffer():
 
         return self.data
 
-
 class MavensMateDifferScrollSync():
     left = None
     right = None
