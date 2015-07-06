@@ -7,13 +7,13 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 */
 
 {	
-	"mm_executable_path": "default",
+	"mm_local_server_path" : "default",
 
-	"mm_server_executable_path" : "default",
-
-	"mm_node_path" : "/usr/local/bin/node",
-
-	"mm_npm_path" : "/usr/local/bin/npm",
+	"mm_node_path" : {
+		"windows": "C:\\Program Files\\nodejs\\node.exe",
+		"linux": "/usr/bin/nodejs",
+		"osx": "/usr/local/bin/node"
+	},
 
 	//set to absolute location where you wish your MavensMate project to reside
 	//if the location does not exist, MavensMate will attempt to create it
@@ -43,7 +43,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_https_proxy" : "",
 
 	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
-	"mm_api_version" : "31.0",
+	"mm_api_version" : "33.0",
 
 	//generate from https://mavensmate.herokuapp.com. used to capture high-level usage statistics for community functionality like collaboration, gamification
 	"mm_community_api_token" : "",
@@ -82,13 +82,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will look for and download pre-releases (beta versions) of the MavensMate API, mm
 	"mm_beta_user" : false,
 
-	//if true, MavensMate will automatically install updates to the MavensMate API, mm
-	"mm_auto_install_mm_updates" : true,
-
 	//possible values: CRITICAL, ERROR, WARNING, DEBUG, INFO
 	"mm_log_level" : "INFO",
-
-	"mm_log_soap" : false,
 
 	//location where mm debug log should be placed (must be existing path)
 	//windows users: please set like so: C:\\path\\to\\your\\logs
@@ -121,9 +116,6 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//windows users: set to the location of your sublime_text.exe
 	"mm_windows_subl_location" : "C:/Program Files/Sublime Text 3/sublime_text.exe",
 
-	//specify a path for custom wsdl files here. wsdls must be named: apex.xml, partner.xml, metadata.xml, tooling.xml
-	"mm_wsdl_path" : "",
-
 	//OSX only: the location of your Sublime Text install
 	"mm_plugin_client_location" : "/Applications",
 
@@ -133,13 +125,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to true to use the tooling api to compile apex metadata (if you're experiencing any compile issues, set this to false to use the metadata api)
 	"mm_compile_with_tooling_api" : true,
 
-	//set to true if you want a history of your executed apex scripts in project/apex-scripts
-	"mm_log_anonymous_apex" : true,
-
 	//set to true to play notification sounds
 	"mm_play_sounds" : true,
 
-	//local server port
+	//local server port (usually for testing purposes only)
 	"mm_server_port" : 7777,
 
 	//mavensmate will attempt to compile when savings files with the following extensions
@@ -184,7 +173,10 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".approvalProcess",
 		".html",
 		".apxc",
-		".apxt"
+		".apxt",
+		".auradoc",
+		".css",
+		".js"
 	],
 
 	//template location, e.g. "remote" or "local" ("remote" refers to templates located on github)
@@ -212,39 +204,18 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//ignore metadata from managed packages (highly recommended)
 	"mm_ignore_managed_metadata" : true,
 
-	//the number of the most recent apex debug logs to download during the "fetch logs" command
-	"mm_number_of_logs_limit" : 10,
-
-	//choices: "metadata" or "apex". "metadata" is recommended, however if your tests are taking forever to run, try switching to "apex"
-	//we're working on async testing api support in 0.36
-	"mm_test_api" : "metadata",
-
 	//if true, mavensmate will store all deployment packages in your project's "deploy" directory
 	"mm_archive_deployments" : true,
 	
 	//if true, mavensmate will set the purgeOnDelete to true during metadata deletes (a hard delete)
 	"mm_purge_on_delete" : false,
 
-	"mm_verbose" : false,
-
 	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
 	"mm_use_org_metadata_for_completions" : true,
 
-	//set to false if index symbol indexing during project creation/upgrade is causing timeouts
-	"mm_mass_index_apex_symbols" : false,
-
-	//set to false if you want to use the async apex testing endpoint (beta)
-	"mm_use_legacy_test_ui" : true,
-
-	//if true, a log will be generated for every test run during "run all tests" command
-	"mm_download_logs_during_run_all_tests" : false,
-
 	//timeout (in seconds) for calls to the Salesforce.com servers
-	"mm_timeout" : 30,
+	"mm_timeout" : 600,
 
 	//*BETA* if true, MavensMate will compare the state of the destination org(s) before deployment
-	"mm_compare_before_deployment" : true,
-
-	//Advanced users only: if true, MavensMate will not check if your project was created using an older version of MavensMate
-	"mm_skip_legacy_check" : false
+	"mm_compare_before_deployment" : true
 }

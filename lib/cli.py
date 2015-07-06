@@ -43,21 +43,22 @@ class MavensMateUiServer(threading.Thread):
         if util.mm_project_directory():
             os.chdir(util.mm_project_directory());
 
-        node_path = self.settings.get('mm_node_path')
+        node_path = platform_util.node_path()
 
-        mm_server_executable_setting = self.settings.get('mm_server_executable_path')
+        mm_server_executable_setting = self.settings.get('mm_local_server_path')
         if mm_server_executable_setting == 'default':
-            mm_server_executable_path = os.path.join(sublime.packages_path(),"User","MavensMate","node_modules","mavensmate","bin","server")
+            mm_local_server_path = os.path.join(sublime.packages_path(),"User","MavensMate","node_modules","mavensmate","bin","server")
         else:
-            mm_server_executable_path = mm_server_executable_setting
+            mm_local_server_path = mm_server_executable_setting
 
         self.debug('starting MavensMate server on port: '+self.port)
 
-        cmd = [ node_path, mm_server_executable_path, '--headless', '--editor', 'sublime', '--port', self.port ]
+        cmd = [ node_path, mm_local_server_path, '--headless', '--editor', 'sublime', '--port', self.port ]
         if util.mm_project_directory():
             cmd.append('--project')
             cmd.append(util.mm_project_directory())
-
+        self.debug('start server command: ')
+        self.debug(cmd)
         # cmd = '/usr/local/bin/node /Users/josephferraro/Development/Github/MavensMate/bin/server --headless -e sublime'
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
         global server_pid
@@ -101,48 +102,6 @@ def call(operation, use_mm_panel=True, **kwargs):
     debug('OPERATION: '+operation)
     debug(kwargs)
 
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-
-    # if not os.path.isfile(settings.get('mm_node_path')):
-    #     active_window_id = sublime.active_window().id()
-    #     printer = PanelPrinter.get(active_window_id)
-    #     printer.show()
-    #     message = '[OPERATION FAILED]: Could not find Node.js on the local system.'
-    #     message += '\n\n1. Ensure Node.js is installed (http://nodejs.org/)'
-    #     message += '\n2. Install MavensMate node package (npm install mavensmate -g)'
-    #     message += '\n3. In your MavensMate for Sublime Text user settings, set mm_node_path to the location of the Node.Js executable (you can find it on *nix by running \'which node\').'
-    #     message += '\n4. In your MavensMate for Sublime Text user settings, set mm_mavensmate_npm_executable_path to the location of the mavensmate executable (you can find it on *nix by running \'which mavensmate\').'
-    #     printer.write('\n'+message+'\n')
-    #     return
-
-    # if not os.path.isfile(settings.get('mm_mavensmate_npm_executable_path')):
-    #     active_window_id = sublime.active_window().id()
-    #     printer = PanelPrinter.get(active_window_id)
-    #     printer.show()
-    #     message = '[OPERATION FAILED]: Could not find the MavensMate executable.'
-    #     message += '\n1. Install MavensMate node package (npm install mavensmate -g)'
-    #     message += '\n2. In your MavensMate for Sublime Text user settings, set mm_mavensmate_npm_executable_path to the location of the mavensmate executable (you can find it on *nix by running \'which mavensmate\').'
-    #     printer.write('\n'+message+'\n')
-    #     return
-
-    # if 'linux' in sys.platform:
-    #     if not os.path.isfile(settings.get('mm_subl_location')):
-    #         active_window_id = sublime.active_window().id()
-    #         printer = PanelPrinter.get(active_window_id)
-    #         printer.show()
-    #         message = '[OPERATION FAILED]: Could not locate Sublime Text "subl" executable. Please set mm_subl_location to location of "subl" on the disk.'
-    #         printer.write('\n'+message+'\n')
-    #         return
-
-    # if 'win32' in sys.platform:
-    #     if not os.path.isfile(settings.get('mm_windows_subl_location')):
-    #         active_window_id = sublime.active_window().id()
-    #         printer = PanelPrinter.get(active_window_id)
-    #         printer.show()
-    #         message = '[OPERATION FAILED]: Could not locate Sublime Text. Please set mm_windows_subl_location to location of sublime_text.exe on the disk.'
-    #         printer.write('\n'+message+'\n')
-    #         return
-
     if not util.valid_workspace():
         active_window_id = sublime.active_window().id()
         printer = PanelPrinter.get(active_window_id)
@@ -153,12 +112,8 @@ def call(operation, use_mm_panel=True, **kwargs):
 
     window, view = util.get_window_and_view_based_on_context(kwargs.get('context', None))
 
-    #if it's a legacy project, need to intercept the call and open the upgrade ui
-    #TODO: this should probably be handled in mm
-    # if operation != 'new_project' and operation != 'new_project_from_existing_directory' and util.is_project_legacy(window) == True:
-    #     operation = 'upgrade_project'
-
-    community.sync_activity(operation)
+    if operation != 'compile-metadata':
+        community.sync_activity(operation)
 
     threads = []
     thread = MavensMateTerminalCall(

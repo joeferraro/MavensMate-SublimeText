@@ -7,13 +7,9 @@
 			{ "caption": "No open projects", "command": "mavens_stub" },
 			{ "caption": "Compile File On Server", "command": "compile_active_file" },
 			{ "caption": "Open File in Web Browser", "command": "open_active_sfdc_url" },
-			{ "caption": "Open WSDL in Web Browser", "command": "open_active_sfdc_wsdl_url" },
-			{ "caption": "Run Apex Tests...", "command": "run_active_apex_tests" },
-			{ "caption": "Deploy To Server...", "command": "deploy_active_file" },
-			{ "caption": "Mark As Merged...", "command": "refresh_active_properties_from_server" },
+			{ "caption": "Run Apex Tests...", "command": "run_async_apex_tests" },
 			{ "caption": "Refresh File From Server...", "command": "refresh_active_file" },
-			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" },
-			{ "caption": "Synchronize File With Server (beta)...", "command": "sync_with_server" }
+			{ "caption": "Delete File From Server...", "command": "delete_active_metadata" }
 		]
 	},
 	{

@@ -37,13 +37,8 @@ def package_check():
 
 def is_project_legacy(window=None):
     settings = sublime.load_settings('mavensmate.sublime-settings')
-    if settings.get('mm_skip_legacy_check', False): #if user wishes to skip legacy project check, then never return legacy flag
-        return False
     if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
         return True
-    if settings.get('mm_mass_index_apex_symbols', True):
-        if not os.path.exists(os.path.join(mm_project_directory(window),"config",".symbols")):
-            return True
     if not os.path.exists(os.path.join(mm_project_directory(window),get_project_name(window)+'.sublime-settings')):
         return True
     if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):

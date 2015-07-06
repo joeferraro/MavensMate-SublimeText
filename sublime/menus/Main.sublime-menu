@@ -121,16 +121,8 @@
 	         			"command": "run_apex_unit_tests"
 	         		},
 	         		{
-		     			"caption": "Run Async Apex Tests For This Class",
+		     			"caption": "Run Apex Tests For This Class",
 		     			"command": "run_async_apex_tests"
-		     		},
-		     		{
-		     			"caption": "Run All Tests (beta)",
-		     			"command": "run_all_tests_async"
-		     		},
-		     		{
-		     			"caption": "Generate Apex Test Coverage Report",
-		     			"command": "generate_apex_test_coverage_report"
 		     		},
 		     		{
 		     			"caption": "Show Org Wide Test Coverage",
@@ -245,10 +237,6 @@
 	    		"caption": "Settings",  
 	         	"children":
 	         	[
-					{ 
-						"command": "open_project_settings", 
-						"caption": "Project" 
-					},
 					{ 
 						"command": "open_file", 
 						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 

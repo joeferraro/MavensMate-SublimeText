@@ -13,6 +13,7 @@ from MavensMate.lib.printer import PanelPrinter
 from MavensMate.lib.threads import ThreadTracker
 import MavensMate.lib.parsehelp as parsehelp
 import MavensMate.lib.vf as vf
+import MavensMate.lib.platform_util as platform_util
 from MavensMate.lib.merge import *
 from MavensMate.lib.completioncommon import *
 import MavensMate.lib.community as community
@@ -55,18 +56,20 @@ def plugin_loaded():
     debug(shutil.which('npm'))
     debug(shutil.which('mavensmate'))
 
-    # if settings.get('mmm_node_path') == None or not os.path.isfile(settings.get('mm_node_path')):
-
-
-    #     active_window_id = sublime.active_window().id()
-    #     printer = PanelPrinter.get(active_window_id)
-    #     printer.show()
-    #     message = '[ERROR]: This version of MavensMate requires Node.js and it could not be found on your system. To continue:\n'
-    #     message += '\n1. Ensure Node.js is installed. Follow directions at http://nodejs.org/'
-    #     message += '\n2. Install MavensMate node package by running "npm install mavensmate -g" in your terminal/command line.'
-    #     message += '\n3. In your MavensMate for Sublime Text user settings, set mm_node_path to the full path of the Node.Js executable.\n\tUnix/Linux users: you can find your node path by running \'which node\').\n\tWindows users: you can find your node path by running \'where node.exe\''
-    #     printer.write('\n'+message+'\n')
-    #     return
+    try:
+        node_path = platform_util.node_path()
+        if not os.path.isfile(node_path):
+            active_window_id = sublime.active_window().id()
+            printer = PanelPrinter.get(active_window_id)
+            printer.show()
+            message = '[ERROR]: This version of MavensMate requires Node.js and it could not be found on your system. To continue:\n'
+            message += '\n1. Ensure Node.js is installed. Follow directions at http://nodejs.org/'
+            message += '\n2. Install MavensMate node package by running "npm install mavensmate" in your terminal/command prompt.'
+            message += '\n3. In your MavensMate for Sublime Text user settings, set mm_node_path to the full path of the Node.js executable.\n\tUnix/Linux users: you can find your node path by running \'which node\').\n\tWindows users: you can find your node path by running \'where node.exe\''
+            printer.write('\n'+message+'\n')
+            return
+    except:
+        pass
 
     mm.kill_servers()
     mm.start_server()
@@ -357,14 +360,6 @@ class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
 
     def is_enabled(command):
         return util.is_apex_class_file()
-
-#displays unit test dialog
-class GenerateApexTestCoverageReportCommand(sublime_plugin.WindowCommand):
-    def run(self):
-        mm.call('coverage_report', context=self, message="Generating Apex code coverage report for classes in your project...")
-
-    def is_enabled(command):
-        return util.is_mm_project()
 
 #deploys the currently open tabs
 class CompileTabsCommand(sublime_plugin.WindowCommand):
