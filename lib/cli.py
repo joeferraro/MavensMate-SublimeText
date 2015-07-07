@@ -6,8 +6,7 @@ import signal
 import os
 import sys
 import time
-import html.parser
-import shutil
+# import shutil
 import socket
 import urllib.request
 from .threads import ThreadTracker
@@ -22,12 +21,11 @@ import MavensMate.config as config
 import MavensMate.lib.community as community
 import MavensMate.lib.platform_util as platform_util
 
-print(shutil.which('npm'))
-print(shutil.which('node'))
+# print(shutil.which('npm'))
+# print(shutil.which('node'))
 
 sublime_version = int(float(sublime.version()))
 settings = sublime.load_settings('mavensmate.sublime-settings')
-html_parser = html.parser.HTMLParser()
 debug = config.debug
 
 path_to_port_dict = {}
@@ -243,9 +241,6 @@ class MavensMateTerminalCall(threading.Thread):
         debug(result)
         self.result = response_body
 
-        if self.operation == 'compile':
-            compile_callback(self, response_body)
-
         self.calculate_process_region()
 
         ThreadTracker.remove(self)
@@ -262,46 +257,9 @@ def handle_result(operation, process_id, printer, res, thread):
         }
         result_handler = MavensMateResponseHandler(context)
         result_handler.execute()
-        #del result_handler
         sublime.set_timeout(lambda: delete_result_handler(result_handler), 5000)
     except Exception as e:
         raise e
 
 def delete_result_handler(handler):
     del handler
-
-def compile_callback(thread, response):
-    try:
-        result = json.loads(response['result'])
-        if 'success' in result and result['success'] == True:
-            sublime.set_timeout(lambda: index_apex_code(thread), 100)
-        elif 'State' in result and result['State'] == 'Completed':
-            util.clear_marked_line_numbers(thread.view)
-            #if settings.get('mm_autocomplete') == True:
-            sublime.set_timeout(lambda: index_apex_code(thread), 100)
-    except BaseException as e:
-        debug('Issue handling compile result in callback')
-        debug(e)
-
-def index_overlays(window):
-    pending_threads = ThreadTracker.get_pending(window)
-    run_index_thread = True
-    for t in pending_threads:
-        if t.operation == 'index_apex_overlays':
-            run_index_thread = False
-            break
-    if run_index_thread:
-        call('index_apex_overlays', False)
-
-def index_apex_code(thread):
-    pending_threads = ThreadTracker.get_pending(thread.window)
-    run_index_thread = True
-    for t in pending_threads:
-        if t.operation == 'index_apex':
-            run_index_thread = False
-            break
-    if run_index_thread:
-        body = {
-            "paths" : thread.params.get('files', [])
-        }
-        call('index-apex', False, body=body)
