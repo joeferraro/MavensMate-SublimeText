@@ -77,7 +77,10 @@ def get_free_port():
     return str(port)
 
 def start_server():
-    port = get_free_port()
+    if server_port == None:
+        port = get_free_port()
+    else:
+        port = server_port
     serverThread = MavensMateUiServer(debug=debug, port=port)
     serverThread.daemon = True
     serverThread.start()
