@@ -378,14 +378,16 @@ def is_apex_webservice_file(filename=None):
     return False
 
 def mm_project_directory(window=None):
-    #return sublime.active_window().active_view().settings().get('mm_project_directory') #<= bug
     if window == None:
         window = sublime.active_window()
     folders = window.folders()
     if len(folders) > 0:
         return window.folders()[0]
     else:
-        return mm_workspace()
+        if type(mm_workspace()) is list:
+            return mm_workspace()[0]
+        else:
+            return mm_workspace()
 
 def mm_workspace():
     settings = sublime.load_settings('mavensmate.sublime-settings')
