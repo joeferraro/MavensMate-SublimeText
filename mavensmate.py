@@ -896,7 +896,7 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
 class NewResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, files, dirs):
         if sublime.ok_cancel_dialog("Are you sure you want to create a resource bundle for the selected static resource", "Create Resource Bundle"):
-            mm.call('new-resource-bundle', True, context=self, message="Creating resource bundle...", flags=[ files[0] ])
+            mm.call('new-resource-bundle', True, context=self, message="Creating resource bundle...", body={ "paths": [ files[0] ] })
 
     def is_visible(self, files, dirs):
         if not util.is_mm_project():
@@ -932,7 +932,7 @@ class CreateResourceBundleCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         static_resource_path = os.path.join(util.mm_project_directory(),"src","staticresources",self.results[picked])
-        mm.call('new-resource-bundle', True, flags=[ static_resource_path ], context=self, message="Creating resource bundle...")
+        mm.call('new-resource-bundle', True, body={ "paths" : [ static_resource_path ] }, context=self, message="Creating resource bundle...")
 
 #deploys selected resource bundle to the server
 class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
@@ -950,7 +950,7 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         bundle_path = os.path.join(util.mm_project_directory(),"resource-bundles",self.results[picked])
-        mm.call('deploy-resource-bundle', True, flags=[ bundle_path ], context=self, message="Deploying resource bundle...")
+        mm.call('deploy-resource-bundle', True, body={ "paths": [ bundle_path ] }, context=self, message="Deploying resource bundle...")
 
 #right click context menu support for resource bundle refresh
 class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
