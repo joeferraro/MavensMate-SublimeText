@@ -5,8 +5,12 @@
 	    "children":  
 	    [  
 	        {
-	        	"caption": "Open MavensMate UI...",
+	        	"caption": "Open MavensMate UI",
 	        	"command": "open_mavens_mate_ui"
+	        },
+	        {
+	        	"caption": "Open Salesforce Org",
+	        	"command": "open_salesforce_org"
 	        },
 	        {"caption":"-"},
 	        {

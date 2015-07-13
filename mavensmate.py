@@ -97,10 +97,15 @@ class RestartServerCommand(sublime_plugin.ApplicationCommand):
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
-#displays new project dialog
+#displays mavensmate ui
 class OpenMavensMateUi(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('open-ui', False, body={'args': { 'ui' : True }})
+
+#opens salesforce setup
+class OpenSalesforceOrg(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('open-sfdc', False, body={'args': { 'ui' : True }})
 
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
