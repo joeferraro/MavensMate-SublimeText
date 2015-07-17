@@ -113,6 +113,23 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
         util.check_for_workspace()
         mm.call('new-project', False, body={'args': { 'ui' : True }})
 
+#creates a MavensMate project from an existing directory
+class CreateMavensMateProject(sublime_plugin.WindowCommand):
+    def run (self, dirs):
+        mm.call('new-project-from-existing-directory', False, body={'args': { 'ui': True, 'directory': dirs[0] }})
+
+    def is_visible(self, dirs):
+        if dirs != None and type(dirs) is list and len(dirs) > 1:
+            return False
+        if util.is_mm_project():
+            return False
+        directory = dirs[0]
+        if not os.path.isfile(os.path.join(directory, "src", "package.xml")):
+            return False
+        if not os.path.exists(os.path.join(directory, "src")):
+            return False
+        return True
+
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
@@ -984,60 +1001,6 @@ class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
             return is_ok
         except:
             return False
-
-#creates a MavensMate project from an existing directory
-class CreateMavensMateProject(sublime_plugin.WindowCommand):
-    def run (self, dirs):
-        directory = dirs[0]
-
-        if directory.endswith("/src"):
-            printer = PanelPrinter.get(self.window.id())
-            printer.show()
-            printer.write('\n[OPERATION FAILED] You must run this command from the project folder, not the "src" folder\n')
-            return
-
-        dir_entries = os.listdir(directory)
-        has_source_directory = False
-        for entry in dir_entries:
-            if entry == "src":
-                has_source_directory = True
-                break
-
-        if has_source_directory == False:
-            printer = PanelPrinter.get(self.window.id())
-            printer.show()
-            printer.write('\n[OPERATION FAILED] Unable to locate "src" folder\n')
-            return
-
-        dir_entries = os.listdir(os.path.join(directory,"src"))
-        has_package = False
-        for entry in dir_entries:
-            if entry == "package.xml":
-                has_package = True
-                break
-
-        if has_package == False:
-            printer = PanelPrinter.get(self.window.id())
-            printer.show()
-            printer.write('\n[OPERATION FAILED] Unable to locate package.xml in src folder \n')
-            return
-
-        body = {
-            "directory" : directory
-        }
-        mm.call('new_project_from_existing_directory', body=body)
-
-    def is_visible(self, dirs):
-        if dirs != None and type(dirs) is list and len(dirs) > 1:
-            return False
-        if util.is_mm_project():
-            return False
-        directory = dirs[0]
-        if not os.path.isfile(os.path.join(directory, "src", "package.xml")):
-            return False
-        if not os.path.exists(os.path.join(directory, "src")):
-            return False
-        return True
 
 #generic handler for writing text to an output panel (sublime text 3 requirement)
 class MavensMateOutputText(sublime_plugin.TextCommand):
