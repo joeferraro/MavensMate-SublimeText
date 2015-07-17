@@ -8,6 +8,14 @@ from .threads import ThreadTracker
 
 settings = sublime.load_settings('mavensmate.sublime-settings')
 
+def write_to_active_printer(message, show=True):
+    active_window_id = sublime.active_window().id()
+    p = PanelPrinter.get(active_window_id)
+    p.show()
+    # if show:
+    #     p.show()
+    p.write('\n'+message+'\n')
+
 def get_version_number():
     try:
         json_data = open(os.path.join(config.mm_dir,"packages.json"))
@@ -93,7 +101,7 @@ class PanelPrinter(object):
         self.init()
         settings = sublime.load_settings('mavensmate.sublime-settings')
         hide = settings.get('hide_output_panel', 1)
-        
+
         # TODO
         # if settings.get('mm_compile_scroll_to_error', True):
         #     view = self.window.active_view()
@@ -126,9 +134,9 @@ class PanelPrinter(object):
         if key not in self.strings:
             self.strings[key] = []
             self.queue.append(key)
-        
+
         self.prepare_string(string, key)
-        
+
         if finish:
             self.strings[key].append(None)
         sublime.set_timeout(self.write_callback, 0)
@@ -140,9 +148,9 @@ class PanelPrinter(object):
         if key not in self.strings:
             self.strings[key] = []
             self.queue.append(key)
-        
+
         self.prepare_string(string, key, True)
-        
+
         if finish:
             self.strings[key].append(None)
         sublime.set_timeout(self.write_callback, 0)
@@ -162,7 +170,7 @@ class PanelPrinter(object):
                 return
             string = self.strings[key].pop(0)
             self.panel.run_command('mavens_mate_output_text', {'text': string})
-            
+
             size = self.panel.size()
             sublime.set_timeout(lambda : self.panel.show(size, True), 2)
 
@@ -202,7 +210,7 @@ class PanelPrinter(object):
                         point = point + len(string) - 1
                         region = sublime.Region(point, point)
                         self.panel.add_regions(key, [region], '')
-        
+
             for key in keys_to_erase:
                 if key in self.strings:
                     del self.strings[key]
@@ -210,7 +218,7 @@ class PanelPrinter(object):
                     self.queue.remove(key)
                 except ValueError:
                     pass
-            
+
             self.panel.end_edit(edit)
             if read_only:
                 self.panel.set_read_only(True)

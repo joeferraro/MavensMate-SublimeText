@@ -20,6 +20,7 @@ import MavensMate.util as util
 import MavensMate.config as config
 import MavensMate.lib.community as community
 import MavensMate.lib.platform_util as platform_util
+import MavensMate.lib.printer as printer
 
 # print(shutil.which('npm'))
 # print(shutil.which('node'))
@@ -66,8 +67,13 @@ class MavensMateUiServer(threading.Thread):
         self.debug('MavensMate server pid is: '+str(server_pid)) # TODO: kill this process when ST closes
         stdout, stderr = process.communicate()
         self.debug('Server output: ')
-        self.debug(stdout)
-        self.debug(stderr)
+        if stdout != None:
+            self.debug(stdout)
+            # printer.write_to_active_printer(str(stdout))
+        elif stderr != None:
+            self.debug(stderr)
+            message = '\n[OPERATION FAILED]: MavensMate server failed to start: '+str(stderr)
+            printer.write_to_active_printer(message)
 
 def get_free_port():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -105,11 +111,8 @@ def call(operation, use_mm_panel=True, **kwargs):
     debug(kwargs)
 
     if not util.valid_workspace():
-        active_window_id = sublime.active_window().id()
-        printer = PanelPrinter.get(active_window_id)
-        printer.show()
-        message = '[OPERATION FAILED]: Please ensure mm_workspace is set to existing location(s) on your local drive'
-        printer.write('\n'+message+'\n')
+        message = '\n[OPERATION FAILED]: Please ensure mm_workspace is set to existing location(s) on your local drive\n'
+        printer.write_to_active_printer(message)
         return
 
     window, view = util.get_window_and_view_based_on_context(kwargs.get('context', None))
