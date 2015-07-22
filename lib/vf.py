@@ -69,6 +69,9 @@ tag_list = [
   "apex:pieSeries",
   "apex:radarSeries",
   "apex:relatedList",
+  "apex:remoteObjectField",
+  "apex:remoteObjectModel",
+  "apex:remoteObjects",
   "apex:repeat",
   "apex:scatterSeries",
   "apex:scontrol",
@@ -4236,6 +4239,93 @@ tag_defs = {
         "type": "String"
       },
       "title": {
+        "type": "String"
+      }
+    }
+  },
+  "apex:remoteObjectField": {
+    "simple": True,
+    "attribs": {
+      "id": {
+        "type": "String"
+      },
+      "jsShorthand": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "rendered": {
+        "type": "Boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    }
+  },
+  "apex:remoteObjectModel": {
+    "simple": True,
+    "attribs": {
+      "create": {
+        "type": "String"
+      },
+      "delete": {
+        "type": "String"
+      },
+      "fields": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      },
+      "jsShorthand": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "rendered": {
+        "type": "Boolean",
+        "values":[
+          "true".
+          "false"
+        ]
+      },
+      "retrieve": {
+        "type": "String"
+      },
+      "update": {
+        "type": "String"
+      }
+    }
+  },
+  "apex:remoteObjects": {
+    "simple": True,
+    "attribs": {
+      "create": {
+        "type": "String"
+      },
+      "delete": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      },
+      "jsNamespace": {
+        "type": "String"
+      },
+      "rendered": {
+        "type": "Boolean",
+        "values":[
+          "true".
+          "false"
+        ]
+      },
+      "retrieve": {
+        "type": "String"
+      },
+      "update": {
         "type": "String"
       }
     }
