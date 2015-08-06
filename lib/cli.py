@@ -2,12 +2,10 @@ import sublime
 import threading
 import json
 import subprocess
-import signal
 import os
 import sys
 import time
 # import shutil
-import socket
 import urllib.request
 from .threads import ThreadTracker
 from .threads import ThreadProgress
@@ -22,98 +20,29 @@ import MavensMate.lib.community as community
 import MavensMate.lib.platform_util as platform_util
 import MavensMate.lib.printer as printer
 
-# print(shutil.which('npm'))
-# print(shutil.which('node'))
-
 sublime_version = int(float(sublime.version()))
 settings = sublime.load_settings('mavensmate.sublime-settings')
 debug = config.debug
 
 path_to_port_dict = {}
 
-class MavensMateUiServer(threading.Thread):
-    def __init__(self, **kwargs):
-        self.settings = sublime.load_settings('mavensmate.sublime-settings')
-        self.debug = kwargs.get('debug')
-        self.port = kwargs.get('port')
-        threading.Thread.__init__(self)
+port_number = str(settings.get('mm_server_port', '56248'))
 
-    def run(self):
-        if util.mm_project_directory():
-            os.chdir(util.mm_project_directory());
-
-        node_path = platform_util.node_path()
-
-        mm_server_executable_setting = self.settings.get('mm_local_server_path')
-        if mm_server_executable_setting == 'default':
-            mm_local_server_path = os.path.join(sublime.packages_path(),"User","MavensMate","node_modules","mavensmate","bin","server")
-        else:
-            mm_local_server_path = mm_server_executable_setting
-
-        self.debug('starting MavensMate server on port: '+self.port)
-
-        cmd = [ node_path, mm_local_server_path, '--headless', '--editor', 'sublime', '--port', self.port ]
-        if util.mm_project_directory():
-            cmd.append('--project')
-            cmd.append(util.mm_project_directory())
-        self.debug('start server command: ')
-        self.debug(cmd)
-        # cmd = '/usr/local/bin/node /Users/josephferraro/Development/Github/MavensMate/bin/server --headless -e sublime'
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-        global server_pid
-        global server_port
-        server_pid = process.pid
-        server_port = self.port
-        self.debug('MavensMate server pid is: '+str(server_pid)) # TODO: kill this process when ST closes
-        stdout, stderr = process.communicate()
-        self.debug('Server output: ')
-        if stdout != None:
-            self.debug(stdout)
-            # printer.write_to_active_printer(str(stdout))
-        elif stderr != None:
-            self.debug(stderr)
-            message = '\n[OPERATION FAILED]: MavensMate server failed to start: '+str(stderr)
-            printer.write_to_active_printer(message)
-
-def get_free_port():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('localhost', 0))
-    addr, port = s.getsockname()
-    s.close()
-    return str(port)
-
-def start_server():
-    server_port_defined = 'server_port' in globals()
-    if server_port_defined:
-        port = server_port
-    else:
-        port = get_free_port()
-    serverThread = MavensMateUiServer(debug=debug, port=port)
-    serverThread.daemon = True
-    serverThread.start()
-    time.sleep(1)
-
-def kill_servers():
-    if platform_util.is_windows:
-        os.system('taskkill /f /im "mavensmate server - sublime"')
-    else:
-        p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
-        out, err = p.communicate()
-        for line in out.splitlines():
-            if 'mavensmate server - sublime' in str(line):
-                pid = int(line.split(None, 1)[0])
-                os.kill(pid, signal.SIGKILL)
+def check_server():
+    try:
+        urllib.request.urlopen('http://localhost:'+port_number+'/app/home/index')
+    except urllib.error.URLError as e:
+        debug(e)
+        raise MMException('Could not contact local MavensMate server, please ensure the MavensMate app is running. MavensMate will not run properly until resolved.')
+    except Exception as e:
+        debug(e)
+        raise MMException(str(e))
 
 #prepares and submits a threaded call to the mm executable
 def call(operation, use_mm_panel=True, **kwargs):
     debug('Calling cli')
     debug('OPERATION: '+operation)
     debug(kwargs)
-
-    if not util.valid_workspace():
-        message = '\n[OPERATION FAILED]: Please ensure mm_workspace is set to existing location(s) on your local drive\n'
-        printer.write_to_active_printer(message)
-        return
 
     window, view = util.get_window_and_view_based_on_context(kwargs.get('context', None))
 
@@ -206,31 +135,37 @@ class MavensMateTerminalCall(threading.Thread):
         #last_thread = ThreadTracker.get_last_added(self.window)
         ThreadTracker.add(self)
 
+        # server_port = '56248'
+
         ####### ---> new
         if util.is_mm_project():
-            # url = 'http://localhost:8002/execute?command='+self.operation+'&async=1&pid='+util.get_project_settings()['id']
-            url = 'http://localhost:'+server_port+'/execute?command='+self.operation+'&async=1&pid='+util.get_project_settings()['id']
+            url = 'http://localhost:'+port_number+'/execute?command='+self.operation+'&async=1&pid='+util.get_project_settings()['id']
         else:
-            # url = 'http://localhost:8002/execute?command='+self.operation+'&async=1'
-            url = 'http://localhost:'+server_port+'/execute?command='+self.operation+'&async=1'
+            url = 'http://localhost:'+port_number+'/execute?command='+self.operation+'&async=1'
         debug(url)
 
         try:
             if self.body != None:
                 body = json.dumps(self.body).encode('utf8')
+                debug('posting to MavensMate:')
                 debug(body)
-                req = urllib.request.Request(url, data=body, headers={'content-type': 'application/json'})
+                req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/json', 'MavensMate-Editor-Agent': 'sublime'})
                 response = urllib.request.urlopen(req)
             else:
                 response = urllib.request.urlopen(url)
+
+            debug('response from MavensMate')
+            debug(response)
+
             mm_response = json.loads(response.read().decode('utf-8'))
 
             request_id = mm_response['id']
             status = mm_response['status']
             result = None
             while status == 'pending':
-                # url = 'http://localhost:8002/status?id='+request_id
-                url = 'http://localhost:'+server_port+'/status?id='+request_id
+                url = 'http://localhost:'+port_number+'/status?id='+request_id
+                req = urllib.request.Request(url, headers={'MavensMate-Editor-Agent': 'sublime'})
+
                 response = urllib.request.urlopen(url)
                 response_body = response.read().decode('utf-8')
                 status_response = json.loads(response_body)
@@ -240,10 +175,24 @@ class MavensMateTerminalCall(threading.Thread):
                     result = status_response
                     status = 'done'
 
-        except urllib.error.URLError as e:
-            result = 'Error contacting MavensMate server: '+str(e)
-            response_body = { 'error': 'Request to the local MavensMate server failed. Try restarting the server (MavensMate > Utilities > Restart MavensMate server)' }
+        except urllib.error.HTTPError as e:
+            debug('urllib.error.HTTPError')
+            result = e.read().decode('utf-8')
+            debug(result)
+            result = str(result)
+            response_body = { 'error': 'Request to the local MavensMate server failed. '+str(result) }
             status = 'done'
+        except urllib.error.URLError as e:
+            debug('urllib.error.URLError')
+            result = 'Error contacting MavensMate server: '+str(e)
+            response_body = { 'error': 'Request to the local MavensMate server failed. please ensure the MavensMate app is running.' }
+            status = 'done'
+        except Exception as e:
+            debug('Exception')
+            result = 'Error contacting MavensMate server: '+str(e)
+            response_body = { 'error': 'Request to the local MavensMate server failed. '+str(e) }
+            status = 'done'
+
 
         debug(result)
         self.result = response_body

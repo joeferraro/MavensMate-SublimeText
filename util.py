@@ -151,45 +151,6 @@ def get_project_name(context=None):
     else:
         return None
 
-def valid_workspace():
-    workspace = mm_workspace()
-    if workspace == None or workspace == "":
-        return False
-    elif type(workspace) is list and len(workspace) > 0:
-        workspaces = workspace
-        for w in workspaces:
-            if not os.path.exists(w):
-                return False
-    elif type(workspace) is list and len(workspace) == 0:
-        return False
-    elif type(workspace) is not list and not os.path.exists(workspace):
-        return False
-    return True
-
-def check_for_workspace():
-    workspace = mm_workspace()
-    if workspace == None or workspace == "":
-        #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
-        msg = 'Your [mm_workspace] property is not set. Open \'MavensMate > Settings > User\' or press \'Cmd+Shift+,\' and set this property to the full path of your workspace. Thx!'
-        sublime.error_message(msg)
-        raise BaseException
-
-    selected_workspace = None
-    if type(workspace) is list and len(workspace) > 0:
-        selected_workspace = workspace[0]
-    elif type(workspace) is list and len(workspace) == 0:
-        msg = 'Your [mm_workspace] directory \''+workspace+'\' does not exist. Please create the directory then try your operation again. Thx!'
-        sublime.error_message(msg)
-        raise BaseException
-    else:
-        selected_workspace = workspace
-
-    if not os.path.exists(selected_workspace):
-        #os.makedirs(settings.get('mm_workspace')) we're not creating the directory here bc there's some sort of weird race condition going on
-        msg = 'Your [mm_workspace] setting is not configured properly. Please ensure any locations specified in mm_workspace exist on the system, then try your operation again.'
-        sublime.error_message(msg)
-        raise BaseException
-
 def sublime_project_file_path():
     project_directory = sublime.active_window().folders()[0]
     if os.path.isfile(os.path.join(project_directory,".sublime-project")):
@@ -211,10 +172,6 @@ def get_project_settings(window=None):
 def is_mm_project(window=None):
     if window == None:
         window = sublime.active_window()
-    #workspace = mm_workspace();
-    #commented out bc it's confusing to users to see commands grayed out with no error
-    #if workspace == "" or workspace == None or not os.path.exists(workspace):
-    #    return False
     try:
         if os.path.isfile(os.path.join(window.folders()[0],"config",".settings")):
             return True
@@ -383,19 +340,6 @@ def mm_project_directory(window=None):
     folders = window.folders()
     if len(folders) > 0:
         return window.folders()[0]
-    else:
-        if type(mm_workspace()) is list:
-            return mm_workspace()[0]
-        else:
-            return mm_workspace()
-
-def mm_workspace():
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if settings.get('mm_workspace') != None:
-        workspace = settings.get('mm_workspace')
-    else:
-        workspace = sublime.active_window().active_view().settings().get('mm_workspace')
-    return workspace
 
 def print_debug_panel_message(message):
     # printer = PanelPrinter.get(sublime.active_window().id())

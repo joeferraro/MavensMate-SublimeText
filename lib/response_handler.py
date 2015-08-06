@@ -56,9 +56,12 @@ class MavensMateResponseHandler(object):
                 else:
                     self.__handle_generic_command_result()
             except Exception as e:
-                debug(e)
-                debug(traceback.print_exc())
-                self.__print_result()
+                try:
+                    self.__handle_generic_command_result()
+                except:
+                    debug(e)
+                    debug(traceback.print_exc())
+                    self.__print_result()
 
             self.__finish()
 
@@ -518,101 +521,5 @@ class MavensMateResponseHandler(object):
                     msg += "\n"
                     msg += r["Message"]
                     msg += "\n"
-
-            # if len(self.response) == 1:
-            #     res = self.response[0]
-            #     response_string = ""
-            #     if 'detailed_results' in res:
-            #         all_tests_passed = True
-            #         for r in res['detailed_results']:
-            #             if r["Outcome"] != "Pass":
-            #                 all_tests_passed = False
-            #                 break
-
-            #         if all_tests_passed:
-            #             response_string += '[TEST RESULT]: PASS'
-            #         else:
-            #             response_string += '[TEST RESULT]: FAIL'
-
-            #         for r in res['detailed_results']:
-            #             if r["Outcome"] == "Pass":
-            #                 pass #dont need to write anything here...
-            #             else:
-            #                 response_string += '\n\n'
-            #                 rstring = " METHOD RESULT "
-            #                 rstring += "\n"
-            #                 rstring += "{0} : {1}".format(r["MethodName"], r["Outcome"])
-
-            #                 if "StackTrace" in r and r["StackTrace"] != None:
-            #                     rstring += "\n\n"
-            #                     rstring += " STACK TRACE "
-            #                     rstring += "\n"
-            #                     rstring += r["StackTrace"]
-
-            #                 if "Message" in r and r["Message"] != None:
-            #                     rstring += "\n\n"
-            #                     rstring += " MESSAGE "
-            #                     rstring += "\n"
-            #                     rstring += r["Message"]
-            #                     rstring += "\n"
-            #                 #responses.append("{0} | {1} | {2} | {3}\n".format(r["MethodName"], r["Outcome"], r["StackTrace"], r["Message"]))
-            #                 responses.append(rstring)
-            #         response_string += "\n\n".join(responses)
-            #         self.__print_to_panel(response_string)
-            #         self.printer.scroll_to_bottom()
-            #     else:
-            #         self.__print_to_panel(json.dumps(self.response))
-            # elif len(self.response) > 1:
-            #     #run multiple tests
-            #     response_string = ''
-            #     for res in self.response:
-            #         if 'detailed_results' in res:
-            #             all_tests_passed = True
-            #             for r in res['detailed_results']:
-            #                 if r["Outcome"] != "Pass":
-            #                     all_tests_passed = False
-            #                     break
-
-            #             if all_tests_passed:
-            #                 response_string += res['ApexClass']['Name']+':\n\tTEST RESULT: PASS'
-            #             else:
-            #                 response_string += res['ApexClass']['Name']+':\n\tTEST RESULT: FAIL'
-
-            #             for r in res['detailed_results']:
-            #                 if r["Outcome"] == "Pass":
-            #                     pass #dont need to write anything here...
-            #                 else:
-            #                     response_string += '\n\n'
-            #                     response_string += "\t METHOD RESULT "
-            #                     response_string += "\t\n"
-            #                     response_string += "\t{0} : {1}".format(r["MethodName"], r["Outcome"])
-
-            #                     if "StackTrace" in r and r["StackTrace"] != None:
-            #                         response_string += "\n\n"
-            #                         response_string += "\t STACK TRACE "
-            #                         response_string += "\t\n"
-            #                         response_string += "\t"+r["StackTrace"].replace("\n","\t\n")
-
-            #                     if "Message" in r and r["Message"] != None:
-            #                         response_string += "\n\n"
-            #                         response_string += "\t MESSAGE "
-            #                         response_string += "\t\n"
-            #                         response_string += "\t"+r["Message"].replace("\n","\t\n")
-            #                         response_string += "\n"
-            #         response_string += "\n\n"
-            #     #self.__print_to_panel(response_string)
-            #     #self.printer.scroll_to_bottom()
-
-            #     self.__print_to_panel('Success')
-            #     new_view = self.thread.window.new_file()
-            #     new_view.set_scratch(True)
-            #     new_view.set_name("Run All Tests Result")
-            #     if "linux" in sys.platform or "darwin" in sys.platform:
-            #         new_view.set_syntax_file(os.path.join("Packages","YAML","YAML.tmLanguage"))
-            #         new_view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","panel","MavensMate.hidden-tmLanguage"))
-            #     else:
-            #         new_view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/panel/MavensMate.hidden-tmLanguage"))
-
-            #     sublime.set_timeout(new_view.run_command('generic_text', {'text': response_string }), 1)
 
         self.__print_to_panel(msg)

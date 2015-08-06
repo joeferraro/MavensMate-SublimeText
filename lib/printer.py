@@ -12,8 +12,6 @@ def write_to_active_printer(message, show=True):
     active_window_id = sublime.active_window().id()
     p = PanelPrinter.get(active_window_id)
     p.show()
-    # if show:
-    #     p.show()
     p.write('\n'+message+'\n')
 
 def get_version_number():

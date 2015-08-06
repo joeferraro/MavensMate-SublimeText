@@ -19,10 +19,6 @@
 	         	"children":
 	         	[
 	         		{
-	         		  "caption": "Open Project...",          
-	         		  "command": "open_project"
-	         		},
-	         		{
 	         			"caption": "New Project...",
 	         			"command": "new_project"
 	         		},
@@ -228,31 +224,14 @@
     				{
     	        		"command": "refresh_project_apex_symbols", 
     	        		"caption": "Refresh Apex Symbol Tables For This Project" 
-    	        	},
-    	        	{
-    	        		"command": "restart_server", 
-    	        		"caption": "Restart MavensMate server" 
     	        	}
 	         	]
 	     	},
 			{"caption":"-"},
 	     	{
-	        	"id": "settings", 
-	    		"caption": "Settings",  
-	         	"children":
-	         	[
-					{ 
-						"command": "open_file", 
-						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
-						"caption": "User" 
-					},
-					{ 
-						"command": "open_file", 
-						"args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"}, 
-						"caption": "Default" 
-					}	
-	         	]
-	     	},
+        		"command": "open_settings", 
+        		"caption": "Settings" 
+        	},
 	     	{
 	        	"id": "docs", 
 	    		"caption": "Documentation",  

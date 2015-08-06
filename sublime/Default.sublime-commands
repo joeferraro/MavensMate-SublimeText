@@ -1,9 +1,5 @@
 [
   {
-    "command": "restart_server", 
-    "caption": "MavensMate: Restart server" 
-  },
-  {
     "caption": "MavensMate: Stub",
     "command": "mavens_stub"
   },
@@ -126,10 +122,6 @@
   {
     "caption": "MavensMate: Deploy To Server...",          
     "command": "deploy_to_server"
-  },
-  {
-    "caption": "MavensMate: Open Project...",          
-    "command": "open_project"
   },
   {
     "caption": "MavensMate: Deploy Resource Bundle...",          

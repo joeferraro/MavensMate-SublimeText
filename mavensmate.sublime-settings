@@ -7,47 +7,6 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 */
 
 {	
-	"mm_local_server_path" : "default",
-
-	"mm_node_path" : {
-		"windows": "C:\\Program Files\\nodejs\\node.exe",
-		"linux": "/usr/bin/nodejs",
-		"osx": "/usr/local/bin/node"
-	},
-
-	//set to absolute location where you wish your MavensMate project to reside
-	//if the location does not exist, MavensMate will attempt to create it
-	//for example: "/Users/username/Documents/workspaces/mavensmate" (notice the absolute path)
-	//WINDOWS USERS: it's probably best to set this like so: C:\\path\\to\\your\\workspace
-	//****NEW****: you can now set mm_workspace to an array of locations on your file system
-	//EXAMPLE:
-	// "mm_workspace" : [
-	// 		"/my/workspace",
-	// 		"/my/other/workspace",
-	// 		"/my/super/secret/workspace"
-	// ]
-	"mm_workspace" : "",
-
-	//set if you're behind a proxy (you can also set via export HTTP_PROXY, export HTTPS_PROXY)
-	//----IMPORTANT: you MUST escape the 2 slashes after http: and https: as shown below (dont ask, it's a dumb JSON-with-comments parsing issue)
-	//examples: 
-	// 	"mm_http_proxy"  : "http:\/\/10.10.1.10:3128",
-	// 	"mm_https_proxy" : "http:\/\/10.10.1.10:1080"
-	//
-	// HTTP Basic Auth
-	// 	"mm_http_proxy"  : "http:\/\/user:pass@10.10.1.10:3128/",
-	// 	"mm_https_proxy" : "http:\/\/user:pass@10.10.1.10:1080/"
-
-	"mm_http_proxy" : "",
-
-	"mm_https_proxy" : "",
-
-	//set to desired Salesforce.com API version (tooling api functionality requires 27.0+)
-	"mm_api_version" : "33.0",
-
-	//generate from https://mavensmate.herokuapp.com. used to capture high-level usage statistics for community functionality like collaboration, gamification
-	"mm_community_api_token" : "",
-
 	//if true, MavensMate will automatically hide the debug panel upon a successful operation
 	"mm_hide_panel_on_success" : true,
 
@@ -57,44 +16,18 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
 	"mm_compile_on_save" : true,
 
-	//if false, mavensmate will store/retrieve sensitive data like passwords in a less secure way
-	//set to false only if having issues specifically with keyring or gnome-keyring
-	"mm_use_keyring" : true,
-
-	//if true, MavensMate will check for server conflicts and present a server diff when it finds a conflict
-	"mm_compile_check_conflicts": true,
-
-	//if true, MavensMate will present local/server diff view when conflict is found for the purposes of merging changes (beta)
-	"mm_diff_server_conflicts": true,
-
 	//if true, MavensMate will scroll to the line of a reported exception when there is a compilation error
 	"mm_compile_scroll_to_error": true,
 
-	//if true, MavensMate will rollback compiles when an error is encountered
-	"mm_compile_rollback_on_error": true,
-
 	//if true, MavensMate will hook into the Sublime Text completions API to offer code assistance
 	"mm_autocomplete" : true,
-
-	//if true, MavensMate will check for updates to the mm executable when Sublime Text starts
-	"mm_check_for_updates" : true,
-
-	//if true, MavensMate will look for and download pre-releases (beta versions) of the MavensMate API, mm
-	"mm_beta_user" : false,
-
-	//possible values: SILLY, ERROR, WARNING, DEBUG, INFO
-	"mm_log_level" : "INFO",
 
 	//location where mm debug log should be placed (must be existing path)
 	//windows users: please set like so: C:\\path\\to\\your\\logs
 	"mm_log_location" : "",
 
-	//if true, mavensmate will send usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
+	//if true, mavensmate will send anonymous usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
 	"mm_send_usage_statistics" : true,
-
-	//if true, mavensmate will open UIs in default browser
-	//linux/windows users: mavensmate UIs are static HTML files, so ensure your browser is set up to open .HTML files by default
-	"mm_use_browser_as_ui" : false, 
 
 	// location of sublime text cli
 	"mm_subl_location" : {
@@ -103,14 +36,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		"osx": "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"
 	},
 
-	//set to true to use the tooling api to compile apex metadata (if you're experiencing any compile issues, set this to false to use the metadata api)
-	"mm_compile_with_tooling_api" : true,
-
-	//set to true to play notification sounds
-	"mm_play_sounds" : true,
-
-	//local server port (usually for testing purposes only)
-	"mm_server_port" : 7777,
+	//local server port (do not change unless you know what you're doing)
+	"mm_server_port" : 56248,
 
 	//mavensmate will attempt to compile when savings files with the following extensions
 	"mm_apex_file_extensions": [
@@ -161,43 +88,6 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".evt"
 	],
 
-	//template location, e.g. "remote" or "local" ("remote" refers to templates located on github)
-	"mm_template_location": "remote",
-
-	//template location 
-	//if "mm_template_location" is set to "local", set to absolute location of the directory where you've forked the MavensMate-Templates project
-		//example: "mm_template_source" : "/path/to/templates"
-	//if "mm_template_location" is set to "remote", set to github location)
-		//example: "mm_template_source" : "username/reponame/branchname"
-	//project directory/repository must be in the format found here: https://github.com/joeferraro/MavensMate-Templates
-	"mm_template_source": "joeferraro/MavensMate-Templates/master",
-	
-	//the default metadata available in a project (may be set on a per-project basis in the "advanced" tab of the new and edit project UIs)
-	"mm_default_subscription" : [
-		"ApexClass",
-		"ApexComponent",
-		"ApexPage",
-		"ApexTrigger",
-		"StaticResource",
-		"CustomObject",
-		"Profile"
-	],
-
-	//ignore metadata from managed packages (highly recommended)
-	"mm_ignore_managed_metadata" : true,
-
-	//if true, mavensmate will store all deployment packages in your project's "deploy" directory
-	"mm_archive_deployments" : true,
-	
-	//if true, mavensmate will set the purgeOnDelete to true during metadata deletes (a hard delete)
-	"mm_purge_on_delete" : false,
-
 	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
-	"mm_use_org_metadata_for_completions" : true,
-
-	//timeout (in seconds) for calls to the Salesforce.com servers
-	"mm_timeout" : 600,
-
-	//*BETA* if true, MavensMate will compare the state of the destination org(s) before deployment
-	"mm_compare_before_deployment" : true
+	"mm_use_org_metadata_for_completions" : true
 }

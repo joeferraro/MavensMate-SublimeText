@@ -13,11 +13,9 @@ from MavensMate.lib.printer import PanelPrinter
 from MavensMate.lib.threads import ThreadTracker
 import MavensMate.lib.parsehelp as parsehelp
 import MavensMate.lib.vf as vf
-import MavensMate.lib.platform_util as platform_util
 from MavensMate.lib.merge import *
 from MavensMate.lib.completioncommon import *
 import MavensMate.lib.community as community
-import MavensMate.lib.installer as installer
 
 import sublime
 import sublime_plugin
@@ -45,8 +43,6 @@ import MavensMate.lib.reloader as reloader
 def plugin_loaded():
     settings = sublime.load_settings('mavensmate.sublime-settings')
 
-    # installer.execute()
-
     config.setup_logging()
     global debug
     debug = config.debug
@@ -56,23 +52,16 @@ def plugin_loaded():
     debug(shutil.which('npm'))
     debug(shutil.which('mavensmate'))
 
-    try:
-        node_path = platform_util.node_path()
-        if not os.path.isfile(node_path):
-            active_window_id = sublime.active_window().id()
-            printer = PanelPrinter.get(active_window_id)
-            printer.show()
-            message = '[ERROR]: This version of MavensMate requires Node.js and it could not be found on your system. To continue:\n'
-            message += '\n1. Ensure Node.js is installed. Follow directions at http://nodejs.org/'
-            message += '\n2. Install MavensMate node package by running "npm install mavensmate" in your terminal/command prompt.'
-            message += '\n3. In your MavensMate for Sublime Text user settings, set mm_node_path to the full path of the Node.js executable.\n\tUnix/Linux users: you can find your node path by running \'which node\').\n\tWindows users: you can find your node path by running \'where node.exe\''
-            printer.write('\n'+message+'\n')
-            return
-    except:
-        pass
+    active_window_id = sublime.active_window().id()
+    printer = PanelPrinter.get(active_window_id)
 
-    mm.kill_servers()
-    mm.start_server()
+    try:
+        mm.check_server()
+    except Exception as e:
+        printer.show()
+        message = '[ERROR]: '+str(e)+'\n'
+        printer.write('\n'+message+'\n')
+        return
 
     merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
     config.settings = settings
@@ -81,37 +70,34 @@ def plugin_loaded():
 
     community.sync_activity('startup')
 
-def plugin_unloaded():
-    mm.kill_servers()
-
-class RestartServerCommand(sublime_plugin.ApplicationCommand):
-    def run(command):
-        active_window_id = sublime.active_window().id()
-        printer = PanelPrinter.get(active_window_id)
-        printer.show()
-        message = '\nRestarting MavensMate server...'
-        printer.write(message)
-        mm.kill_servers()
-        mm.start_server()
-        printer.write('Done.\n')
+    message = 'Happy coding :)'
+    printer.show()
+    printer.write('\n'+message+'\n')
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
 #displays mavensmate ui
 class OpenMavensMateUi(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('open-ui', False, body={'args': { 'ui' : True }})
+        mm.call('open-ui', True, body={'args': { 'ui' : True }})
 
 #opens salesforce setup
 class OpenSalesforceOrg(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('open-sfdc', False, body={'args': { 'ui' : True }})
+        mm.call('open-sfdc', True, body={'args': { 'ui' : True }})
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+#opens salesforce setup
+class OpenSettings(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('open-settings', True, body={'args': { 'ui' : True }})
 
 #displays new project dialog
 class NewProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        util.check_for_workspace()
-        mm.call('new-project', False, body={'args': { 'ui' : True }})
+        mm.call('new-project', True, body={'args': { 'ui' : True }})
 
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
@@ -133,7 +119,7 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
 #displays edit project dialog
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('edit-project', False, body={'args': { 'ui' : True }})
+        mm.call('edit-project', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -157,7 +143,7 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
         except:
             body = {}
         body['args'] = { 'ui' : True }
-        mm.call('run-tests', False, context=command, body=body)
+        mm.call('run-tests', True, context=command, body=body)
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -165,7 +151,7 @@ class RunApexUnitTestsCommand(sublime_plugin.ApplicationCommand):
 #launches the execute anonymous UI
 class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('execute-apex', False, body={'args': { 'ui' : True }})
+        mm.call('execute-apex', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -173,7 +159,7 @@ class ExecuteAnonymousCommand(sublime_plugin.ApplicationCommand):
 #displays deploy dialog
 class DeployToServerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('deploy', False, body={'args': { 'ui' : True }})
+        mm.call('deploy', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -181,7 +167,7 @@ class DeployToServerCommand(sublime_plugin.ApplicationCommand):
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-metadata', False, body={'args': { 'ui': True, 'type': 'ApexClass' }})
+        mm.call('new-metadata', True, body={'args': { 'ui': True, 'type': 'ApexClass' }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -189,7 +175,7 @@ class NewApexClassCommand(sublime_plugin.ApplicationCommand):
 #displays new apex trigger dialog
 class NewApexTriggerCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-metadata', False, body={'args': { 'ui': True, 'type': 'ApexTrigger' }})
+        mm.call('new-metadata', True, body={'args': { 'ui': True, 'type': 'ApexTrigger' }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -205,7 +191,7 @@ class NewApexPageCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewApexComponentCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-metadata', False, body={'args': { 'ui': True, 'type': 'ApexComponent' }})
+        mm.call('new-metadata', True, body={'args': { 'ui': True, 'type': 'ApexComponent' }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -213,7 +199,7 @@ class NewApexComponentCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningAppCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-app', False, body={'args': { 'ui' : True }})
+        mm.call('new-lightning-app', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -221,7 +207,7 @@ class NewLightningAppCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningComponentCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-component', False, body={'args': { 'ui' : True }})
+        mm.call('new-lightning-component', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -229,7 +215,7 @@ class NewLightningComponentCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningEventCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-event', False, body={'args': { 'ui' : True }})
+        mm.call('new-lightning-event', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -237,7 +223,7 @@ class NewLightningEventCommand(sublime_plugin.ApplicationCommand):
 #displays new apex component dialog
 class NewLightningInterfaceCommand(sublime_plugin.ApplicationCommand):
     def run(command):
-        mm.call('new-lightning-interface', False, body={'args': { 'ui' : True }})
+        mm.call('new-lightning-interface', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -408,87 +394,6 @@ class OpenProjectSettingsCommand(sublime_plugin.WindowCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
-#opens a project in the current workspace
-class OpenProjectCommand(sublime_plugin.WindowCommand):
-    def run(self):
-        util.check_for_workspace()
-        open_projects = []
-        try:
-            for w in sublime.windows():
-                if len(w.folders()) == 0:
-                    continue;
-                root = w.folders()[0]
-                if util.mm_workspace() not in root:
-                    continue
-                #project_name = root.split("/")[-1]
-                project_name = util.get_file_name_no_extension(root)
-
-                open_projects.append(project_name)
-        except:
-            pass
-
-        import os
-        self.dir_map = {}
-        dirs = []
-        #debug(util.mm_workspace())
-        workspaces = util.mm_workspace()
-        if type(workspaces) is not list:
-            workspaces = [workspaces]
-
-        for w in workspaces:
-            for dirname in os.listdir(w):
-                if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
-                if dirname in open_projects : continue
-                if not os.path.isdir(os.path.join(w,dirname)) : continue
-                sublime_project_file = dirname+'.sublime-project'
-                for project_content in os.listdir(os.path.join(w,dirname)):
-                    if '.' not in project_content: continue
-                    if project_content == '.sublime-project':
-                        sublime_project_file = '.sublime-project'
-                        continue
-                dirs.append([dirname, "Workspace: "+os.path.basename(w)])
-                self.dir_map[dirname] = [dirname, sublime_project_file, w]
-        self.results = dirs
-        #debug(self.results)
-        self.window.show_quick_panel(dirs, self.panel_done,
-            sublime.MONOSPACE_FONT)
-
-    def panel_done(self, picked):
-        if 0 > picked < len(self.results):
-            return
-        self.picked_project = self.results[picked]
-        project_file = self.dir_map[self.picked_project[0]][1]
-        project_name = self.dir_map[self.picked_project[0]][0]
-        workspace = self.dir_map[self.picked_project[0]][2]
-        project_file_location = os.path.join(workspace,project_name,project_file)
-
-        debug('attempting to open project at -->')
-        debug(project_file_location)
-
-        if not os.path.isfile(project_file_location):
-            sublime.message_dialog("Cannot find project file for: "+project_name)
-            return
-
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        if sys.platform == 'darwin':
-            sublime_path = settings.get('mm_plugin_client_location', '/Applications')
-            if os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
-                subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            elif os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
-                subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        elif 'linux' in sys.platform:
-            subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
-            debug('subl location is: ', subl_location)
-            debug('running command: ')
-            command = "'{0}' --project '{1}'".format(subl_location, project_file_location)
-            debug(command)
-            subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        else:
-            subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
-            if not os.path.isfile(subl_location) and "x86" not in subl_location:
-                subl_location = subl_location.replace("Program Files", "Program Files (x86)")
-            subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_file_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-
 class RunApexScriptCommand(sublime_plugin.WindowCommand):
     def run(self):
         body = {
@@ -508,7 +413,6 @@ class NewApexScriptCommand(sublime_plugin.TextCommand):
 
     def finish(self, name):
         mm.call('new-apex-script', False, body={ 'name': name }, message='Creating new Apex Script: '+name)
-        # sublime.active_window().open_file(os.path.join(util.mm_project_directory(), "apex-scripts", name))
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -518,9 +422,6 @@ class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
     def run(self):
         if util.is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(True)
-
-    def is_enabled(command):
-        return util.is_mm_project()
 
 #hides mavensmate panel
 class HideDebugPanelCommand(sublime_plugin.WindowCommand):
@@ -541,11 +442,11 @@ class RefreshFromServerCommand(sublime_plugin.WindowCommand):
         if sublime.ok_cancel_dialog("Are you sure you want to overwrite the selected files' contents from Salesforce?", "Refresh"):
             if dirs != None and type(dirs) is list and len(dirs) > 0:
                 body = {
-                    'paths'   : dirs
+                    'paths': dirs
                 }
             elif files != None and type(files) is list and len(files) > 0:
                 body = {
-                    'paths'         : files
+                    'paths': files
                 }
             mm.call('refresh-metadata', context=self, body=body)
 
@@ -557,7 +458,7 @@ class RefreshActiveFileCommand(sublime_plugin.WindowCommand):
     def run(self):
         if sublime.ok_cancel_dialog("Are you sure you want to overwrite this file's contents from Salesforce?", "Refresh"):
             body = {
-                'paths' : [util.get_active_file()]
+                'paths': [util.get_active_file()]
             }
             mm.call('refresh-metadata', context=self, body=body)
 
@@ -569,7 +470,7 @@ class RunActiveApexTestsCommand(sublime_plugin.WindowCommand):
     def run(self):
         filename, ext = os.path.splitext(os.path.basename(util.get_active_file()))
         body = {
-            'classes' : [filename]
+            'classes': [filename]
         }
         mm.call('run-tests', context=self, body=body, message='Running Apex unit test(s)...')
 
@@ -584,7 +485,7 @@ class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
     def run(self, files):
         if files != None and type(files) is list and len(files) > 0:
             body = {
-                'classes' : files
+                'classes': files
             }
             mm.call('run-tests', context=self, body=body, message='Running Apex unit test(s)...')
 
@@ -639,13 +540,13 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
         if dirs != None and len(dirs) > 0:
             if sublime.ok_cancel_dialog("Are you sure you want to delete the selected paths from Salesforce?", "Delete"):
                 body = {
-                    "paths" : dirs
+                    "paths": dirs
                 }
                 mm.call('delete-metadata', context=self, body=body)
         else:
             if sublime.ok_cancel_dialog("Are you sure you want to delete the selected files from Salesforce?", "Delete"):
                 body = {
-                    "paths" : files
+                    "paths": files
                 }
                 mm.call('delete-metadata', context=self, body=body)
 
@@ -1601,23 +1502,6 @@ class GenericTextCommand(sublime_plugin.TextCommand):
 
     def description(self):
         return
-
-class SignInWithGithub(sublime_plugin.WindowCommand):
-    def run(self):
-        mm.call('github')
-
-    def is_enabled(command):
-        return util.is_mm_project()
-
-class ConnectProjectWithGithub(sublime_plugin.WindowCommand):
-    def run(self):
-        mm.call('github_connect_project')
-
-    def is_enabled(command):
-        if util.is_mm_project():
-            if os.path.isfile(os.path.join(util.mm_project_directory(),"config",".github")):
-                return True
-        return False
 
 class ShowSublimeConsole(sublime_plugin.WindowCommand):
     def run(self):
