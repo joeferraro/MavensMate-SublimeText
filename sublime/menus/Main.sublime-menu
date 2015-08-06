@@ -228,10 +228,32 @@
 	         	]
 	     	},
 			{"caption":"-"},
-	     	{
-        		"command": "open_settings", 
-        		"caption": "Settings" 
-        	},
+        	{
+	        	"id": "settings", 
+	    		"caption": "Settings",  
+	         	"children":
+	         	[
+			     	{
+		        		"command": "open_settings", 
+		        		"caption": "Global Settings" 
+		        	},
+					{ 
+						"command": "open_file", 
+						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
+						"caption": "User Plugin Settings" 
+					},
+					{ 
+						"command": "open_file", 
+						"args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"}, 
+						"caption": "Default Plugin Settings" 
+					},
+					{ 
+						"command": "open_file", 
+						"args": {"file": "${packages}/MavensMate/sublime/settings-help.txt"}, 
+						"caption": "Settings Help" 
+					}	
+	         	]
+	     	},
 	     	{
 	        	"id": "docs", 
 	    		"caption": "Documentation",  
