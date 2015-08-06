@@ -35,23 +35,6 @@ def package_check():
         debug('could not migrate default settings to user settings')
         pass
 
-def is_project_legacy(window=None):
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if not os.path.exists(os.path.join(mm_project_directory(window),"config",".debug")):
-        return True
-    if not os.path.exists(os.path.join(mm_project_directory(window),get_project_name(window)+'.sublime-settings')):
-        return True
-    if os.path.exists(os.path.join(mm_project_directory(window),"config","settings.yaml")):
-        return True
-    elif os.path.exists(os.path.join(mm_project_directory(window),"config",".settings")):
-        current_settings = parse_json_from_file(os.path.join(mm_project_directory(window),"config",".settings"))
-        if 'subscription' not in current_settings or 'workspace' not in current_settings:
-            return True
-        else:
-            return False
-    else:
-        return False
-
 def parse_json_from_file(location):
     try:
         json_data = open(location)
@@ -549,9 +532,6 @@ def get_apex_completions(search_name, search_name_extra=None):
                         return get_completions_for_inner_class(inner)
 
     debug('no symbol table found for '+search_name)
-
-def zip_directory(directory_to_zip, where_to_put_zip_file=None):
-    return shutil.make_archive(where_to_put_zip_file, 'zip', os.path.join(directory_to_zip))
 
 def get_version_number():
     try:

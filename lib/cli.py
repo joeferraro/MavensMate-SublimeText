@@ -33,7 +33,7 @@ def check_server():
         urllib.request.urlopen('http://localhost:'+port_number+'/app/home/index')
     except urllib.error.URLError as e:
         debug(e)
-        raise MMException('Could not contact local MavensMate server, please ensure the MavensMate app is running. MavensMate will not run properly until resolved.')
+        raise MMException('Could not contact local MavensMate server, please ensure the MavensMate app is installed and running (https://github.com/joeferraro/mavensmate-app/releases). MavensMate will not run properly until resolved.')
     except Exception as e:
         debug(e)
         raise MMException(str(e))

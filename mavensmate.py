@@ -55,24 +55,24 @@ def plugin_loaded():
     active_window_id = sublime.active_window().id()
     printer = PanelPrinter.get(active_window_id)
 
+    merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
+    config.settings = settings
+    config.merge_settings = merge_settings
+    util.package_check()
+
     try:
         mm.check_server()
+
+        message = 'Happy coding :)'
+        printer.show()
+        printer.write('\n'+message+'\n')
     except Exception as e:
         printer.show()
         message = '[ERROR]: '+str(e)+'\n'
         printer.write('\n'+message+'\n')
         return
 
-    merge_settings = sublime.load_settings('mavensmate-merge.sublime-settings')
-    config.settings = settings
-    config.merge_settings = merge_settings
-    util.package_check()
-
     community.sync_activity('startup')
-
-    message = 'Happy coding :)'
-    printer.show()
-    printer.write('\n'+message+'\n')
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
