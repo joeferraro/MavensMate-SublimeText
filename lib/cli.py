@@ -127,12 +127,11 @@ class MavensMateTerminalCall(threading.Thread):
         ThreadTracker.add(self)
 
         port_number = self.settings.get('mm_server_port', '56248')
-
         ####### ---> new
         if util.is_mm_project():
-            url = 'http://localhost:'+port_number+'/execute?command='+self.operation+'&async=1&pid='+util.get_project_settings()['id']
+            url = 'http://localhost:'+str(port_number)+'/execute?command='+self.operation+'&async=1&pid='+util.get_project_settings()['id']
         else:
-            url = 'http://localhost:'+port_number+'/execute?command='+self.operation+'&async=1'
+            url = 'http://localhost:'+str(port_number)+'/execute?command='+self.operation+'&async=1'
         debug(url)
 
         try:
