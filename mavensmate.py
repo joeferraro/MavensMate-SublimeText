@@ -1,6 +1,7 @@
 # Written by Joe Ferraro (@joeferraro / www.joe-ferraro.com)
+import sublime
+import sublime_plugin
 import os
-import subprocess
 import json
 import sys
 import re
@@ -17,8 +18,6 @@ from MavensMate.lib.merge import *
 from MavensMate.lib.completioncommon import *
 import MavensMate.lib.community as community
 
-import sublime
-import sublime_plugin
 import shutil
 
 debug = None

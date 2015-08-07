@@ -1,11 +1,8 @@
 import sublime
 import threading
 import json
-import subprocess
-import os
 import sys
 import time
-# import shutil
 import urllib.request
 from .threads import ThreadTracker
 from .threads import ThreadProgress
@@ -17,20 +14,14 @@ from MavensMate.lib.exceptions import *
 import MavensMate.util as util
 import MavensMate.config as config
 import MavensMate.lib.community as community
-import MavensMate.lib.platform_util as platform_util
-import MavensMate.lib.printer as printer
 
-sublime_version = int(float(sublime.version()))
-settings = sublime.load_settings('mavensmate.sublime-settings')
 debug = config.debug
-
-path_to_port_dict = {}
-
-port_number = str(settings.get('mm_server_port', '56248'))
 
 def check_server():
     try:
-        urllib.request.urlopen('http://localhost:'+port_number+'/app/home/index')
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        port_number = settings.get('mm_server_port', '56248')
+        urllib.request.urlopen('http://localhost:'+str(port_number)+'/app/home/index')
     except urllib.error.URLError as e:
         debug(e)
         raise MMException('Could not contact local MavensMate server, please ensure the MavensMate app is installed and running (https://github.com/joeferraro/mavensmate-app/releases). MavensMate will not run properly until resolved.')
@@ -135,7 +126,7 @@ class MavensMateTerminalCall(threading.Thread):
         #last_thread = ThreadTracker.get_last_added(self.window)
         ThreadTracker.add(self)
 
-        # server_port = '56248'
+        port_number = self.settings.get('mm_server_port', '56248')
 
         ####### ---> new
         if util.is_mm_project():
