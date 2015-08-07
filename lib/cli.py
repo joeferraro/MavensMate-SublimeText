@@ -153,7 +153,7 @@ class MavensMateTerminalCall(threading.Thread):
             status = mm_response['status']
             result = None
             while status == 'pending':
-                url = 'http://localhost:'+port_number+'/status?id='+request_id
+                url = 'http://localhost:'+str(port_number)+'/status?id='+request_id
                 req = urllib.request.Request(url, headers={'MavensMate-Editor-Agent': 'sublime'})
 
                 response = urllib.request.urlopen(url)
