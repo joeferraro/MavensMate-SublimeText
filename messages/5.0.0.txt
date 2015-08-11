@@ -1,3 +1,7 @@
 MavensMate-SublimeText 5.0.0 changelog
 
-- This is a major release
+- This is a major release (we've been working on it for almost 8 months!). Our goals were speed, stability, ease-of-installation, and of course developer happiness. We hope you enjoy it :) 
+
+### IMPORTANT ###
+
+Version 5 of MavensMate for Sublime Text no longer depends on the "mm" API, rather it depends on a brand new app called "mavensmate-app" (https://github.com/joeferraro/mavensmate-app). mavensmate-app is the MavensMate UI and the MavensMate local server packaged with a pretty bow. In keeping with our commitment to never expose your source code/intellectual property to any server other than Salesforce.com, mavensmate-app's local server facilitates communication between your local machine and Salesforce.com, *only*. Your source code never passes through any (nonexistent) MavensMate remote server. If you're interested in reviewing the source code of the local MavensMate server, you can find it at https://github.com/joeferraro/MavensMate. 
