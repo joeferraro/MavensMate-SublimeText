@@ -37,7 +37,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	},
 
 	//local server port (do not change unless you know what you're doing)
-	"mm_server_port" : 56248,
+	"mm_app_server_port" : 56248,
 
 	//mavensmate will attempt to compile when savings files with the following extensions
 	"mm_apex_file_extensions": [

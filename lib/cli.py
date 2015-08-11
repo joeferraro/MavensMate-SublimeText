@@ -20,7 +20,7 @@ debug = config.debug
 def check_server():
     try:
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        port_number = settings.get('mm_server_port', '56248')
+        port_number = settings.get('mm_app_server_port', '56248')
         urllib.request.urlopen('http://localhost:'+str(port_number)+'/app/home/index')
     except urllib.error.URLError as e:
         debug(e)
@@ -126,7 +126,7 @@ class MavensMateTerminalCall(threading.Thread):
         #last_thread = ThreadTracker.get_last_added(self.window)
         ThreadTracker.add(self)
 
-        port_number = self.settings.get('mm_server_port', '56248')
+        port_number = self.settings.get('mm_app_server_port', '56248')
         ####### ---> new
         if util.is_mm_project():
             url = 'http://localhost:'+str(port_number)+'/execute?command='+self.operation+'&async=1&pid='+util.get_project_settings()['id']
