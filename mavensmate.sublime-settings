@@ -29,13 +29,6 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//if true, mavensmate will send anonymous usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
 	"mm_send_usage_statistics" : true,
 
-	// location of sublime text cli
-	"mm_subl_location" : {
-		"windows": "C:\\Program Files\\Sublime Text 3\\sublime_text.exe",
-		"linux": "/usr/bin/subl",
-		"osx": "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"
-	},
-
 	//local server port (do not change unless you know what you're doing)
 	"mm_app_server_port" : 56248,
 
