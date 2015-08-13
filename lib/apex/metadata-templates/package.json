@@ -2,99 +2,351 @@
 	"ApexClass" : [
 		{
 			"name" 			: "Default",
-			"file_name" 	: "ApexClass.cls",
+			"file_name"		: "ApexClass.cls",
 			"description" 	: "The default template for an Apex Class",
-			"author" 		: "MavensMate"
-		},
-		{
-			"name" 			: "Controller Extension",
-			"file_name" 	: "ControllerExtension.cls",
-			"description" 	: "Controller extension Apex Class",
-			"author" 		: "David Schach @dschach"
-		},
-		{
-			"name" 			: "No Constructor",
-			"file_name" 	: "ApexClassNoConstructor.cls",
-			"description" 	: "The default template for an Apex Class",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
 			"name" 			: "Batch",
-			"file_name" 	: "BatchApexClass.cls",
+			"file_name"		: "BatchApexClass.cls",
 			"description" 	: "Batch Apex Class",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
-			"name" 			: "Email Service",
-			"file_name" 	: "EmailServiceApexClass.cls",
-			"description" 	: "Template for an Apex Email Service",
-			"author" 		: "MavensMate"
+			"name" 			: "BDD Unit Test",
+			"file_name"		: "BDDUnitTestApexClass.cls",
+			"description" 	: "Behaviour Driven Development Unit test class",
+			"author" 		: "Paul Hardaker @comic96",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyBDDClass"
+		        }
+		   ]
+		},
+		{
+			"name" 			: "Controller Extension",
+			"file_name"		: "ControllerExtension.cls",
+			"description" 	: "Controller extension Apex Class",
+			"author" 		: "David Schach @dschach",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
 			"name" 			: "Custom Exception",
-			"file_name" 	: "ExceptionApexClass.cls",
+			"file_name"		: "ExceptionApexClass.cls",
 			"description" 	: "A custom exception class",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
+			"name" 			: "DomainClass",
+			"file_name"		: "DomainClass.cls",
+			"description" 	: "Apex Enterprise Patterns Domain Class",
+			"author" 		: "Andy Fawcett @andyinthecloud",
+			"params"		: [
+				{
+					"name"			: "api_name",
+					"description"	: "Domain class name (typically plural)",
+					"default"		: "Invoices"
+				},
+				{
+					"name"			: "object_name",
+					"description"	: "API name of the Standard or Custom Object",
+					"default"		: "Invoice__c"
+				}
+			]
+		},
+		{
+			"name" 			: "Email Service",
+			"file_name"		: "EmailServiceApexClass.cls",
+			"description" 	: "Template for an Apex Email Service",
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
+		},
+		{
+			"name" 			: "HTTP Callout Mock",
+			"file_name"		: "HttpCalloutMock.cls",
+			"description" 	: "Http callout mock class",
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
+		},
+		{
+			"name" 			: "No Constructor",
+			"file_name"		: "ApexClassNoConstructor.cls",
+			"description" 	: "The default template for an Apex Class",
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
+		},		
+		{
 			"name" 			: "Schedulable",
-			"file_name" 	: "SchedulableApexClass.cls",
+			"file_name"		: "SchedulableApexClass.cls",
 			"description" 	: "A Schedulable class",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
+		},
+		{
+			"name" 			: "SelectorClass",
+			"file_name"		: "SelectorClass.cls",
+			"description" 	: "Apex Enterprise Patterns Selector Class",
+			"author" 		: "Andy Fawcett @andyinthecloud",
+			"params"		: [
+				{
+					"name"			: "api_name",
+					"description"	: "Selector class name (typically plural e.g. AccountsSelector)",
+					"default"		: "InvoicesSelector"
+				},
+				{
+					"name"			: "object_name",
+					"description"	: "API name of the Standard or Custom Object",
+					"default"		: "Invoice__c"
+				}
+			]
+		},		
+		{
+			"name" 			: "ServiceClass",
+			"file_name"		: "ServiceClass.cls",
+			"description" 	: "Apex Enterprise Patterns Selector Class",
+			"author" 		: "Andy Fawcett @andyinthecloud",
+			"params"		: [
+				{
+					"name"			: "api_name",
+					"description"	: "Service class name (e.g. InvoiceService)",
+					"default"		: "InvoiceService"
+				}
+			]
+		},		
+		{
+			"name"			: "Trigger Handler",
+			"file_name"		: "TriggerHandler.cls",
+			"description" 	: "An Interface that handles Trigger actions",
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
 			"name" 			: "Unit Test",
-			"file_name" 	: "UnitTestApexClass.cls",
+			"file_name"		: "UnitTestApexClass.cls",
 			"description" 	: "Unit test class",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
 			"name" 			: "URL Rewriter",
-			"file_name" 	: "UrlRewriterApexClass.cls",
+			"file_name"		: "UrlRewriterApexClass.cls",
 			"description" 	: "URL Rewriter class",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
 			"name" 			: "Web Service",
-			"file_name" 	: "WebserviceClass.cls",
+			"file_name"		: "WebserviceClass.cls",
 			"description" 	: "Web service class",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		},
 		{
-			"name" 			: "Apex Rest Resource",
-			"file_name" 	: "ApexRest.cls",
-			"description" 	: "Template for custom Apex REST endpoints",
-			"author" 		: "Chris Bland @ChrisBland"
+			"name" 			: "Web Service Mock",
+			"file_name"		: "WebServiceMock.cls",
+			"description" 	: "Web service mock class",
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Class API Name",
+		            "default" 		: "MyApexClass"
+		        }
+		   ]
 		}
 	],
 	"ApexComponent" : [
 		{
 			"name" 			: "Visualforce Component",
-			"file_name" 	: "ApexComponent.component",
+			"file_name"		: "ApexComponent.component",
 			"description" 	: "Basic Visualforce Component template",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Visualforce Component API Name",
+		            "default" 		: "MyVisualforceComponent"
+		        }
+		   ]
 		}
 	],
 	"ApexPage" : [
 		{
 			"name" 			: "Visualforce Page",
-			"file_name" 	: "ApexPage.page",
+			"file_name"		: "ApexPage.page",
 			"description" 	: "Basic Visualforce Page template",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Visualforce Page API Name",
+		            "default" 		: "MyVisualforcePageName"
+		        }
+		   ]
+		},
+		{
+			"name" 			: "Header and PageBlock",
+			"file_name"		: "HeaderPageBlock.page",
+			"description" 	: "Visualforce Page with SectionHeader and PageBlock",
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Visualforce Page API Name",
+		            "default" 		: "MyVisualforcePageName"
+		        }
+		   ]
 		}
 	],
 	"ApexTrigger" : [
 		{
 			"name" 			: "Apex Trigger",
-			"file_name" 	: "ApexTrigger.trigger",
+			"file_name"		: "ApexTrigger.trigger",
 			"description" 	: "Basic Apex Trigger template",
-			"author" 		: "MavensMate"
+			"author" 		: "MavensMate",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Trigger API Name",
+		            "default" 		: "MyCoolTrigger"
+		        },
+		        {   
+		            "name"          : "object_name",
+		            "description"   : "Object API Name",
+		            "default" 		: "Account"
+		        }
+		   ]
 		},
 		{
-			"name" 			: "Bulkified Apex Trigger",
-			"file_name" 	: "ApexTriggerBulk.trigger",
+			"name" 			: "Apex Trigger - All Events",
+			"file_name"		: "ApexTriggerAllEvents.trigger",
+			"description" 	: "Apex Trigger with all Trigger events",
+			"author" 		: "@alexander-brett",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Trigger API Name",
+		            "default" 		: "MyCoolTrigger"
+		        },
+		        {   
+		            "name"          : "object_name",
+		            "description"   : "Object API Name",
+		            "default" 		: "Account"
+		        }
+		   ]
+		},
+		{
+			"name" 			: "Apex Trigger - Bulkified",
+			"file_name"		: "ApexTriggerBulk.trigger",
 			"description" 	: "Bulk Apex Trigger with all Trigger events",
-			"author" 		: "David Schach @dschach"
-		}
+			"author" 		: "David Schach @dschach",
+			"params" 		: [ 
+		        {   
+		            "name"          : "api_name",
+		            "description"   : "Apex Trigger API Name",
+		            "default" 		: "MyCoolTrigger"
+		        },
+		        {   
+		            "name"          : "object_name",
+		            "description"   : "Object API Name",
+		            "default" 		: "Account"
+		        }
+		   ]
+		},
+		{
+			"name" 			: "DomainTrigger",
+			"file_name"		: "DomainTrigger.trigger",
+			"description" 	: "Apex Enterprise Patterns Domain Trigger",
+			"author" 		: "Andy Fawcett @andyinthecloud",
+			"params"		: [
+				{
+					"name"			: "api_name",
+					"description"	: "Domain trigger name, must be same as Domain class name",
+					"default"		: "Invoices"
+				},
+				{
+					"name"			: "object_name",
+					"description"	: "API name of the Standard or Custom Object",
+					"default"		: "Invoice__c"
+				}
+			]
+		}		
 	]
 }

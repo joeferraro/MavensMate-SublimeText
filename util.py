@@ -86,9 +86,9 @@ def get_number_of_lines_in_file(file_path):
 def get_execution_overlays(file_path):
     try:
         response = []
-        fileName, ext = os.path.splitext(file_path)
+        fileName, ext = os.path.splitext(os.path.basename(file_path))
         if ext == ".cls" or ext == ".trigger":
-            api_name = fileName.split("/")[-1]
+            api_name = fileName
             overlays = parse_json_from_file(mm_project_directory()+"/config/.overlays")
             for o in overlays:
                 if o['API_Name'] == api_name:

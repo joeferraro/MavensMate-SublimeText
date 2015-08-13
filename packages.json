@@ -12,6 +12,7 @@
 					{
 						"version": "5.0.0-beta.1",
 						"release_notes": "",
+						"release_notes": "IMPORTANT: 4.0.x now available. To update, visit: http://mavensmate.com/Upgrade_Help",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
 				]
