@@ -1,0 +1,25 @@
+MavensMate-SublimeText 5.0.0-beta.3 changelog
+
+- This is a major release (we've been working on it for almost 8 months!). Our goals were speed, stability, ease-of-installation, and of course developer happiness. We hope you enjoy it :) 
+
+### IMPORTANT ###
+
+Version 5 of MavensMate for Sublime Text no longer depends on the "mm" API, rather it depends on a brand new app called "mavensmate-app" (https://github.com/joeferraro/mavensmate-app). mavensmate-app is the MavensMate UI and the MavensMate local server packaged with a pretty bow. In keeping with our commitment to never expose your source code/intellectual property to any server other than Salesforce.com, mavensmate-app's local server facilitates communication between your local machine and Salesforce.com, *only*. Your source code never passes through any (nonexistent) MavensMate remote server. If you're interested in reviewing the source code of the local MavensMate server, you can find it at https://github.com/joeferraro/MavensMate. 
+
+### UPDATED SETTINGS MANAGEMENT ###
+
+Version 5 of the MavensMate for Sublime Text plugin introduces the concept of "global" settings which are accessed via MavensMate > Settings > Global Settings. You'll notice that many of the global settings are those formerly managed by JSON files in Sublime Text. The reason they have moved is so that those users with Sublime Text, Atom, Visual Studio Code, etc. installed can manage core MavensMate settings in a single place. For example, mm_workspace is NO LONGER managed within Sublime Text; rather it is a global setting managed by the MavensMate app (mavensmate-app).
+
+-- Managing MavensMate for Sublime Text Settings --
+
+There are three types of settings you need to be aware of: default plugin settings, user plugin settings, and global settings
+
+DEFAULT PLUGIN SETTINGS - the default settings for MavensMate for Sublime Text. DO NOT modify these settings, as they will be overwritten anytime you update MavensMate for Sublime Text.
+
+USER PLUGIN SETTINGS - the user-specific settings for MavensMAte for Sublime Text. You are strongly encouraged to copy the default settings to this file and update any settings within this file.
+
+GLOBAL SETTINGS - the core MavensMate settings, which are managed by the MavensMate app. 
+
+-- Troubleshooting --
+
+If you are updating a setting and it doesn't seem to be working, be sure you are updating the right settings. USER PLUGIN SETTINGS are ONLY those settings SPECIFIC to the MavensMate for Sublime Text plugin (for example, mm_compile_on_save). GLOBAL SETTINGS are different altogether and can only be managed within the MavensMate app.
