@@ -40,7 +40,7 @@ In order to get started using MavensMate for Sublime Text, you should be aware o
 
 **NEW IN v5**: Most settings formerly found within Sublime Text have been moved to the "Global Settings" which can be found within mavensmate-app. To access/update those settings, use the `MavensMate` menu in Sublime Text and select `Settings > Global Settings`.
 
-###Important Global Settings
+###Important Settings
 
 ####Workspaces (mm_workspace)
 
