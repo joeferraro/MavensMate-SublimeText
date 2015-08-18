@@ -22,7 +22,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
-3. mavensmate-app (must be running for the Sublime Text plugin to function) [https://github.com/joeferraro/mavensmate-app/releases](https://github.com/joeferraro/mavensmate-app/releases)
+3. mavensmate-app (must be running in order for MavensMate for Sublime Text to function) [https://github.com/joeferraro/mavensmate-app/releases](https://github.com/joeferraro/mavensmate-app/releases)
 
 ###Installing the MavensMate for Sublime Text package
 
