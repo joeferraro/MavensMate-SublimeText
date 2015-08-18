@@ -22,22 +22,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
-3. Node.js [https://nodejs.org/download/](https://nodejs.org/download/)
-
-###Installing the MavensMate node package
-
-Type the following in a terminal/command prompt:
-
-```
-npm install mavensmate
-```
-
-**Note:** Depending on your operating system & security settings, you may need to run this command as an administrator. On Mac/Linux, you may run: `sudo npm install mavensmate`. On Windows, you may need to run the Command Prompt as an administrator.
-
-- [How to open a terminal on Mac](http://blog.teamtreehouse.com/introduction-to-the-mac-os-x-command-line)
-- [How to open a command prompt in Windows](http://windows.microsoft.com/en-us/windows-vista/open-a-command-prompt-window)
-- [How to open a terminal on Ubuntu](https://help.ubuntu.com/community/UsingTheTerminal)
-
+3. mavensmate-app (must be running for the Sublime Text plugin to function) [https://github.com/joeferraro/mavensmate-app/releases](https://github.com/joeferraro/mavensmate-app/releases)
 
 ###Installing the MavensMate for Sublime Text package
 
@@ -47,13 +32,17 @@ npm install mavensmate
 3. Search for `MavensMate`
 4. Hit `Enter`
 
+**NOTE:** If you would like to install prerelease versions of MavensMate for Sublime Text, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting.
+
 ##Setup
 
-In order to get started using MavensMate for Sublime Text, you should be aware of a few important settings. MavensMate settings follow the Sublime Text convention of providing default settings in [JSON format](https://en.wikipedia.org/wiki/JSON) that can be overwritten via a user settings file. To view MavensMate default and user settings, use the MavensMate menu in the top menu bar: `MavensMate > Settings`.
+In order to get started using MavensMate for Sublime Text, you should be aware of a few important settings. MavensMate for Sublime Text settings follow the Sublime Text convention of providing default settings in [JSON format](https://en.wikipedia.org/wiki/JSON) that can be overwritten via a user settings file. To view MavensMate default and user settings, use the MavensMate menu in the top menu bar: `MavensMate > Settings`.
 
-###Important Settings
+**NEW IN v5**: Most settings formerly found within Sublime Text have been moved to the "Global Settings" which can be found within mavensmate-app. To access/update those settings, use the `MavensMate` menu in Sublime Text and select `Settings > Global Settings`.
 
-####mm_workspace
+###Important Global Settings
+
+####Workspaces (mm_workspace)
 
 You must configure the `mm_workspace` setting before creating a new MavensMate project. You may set `mm_workspace` to a single path on your local filesystem or an array of paths.
 
@@ -83,7 +72,7 @@ You must configure the `mm_workspace` setting before creating a new MavensMate p
 ],
 ```
 
-####mm_api_version
+####Salesforce API Version (mm_api_version)
 
 Use `mm_api_version` to set your desired Salesforce.com API version. Please note, it should be set to a single decimal place:
 
