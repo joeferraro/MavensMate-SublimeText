@@ -81,6 +81,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".evt"
 	],
 
+	// set to true to diff Salesforce.com server conflicts in Sublime Text
+	"mm_diff_server_conflicts" : true,
+
 	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
 	"mm_use_org_metadata_for_completions" : true
 }
