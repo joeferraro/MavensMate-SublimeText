@@ -4288,7 +4288,7 @@ tag_defs = {
       "rendered": {
         "type": "Boolean",
         "values":[
-          "true".
+          "true",
           "false"
         ]
       },
@@ -4318,7 +4318,7 @@ tag_defs = {
       "rendered": {
         "type": "Boolean",
         "values":[
-          "true".
+          "true",
           "false"
         ]
       },
