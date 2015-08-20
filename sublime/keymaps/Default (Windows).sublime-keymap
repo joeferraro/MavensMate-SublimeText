@@ -1,4 +1,4 @@
-[  
+[
     {  "keys": ["ctrl+shift+m"], "command": "new_project" },
     {  "keys": ["ctrl+shift+s"], "command": "compile_active_file" },
     {  "keys": ["ctrl+shift+n"], "command": "new_metadata" },
@@ -6,5 +6,5 @@
     {  "keys": ["super+shift+,"], "command": "open_file", "args": {"file": "${packages}/User/mavensmate.sublime-settings"} },
     {  "keys": ["super+shift+."], "command": "open_file", "args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"} },
     {  "keys": ["super+shift+m"], "command": "show_debug_panel" },
-    {  "keys": ["super+shift+d"], "command": "compile_tabs" }
+    {  "keys": ["super+shift+s"], "command": "compile_tabs" }
 ]
