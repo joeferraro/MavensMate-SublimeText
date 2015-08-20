@@ -1169,7 +1169,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>\b(public|private|protected|static|final|native|synchronized|abstract|threadsafe|transient)\b</string>
+			<string>\b(global|public|private|protected|static|final|native|synchronized|abstract|threadsafe|transient)\b</string>
 		</dict>
 		<key>strings</key>
 		<dict>
