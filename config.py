@@ -18,14 +18,14 @@ def setup_logging():
         logging.raiseExceptions = False
         logging.basicConfig(level=logging.DEBUG)
 
-        log_location = settings.get('mm_log_location', tempfile.gettempdir())
+        log_location = settings.get('mm_plugin_logs_location', tempfile.gettempdir())
         logging_handler = RotatingFileHandler(os.path.join(log_location, "mmst.log"), maxBytes=1*1024*1024, backupCount=5)
 
         #mm log setup
         global logger
         logger = logging.getLogger('mmst')
         logger.setLevel(logging.DEBUG)
-        logger.propagate = False 
+        logger.propagate = False
         logger.addHandler(logging_handler)
     except:
         pass #TODO: need to handle this permission denied error (https://github.com/joeferraro/MavensMate-SublimeText/issues/293)
@@ -40,12 +40,12 @@ def debug(msg, obj=None):
             print('[MAVENSMATE]:',msg)
         else:
             logger.debug(msg)
-            print('[MAVENSMATE]:',msg) 
+            print('[MAVENSMATE]:',msg)
     except:
         if obj != None and type(msg) is str:
             print('[MAVENSMATE]: ' + msg + ' ', obj)
         elif obj == None and type(msg) is str:
             print('[MAVENSMATE]:',msg)
         else:
-            print('[MAVENSMATE]:',msg) 
-       
+            print('[MAVENSMATE]:',msg)
+
