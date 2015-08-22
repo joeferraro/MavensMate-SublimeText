@@ -34,6 +34,7 @@ def package_check():
         elif os.path.isfile(os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings")):
             user_settings = get_file_as_string(os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings"))
             if 'mm_use_keyring' in user_settings or 'mm_workspace' in user_settings or 'mm_api_version' in user_settings:
+                shutil.copyfile(os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings"), os.path.join(sublime.packages_path(),"User","mavensmate-deprecated.sublime-settings"))
                 shutil.copyfile(os.path.join(sublime.packages_path(),"MavensMate","mavensmate.sublime-settings"), os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings"))
 
     except:
