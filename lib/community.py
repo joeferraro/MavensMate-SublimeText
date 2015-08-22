@@ -10,7 +10,7 @@ try:
     import MavensMate.config as config
 except:
     import config
-try: 
+try:
     import urllib
 except ImportError:
     import urllib.request as urllib
@@ -64,7 +64,7 @@ class ActivityHandler(threading.Thread):
 
 
             if ip_address == None:
-                ip_address = 'unknown'        
+                ip_address = 'unknown'
             try:
                 mac = str(get_mac())
             except:
@@ -87,10 +87,10 @@ class ActivityHandler(threading.Thread):
                         opener = urllib.request.build_opener(handler)
                         req = urllib.request.Request("https://mavensmate.herokuapp.com/api/actions?api_access_token="+api_access_token, data=b, headers=headers)
                         self.response = opener.open(req).read()
-                except Exception as e: 
+                except Exception as e:
                     print('[MAVENSMATE] failed to send community activity, check the value of mm_community_api_token')
                     # traceback.print_exc()
-                    print(e)   
+                    print(e)
             else:
                 if 'linux' in sys.platform:
                     b = 'foo=bar&ip_address='+ip_address+'&action='+self.action+'&mm_version='+mm_version+'&platform='+sys.platform+'&version='+current_version+'&mac_address='+mac
@@ -106,6 +106,6 @@ class ActivityHandler(threading.Thread):
                     opener = urllib.request.build_opener(handler)
                     req = urllib.request.Request("https://mavensmate.appspot.com/usage", data=b, headers=headers)
                     self.response = opener.open(req).read()
-        except Exception as e: 
-            print('[MAVENSMATE] failed to send community activity')
+        except Exception as e:
+            print('[MAVENSMATE] skipped community activity')
             # print(e)

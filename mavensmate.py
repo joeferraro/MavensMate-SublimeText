@@ -45,11 +45,7 @@ def plugin_loaded():
     config.setup_logging()
     global debug
     debug = config.debug
-    debug('=============> Loading MavensMate for Sublime Text')
-
-    debug(shutil.which('node'))
-    debug(shutil.which('npm'))
-    debug(shutil.which('mavensmate'))
+    debug('=============> Starting MavensMate for Sublime Text')
 
     active_window_id = sublime.active_window().id()
     printer = PanelPrinter.get(active_window_id)
