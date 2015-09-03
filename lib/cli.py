@@ -48,6 +48,7 @@ def call(operation, use_mm_panel=True, **kwargs):
         context=kwargs.get('context', None),
         message=kwargs.get('message', None),
         use_mm_panel=use_mm_panel,
+        start_time=time.time(),
         process_id=util.get_random_string(10),
         callback=kwargs.get('callback', None),
         flags=kwargs.get('flags', None)
@@ -70,6 +71,7 @@ class MavensMateTerminalCall(threading.Thread):
         self.view           = None
         self.window         = None
         self.printer        = None
+        self.start_time     = kwargs.get('start_time', time.time())
         self.process_id     = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         self.use_mm_panel   = kwargs.get('use_mm_panel', False)
         self.result         = None #result of operation
@@ -192,11 +194,12 @@ class MavensMateTerminalCall(threading.Thread):
         ThreadTracker.remove(self)
 
 #handles the result of the mm script
-def handle_result(operation, process_id, printer, res, thread):
+def handle_result(operation, process_id, start_time, printer, res, thread):
     try:
         context = {
             "operation"      : operation,
             "process_id"     : process_id,
+            "start_time"      : start_time,
             "printer"        : printer,
             "response"       : res,
             "thread"         : thread

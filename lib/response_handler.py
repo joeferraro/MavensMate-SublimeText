@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import html.parser
+import time
 import traceback
 from .merge import MavensMateDiffThread
 import MavensMate.util as util
@@ -17,11 +18,15 @@ class MavensMateResponseHandler(object):
     def __init__(self, context):
         self.operation           = context.get('operation', None)
         self.process_id          = context.get('process_id', None)
+        self.start_time           = context.get('start_time', None)
+        self.duration            = 0
         self.printer             = context.get('printer', None)
         self.thread              = context.get('thread', None)
         self.response            = context.get('response', None)
         self.process_region      = self.printer.panel.find(self.process_id,0)
         self.status_region       = self.printer.panel.find('   Result: ',self.process_region.begin())
+        if self.start_time is not None:
+            self.duration = time.time() - self.start_time
 
         try:
             self.response = json.loads(self.response)
@@ -255,7 +260,8 @@ class MavensMateResponseHandler(object):
                 success = self.response['result']['success']
                 if success:
                     util.clear_marked_line_numbers(self.thread.view)
-                    self.__print_to_panel("Success")
+                    msg = "Success, %.1fs" % self.duration
+                    self.__print_to_panel(msg)
                     self.printer.hide()
                     return
 

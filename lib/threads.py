@@ -112,7 +112,7 @@ class PanelThreadProgress():
         if not self.thread.is_alive():
             if hasattr(self.thread, 'result'):
                 #thread is done, we need to handle the result
-                self.thread.callback(self.thread.operation, self.thread.process_id, self.thread.printer, self.thread.result, self.thread)
+                self.thread.callback(self.thread.operation, self.thread.process_id, self.thread.start_time, self.thread.printer, self.thread.result, self.thread)
                 if self.thread.alt_callback != None:
                     self.thread.alt_callback(self.thread.context)
                 #self.thread.printer.panel.run_command('write_operation_status', {'text': self.thread.result, 'region': [self.thread.status_region.end(), self.thread.status_region.end()+10] })
