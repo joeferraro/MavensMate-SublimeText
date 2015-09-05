@@ -53,6 +53,10 @@ class MavensMateResponseHandler(object):
                     self.__handle_coverage_report_result()
                 elif self.operation == 'delete-metadata':
                     self.__handle_delete_metadata_result()
+                elif self.operation == 'sync-with-server':
+                    self.__handle_sync_with_server_result()
+                elif self.operation == 'execute-soql':
+                    self.__handle_execute_soql_result()
                 else:
                     self.__handle_generic_command_result()
             except Exception as e:
@@ -313,6 +317,30 @@ class MavensMateResponseHandler(object):
                 else:
                     msg = "Check Sublime Text console for error and report issue to MavensMate-SublimeText GitHub project."
                 self.__print_to_panel('[OPERATION FAILED]: ' + msg)
+
+    def __handle_execute_soql_result(self):
+        debug('HANDLING soql ')
+        debug(self.response)
+
+        if 'done' in self.result and 'records' in self.result:
+            self.__print_to_panel('[SUCCESS]')
+
+    def __handle_sync_with_server_result(self):
+        debug('HANDLING sync wth server!')
+        debug(self.response)
+
+        if 'local' in self.result and 'remote' in self.result:
+            file_name = self.thread.view.file_name()
+            conflict_message = file_name+' was last modified by '+self.result['remote']['LastModifiedBy']['Name']+' on '+self.result['remote']['LastModifiedDate']
+            if sublime.ok_cancel_dialog(conflict_message, 'Diff with server'):
+                self.__print_to_panel(conflict_message + ". Diffing with server.")
+                th = MavensMateDiffThread(self.thread.window, self.thread.view, self.result['remote']['tempPath'])
+                th.start()
+            else:
+                self.__print_to_panel('Operation canceled.')
+        else:
+            self.__print_to_panel('No difference found between local and server instance.')
+
 
     def __handle_coverage_result(self):
         if isinstance( self.result, int ):

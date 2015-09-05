@@ -284,6 +284,20 @@ class CompileActiveFileCommand(sublime_plugin.WindowCommand):
     def is_visible(command):
         return util.is_mm_project()
 
+#deploys the currently active file
+class SyncWithServerCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        body = {
+            "path" : util.get_active_file()
+        }
+        mm.call('sync-with-server', context=self, body=body)
+
+    def is_enabled(command):
+        return util.is_mm_file()
+
+    def is_visible(command):
+        return util.is_mm_project()
+
 class SyntaxHandler(sublime_plugin.EventListener):
     def on_load_async(self, view):
         try:
@@ -408,6 +422,28 @@ class NewApexScriptCommand(sublime_plugin.TextCommand):
 
     def finish(self, name):
         mm.call('new-apex-script', False, body={ 'name': name }, message='Creating new Apex Script: '+name)
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+class ExecuteSoqlCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        sublime.active_window().show_input_panel("SOQL Statement", "SELECT ID FROM Account LIMIT 1", self.finish, None, None)
+
+    def finish(self, soql):
+        mm.call('execute-soql', body={ 'soql': soql }, message='Executing SOQL statement...', callback=self.show_results)
+
+    def show_results(self, thread, res):
+        debug('showing results ...')
+        debug(res)
+        new_view = thread.window.new_file()
+        if "linux" in sys.platform or "darwin" in sys.platform:
+            new_view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","JSON.tmLanguage"))
+        else:
+            new_view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/JSON.tmLanguage"))
+        new_view.set_scratch(True)
+        new_view.set_name("SOQL Result")
+        new_view.run_command('generic_text', {'text': res })
 
     def is_enabled(command):
         return util.is_mm_project()

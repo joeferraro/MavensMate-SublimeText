@@ -204,6 +204,8 @@ def handle_result(operation, process_id, printer, res, thread):
         result_handler = MavensMateResponseHandler(context)
         result_handler.execute()
         sublime.set_timeout(lambda: delete_result_handler(result_handler), 5000)
+        if thread.alt_callback != None:
+            thread.alt_callback(thread, res)
     except Exception as e:
         raise e
 
