@@ -79,7 +79,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".auradoc",
 		".css",
 		".js",
-		".evt"
+		".evt",
+		".cmp"
 	],
 
 	// set to true to diff Salesforce.com server conflicts in Sublime Text
