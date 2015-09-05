@@ -310,9 +310,9 @@ class SyntaxHandler(sublime_plugin.EventListener):
                     view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.tmLanguage"))
             elif ext == '.page' or ext == '.component':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","HTML","HTML.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/HTML/HTML.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax"))
             elif ext == '.app' or ext == '.auradoc' or ext == '.cmp':
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","XML","XML.tmLanguage"))
@@ -1007,7 +1007,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             if 'string.quoted.double.html' in scope_names or 'string.quoted.single.html' in scope_names:
                 return []
 
-            if 'meta.tag.other.html' in scope_names:
+            if 'meta.tag.inline.any.visualforce' in scope_names:
                 region_from_top_to_current_word = sublime.Region(0, pt + 1)
                 lines = view.lines(region_from_top_to_current_word)
 
@@ -1362,7 +1362,7 @@ class ApexCompletions(sublime_plugin.EventListener):
                         body = {
                             'metadata_types' : ['CustomObject']
                         }
-                        mm.call('refresh_metadata_index', False, body=body)
+                        mm.call('index-metadata', False, body=body)
                 except:
                     debug('Failed to index custom object metadata')
             else:

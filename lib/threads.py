@@ -11,7 +11,7 @@ class HookedThread(threading.Thread):
             try:
                 run_old(*args, **kw)
             except (KeyboardInterrupt, SystemExit):
-                raise 
+                raise
             except:
                 sys.excepthook(*sys.exc_info())
 
@@ -39,14 +39,14 @@ class ThreadTracker(object):
         if thread_window_id in cls.pending_threads:
             pending_window_threads = cls.pending_threads[thread_window_id]
             if thread in pending_window_threads: pending_window_threads.remove(thread)
-        
+
     @classmethod
     def get_last_added(cls, window):
         try:
             return cls.pending_threads.get(window.id())[0]
         except:
             return None
-            
+
     @classmethod
     def set_current(cls, window, thread):
         cls.current_thread[window.id()] = thread
@@ -113,8 +113,6 @@ class PanelThreadProgress():
             if hasattr(self.thread, 'result'):
                 #thread is done, we need to handle the result
                 self.thread.callback(self.thread.operation, self.thread.process_id, self.thread.printer, self.thread.result, self.thread)
-                if self.thread.alt_callback != None:
-                    self.thread.alt_callback(self.thread.context)
                 #self.thread.printer.panel.run_command('write_operation_status', {'text': self.thread.result, 'region': [self.thread.status_region.end(), self.thread.status_region.end()+10] })
                 return
             if self.callback != None:
@@ -126,7 +124,7 @@ class PanelThreadProgress():
         #text to the panel
         process_region = self.thread.printer.panel.find(self.thread.process_id,0)
         status_region = self.thread.printer.panel.find('Result: ',process_region.begin())
-        
+
         before = i % self.size
         after = (self.size - 1) - before
 
