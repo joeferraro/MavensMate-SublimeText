@@ -4,6 +4,14 @@
     "command": "mavens_stub"
   },
   {
+    "caption": "MavensMate: Sync File With Server",
+    "command": "sync_with_server"
+  },
+  {
+    "caption": "MavensMate: Execute SOQL Statement",
+    "command": "execute_soql"
+  },
+  {
     "caption": "MavensMate: Run All Tests",
     "command": "run_all_tests_async"
   },
