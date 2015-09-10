@@ -32,7 +32,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 3. Search for `MavensMate`
 4. Hit `Enter`
 
-**IMPORTANT NOTE for Version 5.0 betas** If you would like to install prerelease versions of MavensMate for Sublime Text, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting.
+**IMPORTANT NOTE for Version 5.0 betas:** If you would like to install prerelease versions of MavensMate for Sublime Text, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting.
 
 ![screen shot 2015-09-02 at 9 10 17 am](https://cloud.githubusercontent.com/assets/54157/9632003/79242b02-5152-11e5-8672-d91bb549cee6.png)
 ![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)
