@@ -310,9 +310,9 @@ class SyntaxHandler(sublime_plugin.EventListener):
                     view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.tmLanguage"))
             elif ext == '.page' or ext == '.component':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.tmLanguage"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.tmLanguage"))
             elif ext == '.app' or ext == '.auradoc' or ext == '.cmp':
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","XML","XML.tmLanguage"))
@@ -993,8 +993,9 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             return _completions
 
         elif ch == ':':
-            debug('SCOPE: ', view.scope_name(pt))
+            debug(': SCOPE: ', view.scope_name(pt))
             word = view.substr(view.word(pt))
+            debug(word)
             _completions = []
             for t in vf.tag_list:
                 if word in t:
@@ -1002,12 +1003,12 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             return _completions
 
         elif ch == ' ':
-            debug('SCOPE: ', view.scope_name(pt))
+            debug('space SCOPE: ', view.scope_name(pt))
             scope_names = view.scope_name(pt).split(' ')
             if 'string.quoted.double.html' in scope_names or 'string.quoted.single.html' in scope_names:
                 return []
 
-            if 'meta.tag.inline.any.visualforce' in scope_names:
+            if 'meta.tag.inline.any.visualforce' in scope_names or 'meta.tag.block.inline.visualforce' in scope_names:
                 region_from_top_to_current_word = sublime.Region(0, pt + 1)
                 lines = view.lines(region_from_top_to_current_word)
 

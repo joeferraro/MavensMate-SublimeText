@@ -1,16 +1,11 @@
 %YAML 1.2
 ---
-name: Visualforce
+name: Visualforce-dev
 file_extensions:
-  - html
-  - htm
-  - shtml
-  - xhtml
-  - inc
-  - tmpl
-  - tpl
+  - page-dev
+  - component-dev
 first_line_match: (?i)<(!DOCTYPE\s*)?html
-scope: text.html.basic
+scope: source.visualforce
 contexts:
   main:
     - match: '(<)([a-zA-Z0-9:]++)(?=[^>]*></\2>)'

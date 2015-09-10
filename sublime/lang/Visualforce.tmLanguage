@@ -2,12 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 
+	this is causing the ST icon to not display properly
 	<key>fileTypes</key>
 	<array>
-		<string>page-dev</string>
-		<string>component-dev</string>
-	</array>
-	
+		<string>page</string>
+		<string>component</string>
+	</array> -->
+	<key>firstLineMatch</key>
+	<string>&lt;!(?i:DOCTYPE)|&lt;(?i:html)|&lt;\?(?i:php)</string>
 	<key>foldingStartMarker</key>
 	<string>(?x)
 		(&lt;(?i:head|body|table|thead|tbody|tfoot|tr|div|select|fieldset|style|script|ul|ol|li|form|dl)\b.*?&gt;
@@ -147,6 +150,10 @@
 					<key>name</key>
 					<string>invalid.illegal.bad-comments-or-CDATA.html</string>
 				</dict>
+				<dict>
+					<key>include</key>
+					<string>#embedded-code</string>
+				</dict>
 			</array>
 		</dict>
 		<dict>
@@ -206,6 +213,10 @@
 					<string>invalid.illegal.bad-comments-or-CDATA.html</string>
 				</dict>
 			</array>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>#embedded-code</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -372,6 +383,10 @@
 							<string>\*/|(?=&lt;/[sS][cC][rR][iI][pP][tT])</string>
 							<key>name</key>
 							<string>comment.block.js</string>
+						</dict>
+						<dict>
+							<key>include</key>
+							<string>#php</string>
 						</dict>
 						<dict>
 							<key>include</key>
@@ -581,6 +596,30 @@
 	</array>
 	<key>repository</key>
 	<dict>
+		<key>embedded-code</key>
+		<dict>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>#ruby</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#php</string>
+				</dict>
+				<!--
+				<dict>
+					<key>include</key>
+					<string>#smarty</string>
+				</dict>
+				-->
+				<dict>
+					<key>include</key>
+					<string>#python</string>
+				</dict>
+			</array>
+		</dict>
 		<key>entities</key>
 		<dict>
 			<key>patterns</key>
@@ -612,6 +651,176 @@
 				</dict>
 			</array>
 		</dict>
+		<key>php</key>
+		<dict>
+			<key>begin</key>
+			<string>(?=(^\s*)?&lt;\?)</string>
+			<key>end</key>
+			<string>(?!(^\s*)?&lt;\?)</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>source.php</string>
+				</dict>
+			</array>
+		</dict>
+		<key>python</key>
+		<dict>
+			<key>begin</key>
+			<string>(?:^\s*)&lt;\?python(?!.*\?&gt;)</string>
+			<key>end</key>
+			<string>\?&gt;(?:\s*$\n)?</string>
+			<key>contentName</key>
+			<string>source.python.embedded.html</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>source.python</string>
+				</dict>
+			</array>
+		</dict>
+		<key>ruby</key>
+		<dict>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>begin</key>
+					<string>&lt;%+#</string>
+					<key>captures</key>
+					<dict>
+						<key>0</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.definition.comment.erb</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>%&gt;</string>
+					<key>name</key>
+					<string>comment.block.erb</string>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>&lt;%+(?!&gt;)=?</string>
+					<key>captures</key>
+					<dict>
+						<key>0</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.section.embedded.ruby</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>-?%&gt;</string>
+					<key>contentName</key>
+					<string>source.ruby.embedded.html</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.definition.comment.ruby</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>(#).*?(?=-?%&gt;)</string>
+							<key>name</key>
+							<string>comment.line.number-sign.ruby</string>
+						</dict>
+						<dict>
+							<key>include</key>
+							<string>source.ruby</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>&lt;\?r(?!&gt;)=?</string>
+					<key>captures</key>
+					<dict>
+						<key>0</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.section.embedded.ruby.nitro</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>-?\?&gt;</string>
+					<key>contentName</key>
+					<string>source.ruby.nitro.embedded.html</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.definition.comment.ruby.nitro</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>(#).*?(?=-?\?&gt;)</string>
+							<key>name</key>
+							<string>comment.line.number-sign.ruby.nitro</string>
+						</dict>
+						<dict>
+							<key>include</key>
+							<string>source.ruby</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
+		<!--
+		<key>smarty</key>
+		<dict>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>begin</key>
+					<string>(\{(literal)\})</string>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>source.smarty.embedded.html</string>
+						</dict>
+						<key>2</key>
+						<dict>
+							<key>name</key>
+							<string>support.function.built-in.smarty</string>
+						</dict>
+					</dict>
+					<key>end</key>
+					<string>(\{/(literal)\})</string>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>{{|{</string>
+					<key>disabled</key>
+					<integer>1</integer>
+					<key>end</key>
+					<string>}}|}</string>
+					<key>name</key>
+					<string>source.smarty.embedded.html</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>source.smarty</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
+		-->
 		<key>string-double-quoted</key>
 		<dict>
 			<key>begin</key>
@@ -638,6 +847,10 @@
 			<string>string.quoted.double.html</string>
 			<key>patterns</key>
 			<array>
+				<dict>
+					<key>include</key>
+					<string>#embedded-code</string>
+				</dict>
 				<dict>
 					<key>include</key>
 					<string>#entities</string>
@@ -670,6 +883,10 @@
 			<string>string.quoted.single.html</string>
 			<key>patterns</key>
 			<array>
+				<dict>
+					<key>include</key>
+					<string>#embedded-code</string>
+				</dict>
 				<dict>
 					<key>include</key>
 					<string>#entities</string>
@@ -735,6 +952,10 @@
 					<array>
 						<dict>
 							<key>include</key>
+							<string>#embedded-code</string>
+						</dict>
+						<dict>
+							<key>include</key>
 							<string>#entities</string>
 						</dict>
 					</array>
@@ -768,6 +989,10 @@
 					<array>
 						<dict>
 							<key>include</key>
+							<string>#embedded-code</string>
+						</dict>
+						<dict>
+							<key>include</key>
 							<string>#entities</string>
 						</dict>
 					</array>
@@ -794,12 +1019,16 @@
 					<key>include</key>
 					<string>#string-single-quoted</string>
 				</dict>
+				<dict>
+					<key>include</key>
+					<string>#embedded-code</string>
+				</dict>
 			</array>
 		</dict>
 	</dict>
 	<key>scopeName</key>
-	<string>source.visualforce</string>
+	<string>text.html.basic</string>
 	<key>uuid</key>
-	<string>17994EC8-6B1D-11D9-AC3A-000D93583FPO</string>
+	<string>17994EC8-6B1D-11D9-AC3A-000D93589AF7</string>
 </dict>
 </plist>
