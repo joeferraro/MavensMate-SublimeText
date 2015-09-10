@@ -1016,11 +1016,13 @@ class VisualforceCompletions(sublime_plugin.EventListener):
                 for line in reversed(lines):
                     line_contents = view.substr(line)
                     line_contents = line_contents.replace("\t", "").strip()
+                    # debug(line_contents)
                     if line_contents.find('<') == -1: continue #skip the line if the opening bracket isn't in the line
                     tag_def = line_contents.split('<')[-1].split(' ')[0]
                     break
 
-                #debug(tag_def)
+                # debug(tag_def)
+
                 if tag_def in vf.tag_defs:
                     def_entry = vf.tag_defs[tag_def]
 

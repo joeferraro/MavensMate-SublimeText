@@ -1,9 +1,15 @@
 /* 
 
-MavensMate settings
+#############
+# IMPORTANT #
+#############
+
+Version 5 of MavensMate for Sublime Text moves many of the settings previously managed in Sublime Text JSON files to the "Global Settings" found in the MavensMate app. See MavensMate > Settings > Settings Help for more information.
+
+MavensMate for Sublime Text settings
 NOTE: MavensMate user settings will override MavensMate default settings
 To override default MavensMate settings, modify user-specific settings (MavensMate --> Settings --> User) 
-** Most changes require a SublimeText restart **
+
 */
 
 {	
@@ -27,11 +33,11 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//windows users: please set like so: C:\\path\\to\\your\\logs
 	"mm_plugin_logs_location" : "",
 
-	//if true, mavensmate will send anonymous usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
-	"mm_send_usage_statistics" : true,
+	// set to true to diff Salesforce.com server conflicts in Sublime Text
+	"mm_diff_server_conflicts" : true,
 
-	//local server port (do not change unless you know what you're doing)
-	"mm_app_server_port" : 56248,
+	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
+	"mm_use_org_metadata_for_completions" : true,
 
 	//mavensmate will attempt to compile when savings files with the following extensions
 	"mm_apex_file_extensions": [
@@ -83,9 +89,9 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".cmp"
 	],
 
-	// set to true to diff Salesforce.com server conflicts in Sublime Text
-	"mm_diff_server_conflicts" : true,
+	//local server port (do not change unless you know what you're doing)
+	"mm_app_server_port" : 56248,
 
-	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
-	"mm_use_org_metadata_for_completions" : true
+	//if true, mavensmate will send anonymous usage statistics (NEVER sensitive information like usernames/passwords/etc) for development, reporting, & debugging purposes (see util.py for source of the call)
+	"mm_send_usage_statistics" : true
 }
