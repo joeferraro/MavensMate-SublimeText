@@ -2,7 +2,7 @@ MavensMate-SublimeText 5.0.0-beta.4 changelog
 
 - This is a major release (we've been working on it for almost 8 months!). Our goals were speed, stability, ease-of-installation, and of course developer happiness. We hope you enjoy it :) 
 
-### CHANGELOG ###
+### v5.0.0-beta.4 CHANGELOG ###
 
 - Resolves issue that caused Sublime Text to fail to recognize self-closed Visualforce tags during auto-tag completion
 - Exposes "sync with server" command
