@@ -36,7 +36,7 @@ mods_load_order = [
     '.community',
     '.completioncommon',
     '.exceptions',
-    '.cli',
+    '.adapter',
     '.merge',
     '.response_handler',
     '.parsehelp',

@@ -9,7 +9,7 @@ from xml.dom.minidom import parse
 
 import MavensMate.config as config
 import MavensMate.util as util
-import MavensMate.lib.cli as mm
+import MavensMate.lib.adapter as mm
 from MavensMate.lib.printer import PanelPrinter
 from MavensMate.lib.threads import ThreadTracker
 import MavensMate.lib.parsehelp as parsehelp
@@ -908,7 +908,7 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
 class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, dirs, files):
         if sublime.ok_cancel_dialog("This command will refresh the resource bundle(s) based on your local project's corresponding static resource(s). Do you wish to continue?", "Refresh"):
-            #TODO: cli referesh
+            #TODO: adapter refresh
             pass
 
     def is_visible(self, dirs, files):

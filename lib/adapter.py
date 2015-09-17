@@ -31,7 +31,7 @@ def check_server():
 
 #prepares and submits a threaded call to the mm executable
 def call(operation, use_mm_panel=True, **kwargs):
-    debug('Calling cli')
+    debug('Calling mavensmate adapter')
     debug('OPERATION: '+operation)
     debug(kwargs)
 
@@ -41,7 +41,7 @@ def call(operation, use_mm_panel=True, **kwargs):
         community.sync_activity(operation)
 
     threads = []
-    thread = MavensMateTerminalCall(
+    thread = MavensMateAdapterCall(
         operation,
         active_file=util.get_active_file(),
         body=kwargs.get('body', None),
@@ -59,7 +59,7 @@ def call(operation, use_mm_panel=True, **kwargs):
 
 #thread that calls out to the mm tool
 #pushes to background threads and reads the piped response
-class MavensMateTerminalCall(threading.Thread):
+class MavensMateAdapterCall(threading.Thread):
     def __init__(self, operation, **kwargs):
         self.operation      = operation #operation being requested
         self.active_file    = kwargs.get('active_file', None)
