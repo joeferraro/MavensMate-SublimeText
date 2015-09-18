@@ -8,6 +8,14 @@
     "command": "sync_with_server"
   },
   {
+    "caption": "MavensMate: Global Settings",
+    "command": "open_settings"
+  },
+  {
+    "caption": "MavensMate: Open Project",
+    "command": "open_project"
+  },
+  {
     "caption": "MavensMate: Execute SOQL Statement",
     "command": "execute_soql"
   },

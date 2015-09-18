@@ -5,6 +5,7 @@
     {  "keys": ["super+shift+space"], "command": "new_shell" },
     {  "keys": ["super+shift+,"], "command": "open_file", "args": {"file": "${packages}/User/mavensmate.sublime-settings"} },
     {  "keys": ["super+shift+."], "command": "open_file", "args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"} },
+    {  "keys": ["super+shift+/"], "command": "open_settings" },
     {  "keys": ["super+shift+m"], "command": "show_debug_panel" },
     {  "keys": ["super+shift+s"], "command": "compile_tabs" },
     {  "keys": ["ctrl+shift+x"], "command": "run_apex_script" },
