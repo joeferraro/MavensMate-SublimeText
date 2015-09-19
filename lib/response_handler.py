@@ -302,21 +302,7 @@ class MavensMateResponseHandler(object):
                 debug(e)
                 debug(traceback.print_exc())
                 debug(type(self.response))
-                msg = ""
-                if type(self.response) is dict:
-                    if 'body' in self.response:
-                        msg = self.response["body"]
-                    else:
-                        msg = json.dumps(self.response)
-                elif type(self.response) is str:
-                    try:
-                        m = json.loads(self.response)
-                        msg = m["body"]
-                    except:
-                        msg = self.response
-                else:
-                    msg = "Check Sublime Text console for error and report issue to MavensMate-SublimeText GitHub project."
-                self.__print_to_panel('[OPERATION FAILED]: ' + msg)
+                raise e
 
     def __handle_execute_soql_result(self):
         debug('HANDLING soql ')
