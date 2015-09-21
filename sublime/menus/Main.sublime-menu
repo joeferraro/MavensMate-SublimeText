@@ -19,6 +19,10 @@
 	         	"children":
 	         	[
 	         		{
+	         			"caption": "Open Project...",
+	         			"command": "open_project"
+	         		},
+	         		{
 	         			"caption": "New Project...",
 	         			"command": "new_project"
 	         		},
