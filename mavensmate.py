@@ -5,6 +5,8 @@ import os
 import json
 import sys
 import re
+import subprocess
+import time
 from xml.dom.minidom import parse
 
 import MavensMate.config as config
@@ -17,8 +19,6 @@ import MavensMate.lib.vf as vf
 from MavensMate.lib.merge import *
 from MavensMate.lib.completioncommon import *
 import MavensMate.lib.community as community
-
-import shutil
 
 debug = None
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -56,8 +56,10 @@ def plugin_loaded():
     util.package_check()
 
     try:
+        if settings.get('mm_start_mavensmate_app', False):
+            util.start_mavensmate_app()
+            time.sleep(1.5)
         mm.check_server()
-
         message = 'Happy coding :)'
         printer.show()
         printer.write('\n'+message+'\n')
@@ -1605,22 +1607,13 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             return
 
         settings = sublime.load_settings('mavensmate.sublime-settings')
-        if sys.platform == 'darwin':
-            sublime_path = settings.get('mm_plugin_client_location', '/Applications')
-            if os.path.exists(os.path.join(sublime_path, 'Sublime Text.app')):
-                subprocess.Popen("'"+sublime_path+"/Sublime Text.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-            elif os.path.exists(os.path.join(sublime_path, 'Sublime Text 3.app')):
-                subprocess.Popen("'"+sublime_path+"/Sublime Text 3.app/Contents/SharedSupport/bin/subl' --project '"+project_file_location+"'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        elif 'linux' in sys.platform:
-            subl_location = settings.get('mm_subl_location', '/usr/local/bin/subl')
-            debug('subl location is: ', subl_location)
-            debug('running command: ')
-            command = "'{0}' --project '{1}'".format(subl_location, project_file_location)
-            debug(command)
-            subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        else:
-            subl_location = settings.get('mm_windows_subl_location', '/usr/local/bin/subl')
-            if not os.path.isfile(subl_location) and "x86" not in subl_location:
-                subl_location = subl_location.replace("Program Files", "Program Files (x86)")
-            subprocess.Popen('"{0}" --project "{1}"'.format(subl_location, project_file_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
+        friendly_platform_key = util.get_friendly_platform_key()
+        mm_sublime_text_executable_location_setting = settings.get('mm_sublime_text_executable_location')
+        if friendly_platform_key in mm_sublime_text_executable_location_setting:
+            subl_executable_location = mm_sublime_text_executable_location_setting[friendly_platform_key]
+            debug(subl_executable_location)
+            if os.path.exists(subl_executable_location):
+                subprocess.call([subl_executable_location, '--project', project_file_location])
+            else:
+                debug('mm_sublime_text_executable_location path does not exist, please check your settings')

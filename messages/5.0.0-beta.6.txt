@@ -1,10 +1,11 @@
-MavensMate-SublimeText 5.0.0-beta.5 changelog
+MavensMate-SublimeText 5.0.0-beta.6 changelog
 
 - This is a major release (we've been working on it for almost 8 months!). Our goals were speed, stability, ease-of-installation, and of course developer happiness. We hope you enjoy it :) 
 
-### v5.0.0-beta.5 CHANGELOG ###
+### v5.0.0-beta.6 CHANGELOG ###
 
-- Resolves issue that caused Visualforce syntax to not load
+- Adds "Open Project" menu item to main menu
+- Adds ability to start MavensMate-app when plugin loads
 
 ### IMPORTANT ###
 

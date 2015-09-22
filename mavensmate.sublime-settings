@@ -39,6 +39,23 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
 	"mm_use_org_metadata_for_completions" : true,
 
+	//set to true if you would like to automatically start MavensMate-app when Sublime Text opens
+	"mm_start_mavensmate_app" : false,
+
+	// set to full path of MavensMate-app (MavensMate.app on OSX, MavensMate.exe on Windows, etc.)
+	"mm_mavensmate_app_location" : {
+		"osx": "/Applications/MavensMate.app",
+		"windows": "C:\\Program Files\\MavensMate.exe",
+		"linux": ""
+	},
+
+	// set to full path of your Sublime Text executable (this setting is used by the "open project" command)
+	"mm_sublime_text_executable_location" : {
+		"osx": "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl",
+		"windows": "C:\\Program Files\\Sublime Text 3\\sublime_text.exe",
+		"linux": "/usr/local/bin/subl"
+	},
+
 	//mavensmate will attempt to compile when savings files with the following extensions
 	"mm_apex_file_extensions": [
 		".page",

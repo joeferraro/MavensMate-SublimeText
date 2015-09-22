@@ -10,6 +10,7 @@ import urllib.request
 import MavensMate.config as config
 import MavensMate.lib.apex.apex_extensions as apex_extensions
 import sublime
+import subprocess
 from xml.dom.minidom import parse
 
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -23,8 +24,34 @@ def standard_object_names():
         "Account", "Opportunity", "Contact", "Lead", "Pricebook2", "Product"
     ]
 
+def get_friendly_platform_key():
+    friendly_platform_map = {
+        'darwin': 'osx',
+        'win32': 'windows',
+        'linux2': 'linux'
+    }
+    return friendly_platform_map[sys.platform]
+
 def mm_plugin_location():
     return os.path.join(packages_path,"MavensMate")
+
+def start_mavensmate_app():
+    try:
+        settings = sublime.load_settings('mavensmate.sublime-settings')
+        friendly_platform_key = get_friendly_platform_key()
+        mavensmate_app_location_setting = settings.get('mm_mavensmate_app_location')
+        if friendly_platform_key in mavensmate_app_location_setting:
+            mavensmate_app_location = mavensmate_app_location_setting[friendly_platform_key]
+            debug(mavensmate_app_location)
+            if os.path.exists(mavensmate_app_location):
+                if friendly_platform_key == 'windows':
+                    subprocess.call(["start", "/r", mavensmate_app_location])
+                elif friendly_platform_key == 'linux':
+                    pass #TODO
+                elif friendly_platform_key == 'osx':
+                    subprocess.call(["open", "-a", mavensmate_app_location, "--hide"])
+    except:
+        debug('could not open mavensmate-app')
 
 def package_check():
     #ensure user settings are installed
@@ -37,9 +64,9 @@ def package_check():
                 shutil.copyfile(os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings"), os.path.join(sublime.packages_path(),"User","mavensmate-deprecated.sublime-settings"))
                 shutil.copyfile(os.path.join(sublime.packages_path(),"MavensMate","mavensmate.sublime-settings"), os.path.join(sublime.packages_path(),"User","mavensmate.sublime-settings"))
 
-    except:
+    except Exception as e:
         debug('could not migrate default settings to user settings')
-        pass
+        debug(e)
 
 def parse_json_from_file(location):
     try:
