@@ -1564,8 +1564,15 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         dirs = []
         #debug(util.mm_workspace())
         from os.path import expanduser
-        home = expanduser('~')
-        mm_core_settings = util.parse_json_from_file(os.path.join(home, '.mavensmate-config.json'))
+        
+        if util.get_friendly_platform_key() != 'windows':
+            home = expanduser('~')
+            mm_core_settings_file_name = '.mavensmate-config.json'
+        else:
+            home = os.getenv('APPDATA') + '\\MavensMate'
+            mm_core_settings_file_name = 'mavensmate-config.json'
+
+        mm_core_settings = util.parse_json_from_file(os.path.join(home, mm_core_settings_file_name))
         workspaces = mm_core_settings['mm_workspace']
         if type(workspaces) is not list:
             workspaces = [workspaces]
