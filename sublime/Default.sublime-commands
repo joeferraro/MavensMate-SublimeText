@@ -44,6 +44,10 @@
     "command": "generate_apex_test_coverage_report"
   },
   {
+    "caption": "MavensMate: Get Org-Wide Test Coverage",
+    "command": "get_org_wide_test_coverage"
+  },
+  {
     "caption": "MavensMate: List Fields For Object...",
     "command": "list_fields_for_object"
   },
