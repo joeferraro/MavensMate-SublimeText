@@ -164,8 +164,12 @@
     "command": "compile_tabs"
   },
   {
-    "caption": "MavensMate: Run Tests For This Class",          
+    "caption": "MavensMate: Run All Apex Unit Tests For This Class",          
     "command": "run_async_apex_tests"
+  },
+  {
+    "caption": "MavensMate: Run Apex Unit Test Methods For This Class",          
+    "command": "run_async_apex_test_method"
   },
   {
     "caption": "MavensMate: Force Save Current File",          

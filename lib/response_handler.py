@@ -43,7 +43,7 @@ class MavensMateResponseHandler(object):
             try:
                 if self.operation == 'compile-metadata' or self.operation == 'compile-project':
                     self.__handle_compile_response()
-                elif self.operation == 'run-tests' or self.operation == 'run-all-tests':
+                elif self.operation == 'run-tests' or self.operation == 'run-all-tests' or self.operation == 'run-test-method':
                     self.__handle_test_result()
                 elif self.operation == 'run-apex-script':
                     self.__handle_apex_script_result()
