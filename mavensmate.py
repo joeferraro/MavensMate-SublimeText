@@ -1654,6 +1654,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
             subl_executable_location = mm_sublime_text_executable_location_setting[friendly_platform_key]
             debug(subl_executable_location)
             if os.path.exists(subl_executable_location):
-                subprocess.call([subl_executable_location, '--project', project_file_location])
+                subprocess.Popen([subl_executable_location, '--project', project_file_location], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                stdout, stderr = process.communicate()
             else:
                 debug('mm_sublime_text_executable_location path does not exist, please check your settings')
