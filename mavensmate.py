@@ -1589,7 +1589,6 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
                 root = w.folders()[0]
                 if util.mm_workspace() not in root:
                     continue
-                #project_name = root.split("/")[-1]
                 project_name = util.get_file_name_no_extension(root)
 
                 open_projects.append(project_name)
@@ -1601,32 +1600,35 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         dirs = []
 
         from os.path import expanduser
-        home = expanduser('~')
-        try:
-            mm_core_settings = util.parse_json_from_file(os.path.join(home, '.mavensmate-config.json'))
-            workspaces = mm_core_settings['mm_workspace']
-            if type(workspaces) is not list:
-                workspaces = [workspaces]
+        if util.get_friendly_platform_key() != 'windows':
+            home = expanduser('~')
+            mm_core_settings_file_name = '.mavensmate-config.json'
+        else:
+            home = os.getenv('APPDATA') + '\\MavensMate'
+            mm_core_settings_file_name = 'mavensmate-config.json'
 
-            for w in workspaces:
-                for dirname in os.listdir(w):
-                    if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
-                    if dirname in open_projects : continue
-                    if not os.path.isdir(os.path.join(w,dirname)) : continue
-                    sublime_project_file = dirname+'.sublime-project'
-                    for project_content in os.listdir(os.path.join(w,dirname)):
-                        if '.' not in project_content: continue
-                        if project_content == '.sublime-project':
-                            sublime_project_file = '.sublime-project'
-                            continue
-                    if os.path.isfile(os.path.join(w, dirname, sublime_project_file)):
-                        dirs.append([dirname, 'Workspace: '+os.path.basename(w)])
-                        self.dir_map[dirname] = [dirname, sublime_project_file, w]
-            self.results = dirs
-            self.window.show_quick_panel(dirs, self.panel_done,
-                sublime.MONOSPACE_FONT)
-        except:
-            debug('Could not load global/core settings')
+        mm_core_settings = util.parse_json_from_file(os.path.join(home, mm_core_settings_file_name))
+        workspaces = mm_core_settings['mm_workspace']
+        if type(workspaces) is not list:
+            workspaces = [workspaces]
+
+        for w in workspaces:
+            for dirname in os.listdir(w):
+                if dirname == '.DS_Store' or dirname == '.' or dirname == '..' or dirname == '.logs' : continue
+                if dirname in open_projects : continue
+                if not os.path.isdir(os.path.join(w,dirname)) : continue
+                sublime_project_file = dirname+'.sublime-project'
+                for project_content in os.listdir(os.path.join(w,dirname)):
+                    if '.' not in project_content: continue
+                    if project_content == '.sublime-project':
+                        sublime_project_file = '.sublime-project'
+                        continue
+                if os.path.isfile(os.path.join(w, dirname, sublime_project_file)):
+                    dirs.append([dirname, "Workspace: "+os.path.basename(w)])
+                    self.dir_map[dirname] = [dirname, sublime_project_file, w]
+        self.results = dirs
+        self.window.show_quick_panel(dirs, self.panel_done,
+            sublime.MONOSPACE_FONT)
 
     def panel_done(self, picked):
         if 0 > picked < len(self.results):
