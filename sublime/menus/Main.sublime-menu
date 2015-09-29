@@ -5,6 +5,12 @@
 	    "children":  
 	    [  
 	        {
+	        	"caption": "Version 5 Help",
+	        	"command": "open_file", 
+	        	"args": {"file": "${packages}/MavensMate/messages/5.0.0.txt"}
+	        },
+	        {"caption":"-"},
+	        {
 	        	"caption": "Open MavensMate UI",
 	        	"command": "open_mavens_mate_ui"
 	        },
@@ -265,45 +271,19 @@
 	         	[
 					{ 
 						"command": "open_url", 
-						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Overview"}, 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText"}, 
 						"caption": "Overview" 
 					},
 					{ 
 						"command": "open_url", 
-						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Installation"}, 
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText#install"}, 
 						"caption": "Installation" 
-					},
-					{ 
-						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Syntax-Highlighting"}, 
-						"caption": "Syntax Highlighting" 
-					},
-					{ 
-						"command": "open_url", 
-						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Code_Completion"}, 
-						"caption": "Code Completion" 
-					},
-					{ 
-						"command": "open_url", 
-						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Shortcuts"}, 
-						"caption": "Shortcut Keys" 
-					},
-					{ 
-						"command": "open_url", 
-						"args": {"url": "http://mavensmate.com/Plugins/Sublime_Text/Plugin_Logging"}, 
-						"caption": "Logging" 
-					},
-					{ 
-						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/wiki/Known-Issues"}, 
-						"caption": "Known Issues" 
 					},
 					{ 
 						"command": "open_url", 
 						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}, 
 						"caption": "Issues" 
 					}
-
 	         	]
 	     	},
  	     	{"caption":"-"},
