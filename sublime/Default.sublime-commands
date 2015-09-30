@@ -12,6 +12,10 @@
     "command": "open_mavens_mate_ui"
   },
   {
+    "caption": "MavensMate: Open MavensMate-app",
+    "command": "open_mavens_mate_app"
+  },
+  {
     "caption": "MavensMate: Open Salesforce Org",
     "command": "open_salesforce_org"
   },

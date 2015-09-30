@@ -287,6 +287,10 @@
 	         	]
 	     	},
  	     	{"caption":"-"},
+	     	{
+	     		"caption": "Open MavensMate-app",
+	     		"command": "open_mavens_mate_app"
+	     	},
 	     	{ 
 				"caption": "Show Sublime Text Console",  
      			"command": "show_sublime_console"

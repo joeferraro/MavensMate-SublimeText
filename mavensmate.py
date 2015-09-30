@@ -78,6 +78,13 @@ class OpenMavensMateUi(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('open-ui', True, body={'args': { 'ui' : True }})
 
+#opens mavensmate-app
+class OpenMavensMateApp(sublime_plugin.ApplicationCommand):
+    def run(command):
+        active_window_id = sublime.active_window().id()
+        printer = PanelPrinter.get(active_window_id)
+        util.start_mavensmate_app(printer)
+
 #opens salesforce setup
 class OpenSalesforceOrg(sublime_plugin.ApplicationCommand):
     def run(command):
