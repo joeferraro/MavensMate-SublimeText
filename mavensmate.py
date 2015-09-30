@@ -57,7 +57,7 @@ def plugin_loaded():
 
     try:
         if settings.get('mm_start_mavensmate_app', False):
-            util.start_mavensmate_app()
+            util.start_mavensmate_app(printer)
             time.sleep(1.5)
         mm.check_server()
         message = 'Happy coding :)'

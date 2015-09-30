@@ -35,7 +35,7 @@ def get_friendly_platform_key():
 def mm_plugin_location():
     return os.path.join(packages_path,"MavensMate")
 
-def start_mavensmate_app():
+def start_mavensmate_app(printer):
     try:
         settings = sublime.load_settings('mavensmate.sublime-settings')
         friendly_platform_key = get_friendly_platform_key()
@@ -45,13 +45,28 @@ def start_mavensmate_app():
             debug(mavensmate_app_location)
             if os.path.exists(mavensmate_app_location):
                 if friendly_platform_key == 'windows':
-                    subprocess.call(["start", "/r", mavensmate_app_location])
+                    process = subprocess.Popen(["start", "/r", mavensmate_app_location], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    stdout, stderr = process.communicate()
+                    if stderr != None:
+                        printer.show()
+                        message = '[ERROR]: Could not open MavensMate-app. '+stderr.decode('utf-8')
+                        printer.write('\n'+message+'\n')
                 elif friendly_platform_key == 'linux':
                     pass #TODO
                 elif friendly_platform_key == 'osx':
-                    subprocess.call(["open", "-a", mavensmate_app_location, "--hide"])
-    except:
+                    process = subprocess.Popen(["open", "-a", mavensmate_app_location, "--hide"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    stdout, stderr = process.communicate()
+                    if stderr != None:
+                        printer.show()
+                        message = '[ERROR]: Could not open MavensMate-app. '+stderr.decode('utf-8')
+                        printer.write('\n'+message+'\n')
+            else:
+                printer.show()
+                message = '[ERROR]: Could not open MavensMate-app. mm_mavensmate_app_location path does not exist, please check user plugin settings'
+                printer.write('\n'+message+'\n')
+    except Exception as e:
         debug('could not open mavensmate-app')
+        debug(e)
 
 def package_check():
     #ensure user settings are installed
