@@ -1,5 +1,7 @@
 MavensMate-SublimeText 5.0.0 changelog
 
+### STOP: before MavensMate for Sublime Text v5 can function, YOU MUST INSTALL MavensMate-app. Please visit https://github.com/joeferraro/MavensMate-app to download and install.
+
 - This is a major release (we've been working on it for almost 8 months!). Our goals were speed, stability, ease-of-installation, and of course developer happiness. We hope you enjoy it :) 
 
 ### IMPORTANT ###
