@@ -24,7 +24,7 @@ def check_server():
         urllib.request.urlopen('http://localhost:'+str(port_number)+'/app/home/index')
     except urllib.error.URLError as e:
         debug(e)
-        raise MMException('Could not contact local MavensMate server, please ensure MavensMate-app is installed and running (https://github.com/joeferraro/mavensmate-app/releases). MavensMate will not run properly until resolved. For more information, please visit https://github.com/joeferraro/MavensMate-app#mavensmate-app')
+        raise MMException('Could not contact local MavensMate server, please ensure MavensMate-app is installed and running. \n\nIn version 5+ of MavensMate for Sublime Text, there is a new companion app called MavensMate-app. You must download, install, and run this application in order for the MavensMate for Sublime Text plugin to operate. For more information, please visit https://github.com/joeferraro/MavensMate-app')
     except Exception as e:
         debug(e)
         raise MMException(str(e))
