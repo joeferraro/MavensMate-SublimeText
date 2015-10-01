@@ -16,7 +16,22 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ##Install
 
-### Prerequisites 
+### Version 4 (no longer supported)
+
+**You must install the following before continuing:**
+
+1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
+
+```
+cd /sublime text/packages/path
+git clone https://github.com/joeferraro/MavensMate-SublimeText.git "MavensMate"
+cd MavensMate
+git checkout tags/v4.0.5
+```
+
+**Note**: If you already have MavensMate installed via Package Control and you wish to run v4 of the plugin, you must use the "Remove Package" Package Control command before running the commands above, otherwise Package Control will automatically upgrade you to v5.
+
+### Version 5
 
 **You must install the following before continuing:**
 
