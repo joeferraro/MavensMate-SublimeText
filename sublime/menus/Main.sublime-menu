@@ -4,8 +4,13 @@
 	    "caption": "MavensMate",  
 	    "children":  
 	    [  
+	    	{
+	    		"caption": "Help: Rolling Back to Version 4",
+	    		"command": "open_url", 
+	    		"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText#install"}
+	    	},
 	        {
-	        	"caption": "Version 5 Help",
+	        	"caption": "Help: Version 5",
 	        	"command": "open_file", 
 	        	"args": {"file": "${packages}/MavensMate/messages/5.0.0.txt"}
 	        },
