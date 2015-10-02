@@ -28,7 +28,8 @@ def get_friendly_platform_key():
     friendly_platform_map = {
         'darwin': 'osx',
         'win32': 'windows',
-        'linux2': 'linux'
+        'linux2': 'linux',
+        'linux': 'linux'
     }
     return friendly_platform_map[sys.platform]
 

@@ -53,7 +53,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	"mm_sublime_text_executable_location" : {
 		"osx": "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl",
 		"windows": "C:\\Program Files\\Sublime Text 3\\sublime_text.exe",
-		"linux": "/usr/local/bin/subl"
+		"linux": "/usr/bin/subl"
 	},
 
 	//mavensmate will attempt to compile when savings files with the following extensions

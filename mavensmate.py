@@ -1607,7 +1607,10 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         dirs = []
 
         from os.path import expanduser
-        if util.get_friendly_platform_key() != 'windows':
+        if util.get_friendly_platform_key() == 'linux':
+            home = os.path.join(expanduser('~'),'.config')
+            mm_core_settings_file_name = '.mavensmate-config.json'
+        elif util.get_friendly_platform_key() == 'osx':
             home = expanduser('~')
             mm_core_settings_file_name = '.mavensmate-config.json'
         else:
