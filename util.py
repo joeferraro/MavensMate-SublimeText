@@ -45,7 +45,9 @@ def start_mavensmate_app(printer):
             debug(mavensmate_app_location)
             if os.path.exists(mavensmate_app_location):
                 if friendly_platform_key == 'windows':
-                    subprocess.Popen('"{0}"'.format(mavensmate_app_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    # subprocess.Popen('"{0}"'.format(mavensmate_app_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    # TODO: this causes multiple mavensmate-app instances to open
+                    pass
                 elif friendly_platform_key == 'linux':
                     pass #TODO
                 elif friendly_platform_key == 'osx':
