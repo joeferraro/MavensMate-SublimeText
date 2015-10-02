@@ -45,12 +45,7 @@ def start_mavensmate_app(printer):
             debug(mavensmate_app_location)
             if os.path.exists(mavensmate_app_location):
                 if friendly_platform_key == 'windows':
-                    process = subprocess.Popen(["start", "/r", mavensmate_app_location], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                    stdout, stderr = process.communicate()
-                    if stderr != None:
-                        printer.show()
-                        message = '[ERROR]: Could not open MavensMate-app. '+stderr.decode('utf-8')
-                        printer.write('\n'+message+'\n')
+                    subprocess.Popen('"{0}"'.format(mavensmate_app_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
                 elif friendly_platform_key == 'linux':
                     pass #TODO
                 elif friendly_platform_key == 'osx':

@@ -10,7 +10,7 @@
 			"platforms": {
 				"osx": [
 					{
-						"version": "5.0.1",
+						"version": "5.0.2",
 						"release_notes": "",
 						"url": "https://nodeload.github.com/joeferraro/MavensMate-SublimeText/zipball/master"
 					}
