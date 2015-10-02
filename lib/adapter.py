@@ -128,7 +128,7 @@ class MavensMateAdapterCall(threading.Thread):
 
         port_number = self.settings.get('mm_app_server_port', '56248')
         ####### ---> new
-        if util.is_mm_project():
+        if util.is_mm_project() and self.operation != 'new-project' and self.operation != 'open-settings':
             url = 'http://localhost:'+str(port_number)+'/execute?command='+self.operation+'&async=1&pid='+util.get_project_settings()['id']
         else:
             url = 'http://localhost:'+str(port_number)+'/execute?command='+self.operation+'&async=1'
