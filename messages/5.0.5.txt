@@ -4,7 +4,7 @@ MavensMate-SublimeText 5.0.5 changelog
 
 - Resolves issue where issue where linux users were unable to use the open project command
 - Resolves issue where in certain instances, the tooling API sent back a compilation response that was unable to be parsed
-
+- Adds additional information to error message when mm-app is not running
 
 ## Version 5 Information
 
