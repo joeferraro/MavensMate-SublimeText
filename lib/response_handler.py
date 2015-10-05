@@ -269,7 +269,7 @@ class MavensMateResponseHandler(object):
                     self.response['result']['details']['componentFailures'] = [self.response['result']['details']['componentFailures']]
 
                 for res in self.response['result']['details']['componentFailures']:
-                    if 'DeployDetails' in res:
+                    if 'DeployDetails' in res and len(res['DeployDetails']['componentFailures']) > 0:
                         for detail in res['DeployDetails']['componentFailures']:
                             debug(detail)
                             line_col = ''
@@ -293,6 +293,8 @@ class MavensMateResponseHandler(object):
                                 view.show(pt)
 
                             msg += detail['fileName']+': '+ detail['problem'] + line_col + '\n'
+                    elif 'ErrorMsg' in res and res['ErrorMsg'] != None:
+                        msg += res['ErrorMsg'] + '\n'
                     else: # metadata api?
                         msg += res['fullName']+': '+ res['problem'] + '\n'
 
