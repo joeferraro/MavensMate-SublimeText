@@ -1,0 +1,3 @@
+MavensMate-SublimeText 6.0.0
+
+Hi, you are running version 6.0.0 of MavensMate for Sublime Text. Version 6.0.0 was formerly known at v4.0.5. Due to issues with our v5 release, we've decided to roll back users to the v4.0.5 codebase, but we had to rename it 6.0.0 to ensure Package Control would continue to update users. For more information about the decision to roll users back to the v4.0.5 codebase and how to run the v5 codebase (now known as v7), please visit https://github.com/joeferraro/MavensMate-SublimeText/blob/master/messages/rollback.md

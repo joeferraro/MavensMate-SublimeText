@@ -1,6 +1,6 @@
-MavensMate Salesforce1 IDE for Sublime Text
+MavensMate Salesforce IDE for Sublime Text
 
-Welcome to MavensMate for Sublime Text! Our mission at MavensMate is to make building Salesforce1 applications easy and fun regardless of platform or text editor. 
+Welcome to MavensMate for Sublime Text! Our mission at MavensMate is to make building Salesforce applications easy and fun regardless of platform or text editor. 
 
 SUPPORTED OPERATING SYSTEMS: 
 	- OSX 10.8.x+

@@ -1,6 +1,6 @@
 # Written by Joe Ferraro (@joeferraro / www.joe-ferraro.com)
 import os
-import subprocess 
+import subprocess
 import json
 import sys
 import re
@@ -168,7 +168,7 @@ class MavensStubCommand(sublime_plugin.WindowCommand):
 
 #deploys the currently active file
 class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
-    def run(self, files=None):       
+    def run(self, files=None):
         debug('FORCE COMPILING!')
         if files == None:
             files = [util.get_active_file()]
@@ -177,13 +177,13 @@ class ForceCompileFileMainMenuCommand(sublime_plugin.WindowCommand):
             "action"    : "overwrite"
         }
         mm.call('compile', context=self.window, params=params)
-    
+
     def is_enabled(self):
        return util.is_mm_project();
 
 #deploys the currently active file
 class ForceCompileFileCommand(sublime_plugin.WindowCommand):
-    def run(self, files=None):       
+    def run(self, files=None):
         debug('FORCE COMPILING!')
         if files == None:
             files = [util.get_active_file()]
@@ -195,7 +195,7 @@ class ForceCompileFileCommand(sublime_plugin.WindowCommand):
 
 #deploys the currently active file
 class CompileActiveFileCommand(sublime_plugin.WindowCommand):
-    def run(self):       
+    def run(self):
         params = {
             "files" : [util.get_active_file()]
         }
@@ -315,7 +315,7 @@ class CleanProjectCommand(sublime_plugin.WindowCommand):
             mm.call('clean_project', context=self)
 
     def is_enabled(command):
-        return util.is_mm_project()  
+        return util.is_mm_project()
 
 class OpenProjectSettingsCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -323,7 +323,7 @@ class OpenProjectSettingsCommand(sublime_plugin.WindowCommand):
         sublime.active_window().open_file(path)
 
     def is_enabled(command):
-        return util.is_mm_project()      
+        return util.is_mm_project()
 
 #opens a project in the current workspace
 class OpenProjectCommand(sublime_plugin.WindowCommand):
@@ -346,7 +346,7 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
 
         import os
         self.dir_map = {}
-        dirs = [] 
+        dirs = []
         #debug(util.mm_workspace())
         workspaces = util.mm_workspace()
         if type(workspaces) is not list:
@@ -374,14 +374,14 @@ class OpenProjectCommand(sublime_plugin.WindowCommand):
         if 0 > picked < len(self.results):
             return
         self.picked_project = self.results[picked]
-        project_file = self.dir_map[self.picked_project[0]][1]  
+        project_file = self.dir_map[self.picked_project[0]][1]
         project_name = self.dir_map[self.picked_project[0]][0]
         workspace = self.dir_map[self.picked_project[0]][2]
         project_file_location = os.path.join(workspace,project_name,project_file)
-        
+
         debug('attempting to open project at -->')
         debug(project_file_location)
-        
+
         if not os.path.isfile(project_file_location):
             sublime.message_dialog("Cannot find project file for: "+project_name)
             return
@@ -441,7 +441,7 @@ class NewApexScriptCommand(sublime_plugin.TextCommand):
 
 #displays new apex class dialog
 class NewApexClassCommand(sublime_plugin.TextCommand):
-    
+
     def __init__(self, *args, **kwargs):
         sublime_plugin.TextCommand.__init__(self, *args, **kwargs)
         self.template_options   = None
@@ -449,7 +449,7 @@ class NewApexClassCommand(sublime_plugin.TextCommand):
         self.api_name           = None
         self.github_template    = None
 
-    def run(self, edit, api_name="MyClass", class_type="default"): 
+    def run(self, edit, api_name="MyClass", class_type="default"):
         self.template_options = []
         self.github_templates = util.parse_templates_package("ApexClass")
         for t in self.github_templates:
@@ -496,7 +496,7 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         self.api_name           = None
         self.github_template    = None
 
-    def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"): 
+    def run(self, edit, api_name="MyAccountTrigger", sobject_name="Account", class_type="default"):
         self.template_options = []
         self.github_templates = util.parse_templates_package("ApexTrigger")
         for t in self.github_templates:
@@ -530,7 +530,7 @@ class NewApexTriggerCommand(sublime_plugin.TextCommand):
         mm.call('new_metadata', params=params)
 
     def is_enabled(command):
-        return util.is_mm_project() 
+        return util.is_mm_project()
 
 #displays new apex page dialog
 class NewApexPageCommand(sublime_plugin.TextCommand):
@@ -541,7 +541,7 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
         self.api_name           = None
         self.github_template    = None
 
-    def run(self, edit, api_name="MyPage", class_type="default"): 
+    def run(self, edit, api_name="MyPage", class_type="default"):
         self.template_options = []
         self.github_templates = util.parse_templates_package("ApexPage")
         for t in self.github_templates:
@@ -557,7 +557,7 @@ class NewApexPageCommand(sublime_plugin.TextCommand):
                     break
 
             sublime.active_window().show_input_panel(util.get_new_metadata_input_label(self.github_template), util.get_new_metadata_input_placeholders(self.github_template), self.finish_github_template_selection, None, None)
-             
+
     def finish_github_template_selection(self, input):
         template_params = util.get_template_params(self.github_template)
         input_list = [x.strip() for x in input.split(',')]
@@ -586,7 +586,7 @@ class NewApexComponentCommand(sublime_plugin.TextCommand):
         self.api_name           = None
         self.github_template    = None
 
-    def run(self, edit, api_name="MyComponent", class_type="default"): 
+    def run(self, edit, api_name="MyComponent", class_type="default"):
         self.template_options = []
         self.github_templates = util.parse_templates_package("ApexComponent")
         for t in self.github_templates:
@@ -641,7 +641,7 @@ def get_merged_apex_templates(apex_type):
 
 #displays mavensmate panel
 class ShowDebugPanelCommand(sublime_plugin.WindowCommand):
-    def run(self): 
+    def run(self):
         if util.is_mm_project() == True:
             PanelPrinter.get(self.window.id()).show(True)
 
@@ -658,7 +658,11 @@ class HideDebugPanelCommand(sublime_plugin.WindowCommand):
 class ShowVersionCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         version = util.get_version_number()
-        sublime.message_dialog("MavensMate for Sublime Text v"+version+"\n\nMavensMate for Sublime Text is an open source Sublime Text plugin for Force.com development.\n\nhttp://mavensmate.com")
+        printer = PanelPrinter.get(sublime.active_window().id())
+        printer.show()
+        printer.write('\n')
+        printer.write('MavensMate for Sublime Text v'+version+'\n\nGiven issues users were experiencing with v5, we decided to roll back to v4.0.5, which is the version you are running now. The v5 release is now being hosted in the prerelease channel under the release name v7. If you would like to continue running v7 (with MavensMate-app), you must configure Package Control to allow prerelease installs for MavensMate. Please visit https://github.com/joeferraro/MavensMate-SublimeText/blob/master/messages/rollback.md for more information. We apologize for the inconvenience.')
+        printer.write('\n')
 
 #refreshes selected directory (or directories)
 # if src is refreshed, project is "cleaned"
@@ -829,10 +833,10 @@ class RunSelectedApexTestsCommand(sublime_plugin.WindowCommand):
     def is_visible(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_apex_class_file(f): 
+                if util.is_apex_class_file(f):
                     return True
         return False
-        
+
     def is_enabled(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
@@ -866,7 +870,7 @@ class OpenActiveSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
         return util.is_apex_class_file()
 
     def is_enabled(self):
-        if util.is_apex_webservice_file(): 
+        if util.is_apex_webservice_file():
             return True
         return False
 
@@ -899,14 +903,14 @@ class OpenSelectedSfdcWsdlUrlCommand(sublime_plugin.WindowCommand):
     def is_visible(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_apex_class_file(f): 
+                if util.is_apex_class_file(f):
                     return True
         return False
-        
+
     def is_enabled(self, files):
         if files != None and type(files) is list and len(files) > 0:
             for f in files:
-                if util.is_apex_webservice_file(f): 
+                if util.is_apex_webservice_file(f):
                     return True
         return False
 
@@ -953,12 +957,12 @@ class RefreshApexSymbols(sublime_plugin.WindowCommand):
             if files != None and type(files) is list and len(files) == 1:
                 for f in files:
                     if os.path.join(util.mm_project_directory(),"src","classes") not in f:
-                        return False 
+                        return False
                     if "-meta.xml" in f:
                         return False
             elif files != None and type(files) is list and len(files) == 0:
                 return False
-            
+
             return True
         except:
             return False
@@ -1030,7 +1034,7 @@ class FetchLogsCommand(sublime_plugin.WindowCommand):
         mm.call('fetch_logs', True)
 
     def is_enabled(self):
-        return util.is_mm_project() 
+        return util.is_mm_project()
 
 #refreshes the currently active file from the server
 class FetchCheckpointsCommand(sublime_plugin.WindowCommand):
@@ -1038,7 +1042,7 @@ class FetchCheckpointsCommand(sublime_plugin.WindowCommand):
         mm.call('fetch_checkpoints', True)
 
     def is_enabled(self):
-        return util.is_mm_project() 
+        return util.is_mm_project()
 
 #when a class or trigger file is opened, adds execution overlay markers if applicable
 class HideApexCheckpoints(sublime_plugin.WindowCommand):
@@ -1049,7 +1053,7 @@ class HideApexCheckpoints(sublime_plugin.WindowCommand):
             debug('error hidding checkpoints')
 
     def is_enabled(self):
-        return util.is_apex_class_file() 
+        return util.is_apex_class_file()
 
 #when a class or trigger file is opened, adds execution overlay markers if applicable
 class ShowApexCheckpoints(sublime_plugin.WindowCommand):
@@ -1059,7 +1063,7 @@ class ShowApexCheckpoints(sublime_plugin.WindowCommand):
             active_view = self.window.active_view()
             fileName, ext = os.path.splitext(os.path.basename(util.get_active_file()))
             if ext == ".cls" or ext == ".trigger":
-                api_name = fileName 
+                api_name = fileName
                 overlays = util.parse_json_from_file(util.mm_project_directory()+"/config/.overlays")
                 lines = []
                 for o in overlays:
@@ -1071,7 +1075,7 @@ class ShowApexCheckpoints(sublime_plugin.WindowCommand):
             debug('', e)
 
     def is_enabled(self):
-        return util.is_apex_class_file() 
+        return util.is_apex_class_file()
 
 #deletes overlays
 class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
@@ -1098,10 +1102,10 @@ class DeleteApexCheckpointCommand(sublime_plugin.WindowCommand):
 
     def reload(self, cmd=None):
         debug("Reloading Apex Checkpoints")
-        cmd.window.run_command("show_apex_checkpoints") 
+        cmd.window.run_command("show_apex_checkpoints")
 
     def is_enabled(self):
-        return util.is_apex_class_file()  
+        return util.is_apex_class_file()
 
 
 #refreshes the currently active file from the server
@@ -1128,7 +1132,7 @@ class ResetMetadataContainerCommand(sublime_plugin.WindowCommand):
 class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
     def run(self):
         params = {
-            "classes" : [util.get_active_file()] 
+            "classes" : [util.get_active_file()]
         }
         mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(params["classes"][0]), params=params)
 
@@ -1158,7 +1162,7 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
         if ext == ".cls" or ext == ".trigger":
             if ext == '.cls':
                 self.object_type = 'ApexClass'
-            else: 
+            else:
                 self.object_type = 'ApexTrigger'
             self.api_name = fileName
             number_of_lines = util.get_number_of_lines_in_file(util.get_active_file())
@@ -1191,13 +1195,13 @@ class NewApexCheckpoint(sublime_plugin.WindowCommand):
         cmd.window.run_command("show_apex_checkpoints")
 
     def is_enabled(self):
-        return util.is_apex_class_file() 
+        return util.is_apex_class_file()
 
 #right click context menu support for resource bundle creation
 class NewResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, files, dirs):
         if sublime.ok_cancel_dialog("Are you sure you want to create resource bundle(s) for the selected static resource(s)", "Create Resource Bundle(s)"):
-            resource_bundle.create(self, files) 
+            resource_bundle.create(self, files)
 
     def is_visible(self, files, dirs):
         if not util.is_mm_project():
@@ -1214,13 +1218,13 @@ class NewResourceBundleCommand(sublime_plugin.WindowCommand):
                 if "." in basename and basename.split(".")[-1] != "resource":
                     is_ok = False
                     break
-        return is_ok   
+        return is_ok
 
 #right click context menu support for resource bundle refresh
 class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, dirs, files):
         if sublime.ok_cancel_dialog("This command will refresh the resource bundle(s) based on your local project's corresponding static resource(s). Do you wish to continue?", "Refresh"):
-            resource_bundle.refresh(self, dirs) 
+            resource_bundle.refresh(self, dirs)
 
     def is_visible(self, dirs, files):
         try:
@@ -1239,9 +1243,9 @@ class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
                     if "." in basename and basename.split(".")[-1] != "resource":
                         is_ok = False
                         break
-            return is_ok  
+            return is_ok
         except:
-            return False 
+            return False
 
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
@@ -1252,8 +1256,8 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer = PanelPrinter.get(self.window.id())
             printer.show()
             printer.write('\n[OPERATION FAILED] You must run this command from the project folder, not the "src" folder\n')
-            return            
- 
+            return
+
         dir_entries = os.listdir(directory)
         has_source_directory = False
         for entry in dir_entries:
@@ -1266,7 +1270,7 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer.show()
             printer.write('\n[OPERATION FAILED] Unable to locate "src" folder\n')
             return
-        
+
         dir_entries = os.listdir(os.path.join(directory,"src"))
         has_package = False
         for entry in dir_entries:
@@ -1278,7 +1282,7 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
             printer = PanelPrinter.get(self.window.id())
             printer.show()
             printer.write('\n[OPERATION FAILED] Unable to locate package.xml in src folder \n')
-            return        
+            return
 
         params = {
             "directory" : directory
@@ -1335,7 +1339,7 @@ class WriteOperationStatus(sublime_plugin.TextCommand):
         return
 
 class CancelCurrentCommand(sublime_plugin.WindowCommand):
-    
+
     def run(self):
         current_thread = ThreadTracker.get_current(self.window.id())
         if current_thread:
@@ -1373,7 +1377,7 @@ class InstallMmVersionCommand(sublime_plugin.WindowCommand):
         selected_release = self.release_options[picked]
         printer = PanelPrinter.get(sublime.active_window().id())
         mm_installer.execute(printer, release=selected_release)
-        
+
 #installs/updates mm
 class UpdateMmCommand(sublime_plugin.ApplicationCommand):
     def run(self):
@@ -1387,10 +1391,10 @@ class UpdateMmCommand(sublime_plugin.ApplicationCommand):
 
 #opens the MavensMate shell
 class NewShellCommand(sublime_plugin.TextCommand):
-    def run(self, edit): 
+    def run(self, edit):
         sublime.active_window().show_input_panel("MavensMate Command", "", self.on_input, None, None)
-    
-    def on_input(self, input): 
+
+    def on_input(self, input):
         try:
             ps = input.split(" ")
             if ps[0] == 'new':
@@ -1430,7 +1434,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
         pt = locations[0] - len(prefix) - 1
         ch = view.substr(sublime.Region(pt, pt + 1))
         ch2 = view.substr(sublime.Region(pt, pt + 2))
-        
+
         if ch2 == '<a' or ch2 == '<c':
             _completions = []
             for t in vf.tag_list:
@@ -1439,7 +1443,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
 
         elif ch == ':':
             debug('SCOPE: ', view.scope_name(pt))
-            word = view.substr(view.word(pt))        
+            word = view.substr(view.word(pt))
             _completions = []
             for t in vf.tag_list:
                 if word in t:
@@ -1455,7 +1459,7 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             if 'meta.tag.other.html' in scope_names:
                 region_from_top_to_current_word = sublime.Region(0, pt + 1)
                 lines = view.lines(region_from_top_to_current_word)
-                
+
                 _completions = []
                 tag_def = None
                 for line in reversed(lines):
@@ -1601,7 +1605,7 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         full_file_path = os.path.splitext(util.get_active_file())[0]
         base = os.path.basename(full_file_path)
-        file_name = os.path.splitext(base)[0] 
+        file_name = os.path.splitext(base)[0]
 
         #now get the autocomplete context
         #if not dot notation, ignore
@@ -1615,12 +1619,12 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         #myVariable.
         #if we cant find myVariable properly, exit out
-        word = view.substr(view.word(pt))        
+        word = view.substr(view.word(pt))
         if word == None or word == '':
-            return [] 
+            return []
 
         debug('autocomplete word: ', word)
-        
+
         ##OK START COMPLETIONS
         _completions = []
         lower_word = word.lower()
@@ -1704,7 +1708,7 @@ class ApexCompletions(sublime_plugin.EventListener):
 
         if len(typedef[4]) > 1 and '.' in typedef[4]:
             #deeply nested, need to look for properties
-            #TODO 
+            #TODO
             return []
 
         apex_class_key = typedef_class
@@ -1736,30 +1740,30 @@ class ApexCompletions(sublime_plugin.EventListener):
             _completions = util.get_symbol_table_completions(comp_def)
             return sorted(_completions)
 
-        ## HANDLE CUSTOM APEX CLASS STATIC METHODS 
+        ## HANDLE CUSTOM APEX CLASS STATIC METHODS
         ## MyCustomClass.some_static_method
         elif os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",word+".cls")):
             try:
-                _completions = util.get_apex_completions(word) 
-                return sorted(_completions) 
+                _completions = util.get_apex_completions(word)
+                return sorted(_completions)
             except:
-                return [] 
+                return []
 
         if typedef_class_lower == None:
             return []
 
-        ## HANDLE CUSTOM APEX INSTANCE METHOD ## 
+        ## HANDLE CUSTOM APEX INSTANCE METHOD ##
         ## MyClass foo = new MyClass()
-        ## foo.??  
+        ## foo.??
         symbol_table = util.get_symbol_table(file_name)
         clazz = parsehelp.extract_class(data)
         #inheritance = parsehelp.extract_inheritance(data, clazz)
-        
+
         if symbol_table != None and "innerClasses" in symbol_table and type(symbol_table["innerClasses"] is list and len(symbol_table["innerClasses"]) > 0):
             for ic in symbol_table["innerClasses"]:
                 if ic["name"].lower() == typedef_class_lower:
                     _completions = util.get_completions_for_inner_class(ic)
-                    return sorted(_completions)  
+                    return sorted(_completions)
 
         if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",typedef_class+".cls")): #=> apex classes
             _completions = util.get_apex_completions(typedef_class, typedef_class_extra)
@@ -1774,7 +1778,7 @@ class ApexCompletions(sublime_plugin.EventListener):
         #     if os.path.isfile(os.path.join(util.mm_project_directory(),"src","classes",inheritance+".cls")): #=> apex classes
         #         _completions = util.get_apex_completions(inheritance, typedef_class)
         #         return sorted(_completions)
-        
+
         if typedef_class.endswith('__r'):
             typedef_class = typedef_class.replace('__r', '__c')
         if os.path.isfile(os.path.join(util.mm_project_directory(),"src","objects",typedef_class+".object")): #=> object fields from src directory (more info on field metadata, so is primary)
@@ -1782,7 +1786,7 @@ class ApexCompletions(sublime_plugin.EventListener):
             for node in object_dom.getElementsByTagName('fields'):
                 field_name = ''
                 field_type = ''
-                for child in node.childNodes:                            
+                for child in node.childNodes:
                     if child.nodeName != 'fullName' and child.nodeName != 'type': continue
                     if child.nodeName == 'fullName':
                         field_name = child.firstChild.nodeValue
@@ -1853,9 +1857,9 @@ class DeployResourceBundleCommand(sublime_plugin.WindowCommand):
             return
         resource_bundle.deploy(self.results[picked])
 
-#opens a file 
+#opens a file
 class OpenFileInProject(sublime_plugin.ApplicationCommand):
-    def run(self, project_name, file_name, line_number):       
+    def run(self, project_name, file_name, line_number):
         window = sublime.active_window()
         for w in sublime.windows():
             if w.project_file_name() == None:
@@ -1881,7 +1885,7 @@ class ProjectHealthCheckCommand(sublime_plugin.WindowCommand):
 
 class ScrubLogCommand(sublime_plugin.WindowCommand):
     def run(self):
-        community.sync_activity('scrub_log')  
+        community.sync_activity('scrub_log')
         active_view = self.window.active_view()
         fileName, ext = os.path.splitext(active_view.file_name())
 
@@ -1929,7 +1933,7 @@ class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
             for (dirpath, dirnames, filenames) in os.walk(os.path.join(util.mm_project_directory(),"src","objects")):
                 for f in filenames:
                     self.objects.append(f.replace(".object",""))
-        
+
         if self.objects == [] and os.path.isfile(os.path.join(util.mm_project_directory(),"config",".org_metadata")): #=> parse org metadata, looking for object names
             self.org_metadata = util.parse_json_from_file(os.path.join(util.mm_project_directory(),"config",".org_metadata"))
             for metadata_type in self.org_metadata:
@@ -1953,7 +1957,7 @@ class ListFieldsForObjectCommand(sublime_plugin.WindowCommand):
                 field_description = ''
                 field_picklists = ''
                 is_picklist = False
-                for child in node.childNodes:                            
+                for child in node.childNodes:
                     if child.nodeName not in nodes: continue
                     if child.nodeName == 'fullName':
                         field_name = child.firstChild.nodeValue
