@@ -60,7 +60,7 @@ def plugin_loaded():
             util.start_mavensmate_app(printer)
             time.sleep(1.5)
         mm.check_server()
-        message = 'Happy coding :)'
+        message = 'Wait ... I thought we just updated to v5? For more information: https://github.com/joeferraro/MavensMate-SublimeText/blob/master/messages/rollback.md\n\nHappy coding :)'
         printer.show()
         printer.write('\n'+message+'\n')
     except Exception as e:
