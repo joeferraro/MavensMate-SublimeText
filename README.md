@@ -57,7 +57,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 In order to get started using MavensMate for Sublime Text, you should be aware of a few important settings. MavensMate for Sublime Text settings follow the Sublime Text convention of providing default settings in [JSON format](https://en.wikipedia.org/wiki/JSON) that can be overwritten via a user settings file. To view MavensMate default and user settings, use the MavensMate menu in the top menu bar: `MavensMate > Settings`.
 
-**NEW IN v5**: Most settings formerly found within Sublime Text have been moved to the "Global Settings" which can be found within mavensmate-app. To access/update those settings, use the `MavensMate` menu in Sublime Text and select `Settings > Global Settings`.
+**NEW IN v7**: Most settings formerly found within Sublime Text have been moved to the "Global Settings" which can be found within mavensmate-app. To access/update those settings, use the `MavensMate` menu in Sublime Text and select `Settings > Global Settings`.
 
 ###Important Settings
 
