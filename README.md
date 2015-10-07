@@ -24,6 +24,8 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
 
+**IMPORTANT NOTE:** If you do NOT wish to have Package Control automatically update MavensMate to the v7 betas, you MUST ensure your Package Control user settings do not have "MavensMate" listed in the "install_prereleases" setting.
+
 ####Installing the MavensMate for Sublime Text package
 
 1. Open Sublime Text 3
