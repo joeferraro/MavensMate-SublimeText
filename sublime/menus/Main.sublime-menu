@@ -4,6 +4,11 @@
 	    "caption": "MavensMate",  
 	    "children":  
 	    [  
+	        { 
+				"caption": "Help, what is v6?",  
+     			"command": "show_version"
+			},
+			{"caption":"-"},
 	        {
 	        	"id": "projects", 
 	    		"caption": "Project",  

@@ -661,7 +661,7 @@ class ShowVersionCommand(sublime_plugin.ApplicationCommand):
         printer = PanelPrinter.get(sublime.active_window().id())
         printer.show()
         printer.write('\n')
-        printer.write('MavensMate for Sublime Text v'+version+'\n\nGiven issues users were experiencing with v5, we decided to roll back to v4.0.5, which is the version you are running now. The v5 release is now being hosted in the prerelease channel under the release name v7. If you would like to continue running v7 (with MavensMate-app), you must configure Package Control to allow prerelease installs for MavensMate. Please visit https://github.com/joeferraro/MavensMate-SublimeText/blob/master/messages/rollback.md for more information. We apologize for the inconvenience.')
+        printer.write('You are running MavensMate for Sublime Text v'+version+'\n\nGiven issues users were experiencing with v5, we decided to roll back to the v4.0.5 codebase, which is the version you are running now (v6). The v5 release is now being hosted in the Package Control prerelease channel under the release name v7. If you would like to continue running v7 (which requires MavensMate-app), you must configure Package Control to allow prerelease installs for MavensMate. Please visit https://github.com/joeferraro/MavensMate-SublimeText/blob/master/messages/rollback.md for more information. We apologize for the inconvenience.')
         printer.write('\n')
 
 #refreshes selected directory (or directories)
