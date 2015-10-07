@@ -24,7 +24,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
 
-###Installing the MavensMate for Sublime Text package
+####Installing the MavensMate for Sublime Text package
 
 1. Open Sublime Text 3
 2. Run `Package Control: Install Package` command
@@ -46,7 +46,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 ![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)
 ##Setup
 
-###Installing the MavensMate for Sublime Text package
+###$Installing the MavensMate for Sublime Text package
 
 1. Open Sublime Text 3
 2. Run `Package Control: Install Package` command
