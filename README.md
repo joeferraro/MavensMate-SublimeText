@@ -16,28 +16,12 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ##Install
 
-### Version 4 (no longer supported)
-
-**You must install the following before continuing:**
-
-1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
-
-```
-cd /sublime text/packages/path
-git clone https://github.com/joeferraro/MavensMate-SublimeText.git "MavensMate"
-cd MavensMate
-git checkout tags/v4.0.5
-```
-
-**Note**: If you already have MavensMate installed via Package Control and you wish to run v4 of the plugin, you must use the "Remove Package" Package Control command before running the commands above, otherwise Package Control will automatically upgrade you to v5.
-
-### Version 5
+### Version 6 (previously known at v4.0.5)
 
 **You must install the following before continuing:**
 
 1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
-3. MavensMate-app **(must be running in order for MavensMate for Sublime Text v5.0+ to function)** [https://github.com/joeferraro/mavensmate-app/releases](https://github.com/joeferraro/mavensmate-app/releases)
 
 ###Installing the MavensMate for Sublime Text package
 
@@ -47,11 +31,27 @@ git checkout tags/v4.0.5
 3. Search for `MavensMate`
 4. Hit `Enter`
 
-**IMPORTANT NOTE for beta releases:** If you would like to install prerelease versions of MavensMate for Sublime Text, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting.
+### Version 7 betas
+
+**You must install the following before continuing:**
+
+1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
+2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
+3. MavensMate-app **(must be running in order for MavensMate for Sublime Text v5.0+ to function)** [https://github.com/joeferraro/mavensmate-app/releases](https://github.com/joeferraro/mavensmate-app/releases)
+
+**IMPORTANT NOTE:** In order to install the v7 betas, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting, see below:
 
 ![screen shot 2015-09-02 at 9 10 17 am](https://cloud.githubusercontent.com/assets/54157/9632003/79242b02-5152-11e5-8672-d91bb549cee6.png)
 ![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)
 ##Setup
+
+###Installing the MavensMate for Sublime Text package
+
+1. Open Sublime Text 3
+2. Run `Package Control: Install Package` command
+	- [Running commands from Sublime Text](http://docs.sublimetext.info/en/latest/extensibility/command_palette.html)
+3. Search for `MavensMate`
+4. Hit `Enter`
 
 In order to get started using MavensMate for Sublime Text, you should be aware of a few important settings. MavensMate for Sublime Text settings follow the Sublime Text convention of providing default settings in [JSON format](https://en.wikipedia.org/wiki/JSON) that can be overwritten via a user settings file. To view MavensMate default and user settings, use the MavensMate menu in the top menu bar: `MavensMate > Settings`.
 

@@ -4,7 +4,7 @@
 # IMPORTANT #
 #############
 
-Version 5 of MavensMate for Sublime Text moves many of the settings previously managed in Sublime Text JSON files to the "Global Settings" found in the MavensMate app. See MavensMate > Settings > Settings Help for more information.
+Version 7 of MavensMate for Sublime Text moves many of the settings previously managed in Sublime Text JSON files to the "Global Settings" found in the MavensMate app. See MavensMate > Settings > Settings Help for more information.
 
 MavensMate for Sublime Text settings
 NOTE: MavensMate user settings will override MavensMate default settings
