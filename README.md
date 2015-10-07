@@ -44,15 +44,16 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ![screen shot 2015-09-02 at 9 10 17 am](https://cloud.githubusercontent.com/assets/54157/9632003/79242b02-5152-11e5-8672-d91bb549cee6.png)
 ![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)
-##Setup
 
-###$Installing the MavensMate for Sublime Text package
+#### Installing the MavensMate for Sublime Text package
 
 1. Open Sublime Text 3
 2. Run `Package Control: Install Package` command
 	- [Running commands from Sublime Text](http://docs.sublimetext.info/en/latest/extensibility/command_palette.html)
 3. Search for `MavensMate`
 4. Hit `Enter`
+
+### Setup
 
 In order to get started using MavensMate for Sublime Text, you should be aware of a few important settings. MavensMate for Sublime Text settings follow the Sublime Text convention of providing default settings in [JSON format](https://en.wikipedia.org/wiki/JSON) that can be overwritten via a user settings file. To view MavensMate default and user settings, use the MavensMate menu in the top menu bar: `MavensMate > Settings`.
 
