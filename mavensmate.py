@@ -221,7 +221,7 @@ class SyntaxHandler(sublime_plugin.EventListener):
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax"))
             elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.tmLanguage"))
