@@ -214,14 +214,14 @@ class SyntaxHandler(sublime_plugin.EventListener):
             ext = util.get_file_extension(fn)
             if ext == '.cls' or ext == '.trigger':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Apex.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Apex.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.sublime-syntax"))
             elif ext == '.page' or ext == '.component':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","HTML","HTML.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/HTML/HTML.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
             elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.tmLanguage"))
@@ -1442,8 +1442,9 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             return _completions
 
         elif ch == ':':
-            debug('SCOPE: ', view.scope_name(pt))
+            debug(': SCOPE: ', view.scope_name(pt))
             word = view.substr(view.word(pt))
+            debug(word)
             _completions = []
             for t in vf.tag_list:
                 if word in t:
@@ -1451,12 +1452,12 @@ class VisualforceCompletions(sublime_plugin.EventListener):
             return _completions
 
         elif ch == ' ':
-            debug('SCOPE: ', view.scope_name(pt))
+            debug('space SCOPE: ', view.scope_name(pt))
             scope_names = view.scope_name(pt).split(' ')
             if 'string.quoted.double.html' in scope_names or 'string.quoted.single.html' in scope_names:
                 return []
 
-            if 'meta.tag.other.html' in scope_names:
+            if 'meta.tag.inline.any.visualforce' in scope_names or 'meta.tag.block.inline.visualforce' in scope_names:
                 region_from_top_to_current_word = sublime.Region(0, pt + 1)
                 lines = view.lines(region_from_top_to_current_word)
 
@@ -1465,11 +1466,13 @@ class VisualforceCompletions(sublime_plugin.EventListener):
                 for line in reversed(lines):
                     line_contents = view.substr(line)
                     line_contents = line_contents.replace("\t", "").strip()
+                    # debug(line_contents)
                     if line_contents.find('<') == -1: continue #skip the line if the opening bracket isn't in the line
                     tag_def = line_contents.split('<')[-1].split(' ')[0]
                     break
 
-                #debug(tag_def)
+                # debug(tag_def)
+
                 if tag_def in vf.tag_defs:
                     def_entry = vf.tag_defs[tag_def]
 
