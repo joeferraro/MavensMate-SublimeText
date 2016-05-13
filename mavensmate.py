@@ -314,14 +314,14 @@ class SyntaxHandler(sublime_plugin.EventListener):
             ext = util.get_file_extension(fn)
             if ext == '.cls' or ext == '.trigger':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Apex.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Apex.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.sublime-syntax"))
             elif ext == '.page' or ext == '.component':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax"))
             elif ext == '.app' or ext == '.auradoc' or ext == '.cmp':
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","XML","XML.tmLanguage"))
@@ -329,9 +329,9 @@ class SyntaxHandler(sublime_plugin.EventListener):
                     view.set_syntax_file(os.path.join("Packages/XML/XML.tmLanguage"))
             elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/MMLog.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/MMLog.sublime-syntax"))
         except:
             pass
 

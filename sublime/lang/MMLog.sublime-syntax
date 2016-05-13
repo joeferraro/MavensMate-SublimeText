@@ -1,0 +1,23 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: MMLog
+scope: source.log
+contexts:
+  main:
+    - match: '\s*Result: Success'
+      scope: markup.inserted
+    - match: '([0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]\s)'
+      scope: keyword
+    - match: '\|["USER_DEBUG"]+\|'
+      scope: string
+    - match: '\|["EXCEPTION_THROWN"]+\|'
+      scope: support.type.exception
+    - match: '\|["FATAL_ERROR"]+\|'
+      scope: support.type.exception
+    - match: '\|[A-Z,_]+\|'
+      scope: variable
+    - match: '\[[0-9]{0,5}\]'
+      scope: variable.language
+    - match: (true|false)
+      scope: keyword
