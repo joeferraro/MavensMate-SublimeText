@@ -2234,7 +2234,11 @@ tag_defs = {
         ]
       },
       "required": {
-        "type": "java:\/\/java.lang.Boolean"
+        "type": "Boolean",
+        "values": [
+          "true",
+          "false"
+        ]
       },
       "size": {
         "type": "Integer"
