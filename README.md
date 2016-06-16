@@ -17,7 +17,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ##Install
 
-### Version 6 (previously known as v4.0.5) [stable]
+### Version 6 [stable]
 
 **You must install the following before continuing:**
 
@@ -34,7 +34,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 3. Search for `MavensMate`
 4. Hit `Enter`
 
-### Version 7 betas
+### Version 7 [prerelease channel]
 
 **You must install the following before continuing:**
 
