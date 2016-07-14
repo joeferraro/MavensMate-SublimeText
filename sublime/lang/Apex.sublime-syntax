@@ -8,7 +8,7 @@ file_extensions:
 scope: source.apex
 contexts:
   main:
-    - match: \b(?i:package|trigger|class|interface)\b
+    - match: \b(?i:package|trigger|class|interface|override)\b
       scope: storage.type.apex
     - match: '^\s*(package)\b(?:\s*([^ ;$]+)\s*(;)?)?'
       scope: meta.package.java
@@ -27,6 +27,8 @@ contexts:
     - include: primitive-arrays
     - include: primitive-types
     - include: object-types
+    #Including Annotations for compatability with class definitions like @isTest
+    - include: annotations
   annotations:
     - match: '(@[^ (]+)(\()'
       captures:
@@ -82,6 +84,7 @@ contexts:
                 - match: \)
                   pop: true
                 - include: code
+                - include: strings
         - match: "{"
           push:
             - meta_scope: meta.inner-class.java
@@ -89,18 +92,23 @@ contexts:
               pop: true
             - include: class-body
   assertions:
-    - match: \b(assert)\s
+    #Fixed issue with assertion highlights not working correctly
+    - match: (\b(?i:assert\w+)|\b(?i:assert)(\b)|\b(?i:assert\W)\b|\b(?i:assert)\s)
       captures:
         1: keyword.control.assert.java
+        2: keyword.control.assert.apex
       push:
         - meta_scope: meta.declaration.assertion.java
+        - match: (?=\()|(?=\s\()
+          pop: true
         - match: $
           pop: true
         - match: ":"
+          pop: true
           scope: keyword.operator.assert.expression-seperator.java
         - include: code
   class:
-    - match: '(?=\w?[\w\s]*(?:class|(?:@)?interface|enum)\s+\w+)'
+    - match: '(?=\w?[\w\s]*(?:class|(?:@)?interface|(?:@)?override|enum)\s+\w+)'
       push:
         - meta_scope: meta.class.java
         - match: "}"
@@ -109,7 +117,7 @@ contexts:
           pop: true
         - include: storage-modifiers
         - include: comments
-        - match: (class|(?:@)?interface|enum|trigger)\s+(\w+)
+        - match: (class|(?:@)?interface|(?:@)?override|enum|trigger|future)\s+(\w+)
           scope: meta.class.identifier.java
           captures:
             1: storage.modifier.java
@@ -173,7 +181,8 @@ contexts:
           pop: true
         - match: \\.
           scope: constant.character.escape.java
-        - match: \b(?i:SELECT|FROM|WHERE|OR|AND|LIKE|CONTAINS|ORDER BY|TYPEOF|USING|WITH|GROUP BY|HAVING|LIMIT|OFFSET|FOR REFERENCE|FOR VIEW|UPDATE TRACKING|UPDATE VIEWSTATE|DESC|ASC|NOT|IN|ALL ROWS)\b
+          #Added additional reserved keywords
+        - match: \b(?i:SELECT|CONVERTCURRENCY|FROM|WHERE|OR|AND|LIKE|CONTAINS|ORDER BY|TYPEOF|EXCLUDES|FIRST|USING|WITH|GROUP BY|HAVING|FIND|FIELDS|LIMIT|OFFSET|FOR REFERENCE|NULL|NULLS|FOR VIEW|UPDATE TRACKING|UPDATE VIEWSTATE|DESC|AS|ASC|NOT|IN|INCLUDES|ALL ROWS|ALL|FOR UPDATE|LAST|LAST_90_DAYS|LAST_MONTH|LAST_N_DAYS|LAST_WEEK|NEXT_90_DAYS|NEXT_MONTH|NEXT_N_DAYS|NEXT_WEEK|THIS_MONTH|THIS_WEEK|TODAY|YESTERDAY|UPDATE|UPDATE VIEWSTAT|ABOVE|ABOVE_OR_BELOW|ADVANCED|ALL|ACTIVE|ANY|DATA CATEGORY|NETWORK|RETURNING|WITH SNIPPET|DIVISION|SEARCH|ARRAY|BY|SORT|ON|TOLABEL|TOMORROW)\b
           scope: variable.language.java.soql
         - match: ":"
           scope: variable.language.java.soql
@@ -186,9 +195,12 @@ contexts:
         - include: primitive-arrays
         - include: primitive-types
         - include: keywords
+        #updated to resolve issue 816
+        - include: comments
         - match: (\(|\))
           scope: punctuation.definition
     - include: all-types
+    - include: comments
   comments:
     - match: /\*\*/
       scope: comment.block.empty.java
@@ -211,7 +223,7 @@ contexts:
         1: comment.line.double-slash.java
         2: punctuation.definition.comment.java
   constants-and-special-vars:
-    - match: \b(true|false|null)\b
+    - match: \b(true|false|null|nulls)\b
       scope: constant.language.java
     - match: \b(this|super)\b
       scope: variable.language.java
@@ -240,20 +252,34 @@ contexts:
                   pop: true
                 - include: class-body
   keywords:
+    - include: comments
     - match: \b(try|catch|finally|throw)\b
       scope: keyword.control.catch-exception.java
+    - match: \b(try|catch|finally|throw)\b
+      scope: keyword.control.catch-exception.apex
     - match: '\?|:'
       scope: keyword.control.java
-    - match: \b(return|break|case|continue|default|do|while|for|switch|if|else|beforeinsert|beforeupdate|beforedelete|beforeundelete|afterinsert|afterupdate|afterdelete|afterundelete|before insert|before update|before delete|before undelete|after insert|after update|after undelete|after delete|)\b
+      #added additoinal SFDC reserved words
+    - match: \b(return|break|case|continue|default|do|while|for|switch|if|else|then|end|const|collect|exit|export|goto|group|hint|import|inner|into|join|loop|number|object|of|outer|parallel|pragma|retrieve|stat|then|transaction|type|when|before|beforeinsert|beforeupdate|beforedelete|beforeundelete|afterinsert|afterupdate|afterdelete|afterundelete|before insert|before update|before delete|before undelete|after insert|after update|after undelete|after delete|after|exception)\b
       scope: keyword.control.java
-    - match: \b(?i:webservice|testmethod)\b
+    - match: \b(return|break|case|continue|default|do|while|for|switch|if|else|then|end|const|collect|exit|export|goto|group|hint|import|inner|into|join|loop|number|object|of|outer|parallel|pragma|retrieve|stat|then|transaction|type|when|before|beforeinsert|beforeupdate|beforedelete|beforeundelete|afterinsert|afterupdate|afterdelete|afterundelete|before insert|before update|before delete|before undelete|after insert|after update|after undelete|after delete|after|exception)\b
+      scope: keyword.control.apex
+    - match: \b(?i:webservice|testmethod|(?:@)?override|(?:@)?interface)\b
+      scope: keyword.control.annotation.java
+    - match: \b(?i:webservice|testmethod|(?:@)?override|(?:@)?interface)\b
       scope: keyword.control.annotation.apex
-    - match: \b(?i:commit|rollback)\b
+    - match: \b(?i:commit|rollback|savepoint)\b
       scope: keyword.control.transaction.apex
-    - match: \b(?i:insert|update|delete|undelete|upsert)\b
+    - match: \b(?i:commit|rollback|savepoint)\b
+      scope: keyword.control.transaction.java
+    - match: \b(?i:insert|update|delete|undelete|upsert|merge)\b
+      scope: keyword.control.dml.apex
+    - match: \b(?i:insert|update|delete|undelete|upsert|merge)\b
       scope: keyword.control.dml.apex
     - match: \b(?i:webservice|testmethod)\b
       scope: keyword.control.annotation.apex
+    - match: \b(?i:webservice|testmethod)\b
+      scope: keyword.control.annotation.java
     - match: \b(instanceof)\b
       scope: keyword.operator.java
     - match: (==|!=|<=|>=|<>|<|>)
@@ -277,14 +303,19 @@ contexts:
         - match: "}|(?=;)"
           pop: true
         - include: storage-modifiers
+        #Updated RegEx to be a little cleaner
         - match: (\w+)\s*\(
           captures:
             1: entity.name.function.apex
+            2: entity.name.function.apex.java
           push:
             - meta_scope: meta.method.identifier.java
+              #Updated RegEx to be a little cleaner
             - match: \)
               pop: true
             - include: parameters
+            #adding strings to prevent capture issues
+            - include: strings
         - match: (?=\w.*\s+\w+\s*\()
           push:
             - meta_scope: meta.method.return-type.java
@@ -321,7 +352,10 @@ contexts:
             - match: '\]'
               pop: true
             - include: code
-    - match: '\b(?:[a-z]\w*(\.))*[A-Z]+\w*\b'
+              #Including additional storage types that are commonly lowercase in 
+              #Eclipse so they are identified correctly and may cause compile 
+              #issues if user is not familar with apex class names
+    - match: '\b(?:[a-z]\w*(\.))*[A-Z]+\w*\b|\b(?i:integer|id|list|set|map|string|double|blob|decimal|sObject)\b'
       scope: storage.type.java
       captures:
         1: keyword.operator.dereference.java
@@ -382,7 +416,10 @@ contexts:
               pop: true
             - include: code
   storage-modifiers:
-    - match: \b(global|public|private|protected|static|final|native|synchronized|abstract|threadsafe|transient)\b
+    #including keywords to get some of the terms thighlight correctly
+    - include: keywords
+    #Additional items reserved keywords for Salesforce. Some are reserved for future use
+    - match: \b(global|public|private|protected|static|final|native|synchronized|abstract|bulk|batch|(?i:threadsafe)|transient|(?i:testmethod)|(?i:without)|with|sharing|virtual)\b
       captures:
         1: storage.modifier.java
   strings:
