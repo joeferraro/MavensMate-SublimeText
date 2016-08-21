@@ -15,26 +15,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ####For detailed information and documentation, please visit [mavensmate.com][mmcom]
 
-##Install
-
-### Version 6 [stable]
-
-**You must install the following before continuing:**
-
-1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
-2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
-
-**IMPORTANT NOTE:** If you do NOT wish to have Package Control automatically update MavensMate to the v7 betas, you MUST ensure your Package Control user settings do not have "MavensMate" listed in the "install_prereleases" setting.
-
-####Installing the MavensMate for Sublime Text package
-
-1. Open Sublime Text 3
-2. Run `Package Control: Install Package` command
-	- [Running commands from Sublime Text](http://docs.sublimetext.info/en/latest/extensibility/command_palette.html)
-3. Search for `MavensMate`
-4. Hit `Enter`
-
-### Version 7 [prerelease channel]
+## Install
 
 **You must install the following before continuing:**
 
@@ -48,7 +29,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 ![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)
 ![screen shot 2015-10-12 at 12 53 39 pm](https://cloud.githubusercontent.com/assets/54157/10433499/557e5134-70e0-11e5-81e5-8910ad6cdd68.png)
 
-#### Installing the MavensMate for Sublime Text package
+### Installing the MavensMate for Sublime Text package
 
 1. Open Sublime Text 3
 2. Run `Package Control: Install Package` command
@@ -56,7 +37,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 3. Search for `MavensMate`
 4. Hit `Enter`
 
-### Setup
+## Setup
 
 In order to get started using MavensMate for Sublime Text, you should be aware of a few important settings. MavensMate for Sublime Text settings follow the Sublime Text convention of providing default settings in [JSON format](https://en.wikipedia.org/wiki/JSON) that can be overwritten via a user settings file. To view MavensMate default and user settings, use the MavensMate menu in the top menu bar: `MavensMate > Settings`.
 
