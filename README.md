@@ -1,16 +1,5 @@
 #MavensMate for Sublime Text
 
-## Development Suspended
-
-MavensMate users, 
-
-I have temporarily suspended development & support for MavensMate to focus on spending time with my newborn daughter. If you are experiencing an issue with MavensMate, I encourage you to use the Force.com IDE, Developer Console, or one of the many other 3rd party tools for building Salesforce applications until development resumes.
-
-Thanks very much for your support.
-
--Joe
-
-
 MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE. Its goal is to allow developers to work inside Sublime Text for all their Force.com-related tasks.
 
 * Create & Edit Salesforce.com projects with specific package metadata
