@@ -9,7 +9,6 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 * Run Apex test methods and visualize test successes/failures & coverage
 * Deploy metadata to other Salesforce.com orgs
 * Apex Execute Anonymous
-* Create Apex Execution Overlay Actions "checkpoints" (tooling API)
 * Stream Apex Logs to your local filesystem
 * Apex & Visualforce Code Assist
 
@@ -21,7 +20,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
-3. MavensMate-app **(must be running in order for MavensMate for Sublime Text v7.0+ to function)** [https://github.com/joeferraro/mavensmate-app/releases](https://github.com/joeferraro/mavensmate-app/releases)
+3. MavensMate Desktop **(must be running in order for MavensMate for Sublime Text v7.0+ to function)** [https://github.com/joeferraro/mavensmate-desktop/releases](https://github.com/joeferraro/mavensmate-desktop/releases)
 
 **IMPORTANT NOTE:** In order to install the v7 betas, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting, see below:
 
@@ -39,15 +38,11 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 
 ## Setup
 
-In order to get started using MavensMate for Sublime Text, you should be aware of a few important settings. MavensMate for Sublime Text settings follow the Sublime Text convention of providing default settings in [JSON format](https://en.wikipedia.org/wiki/JSON) that can be overwritten via a user settings file. To view MavensMate default and user settings, use the MavensMate menu in the top menu bar: `MavensMate > Settings`.
-
-**NEW IN v7**: Most settings formerly found within Sublime Text have been moved to the "Global Settings" which can be found within mavensmate-app. To access/update those settings, use the `MavensMate` menu in Sublime Text and select `Settings > Global Settings`.
-
-###Important Settings
+###Important Settings (Configured in MavensMate Desktop)
 
 ####Workspaces (mm_workspace)
 
-You must configure the `mm_workspace` setting before creating a new MavensMate project. You may set `mm_workspace` to a single path on your local filesystem or an array of paths.
+You may set `mm_workspace` to a single path on your local filesystem or an array of paths.
 
 #####Examples
 
@@ -93,24 +88,21 @@ Use `mm_api_version` to set your desired Salesforce.com API version. Please note
 
 ##Update
 
-Updates to the plugin are handled automatically by Package Control. Updates can be applied manually by replacing the `MavensMate` directory in your Sublime Text `Packages` directory.
-
-##Documentation
-<a href="MavensMate for Sublime Text Documentation">http://mavensmate.com/Plugins/Sublime_Text/Overview</a>
+Updates to the plugin are handled automatically by Package Control.
 
 ##Screenshots
 
 ###Project Wizard
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/new-project.png" style="box-shadow:-14px 14px 0 0 #16325c"/>
+<img src="https://mavens.com/public/mavensmate/img/new-project.png" style="box-shadow:-14px 14px 0 0 #16325c"/>
 ###Apex Test Runner
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/tests.png"/>
+<img src="https://mavens.com/public/mavensmate/img/tests.png"/>
 ###Apex Execute Anonymous
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/execute-apex.png"/>
+<img src="https://mavens.com/public/mavensmate/img/execute-apex.png"/>
 ###Quick Panel
 <img src="http://wearemavens.com/images/mm/panel.png"/>
 ###Apex/Visualforce Code Assist
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/apex2.png"/>
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/vf1.png"/>
-<img src="http://cdn.mavensconsulting.com/mavensmate/img/vf2.png"/>
+<img src="https://mavens.com/public/mavensmate/img/apex2.png"/>
+<img src="https://mavens.com/public/mavensmate/img/vf1.png"/>
+<img src="https://mavens.com/public/mavensmate/img/vf2.png"/>
 
 [mmcom]: http://mavensmate.com/?utm_source=github&utm_medium=st-plugin&utm_campaign=st
