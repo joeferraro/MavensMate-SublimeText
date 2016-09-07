@@ -274,11 +274,11 @@ class MavensMateResponseHandler(object):
                             debug(detail)
                             line_col = ''
                             line, col = 1, 1
-                            if 'lineNumber' in detail:
+                            if 'lineNumber' in detail and detail['lineNumber'] != None:
                                 line = int(detail['lineNumber'])
                                 line_col = ' (Line: '+str(line)
                                 util.mark_line_numbers(self.thread.view, [line], 'bookmark')
-                            if 'columnNumber' in detail:
+                            if 'columnNumber' in detail and detail['columnNumber'] != None:
                                 col = int(detail['columnNumber'])
                                 line_col += ', Column: '+str(col)
                             if len(line_col):
