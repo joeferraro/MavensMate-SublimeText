@@ -1,17 +1,12 @@
-[  
-	{  
+[
+	{
 	    "id": "MavensMate",
-	    "caption": "MavensMate",  
-	    "children":  
-	    [  
-	    	{
-	    		"caption": "Help: Rolling Back to Version 4 (now known as v6)",
-	    		"command": "open_url", 
-	    		"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText#install"}
-	    	},
+	    "caption": "MavensMate",
+	    "children":
+	    [
 	        {
 	        	"caption": "Help: Version 7",
-	        	"command": "open_file", 
+	        	"command": "open_file",
 	        	"args": {"file": "${packages}/MavensMate/messages/7.0.0.txt"}
 	        },
 	        {"caption":"-"},
@@ -25,8 +20,8 @@
 	        },
 	        {"caption":"-"},
 	        {
-	        	"id": "projects", 
-	    		"caption": "Project",  
+	        	"id": "projects",
+	    		"caption": "Project",
 	         	"children":
 	         	[
 	         		{
@@ -52,8 +47,8 @@
 	         	]
 	     	},
 			{
-	        	"id": "metadata", 
-	    		"caption": "Metadata",  
+	        	"id": "metadata",
+	    		"caption": "Metadata",
 	         	"children":
 	         	[
 	         		{
@@ -85,8 +80,8 @@
 	         	]
 	     	},
 	     	{
-	        	"id": "lightning", 
-	    		"caption": "Lightning",  
+	        	"id": "lightning",
+	    		"caption": "Lightning",
 	         	"children":
 	         	[
 	         		{
@@ -108,8 +103,8 @@
 	         	]
 	     	},
 	     	{
-	        	"id": "debug", 
-	    		"caption": "Debugging",  
+	        	"id": "debug",
+	    		"caption": "Debugging",
 	         	"children":
 	         	[
 	         		{
@@ -123,16 +118,16 @@
 	         		{
 	         			"caption": "Flush Debug Logs",
 	         			"command": "flush_debug_logs"
-	         		}	         		
+	         		}
 	         	]
 	     	},
 	     	{
-	        	"id": "testing", 
-	    		"caption": "Unit Testing",  
+	        	"id": "testing",
+	    		"caption": "Unit Testing",
 	         	"children":
 	         	[
 	         		{
-	         			"caption": "Open Apex Test Runner UI...",  
+	         			"caption": "Open Apex Test Runner UI...",
 	         			"command": "run_apex_unit_tests"
 	         		},
 	         		{
@@ -146,20 +141,20 @@
 	         	]
 	     	},
 	     	{
-	        	"id": "scripting", 
-	    		"caption": "Apex Scripting",  
+	        	"id": "scripting",
+	    		"caption": "Apex Scripting",
 	         	"children":
  				[
  			     	{
- 			    		"caption": "Execute Apex...",  
+ 			    		"caption": "Execute Apex...",
  			         	"command": "execute_anonymous"
  			     	},
  			     	{
- 			    		"caption": "New Apex Script...",  
+ 			    		"caption": "New Apex Script...",
  			         	"command": "new_apex_script"
  			     	},
  			     	{
- 			    		"caption": "Run Apex Script",  
+ 			    		"caption": "Run Apex Script",
  			         	"command": "run_apex_script"
  			     	}
 	         	]
@@ -185,7 +180,7 @@
 			        },
 			        {
 			            "caption": "-"
-			        }, 
+			        },
 			        {
 			            "caption": "Merge change from right (server) to left (local)",
 			            "command": "mavens_mate_diff_merge_left"
@@ -201,7 +196,7 @@
 			            "caption": "Merge all from right (server) to left (local)",
 			            "command": "mavens_mate_diff_merge_left",
 			            "args": {"mergeAll": true}
-			        }, 
+			        },
 			        {
 			            "caption": "Merge all from left (local) to right (server)",
 			            "command": "mavens_mate_diff_merge_right",
@@ -216,78 +211,78 @@
 	     	},
 	     	{"caption":"-"},
 	     	{
-	        	"id": "compile_active", 
-	    		"caption": "Compile Active File",  
+	        	"id": "compile_active",
+	    		"caption": "Compile Active File",
 	         	"command": "compile_active_file"
 	     	},
 	     	{
-	        	"id": "force_compile_file", 
-	    		"caption": "Force Save Active File (Skip server check)",  
+	        	"id": "force_compile_file",
+	    		"caption": "Force Save Active File (Skip server check)",
 	         	"command": "force_compile_file_main_menu"
 	     	},
 	     	{
-	        	"id": "refresh_active", 
-	    		"caption": "Refresh File From Server",  
+	        	"id": "refresh_active",
+	    		"caption": "Refresh File From Server",
 	         	"command": "refresh_active_file"
 	     	},
 	     	{"caption":"-"},
         	{
-	        	"id": "utils", 
-	    		"caption": "Utilities",  
+	        	"id": "utils",
+	    		"caption": "Utilities",
 	         	"children":
 	         	[
     				{
-    	        		"command": "refresh_project_apex_symbols", 
-    	        		"caption": "Refresh Apex Symbol Tables For This Project" 
+    	        		"command": "refresh_project_apex_symbols",
+    	        		"caption": "Refresh Apex Symbol Tables For This Project"
     	        	}
 	         	]
 	     	},
 			{"caption":"-"},
         	{
-	        	"id": "settings", 
-	    		"caption": "Settings",  
+	        	"id": "settings",
+	    		"caption": "Settings",
 	         	"children":
 	         	[
 			     	{
-		        		"command": "open_settings", 
-		        		"caption": "Global Settings" 
+		        		"command": "open_settings",
+		        		"caption": "Global Settings"
 		        	},
-					{ 
-						"command": "open_file", 
-						"args": {"file": "${packages}/User/mavensmate.sublime-settings"}, 
-						"caption": "User Plugin Settings" 
+					{
+						"command": "open_file",
+						"args": {"file": "${packages}/User/mavensmate.sublime-settings"},
+						"caption": "User Plugin Settings"
 					},
-					{ 
-						"command": "open_file", 
-						"args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"}, 
-						"caption": "Default Plugin Settings" 
+					{
+						"command": "open_file",
+						"args": {"file": "${packages}/MavensMate/mavensmate.sublime-settings"},
+						"caption": "Default Plugin Settings"
 					},
-					{ 
-						"command": "open_file", 
-						"args": {"file": "${packages}/MavensMate/sublime/settings-help.txt"}, 
-						"caption": "Settings Help" 
-					}	
+					{
+						"command": "open_file",
+						"args": {"file": "${packages}/MavensMate/sublime/settings-help.txt"},
+						"caption": "Settings Help"
+					}
 	         	]
 	     	},
 	     	{
-	        	"id": "docs", 
-	    		"caption": "Documentation",  
+	        	"id": "docs",
+	    		"caption": "Documentation",
 	         	"children":
 	         	[
-					{ 
-						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText"}, 
-						"caption": "Overview" 
+					{
+						"command": "open_url",
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText"},
+						"caption": "Overview"
 					},
-					{ 
-						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText#install"}, 
-						"caption": "Installation" 
+					{
+						"command": "open_url",
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText#install"},
+						"caption": "Installation"
 					},
-					{ 
-						"command": "open_url", 
-						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}, 
-						"caption": "Issues" 
+					{
+						"command": "open_url",
+						"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"},
+						"caption": "Issues"
 					}
 	         	]
 	     	},
@@ -296,24 +291,24 @@
 	     		"caption": "Open MavensMate-app",
 	     		"command": "open_mavens_mate_app"
 	     	},
-	     	{ 
-				"caption": "Show Sublime Text Console",  
+	     	{
+				"caption": "Show Sublime Text Console",
      			"command": "show_sublime_console"
 			},
-	     	{ 
-				"caption": "Show MavensMate Panel",  
+	     	{
+				"caption": "Show MavensMate Panel",
      			"command": "show_debug_panel"
 			},
 			{"caption":"-"},
 			{
 				"caption": "Report Issue on GitHub (Please search first!)",
-				"command": "open_url", 
+				"command": "open_url",
 				"args": {"url": "https://github.com/joeferraro/MavensMate-SublimeText/issues"}
 			},
 	     	{
 	     		"caption": "About MavensMate",
 	     		"command": "show_version"
 	     	}
-	    ]  
-	}  
-]  
+	    ]
+	}
+]

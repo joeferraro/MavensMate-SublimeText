@@ -2,11 +2,9 @@ MavensMate-SublimeText 7.0.0 changelog
 
 ### STOP: before MavensMate for Sublime Text v7 can function, YOU MUST INSTALL MavensMate-app. Please visit https://github.com/joeferraro/MavensMate-app to download and install.
 
-- This is a major release (we've been working on it for almost 8 months!). Our goals were speed, stability, ease-of-installation, and of course developer happiness. We hope you enjoy it :) 
-
 ### IMPORTANT ###
 
-Version 7 of MavensMate for Sublime Text no longer depends on the "mm" API, rather it depends on a brand new app called "MavensMate-app" (https://github.com/joeferraro/MavensMate-app). MavensMate-app is the MavensMate UI and the MavensMate local server packaged with a pretty bow. In keeping with our commitment to never expose your Salesforce source code/intellectual property to any server other than Salesforce.com, MavensMate-app's local server facilitates communication between your local machine and Salesforce.com, *only*. Your source code never passes through any (nonexistent) MavensMate remote server. If you're interested in reviewing the source code of the local MavensMate server, you can find it at https://github.com/joeferraro/MavensMate. 
+Version 7 of MavensMate for Sublime Text no longer depends on the "mm" API, rather it depends on a brand new app called "MavensMate-app" (https://github.com/joeferraro/MavensMate-app). MavensMate-app is the MavensMate UI and the MavensMate local server packaged with a pretty bow. In keeping with our commitment to never expose your Salesforce source code/intellectual property to any server other than Salesforce.com, MavensMate-app's local server facilitates communication between your local machine and Salesforce.com, *only*. Your source code never passes through any (nonexistent) MavensMate remote server. If you're interested in reviewing the source code of the local MavensMate server, you can find it at https://github.com/joeferraro/MavensMate.
 
 ### NEW FEATURES
 
@@ -32,7 +30,7 @@ DEFAULT PLUGIN SETTINGS - the default settings for MavensMate for Sublime Text. 
 
 USER PLUGIN SETTINGS - the user-specific settings for MavensMAte for Sublime Text. You are strongly encouraged to copy the default settings to this file and update any settings within this file.
 
-GLOBAL SETTINGS - the core MavensMate settings, which are managed by MavensMate-app. 
+GLOBAL SETTINGS - the core MavensMate settings, which are managed by MavensMate-app.
 
 
 ### TROUBLESHOOTING

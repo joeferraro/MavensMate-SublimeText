@@ -22,7 +22,7 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
 3. MavensMate Desktop **(must be running in order for MavensMate for Sublime Text v7.0+ to function)** [https://github.com/joeferraro/mavensmate-desktop/releases](https://github.com/joeferraro/mavensmate-desktop/releases)
 
-**IMPORTANT NOTE:** In order to install the v7 betas, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting, see below:
+**IMPORTANT NOTE:** If you are interested in automatically installing prereleases, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting, see below:
 
 ![screen shot 2015-09-02 at 9 10 17 am](https://cloud.githubusercontent.com/assets/54157/9632003/79242b02-5152-11e5-8672-d91bb549cee6.png)
 ![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)

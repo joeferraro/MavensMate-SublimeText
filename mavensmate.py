@@ -60,7 +60,7 @@ def plugin_loaded():
             util.start_mavensmate_app(printer)
             time.sleep(1.5)
         mm.check_server()
-        message = 'Wait ... I thought we just updated to v5? For more information: https://github.com/joeferraro/MavensMate-SublimeText/blob/master/messages/rollback.md\n\nHappy coding :)'
+        message = 'You are now running a stable version of MavensMate for Sublime Text. Over the next few days, we will start to push prereleases in anticipation of the new version of MavensMate-Desktop. If you do not want to install these prereleases, you must remove "MavensMate" from your Package Control "install_prereleases" setting. For more information: https://github.com/joeferraro/MavensMate-SublimeText#install'
         printer.show()
         printer.write('\n'+message+'\n')
     except Exception as e:
