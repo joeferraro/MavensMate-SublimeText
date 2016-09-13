@@ -329,7 +329,6 @@ class MavensMateResponseHandler(object):
         else:
             self.__print_to_panel('No difference found between local and server instance.')
 
-
     def __handle_coverage_result(self):
         if isinstance( self.result, int ):
             msg = str(self.result) + "%"
@@ -340,14 +339,10 @@ class MavensMateResponseHandler(object):
             elif 'records' in self.response and self.response["records"] == []:
                 self.__print_to_panel("No coverage information for the requested Apex Class")
             else:
-                if 'records' in self.response:
-                    self.response = self.response['records']
-                if type(self.response) is list:
-                    record = self.response[0]
-                else:
-                    record = self.response
-                msg = str(record["percentCovered"]) + "%"
-                util.mark_uncovered_lines(self.thread.view, record["Coverage"]["uncoveredLines"])
+                rec = self.result[list(self.result.keys())[0]]
+                percent_covered = rec['percentCovered']
+                msg = str(percent_covered) + "%"
+                util.mark_uncovered_lines(self.thread.view, rec["uncoveredLines"])
                 self.__print_to_panel('[PERCENT COVERED]: ' + msg)
 
     def __handle_coverage_report_result(self):

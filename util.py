@@ -273,6 +273,14 @@ def is_apex_class_file(filename=None):
             return True
     return False
 
+def is_apex_class_or_trigger_file(filename=None):
+    if not filename: filename = get_active_file()
+    if is_mm_file(filename):
+        f, ext = os.path.splitext(filename)
+        if ext == ".cls" or ext == ".trigger":
+            return True
+    return False
+
 def is_apex_test_file(filename=None):
     if not filename: filename = get_active_file()
     if not is_apex_class_file(filename): return False

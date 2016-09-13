@@ -827,10 +827,10 @@ class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
         body = {
             "paths" : [util.get_active_file()]
         }
-        mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(body["classes"][0]), body=body)
+        mm.call('get-coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(body["paths"][0]), body=body)
 
     def is_enabled(command):
-        return util.is_apex_class_file()
+        return util.is_apex_class_or_trigger_file()
 
 #gets apex code coverage for the current class
 class HideCoverageCommand(sublime_plugin.WindowCommand):
@@ -838,7 +838,7 @@ class HideCoverageCommand(sublime_plugin.WindowCommand):
         util.clear_marked_line_numbers(self.window.active_view(), "no_apex_coverage")
 
     def is_enabled(command):
-        return util.is_apex_class_file()
+        return util.is_apex_class_or_trigger_file()
 
 #refreshes the currently active file from the server
 class GetOrgWideTestCoverageCommand(sublime_plugin.WindowCommand):
