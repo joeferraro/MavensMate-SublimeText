@@ -1,4 +1,4 @@
-/* 
+/*
 
 #############
 # IMPORTANT #
@@ -8,18 +8,18 @@ Version 7 of MavensMate for Sublime Text moves many of the settings previously m
 
 MavensMate for Sublime Text settings
 NOTE: MavensMate user settings will override MavensMate default settings
-To override default MavensMate settings, modify user-specific settings (MavensMate --> Settings --> User) 
+To override default MavensMate settings, modify user-specific settings (MavensMate --> Settings --> User)
 
 */
 
-{	
+{
 	//if true, MavensMate will automatically hide the debug panel upon a successful operation
 	"mm_hide_panel_on_success" : true,
 
 	//the amount of time (in seconds) before MavensMate hides the debug panel upon a successful operation
 	"mm_hide_panel_time" : 0,
 
-	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically 
+	//if true, MavensMate will capture the save file operation and compile to the Salesforce.com server automatically
 	"mm_compile_on_save" : true,
 
 	//if true, MavensMate will scroll to the line of a reported exception when there is a compilation error
@@ -39,8 +39,11 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to false if during completions, the size of your .org_metadata file is bogging down the editor during code completion
 	"mm_use_org_metadata_for_completions" : true,
 
-	//set to true if you would like to automatically start MavensMate-app when Sublime Text opens
+	//set to true if you would like to automatically start MavensMate Desktop when Sublime Text opens
 	"mm_start_mavensmate_app" : false,
+
+	//set to true if you would like to ping MavensMate Server at startup and show an error if it cannot be reached
+	"mm_ping_mavensmate_server_on_startup" : false,
 
 	// set to full path of MavensMate-app (MavensMate.app on OSX, MavensMate.exe on Windows, etc.)
 	"mm_mavensmate_app_location" : {
@@ -66,7 +69,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".layout",
 		".resource",
 		".remoteSite",
-		".labels", 
+		".labels",
 		".app",
 		".dashboard",
 		".permissionset",

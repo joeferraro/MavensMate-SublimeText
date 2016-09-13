@@ -17,14 +17,14 @@ import MavensMate.lib.community as community
 
 debug = config.debug
 
-def check_server():
+def ping_server():
     try:
         settings = sublime.load_settings('mavensmate.sublime-settings')
         port_number = settings.get('mm_app_server_port', '56248')
-        urllib.request.urlopen('http://localhost:'+str(port_number)+'/app/home/index')
+        urllib.request.urlopen('http://localhost:'+str(port_number)+'/app/home')
     except urllib.error.URLError as e:
         debug(e)
-        raise MMException('Could not contact local MavensMate server, please ensure MavensMate-app is installed and running. \n\nIn version 7+ of MavensMate for Sublime Text, there is a new companion app called MavensMate-app. You must download, install, and run this application in order for the MavensMate for Sublime Text plugin to operate. For more information, please visit https://github.com/joeferraro/MavensMate-app')
+        raise MMException('Could not contact the local MavensMate server, please ensure MavensMate Desktop is installed and running. For more information, please visit https://github.com/joeferraro/MavensMate/tree/master/docs. To disable this message, set "mm_ping_mavensmate_server_on_startup" to false.')
     except Exception as e:
         debug(e)
         raise MMException(str(e))
@@ -153,7 +153,7 @@ class MavensMateAdapterCall(threading.Thread):
             status = mm_response['status']
             result = None
             while status == 'pending':
-                url = 'http://localhost:'+str(port_number)+'/status?id='+request_id
+                url = 'http://localhost:'+str(port_number)+'/execute/'+request_id
                 req = urllib.request.Request(url, headers={'MavensMate-Editor-Agent': 'sublime'})
 
                 response = urllib.request.urlopen(url)
@@ -175,7 +175,7 @@ class MavensMateAdapterCall(threading.Thread):
         except urllib.error.URLError as e:
             debug('urllib.error.URLError')
             result = 'Error contacting local MavensMate server: '+str(e)
-            response_body = { 'error': 'Request to the local MavensMate server failed. please ensure the MavensMate-app is installer and running.\n\nIn version 7+ of MavensMate for Sublime Text, there is a new companion app called MavensMate-app. You must download, install, and run this application in order for the MavensMate for Sublime Text plugin to operate. For more information, please visit https://github.com/joeferraro/MavensMate-app' }
+            response_body = { 'error': 'Request to the local MavensMate server failed. please ensure MavensMate Desktop is installed and running. For more information, please visit https://github.com/joeferraro/MavensMate/tree/master/docs' }
             status = 'done'
         except Exception as e:
             debug('Exception')

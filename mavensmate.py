@@ -40,6 +40,8 @@ if reloader_name in sys.modules and sys.version_info >= (3, 0):
 import MavensMate.lib.reloader as reloader
 
 def plugin_loaded():
+    from package_control import events
+
     settings = sublime.load_settings('mavensmate.sublime-settings')
 
     config.setup_logging()
@@ -55,14 +57,20 @@ def plugin_loaded():
     config.merge_settings = merge_settings
     util.package_check()
 
+    package_name = 'MavensMate'
+    if events.install(package_name):
+        printer.show()
+        printer.write('\nWelcome to MavensMate for Sublime Text. In order for this plugin to operate, you must install and run MavensMate-Desktop. Please visit https://github.com/joeferraro/MavensMate/tree/master/docs for more information. Happy Coding!\n')
+    elif events.post_upgrade(package_name):
+        printer.show()
+        print('Upgraded to %s!' % events.post_upgrade(package_name))
+
     try:
         if settings.get('mm_start_mavensmate_app', False):
             util.start_mavensmate_app(printer)
             time.sleep(1.5)
-        mm.check_server()
-        message = 'You are now running a stable version of MavensMate for Sublime Text. Over the next few days, we will start to push prereleases in anticipation of the new version of MavensMate-Desktop. If you do not want to install these prereleases, you must remove "MavensMate" from your Package Control "install_prereleases" setting. For more information: https://github.com/joeferraro/MavensMate-SublimeText#install'
-        printer.show()
-        printer.write('\n'+message+'\n')
+        if settings.get('mm_ping_mavensmate_server_on_startup', False):
+            mm.ping_server()
     except Exception as e:
         printer.show()
         message = '[ERROR]: '+str(e)+'\n'
@@ -78,7 +86,7 @@ class OpenMavensMateUi(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('open-ui', True, body={'args': { 'ui' : True }})
 
-#opens mavensmate-app
+#opens MavensMate Desktop
 class OpenMavensMateApp(sublime_plugin.ApplicationCommand):
     def run(command):
         active_window_id = sublime.active_window().id()
@@ -106,7 +114,7 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
     def run (self, dirs):
-        mm.call('new-project-from-existing-directory', False, body={'args': { 'ui': True, 'directory': dirs[0] }})
+        mm.call('new-project-from-existing-directory', False, body={'args': { 'ui': True, 'origin': dirs[0] }})
 
     def is_visible(self, dirs):
         if dirs != None and type(dirs) is list and len(dirs) > 1:
@@ -124,6 +132,13 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('edit-project', True, body={'args': { 'ui' : True }})
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+class SalesforceAuthenticationCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('oauth-project', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -627,11 +642,11 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
                 }
                 mm.call('delete-metadata', context=self, body=body)
 
-    def is_visible(self):
-        return util.is_mm_file()
+    # def is_visible(self):
+    #     return util.is_mm_file()
 
-    def is_enabled(self):
-        return util.is_mm_file()
+    # def is_enabled(self):
+    #     return util.is_mm_file()
 
 #deletes selected metadata
 class RefreshProjectApexSymbols(sublime_plugin.WindowCommand):

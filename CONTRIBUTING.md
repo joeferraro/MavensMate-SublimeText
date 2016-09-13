@@ -12,10 +12,10 @@ Before submitting an issue to this project, you must be sure that the issue is s
 When submitting a new issue, you must specify the following:
 
 1. Your platform (OSX, Linux, Windows) and architecture (32 or 64 bit)
-2. The MavensMate version(s), i.e. MavensMate for Sublime Text plugin version and MavensMate-app version
+2. The MavensMate version(s), i.e. MavensMate for Sublime Text plugin version and MavensMate Desktop version
 3. Whether you're behind a firewall and/or proxy
 4. **Specific** steps to reproduce
-5. MavensMate logs. Configure logging via MavensMate-app settings, run your failing operation to generate logs, and paste relevant logs to your issue.
+5. MavensMate logs. Configure logging via MavensMate Desktop settings, run your failing operation to generate logs, and paste relevant logs to your issue.
 6. If relevant, your Salesforce server (e.g., cs18, c31, na7, etc.)
 
 If any of the above are missing, we will be unable to properly diagnose your issue.

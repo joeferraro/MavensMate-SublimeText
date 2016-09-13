@@ -5,13 +5,7 @@
 	    "children":
 	    [
 	        {
-	        	"caption": "Help: Version 7",
-	        	"command": "open_file",
-	        	"args": {"file": "${packages}/MavensMate/messages/7.0.0.txt"}
-	        },
-	        {"caption":"-"},
-	        {
-	        	"caption": "Open MavensMate UI",
+	        	"caption": "Show MavensMate Desktop",
 	        	"command": "open_mavens_mate_ui"
 	        },
 	        {
@@ -41,8 +35,12 @@
 	         			"command": "compile_project"
 	         		},
 	         		{
-	         			"caption": "Clean Project",
+	         			"caption": "Clean Project...",
 	         			"command": "clean_project"
+	         		},
+	         		{
+	         			"caption": "Salesforce Authentication...",
+	         			"command": "salesforce_authentication"
 	         		}
 	         	]
 	     	},
@@ -137,6 +135,10 @@
 		     		{
 		     			"caption": "Show Org Wide Test Coverage",
 		     			"command": "get_org_wide_test_coverage"
+		     		},
+		     		{
+		     			"caption": "Show Test Coverage For This Apex Class/Trigger",
+		     			"command": "get_apex_code_coverage"
 		     		}
 	         	]
 	     	},
@@ -288,7 +290,7 @@
 	     	},
  	     	{"caption":"-"},
 	     	{
-	     		"caption": "Open MavensMate-app",
+	     		"caption": "Open MavensMate Desktop",
 	     		"command": "open_mavens_mate_app"
 	     	},
 	     	{
