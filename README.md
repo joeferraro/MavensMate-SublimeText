@@ -73,22 +73,6 @@ You may set `mm_workspace` to a single path on your local filesystem or an array
 ],
 ```
 
-####Salesforce API Version (mm_api_version)
-
-Use `mm_api_version` to set your desired Salesforce.com API version. Please note, it should be set to a single decimal place:
-
-#####Correct
-
-```
-"mm_api_version" : "33.0",
-```
-
-#####Incorrect
-
-```
-"mm_api_version" : 33,
-```
-
 ##Update
 
 Updates to the plugin are handled automatically by Package Control.
