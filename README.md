@@ -24,12 +24,6 @@ All issues are managed by the [central MavensMate project](https://github.com/jo
 2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
 3. MavensMate Desktop **(must be running in order for MavensMate for Sublime Text v7.0+ to function)** [https://github.com/joeferraro/mavensmate-desktop/releases](https://github.com/joeferraro/mavensmate-desktop/releases)
 
-**IMPORTANT NOTE:** If you are interested in automatically installing prereleases, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting, see below:
-
-![screen shot 2015-09-02 at 9 10 17 am](https://cloud.githubusercontent.com/assets/54157/9632003/79242b02-5152-11e5-8672-d91bb549cee6.png)
-![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)
-![screen shot 2015-10-12 at 12 53 39 pm](https://cloud.githubusercontent.com/assets/54157/10433499/557e5134-70e0-11e5-81e5-8910ad6cdd68.png)
-
 ### Installing the MavensMate for Sublime Text package
 
 1. Open Sublime Text 3
@@ -37,6 +31,13 @@ All issues are managed by the [central MavensMate project](https://github.com/jo
 	- [Running commands from Sublime Text](http://docs.sublimetext.info/en/latest/extensibility/command_palette.html)
 3. Search for `MavensMate`
 4. Hit `Enter`
+
+**IMPORTANT NOTE:** If you are interested in automatically installing prereleases, you must add `"MavensMate"` to your Package Control `"install_prereleases"` user setting, see below:
+
+![screen shot 2015-09-02 at 9 10 17 am](https://cloud.githubusercontent.com/assets/54157/9632003/79242b02-5152-11e5-8672-d91bb549cee6.png)
+![package_control_sublime-settings_ _df15-react-communities-ios](https://cloud.githubusercontent.com/assets/54157/9632015/8cf6d800-5152-11e5-925e-627995a4aef5.png)
+![screen shot 2015-10-12 at 12 53 39 pm](https://cloud.githubusercontent.com/assets/54157/10433499/557e5134-70e0-11e5-81e5-8910ad6cdd68.png)
+
 
 ## Setup
 
