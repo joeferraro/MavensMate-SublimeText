@@ -153,7 +153,8 @@ class MavensMateAdapterCall(threading.Thread):
             status = mm_response['status']
             result = None
             while status == 'pending':
-                url = 'http://localhost:'+str(port_number)+'/execute/'+request_id
+                url = 'http://localhost:'+str(port_number)+'/status?id='+request_id
+                # url = 'http://localhost:'+str(port_number)+'/execute/'+request_id # this is the new call, but we don't need to use it for a while (until users are fully migrated to 0.0.11+)
                 req = urllib.request.Request(url, headers={'MavensMate-Editor-Agent': 'sublime'})
 
                 response = urllib.request.urlopen(url)
