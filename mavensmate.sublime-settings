@@ -4,7 +4,7 @@
 # IMPORTANT #
 #############
 
-Version 7 of MavensMate for Sublime Text moves many of the settings previously managed in Sublime Text JSON files to the "Global Settings" found in the MavensMate app. See MavensMate > Settings > Settings Help for more information.
+Version 7 of MavensMate for Sublime Text moves many of the settings previously managed in Sublime Text JSON files to the "Global Settings" found in the MavensMate Desktop. See MavensMate > Settings > Settings Help for more information.
 
 MavensMate for Sublime Text settings
 NOTE: MavensMate user settings will override MavensMate default settings
@@ -45,7 +45,7 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 	//set to true if you would like to ping MavensMate Server at startup and show an error if it cannot be reached
 	"mm_ping_mavensmate_server_on_startup" : false,
 
-	// set to full path of MavensMate-app (MavensMate.app on OSX, MavensMate.exe on Windows, etc.)
+	// set to full path of MavensMate Desktop (MavensMate.app on OSX, MavensMate.exe on Windows, etc.)
 	"mm_mavensmate_app_location" : {
 		"osx": "/Applications/MavensMate.app",
 		"windows": "C:\\Program Files\\MavensMate.exe",

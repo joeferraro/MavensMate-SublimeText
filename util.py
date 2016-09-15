@@ -56,14 +56,14 @@ def start_mavensmate_app(printer):
                     stdout, stderr = process.communicate()
                     if stderr != None:
                         printer.show()
-                        message = '[ERROR]: Could not open MavensMate-app. '+stderr.decode('utf-8')
+                        message = '[ERROR]: Could not open MavensMate Desktop. '+stderr.decode('utf-8')
                         printer.write('\n'+message+'\n')
             else:
                 printer.show()
-                message = '[ERROR]: Could not open MavensMate-app. mm_mavensmate_app_location path does not exist, please check user plugin settings'
+                message = '[ERROR]: Could not open MavensMate Desktop. mm_mavensmate_app_location path does not exist, please check user plugin settings'
                 printer.write('\n'+message+'\n')
     except Exception as e:
-        debug('could not open mavensmate-app')
+        debug('could not open mavensmate desktop')
         debug(e)
 
 def package_check():

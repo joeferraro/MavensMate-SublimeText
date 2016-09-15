@@ -4,7 +4,7 @@ Settings Help
 
 Version 5 of the MavensMate for Sublime Text plugin introduced the concept of "global" settings which are accessed via MavensMate > Settings > Global Settings. You'll notice that many of the global settings are those formerly managed by JSON files in Sublime Text. The reason they have moved is so that those users with Sublime Text, Atom, Visual Studio Code, etc. installed can manage core MavensMate settings in a single place.
 
-For those users upgrading from Version 4 of the MavensMate for Sublime Text plugin, you are strongly encouraged to overwrite your MavensMate for Sublime Text "User Plugin Settings" with those found in "Global Plugin Settings" as the list of settings managed by Sublime Text is now a much shorter. For example, mm_workspace is NO LONGER managed within Sublime Text; rather it is a global setting managed by the MavensMate app (mavensmate-app).
+For those users upgrading from Version 4 of the MavensMate for Sublime Text plugin, you are strongly encouraged to overwrite your MavensMate for Sublime Text "User Plugin Settings" with those found in "Global Plugin Settings" as the list of settings managed by Sublime Text is now a much shorter. For example, mm_workspace is NO LONGER managed within Sublime Text; rather it is a global setting managed by the MavensMate Desktop.
 
 -- Managing MavensMate for Sublime Text Settings --
 
@@ -18,4 +18,4 @@ GLOBAL SETTINGS - the core MavensMate settings, which are managed by the MavensM
 
 -- Troubleshooting --
 
-If you are updating a setting and it doesn't seem to be working, be sure you are updating the right settings. USER PLUGIN SETTINGS are ONLY those settings SPECIFIC to the MavensMate for Sublime Text plugin (for example, mm_compile_on_save). GLOBAL SETTINGS are different altogether and can only be managed within the MavensMate app.
+If you are updating a setting and it doesn't seem to be working, be sure you are updating the right settings. USER PLUGIN SETTINGS are ONLY those settings SPECIFIC to the MavensMate for Sublime Text plugin (for example, mm_compile_on_save). GLOBAL SETTINGS are different altogether and can only be managed within MavensMate Desktop.

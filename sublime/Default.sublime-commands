@@ -12,7 +12,7 @@
     "command": "open_mavens_mate_ui"
   },
   {
-    "caption": "MavensMate: Open MavensMate-app",
+    "caption": "MavensMate: Open MavensMate Desktop",
     "command": "open_mavens_mate_app"
   },
   {
@@ -79,9 +79,9 @@
     "caption": "MavensMate: Diff",
     "command": "mavens_mate_diff"
   },
-  { 
-    "caption": "MavensMate: Delete File From Server...", 
-    "command": "delete_active_metadata" 
+  {
+    "caption": "MavensMate: Delete File From Server...",
+    "command": "delete_active_metadata"
   },
   {
     "caption": "MavensMate: Start Logging",
@@ -104,19 +104,19 @@
     "command": "compile_project"
   },
   {
-    "caption": "MavensMate: Open in Web Browser",  
+    "caption": "MavensMate: Open in Web Browser",
     "command": "open_active_sfdc_url"
   },
   {
-    "caption": "MavensMate: Open WSDL in Web Browser",  
+    "caption": "MavensMate: Open WSDL in Web Browser",
     "command": "open_active_sfdc_wsdl_url"
   },
   {
-    "caption": "MavensMate: Run Apex Tests...",  
+    "caption": "MavensMate: Run Apex Tests...",
     "command": "run_apex_unit_tests"
   },
   {
-    "caption": "MavensMate: Execute Apex...",   
+    "caption": "MavensMate: Execute Apex...",
     "command": "execute_anonymous"
   },
   {
@@ -152,43 +152,43 @@
     "command": "new_lightning_interface"
   },
   {
-    "caption": "MavensMate: Deploy To Server...",          
+    "caption": "MavensMate: Deploy To Server...",
     "command": "deploy_to_server"
   },
   {
-    "caption": "MavensMate: Deploy Resource Bundle...",          
+    "caption": "MavensMate: Deploy Resource Bundle...",
     "command": "deploy_resource_bundle"
   },
   {
-    "caption": "MavensMate: Create Resource Bundle...",          
+    "caption": "MavensMate: Create Resource Bundle...",
     "command": "create_resource_bundle"
   },
   {
-    "caption": "MavensMate: Compile Tabs",          
+    "caption": "MavensMate: Compile Tabs",
     "command": "compile_tabs"
   },
   {
-    "caption": "MavensMate: Run All Apex Unit Tests For This Class",          
+    "caption": "MavensMate: Run All Apex Unit Tests For This Class",
     "command": "run_async_apex_tests"
   },
   {
-    "caption": "MavensMate: Run Apex Unit Test Methods For This Class",          
+    "caption": "MavensMate: Run Apex Unit Test Methods For This Class",
     "command": "run_async_apex_test_method"
   },
   {
-    "caption": "MavensMate: Force Save Current File",          
+    "caption": "MavensMate: Force Save Current File",
     "command": "force_compile_file"
   },
   {
-    "caption": "MavensMate: Refresh Current File From Server",          
+    "caption": "MavensMate: Refresh Current File From Server",
     "command": "refresh_active_file"
   },
   {
-    "caption": "MavensMate: Open Current File On Server",          
+    "caption": "MavensMate: Open Current File On Server",
     "command": "open_sfdc_url"
   },
   {
-    "caption": "MavensMate: Open Current File WSDL On Server",          
+    "caption": "MavensMate: Open Current File WSDL On Server",
     "command": "open_sfdc_wsdl_url"
   }
 ]
