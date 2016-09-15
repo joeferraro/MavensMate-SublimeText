@@ -20,11 +20,10 @@ All issues are managed by the [central MavensMate project](https://github.com/jo
 
 **You must install the following before continuing:**
 
-1. Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
-2. Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
-3. MavensMate Desktop **(must be running in order for MavensMate for Sublime Text v7.0+ to function)** [https://github.com/joeferraro/mavensmate-desktop/releases](https://github.com/joeferraro/mavensmate-desktop/releases)
+- Sublime Text 3 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
+- Sublime Text Package Control [https://packagecontrol.io/installation](https://packagecontrol.io/installation)
+- MavensMate Desktop **(must be running in order for MavensMate for Sublime Text v7.0+ to function)** [https://github.com/joeferraro/mavensmate-desktop/releases](https://github.com/joeferraro/mavensmate-desktop/releases)
 
-### Installing the MavensMate for Sublime Text package
 
 1. Open Sublime Text 3
 2. Run `Package Control: Install Package` command
