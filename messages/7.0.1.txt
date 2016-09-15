@@ -1,0 +1,4 @@
+MavensMate-SublimeText 7.0.1 changelog
+
+- Resolves "you must provide an existing path via the origin query param" when creating new project from existing directory
+- Resolves code coverage for apex class parsing
