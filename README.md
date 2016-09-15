@@ -12,7 +12,9 @@ MavensMate for Sublime Text is a plugin that aims to replicate the functionality
 * Stream Apex Logs to your local filesystem
 * Apex & Visualforce Code Assist
 
-####For detailed information and documentation, please visit [mavensmate.com][mmcom]
+## Issues
+
+All issues are managed by the [central MavensMate project](https://github.com/joeferraro/MavensMate)
 
 ## Install
 
