@@ -97,6 +97,10 @@
 	         		{
 	         			"caption": "New Lighting Interface...",
 	         			"command": "new_lightning_interface"
+	         		},
+	         		{
+	         			"caption": "New Lighting Tokens...",
+	         			"command": "new_lightning_tokens"
 	         		}
 	         	]
 	     	},

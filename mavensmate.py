@@ -247,6 +247,14 @@ class NewLightningInterfaceCommand(sublime_plugin.ApplicationCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
+#displays new apex component dialog
+class NewLightningTokens(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('new-lightning-tokens', True, body={'args': { 'ui' : True }})
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
 class MavensStubCommand(sublime_plugin.WindowCommand):
@@ -337,7 +345,7 @@ class SyntaxHandler(sublime_plugin.EventListener):
                     view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
                 else:
                     view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax"))
-            elif ext == '.app' or ext == '.auradoc' or ext == '.cmp':
+            elif ext == '.app' or ext == '.auradoc' or ext == '.cmp' or ext == '.design' or ext == '.tokens' or ext == '.evt':
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","XML","XML.tmLanguage"))
                 else:
