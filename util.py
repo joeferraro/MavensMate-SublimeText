@@ -6,7 +6,6 @@ import shutil
 import codecs
 import string
 import random
-import urllib.request
 import MavensMate.config as config
 import MavensMate.lib.apex.apex_extensions as apex_extensions
 import sublime
@@ -90,34 +89,6 @@ def parse_json_from_file(location):
     except:
         return {}
 
-def parse_templates_package(mtype=None):
-    try:
-        settings = sublime.load_settings('mavensmate.sublime-settings')
-        template_source = settings.get('mm_template_source', 'joeferraro/MavensMate-Templates/master')
-        template_location = settings.get('mm_template_location', 'remote')
-        if template_location == 'remote':
-            if 'linux' in sys.platform:
-                response = os.popen('wget https://raw.githubusercontent.com/{0}/{1} -q -O -'.format(template_source, "package.json")).read()
-            else:
-                response = urllib.request.urlopen('https://raw.githubusercontent.com/{0}/{1}'.format(template_source, "package.json")).read().decode('utf-8')
-            j = json.loads(response)
-        else:
-            local_template_path = os.path.join(template_source,"package.json")
-            debug(local_template_path)
-            j = parse_json_from_file(local_template_path)
-            if j == None or j == {}:
-                raise Exception('Could not load local templates. Check your "mm_template_source" setting.')
-    except Exception as e:
-        debug('Failed to load templates, reverting to local template store.')
-        debug(e)
-        local_template_path = os.path.join(config.mm_dir,"lib","apex","metadata-templates","package.json")
-        j = parse_json_from_file(local_template_path)
-    if mtype != None:
-        return j[mtype]
-    else:
-        return j
-
-
 def get_number_of_lines_in_file(file_path):
     f = open(file_path)
     lines = f.readlines()
@@ -177,15 +148,6 @@ def get_project_name(context=None):
                 return os.path.basename(window.folders()[0])
             except:
                 return None
-    else:
-        return None
-
-def sublime_project_file_path():
-    project_directory = sublime.active_window().folders()[0]
-    if os.path.isfile(os.path.join(project_directory,".sublime-project")):
-        return os.path.join(project_directory,".sublime-project")
-    elif os.path.isfile(os.path.join(project_directory,get_project_name(),".sublime-project")):
-        return os.path.join(project_directory,get_project_name(),".sublime-project")
     else:
         return None
 
@@ -317,30 +279,6 @@ def mark_uncovered_lines(view, lines, icon="bookmark", mark_type="no_apex_covera
         regions.append(view.line(view.text_point(line-1, 0)))
     view.add_regions(mark_type, regions, "invalid.illegal", icon, sublime.DRAW_EMPTY_AS_OVERWRITE)
 
-def get_template_params(github_template):
-    return github_template["params"]
-
-def get_new_metadata_input_label(github_template):
-    if "params" in github_template:
-        params = []
-        for param in github_template["params"]:
-            params.append(param["description"])
-        label = ", ".join(params)
-    else:
-        label = ""
-    return label
-
-def get_new_metadata_input_placeholders(github_template):
-    if "params" in github_template:
-        placeholders = []
-        for param in github_template["params"]:
-            if "default" in param:
-                placeholders.append(param["default"])
-        label = ", ".join(placeholders)
-    else:
-        label = "Default"
-    return label
-
 def clear_marked_line_numbers(view, mark_type="compile_issue"):
     try:
         sublime.set_timeout(lambda: view.erase_regions(mark_type), 100)
@@ -360,50 +298,12 @@ def get_window_and_view_based_on_context(context):
         view = window.active_view()
     return window, view
 
-def is_apex_webservice_file(filename=None):
-    if not filename: filename = get_active_file()
-    if not is_apex_class_file(filename): return False
-    with codecs.open(filename, "r", "utf-8") as content_file:
-        content = content_file.read()
-        p = re.compile("global\s+(abstract\s+)?class\s", re.I + re.M)
-        if p.search(content):
-            p = re.compile("\swebservice\s", re.I + re.M)
-            if p.search(content): return True
-    return False
-
 def mm_project_directory(window=None):
     if window == None:
         window = sublime.active_window()
     folders = window.folders()
     if len(folders) > 0:
         return window.folders()[0]
-
-def print_debug_panel_message(message):
-    # printer = PanelPrinter.get(sublime.active_window().id())
-    # printer.show()
-    # printer.write(message)
-    pass
-
-#parses the input from sublime text
-def parse_new_metadata_input(input):
-    input = input.replace(" ", "")
-    if "," in input:
-        params = input.split(",")
-        api_name = params[0]
-        class_type_or_sobject_name = params[1]
-        return api_name, class_type_or_sobject_name
-    else:
-        return input
-
-def to_bool(value):
-    """
-       Converts 'something' to boolean. Raises exception for invalid formats
-           Possible True  values: 1, True, "1", "TRue", "yes", "y", "t"
-           Possible False values: 0, False, None, [], {}, "", "0", "faLse", "no", "n", "f", 0.0, ...
-    """
-    if str(value).lower() in ("yes", "y", "true",  "t", "1"): return True
-    if str(value).lower() in ("no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}"): return False
-    raise Exception('Invalid value for boolean conversion: ' + str(value))
 
 def get_tab_file_names():
     tabs = []
@@ -432,14 +332,6 @@ def get_file_as_string(file_path):
         #print "Couldn't open "+str(file_path)+" because: "+e.message
         pass
     return ""
-
-def refresh_active_view():
-    sublime.set_timeout(sublime.active_window().active_view().run_command('revert'), 100)
-
-def check_for_updates():
-    settings = sublime.load_settings('mavensmate.sublime-settings')
-    if settings.get('mm_check_for_updates') == True:
-        sublime.set_timeout(lambda: MmInstaller().start(), 1000)
 
 def get_field_completions(object_name):
     _completions = []
