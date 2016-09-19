@@ -40,7 +40,6 @@ mods_load_order = [
     '.merge',
     '.response_handler',
     '.parsehelp',
-    '.platform_util',
     '.printer',
     '.threads',
     '.vf',

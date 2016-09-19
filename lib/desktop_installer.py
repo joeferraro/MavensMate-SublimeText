@@ -52,7 +52,7 @@ class DesktopInstaller(threading.Thread):
 
     def run(self):
         try:
-            debug('mm_installer -->')
+            debug('MavensMate Desktop installer running ...')
 
             ThreadProgress(self, "Installing MavensMate Desktop. This could take a few minutes.", '')
             self.install()
@@ -70,9 +70,9 @@ class DesktopInstaller(threading.Thread):
             import traceback
             import sys
             traceback.print_exc(file=sys.stdout)
-            debug('[MAVENSMATE] could not install mm')
+            debug('[MAVENSMATE] could not install MavensMate Desktop')
             debug(e)
-            self.result = '[OPERATION FAILED]: could not install mm, please generate/check logs and report GitHub issue'
+            self.result = '[OPERATION FAILED]: could not install MavensMate Desktop, please check the Sublime Text console for logs and post an issue.'
             if self.printer != None:
                 self.calculate_process_region()
                 ThreadTracker.remove(self)
@@ -116,6 +116,3 @@ class DesktopInstaller(threading.Thread):
                 printer.write('\n'+message+'\n')
         elif sys.platform == 'linux':
             pass #todo
-
-
-
