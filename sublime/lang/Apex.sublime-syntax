@@ -194,6 +194,8 @@ contexts:
         - include: constants-and-special-vars
         - include: primitive-arrays
         - include: primitive-types
+        - include: comments
+        - include: comments-inline
         - include: keywords
         #updated to resolve issue 816
         - include: comments
