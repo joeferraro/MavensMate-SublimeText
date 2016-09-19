@@ -98,8 +98,10 @@ class DesktopInstaller(threading.Thread):
             self.calculate_process_region()
             PanelThreadProgress(self)
 
+        download_directory = os.path.join(sublime.packages_path(),"User","MavensMate")
+
         if sys.platform == 'darwin':
-            process = subprocess.Popen([os.path.join(sublime.packages_path(),"MavensMate","bin","install.sh")], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            process = subprocess.Popen([os.path.join(sublime.packages_path(),"MavensMate","bin","install.sh"), download_directory, "beta"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             stdout, stderr = process.communicate()
             if stderr != None:
                 printer = PanelPrinter.get(sublime.active_window())
