@@ -33,7 +33,6 @@ mods_load_order = [
     '',
     '.apex_extensions',
     '.command_helper',
-    '.community',
     '.completioncommon',
     '.desktop_installer',
     '.exceptions',

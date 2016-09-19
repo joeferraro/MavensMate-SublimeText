@@ -19,7 +19,6 @@ import MavensMate.lib.parsehelp as parsehelp
 import MavensMate.lib.vf as vf
 from MavensMate.lib.merge import *
 from MavensMate.lib.completioncommon import *
-import MavensMate.lib.community as community
 
 debug = None
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -79,7 +78,6 @@ def plugin_loaded():
         printer.write('\n'+message+'\n')
         return
 
-    community.sync_activity('startup')
 
 #installs specific mm version
 class InstallMavensMateDesktopCommand(sublime_plugin.ApplicationCommand):
@@ -1475,7 +1473,6 @@ class OpenFileInProject(sublime_plugin.ApplicationCommand):
 
 class ScrubLogCommand(sublime_plugin.WindowCommand):
     def run(self):
-        community.sync_activity('scrub_log')
         active_view = self.window.active_view()
         fileName, ext = os.path.splitext(active_view.file_name())
 

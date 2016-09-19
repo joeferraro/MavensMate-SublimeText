@@ -13,7 +13,6 @@ from MavensMate.lib.response_handler import MavensMateResponseHandler
 from MavensMate.lib.exceptions import *
 import MavensMate.util as util
 import MavensMate.config as config
-import MavensMate.lib.community as community
 
 debug = config.debug
 
@@ -36,9 +35,6 @@ def call(operation, use_mm_panel=True, **kwargs):
     debug(kwargs)
 
     window, view = util.get_window_and_view_based_on_context(kwargs.get('context', None))
-
-    if operation != 'compile-metadata':
-        community.sync_activity(operation)
 
     threads = []
     thread = MavensMateAdapterCall(
