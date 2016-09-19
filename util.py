@@ -8,6 +8,7 @@ import string
 import random
 import MavensMate.config as config
 import MavensMate.lib.apex.apex_extensions as apex_extensions
+from MavensMate.lib.desktop_installer import DesktopInstaller
 import sublime
 import subprocess
 from xml.dom.minidom import parse
@@ -64,6 +65,18 @@ def start_mavensmate_app(printer):
     except Exception as e:
         debug('could not open mavensmate desktop')
         debug(e)
+
+def check_for_desktop():
+    settings = sublime.load_settings('mavensmate.sublime-settings')
+    if not settings.get('mm_desktop_installed') and not settings.get('mm_dont_ask_to_install_desktop'):
+        install_response = sublime.yes_no_cancel_dialog("MavensMate Desktop is required in order for the MavensMate Sublime Text plugin to operate. Would you like to install MavensMate Desktop now?", "Install", "Never Ask Me Again")
+        if install_response == sublime.DIALOG_YES:
+            sublime.set_timeout(lambda: DesktopInstaller().start(), 1000)
+        elif install_response == sublime.DIALOG_NO:
+            settings = sublime.load_settings('mavensmate.sublime-settings')
+            settings.set('mm_dont_ask_to_install_desktop', True)
+            sublime.save_settings('mavensmate.sublime-settings')
+
 
 def package_check():
     #ensure user settings are installed

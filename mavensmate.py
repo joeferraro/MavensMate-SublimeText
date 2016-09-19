@@ -12,6 +12,7 @@ from xml.dom.minidom import parse
 import MavensMate.config as config
 import MavensMate.util as util
 import MavensMate.lib.adapter as mm
+from MavensMate.lib.desktop_installer import DesktopInstaller
 from MavensMate.lib.printer import PanelPrinter
 from MavensMate.lib.threads import ThreadTracker
 import MavensMate.lib.parsehelp as parsehelp
@@ -56,6 +57,7 @@ def plugin_loaded():
     config.settings = settings
     config.merge_settings = merge_settings
     util.package_check()
+    util.check_for_desktop()
 
     package_name = 'MavensMate'
     if events.install(package_name):
@@ -78,6 +80,15 @@ def plugin_loaded():
         return
 
     community.sync_activity('startup')
+
+#installs specific mm version
+class InstallMavensMateDesktopCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return True
+
+    def run(self):
+        if sublime.ok_cancel_dialog("Are you sure you want to install MavensMate Desktop? If you have an existing MavensMate Desktop installation, it will be overwritten.", "Install"):
+            sublime.set_timeout(lambda: DesktopInstaller().start(), 1000)
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 

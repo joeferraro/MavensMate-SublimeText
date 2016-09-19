@@ -35,6 +35,7 @@ mods_load_order = [
     '.command_helper',
     '.community',
     '.completioncommon',
+    '.desktop_installer',
     '.exceptions',
     '.adapter',
     '.merge',
