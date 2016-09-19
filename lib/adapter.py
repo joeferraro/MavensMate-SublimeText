@@ -172,7 +172,7 @@ class MavensMateAdapterCall(threading.Thread):
         except urllib.error.URLError as e:
             debug('urllib.error.URLError')
             result = 'Error contacting local MavensMate server: '+str(e)
-            response_body = { 'error': 'Request to the local MavensMate server failed. please ensure MavensMate Desktop is installed and running. For more information, please visit https://github.com/joeferraro/MavensMate/tree/master/docs' }
+            response_body = { 'error': 'Request to the local MavensMate server failed, please ensure MavensMate Desktop is installed and running. For more information, please visit https://github.com/joeferraro/MavensMate/tree/master/docs' }
             status = 'done'
         except Exception as e:
             debug('Exception')

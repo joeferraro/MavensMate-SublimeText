@@ -61,10 +61,7 @@ def plugin_loaded():
     package_name = 'MavensMate'
     if events.install(package_name):
         printer.show()
-        printer.write('\nWelcome to MavensMate for Sublime Text. In order for this plugin to operate, you must install and run MavensMate-Desktop. Please visit https://github.com/joeferraro/MavensMate/tree/master/docs for more information. Happy Coding!\n')
-    elif events.post_upgrade(package_name):
-        printer.show()
-        print('Upgraded to %s!' % events.post_upgrade(package_name))
+        printer.write('\nWelcome to MavensMate for Sublime Text. In order for this plugin to operate, MavensMate Desktop must be installed and running. Please visit https://github.com/joeferraro/MavensMate/tree/master/docs for more information. Happy Coding!\n')
 
     try:
         if settings.get('mm_start_mavensmate_app', False):
@@ -84,7 +81,7 @@ class StartupInstallMavensMateDesktopCommand(sublime_plugin.WindowCommand):
         return True
 
     def run(self, **kwargs):
-        install_response = sublime.yes_no_cancel_dialog("MavensMate Desktop is required in order for the MavensMate Sublime Text plugin to operate. Would you like to install MavensMate Desktop now?", "Install", "Never Ask Me Again")
+        install_response = sublime.yes_no_cancel_dialog("MavensMate Desktop is required in order for the MavensMate Sublime Text plugin to operate. Would you like to install MavensMate Desktop now? If you already have MavensMate Desktop installed, you can ignore this message.", "Install", "Never Ask Me Again")
         if install_response == sublime.DIALOG_YES:
             self.channels = []
             self.channels.append(['Install from stable channel (recommended)'])
