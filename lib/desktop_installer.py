@@ -21,15 +21,6 @@ except ImportError:
     import urllib.request as urllib
 import sublime
 
-# explicitly executes DesktopInstaller (downloads and installs latest version of mm to the plugin root)
-def execute(printer=None, **kwargs):
-    if printer == None:
-        printer = PanelPrinter.get(sublime.active_window().id())
-    threads = []
-    thread = DesktopInstaller(True, printer=printer, **kwargs)
-    threads.append(thread)
-    thread.start()
-
 def handle_result(operation, process_id, printer, res, thread):
     debug('handling result of MavensMate Desktop update')
     thread.calculate_process_region()
@@ -37,10 +28,9 @@ def handle_result(operation, process_id, printer, res, thread):
     thread.printer.panel.run_command('write_operation_status', {'text': thread.result, 'region': region })
 
 class DesktopInstaller(threading.Thread):
-    def __init__(self, force=False, version=None, **kwargs):
-        self.force          = force
-        self.version        = version
+    def __init__(self, **kwargs):
         self.printer        = kwargs.get('printer', None)
+        self.channel        = kwargs.get('channel', 'stable')
         self.process_id     = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         self.status_region  = None
         self.callback       = handle_result
@@ -101,7 +91,7 @@ class DesktopInstaller(threading.Thread):
         download_directory = os.path.join(sublime.packages_path(),"User","MavensMate")
 
         if sys.platform == 'darwin':
-            process = subprocess.Popen([os.path.join(sublime.packages_path(),"MavensMate","bin","install.sh"), download_directory, "beta"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            process = subprocess.Popen([os.path.join(sublime.packages_path(),"MavensMate","bin","install.sh"), download_directory, self.channel], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             stdout, stderr = process.communicate()
             if stderr != None:
                 printer = PanelPrinter.get(sublime.active_window())
@@ -109,7 +99,7 @@ class DesktopInstaller(threading.Thread):
                 message = '[ERROR]: Could not install MavensMate Desktop. '+stderr.decode('utf-8')
                 printer.write('\n'+message+'\n')
         elif sys.platform == 'win32':
-            download_url = 'https://mavensmate-app-auto-updater.herokuapp.com/download/channel/beta/'+sys.platform
+            download_url = 'https://mavensmate-app-auto-updater.herokuapp.com/download/channel/'+self.channel+'/'+sys.platform
             download_path = os.path.join(sublime.packages_path(),"User","MavensMate","mavensmate.exe")
             debug('attempting to download: ',download_url)
             # download and write mavensmate.exe to disk
@@ -124,7 +114,6 @@ class DesktopInstaller(threading.Thread):
                 printer.show()
                 message = '[ERROR]: Could not install MavensMate Desktop. '+stderr.decode('utf-8')
                 printer.write('\n'+message+'\n')
-
         elif sys.platform == 'linux':
             pass #todo
 
