@@ -106,7 +106,8 @@ To override default MavensMate settings, modify user-specific settings (MavensMa
 		".css",
 		".js",
 		".evt",
-		".cmp"
+		".cmp",
+		".md"
 	],
 
 	//local server port (do not change unless you know what you're doing)
