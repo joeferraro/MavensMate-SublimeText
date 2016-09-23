@@ -12,7 +12,6 @@ from xml.dom.minidom import parse
 import MavensMate.config as config
 import MavensMate.util as util
 import MavensMate.lib.adapter as mm
-from MavensMate.lib.desktop_installer import DesktopInstaller
 from MavensMate.lib.printer import PanelPrinter
 from MavensMate.lib.threads import ThreadTracker
 import MavensMate.lib.parsehelp as parsehelp
@@ -56,7 +55,6 @@ def plugin_loaded():
     config.settings = settings
     config.merge_settings = merge_settings
     util.package_check()
-    util.check_for_desktop()
 
     package_name = 'MavensMate'
     if events.install(package_name):
@@ -74,48 +72,6 @@ def plugin_loaded():
         message = '[ERROR]: '+str(e)+'\n'
         printer.write('\n'+message+'\n')
         return
-
-# called on startup, user can choose whether to install or never be shown message again
-class StartupInstallMavensMateDesktopCommand(sublime_plugin.WindowCommand):
-    def is_enabled(self):
-        return True
-
-    def run(self, **kwargs):
-        install_response = sublime.yes_no_cancel_dialog("MavensMate Desktop is required in order for the MavensMate Sublime Text plugin to operate. Would you like to install MavensMate Desktop now? If you already have MavensMate Desktop installed, you can ignore this message.", "Install", "Never Ask Me Again")
-        if install_response == sublime.DIALOG_YES:
-            self.channels = []
-            self.channels.append(['Install from stable channel (recommended)'])
-            self.channels.append(['Install from beta channel'])
-            self.window.show_quick_panel(self.channels, self.panel_done, sublime.MONOSPACE_FONT)
-        elif install_response == sublime.DIALOG_NO:
-            settings = sublime.load_settings('mavensmate.sublime-settings')
-            settings.set('mm_dont_ask_to_install_desktop', True)
-            sublime.save_settings('mavensmate.sublime-settings')
-
-    def panel_done(self, picked):
-        if picked == 0:
-            channel = 'stable'
-        elif picked == 1:
-            channel = 'beta'
-        sublime.set_timeout(lambda: DesktopInstaller(channel=channel).start(), 1000)
-
-class InstallMavensMateDesktopCommand(sublime_plugin.WindowCommand):
-    def is_enabled(self):
-        return True
-
-    def run(self, **kwargs):
-        if sublime.ok_cancel_dialog("Are you sure you want to install MavensMate Desktop? If you have an existing MavensMate Desktop installation, it will be overwritten.", "Install"):
-            self.channels = []
-            self.channels.append(['Install from stable channel (recommended)'])
-            self.channels.append(['Install from beta channel'])
-            self.window.show_quick_panel(self.channels, self.panel_done, sublime.MONOSPACE_FONT)
-
-    def panel_done(self, picked):
-        if picked == 0:
-            channel = 'stable'
-        elif picked == 1:
-            channel = 'beta'
-        sublime.set_timeout(lambda: DesktopInstaller(channel=channel).start(), 1000)
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
