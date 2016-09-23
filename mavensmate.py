@@ -152,7 +152,7 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
     def run (self, dirs):
-        mm.call('new-project-from-existing-directory', False, body={'args': { 'ui': True, 'origin': dirs[0] }})
+        mm.call('new-project-from-existing-directory', False, body={'args': { 'ui': True, 'directory': dirs[0], 'origin': dirs[0] }})
 
     def is_visible(self, dirs):
         if dirs != None and type(dirs) is list and len(dirs) > 1:
