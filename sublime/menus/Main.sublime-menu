@@ -294,10 +294,6 @@
 	     	},
  	     	{"caption":"-"},
 	     	{
-	     		"caption": "Install MavensMate Desktop",
-	     		"command": "install_mavens_mate_desktop"
-	     	},
-	     	{
 	     		"caption": "Open MavensMate Desktop",
 	     		"command": "open_mavens_mate_app"
 	     	},
