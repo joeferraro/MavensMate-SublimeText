@@ -18,7 +18,6 @@ import MavensMate.lib.parsehelp as parsehelp
 import MavensMate.lib.vf as vf
 from MavensMate.lib.merge import *
 from MavensMate.lib.completioncommon import *
-import MavensMate.lib.community as community
 
 debug = None
 settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -40,6 +39,8 @@ if reloader_name in sys.modules and sys.version_info >= (3, 0):
 import MavensMate.lib.reloader as reloader
 
 def plugin_loaded():
+    from package_control import events
+
     settings = sublime.load_settings('mavensmate.sublime-settings')
 
     config.setup_logging()
@@ -55,21 +56,22 @@ def plugin_loaded():
     config.merge_settings = merge_settings
     util.package_check()
 
+    package_name = 'MavensMate'
+    if events.install(package_name):
+        printer.show()
+        printer.write('\nWelcome to MavensMate for Sublime Text. In order for this plugin to operate, MavensMate Desktop must be installed and running. Please visit https://github.com/joeferraro/MavensMate/tree/master/docs for more information. Happy Coding!\n')
+
     try:
         if settings.get('mm_start_mavensmate_app', False):
             util.start_mavensmate_app(printer)
             time.sleep(1.5)
-        mm.check_server()
-        message = 'Wait ... I thought we just updated to v5? For more information: https://github.com/joeferraro/MavensMate-SublimeText/blob/master/messages/rollback.md\n\nHappy coding :)'
-        printer.show()
-        printer.write('\n'+message+'\n')
+        if settings.get('mm_ping_mavensmate_server_on_startup', False):
+            mm.ping_server()
     except Exception as e:
         printer.show()
         message = '[ERROR]: '+str(e)+'\n'
         printer.write('\n'+message+'\n')
         return
-
-    community.sync_activity('startup')
 
 ####### <--START--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
@@ -78,7 +80,7 @@ class OpenMavensMateUi(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('open-ui', True, body={'args': { 'ui' : True }})
 
-#opens mavensmate-app
+#opens MavensMate Desktop
 class OpenMavensMateApp(sublime_plugin.ApplicationCommand):
     def run(command):
         active_window_id = sublime.active_window().id()
@@ -106,7 +108,7 @@ class NewProjectCommand(sublime_plugin.ApplicationCommand):
 #creates a MavensMate project from an existing directory
 class CreateMavensMateProject(sublime_plugin.WindowCommand):
     def run (self, dirs):
-        mm.call('new-project-from-existing-directory', False, body={'args': { 'ui': True, 'directory': dirs[0] }})
+        mm.call('new-project-from-existing-directory', False, body={'args': { 'ui': True, 'directory': dirs[0], 'origin': dirs[0] }})
 
     def is_visible(self, dirs):
         if dirs != None and type(dirs) is list and len(dirs) > 1:
@@ -124,6 +126,13 @@ class CreateMavensMateProject(sublime_plugin.WindowCommand):
 class EditProjectCommand(sublime_plugin.ApplicationCommand):
     def run(command):
         mm.call('edit-project', True, body={'args': { 'ui' : True }})
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
+class SalesforceAuthenticationCommand(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('oauth-project', True, body={'args': { 'ui' : True }})
 
     def is_enabled(command):
         return util.is_mm_project()
@@ -232,6 +241,14 @@ class NewLightningInterfaceCommand(sublime_plugin.ApplicationCommand):
     def is_enabled(command):
         return util.is_mm_project()
 
+#displays new apex component dialog
+class NewLightningTokens(sublime_plugin.ApplicationCommand):
+    def run(command):
+        mm.call('new-lightning-tokens', True, body={'args': { 'ui' : True }})
+
+    def is_enabled(command):
+        return util.is_mm_project()
+
 ####### <--END--> COMMANDS THAT USE THE MAVENSMATE UI ##########
 
 class MavensStubCommand(sublime_plugin.WindowCommand):
@@ -314,24 +331,24 @@ class SyntaxHandler(sublime_plugin.EventListener):
             ext = util.get_file_extension(fn)
             if ext == '.cls' or ext == '.trigger':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Apex.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Apex.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Apex.sublime-syntax"))
             elif ext == '.page' or ext == '.component':
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","Visualforce.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.tmLanguage"))
-            elif ext == '.app' or ext == '.auradoc' or ext == '.cmp':
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/Visualforce.sublime-syntax"))
+            elif ext == '.app' or ext == '.auradoc' or ext == '.cmp' or ext == '.design' or ext == '.tokens' or ext == '.evt':
                 if "linux" in sys.platform or "darwin" in sys.platform:
                     view.set_syntax_file(os.path.join("Packages","XML","XML.tmLanguage"))
                 else:
                     view.set_syntax_file(os.path.join("Packages/XML/XML.tmLanguage"))
             elif ext == '.log' and ('/debug/' in fn or '\\debug\\' in fn or '\\apex-scripts\\log\\' in fn or '/apex-scripts/log/' in fn):
                 if "linux" in sys.platform or "darwin" in sys.platform:
-                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages","MavensMate","sublime","lang","MMLog.sublime-syntax"))
                 else:
-                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/MMLog.tmLanguage"))
+                    view.set_syntax_file(os.path.join("Packages/MavensMate/sublime/lang/MMLog.sublime-syntax"))
         except:
             pass
 
@@ -627,11 +644,11 @@ class DeleteMetadataCommand(sublime_plugin.WindowCommand):
                 }
                 mm.call('delete-metadata', context=self, body=body)
 
-    def is_visible(self):
-        return util.is_mm_file()
+    # def is_visible(self):
+    #     return util.is_mm_file()
 
-    def is_enabled(self):
-        return util.is_mm_file()
+    # def is_enabled(self):
+    #     return util.is_mm_file()
 
 #deletes selected metadata
 class RefreshProjectApexSymbols(sublime_plugin.WindowCommand):
@@ -827,10 +844,10 @@ class GetApexCodeCoverageCommand(sublime_plugin.WindowCommand):
         body = {
             "paths" : [util.get_active_file()]
         }
-        mm.call('get_coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(body["classes"][0]), body=body)
+        mm.call('get-coverage', True, context=self, message="Retrieving Apex Code Coverage for "+util.get_file_name_no_extension(body["paths"][0]), body=body)
 
     def is_enabled(command):
-        return util.is_apex_class_file()
+        return util.is_apex_class_or_trigger_file()
 
 #gets apex code coverage for the current class
 class HideCoverageCommand(sublime_plugin.WindowCommand):
@@ -838,7 +855,7 @@ class HideCoverageCommand(sublime_plugin.WindowCommand):
         util.clear_marked_line_numbers(self.window.active_view(), "no_apex_coverage")
 
     def is_enabled(command):
-        return util.is_apex_class_file()
+        return util.is_apex_class_or_trigger_file()
 
 #refreshes the currently active file from the server
 class GetOrgWideTestCoverageCommand(sublime_plugin.WindowCommand):
@@ -1441,7 +1458,6 @@ class OpenFileInProject(sublime_plugin.ApplicationCommand):
 
 class ScrubLogCommand(sublime_plugin.WindowCommand):
     def run(self):
-        community.sync_activity('scrub_log')
         active_view = self.window.active_view()
         fileName, ext = os.path.splitext(active_view.file_name())
 

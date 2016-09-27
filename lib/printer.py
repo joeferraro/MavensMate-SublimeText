@@ -100,14 +100,6 @@ class PanelPrinter(object):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         hide = settings.get('hide_output_panel', 1)
 
-        # TODO
-        # if settings.get('mm_compile_scroll_to_error', True):
-        #     view = self.window.active_view()
-        #     pt = view.text_point(line-1, col-1)
-        #     view.sel().clear()
-        #     view.sel().add(sublime.Region(pt))
-        #     view.show(pt)
-
         if force or hide != True or not isinstance(hide, bool):
             self.visible = True
             self.window.run_command('show_panel', {'panel': 'output.' + self.name})
