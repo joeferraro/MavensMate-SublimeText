@@ -588,3 +588,14 @@ def get_version_number():
         return version
     except:
         return ''
+
+def get_selected_texts():
+    selected = []
+    active_view = sublime.active_window().active_view()
+
+    for region in active_view.sel():
+        text = active_view.substr(region)
+        if text != '':
+            selected.append( text )
+
+    return selected
