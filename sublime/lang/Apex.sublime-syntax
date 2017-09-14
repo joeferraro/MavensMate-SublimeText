@@ -8,7 +8,7 @@ file_extensions:
 scope: source.apex
 contexts:
   main:
-    - match: \b(?i:package|trigger|class|interface|override)\b
+    - match: \b(?i:package|trigger|class|interface)\b
       scope: storage.type.apex
     - match: '^\s*(package)\b(?:\s*([^ ;$]+)\s*(;)?)?'
       scope: meta.package.java
@@ -108,7 +108,7 @@ contexts:
           scope: keyword.operator.assert.expression-seperator.java
         - include: code
   class:
-    - match: '(?=\w?[\w\s]*(?:class|(?:@)?interface|(?:@)?override|enum)\s+\w+)'
+    - match: '(?=\w?[\w\s]*(?:class|(?:@)?interface|(?:@)?enum)\s+\w+)'
       push:
         - meta_scope: meta.class.java
         - match: "}"
@@ -117,7 +117,7 @@ contexts:
           pop: true
         - include: storage-modifiers
         - include: comments
-        - match: (class|(?:@)?interface|(?:@)?override|enum|trigger|future)\s+(\w+)
+        - match: (class|(?:@)?interface|(?:@)?enum|trigger|future)\s+(\w+)
           scope: meta.class.identifier.java
           captures:
             1: storage.modifier.java
@@ -266,9 +266,9 @@ contexts:
       scope: keyword.control.java
     - match: \b(return|break|case|continue|default|do|while|for|switch|if|else|then|end|const|collect|exit|export|goto|group|hint|import|inner|into|join|loop|number|object|of|outer|parallel|pragma|retrieve|stat|then|transaction|type|when|before|beforeinsert|beforeupdate|beforedelete|beforeundelete|afterinsert|afterupdate|afterdelete|afterundelete|before insert|before update|before delete|before undelete|after insert|after update|after undelete|after delete|after|exception)\b
       scope: keyword.control.apex
-    - match: \b(?i:webservice|testmethod|(?:@)?override|(?:@)?interface)\b
+    - match: \b(?i:webservice|testmethod|(?:@)?(?:@)?interface)\b
       scope: keyword.control.annotation.java
-    - match: \b(?i:webservice|testmethod|(?:@)?override|(?:@)?interface)\b
+    - match: \b(?i:webservice|testmethod|(?:@)?(?:@)?interface)\b
       scope: keyword.control.annotation.apex
     - match: \b(?i:commit|rollback|savepoint)\b
       scope: keyword.control.transaction.apex
@@ -421,7 +421,7 @@ contexts:
     #including keywords to get some of the terms thighlight correctly
     - include: keywords
     #Additional items reserved keywords for Salesforce. Some are reserved for future use
-    - match: \b(global|public|private|protected|static|final|native|synchronized|abstract|bulk|batch|(?i:threadsafe)|transient|(?i:testmethod)|(?i:without)|with|sharing|virtual)\b
+    - match: \b(global|public|private|protected|static|final|native|synchronized|abstract|bulk|batch|(?i:threadsafe)|transient|(?i:testmethod)|(?i:without)|with|sharing|virtual|override)\b
       captures:
         1: storage.modifier.java
   strings:
