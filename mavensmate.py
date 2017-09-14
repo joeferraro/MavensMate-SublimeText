@@ -2,6 +2,7 @@
 import sublime
 import sublime_plugin
 import os
+import shutil
 import json
 import sys
 import re
@@ -972,6 +973,13 @@ class RefreshResourceBundleCommand(sublime_plugin.WindowCommand):
     def run(self, dirs, files):
         if sublime.ok_cancel_dialog("This command will refresh the resource bundle(s) based on your local project's corresponding static resource(s). Do you wish to continue?", "Refresh"):
             #TODO: adapter refresh
+            for dr in dirs:
+                shutil.rmtree(dr)
+                dir_last_part=dr.split("\\")[-1]
+                static_resource_path = os.path.join(util.mm_project_directory(),"src","staticresources",dir_last_part)
+                mm.call('new-resource-bundle', True, body={ "paths" : [ static_resource_path ] }, context=self, message="Refreshing resource bundle...")
+                time.sleep(1.5)
+                
             pass
 
     def is_visible(self, dirs, files):
