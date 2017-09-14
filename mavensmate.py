@@ -419,7 +419,13 @@ class RunAsyncApexTestsCommand(sublime_plugin.WindowCommand):
 #runs apex unit tests using the async api
 class RunAsyncApexTestMethodCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        sublime.active_window().show_input_panel("Comma Delimited Test Method Names", "MyTestMethodName", self.finish, None, None)
+        commaDelimitedTestMethods = "MyTestMethodName"
+        selectedTests = util.get_selected_texts();
+
+        if len(selectedTests) != 0:
+            commaDelimitedTestMethods = ','.join(selectedTests)
+
+        sublime.active_window().show_input_panel("Comma Delimited Test Method Names", commaDelimitedTestMethods, self.finish, None, None)
 
     def finish(self, test_method_names):
         active_file = util.get_active_file()
