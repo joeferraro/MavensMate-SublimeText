@@ -1,4 +1,4 @@
-#MavensMate for Sublime Text
+# MavensMate for Sublime Text
 
 MavensMate for Sublime Text is a plugin that aims to replicate the functionality of the Eclipse-based Force.com IDE. Its goal is to allow developers to work inside Sublime Text for all their Force.com-related tasks.
 
@@ -41,15 +41,15 @@ All issues are managed by the [central MavensMate project](https://github.com/jo
 
 ## Setup
 
-###Important Settings (Configured in MavensMate Desktop)
+### Important Settings (Configured in MavensMate Desktop)
 
-####Workspaces (mm_workspace)
+#### Workspaces (mm_workspace)
 
 You may set `mm_workspace` to a single path on your local filesystem or an array of paths.
 
-#####Examples
+##### Examples
 
-######Array of workspaces
+###### Array of workspaces
 
 ```
 "mm_workspace" : [
@@ -58,7 +58,7 @@ You may set `mm_workspace` to a single path on your local filesystem or an array
 ],
 ```
 
-######Single workspace
+###### Single workspace
 
 ```
 "mm_workspace" : "/Users/darylshaber/Desktop/my-cool-folder",
@@ -73,21 +73,21 @@ You may set `mm_workspace` to a single path on your local filesystem or an array
 ],
 ```
 
-##Update
+## Update
 
 Updates to the plugin are handled automatically by Package Control.
 
-##Screenshots
+## Screenshots
 
-###Project Wizard
+### Project Wizard
 <img src="https://mavens.com/public/mavensmate/img/new-project.png" style="box-shadow:-14px 14px 0 0 #16325c"/>
-###Apex Test Runner
+### Apex Test Runner
 <img src="https://mavens.com/public/mavensmate/img/tests.png"/>
-###Apex Execute Anonymous
+### Apex Execute Anonymous
 <img src="https://mavens.com/public/mavensmate/img/execute-apex.png"/>
-###Quick Panel
+### Quick Panel
 <img src="http://wearemavens.com/images/mm/panel.png"/>
-###Apex/Visualforce Code Assist
+### Apex/Visualforce Code Assist
 <img src="https://mavens.com/public/mavensmate/img/apex2.png"/>
 <img src="https://mavens.com/public/mavensmate/img/vf1.png"/>
 <img src="https://mavens.com/public/mavensmate/img/vf2.png"/>
