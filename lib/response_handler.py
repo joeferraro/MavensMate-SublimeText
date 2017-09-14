@@ -506,15 +506,6 @@ class MavensMateResponseHandler(object):
             debug(self.response['result']['testResults'][test_class_name])
 
             test_result = self.response['result']['testResults'][test_class_name]
-            tests_passed_vs_failed = test_result['ExtendedStatus']
-
-            tests_passed_vs_failed = tests_passed_vs_failed.replace('(', '').replace(')','')
-            if tests_passed_vs_failed.split('/')[0] != tests_passed_vs_failed.split('/')[1]:
-                msg += '[TEST RESULT]: FAIL'
-            else:
-                msg += '[TEST RESULT]: PASS'
-
-            msg += '\n\n' + test_class_name + ': ' + test_result['ExtendedStatus'] + ' Passed'
 
             for r in test_result['results']:
                 msg += '\n\n METHOD RESULT \n'
@@ -532,5 +523,15 @@ class MavensMateResponseHandler(object):
                     msg += "\n"
                     msg += r["Message"]
                     msg += "\n"
+
+            tests_passed_vs_failed = test_result['ExtendedStatus']
+
+            tests_passed_vs_failed = tests_passed_vs_failed.replace('(', '').replace(')','')
+            if tests_passed_vs_failed.split('/')[0] != tests_passed_vs_failed.split('/')[1]:
+                msg += '\n\n[TEST RESULT]: FAIL'
+            else:
+                msg += '\n\n[TEST RESULT]: PASS'
+
+            msg += '\n' + test_class_name + ': ' + test_result['ExtendedStatus'] + ' Passed'
 
         self.__print_to_panel(msg)
