@@ -35,6 +35,14 @@ def get_friendly_platform_key():
 def mm_plugin_location():
     return os.path.join(packages_path,"MavensMate")
 
+#Taken from http://www.bogotobogo.com/python/python-Windows-Check-if-a-Process-is-Running-Hanging-Schtasks-Run-Stop.php
+def getTasks(name):
+    r = os.popen('tasklist /v').read().strip().split('\n')
+    for i in range(len(r)):
+        s = r[i]
+        if name in r[i]:
+            return r[i]
+    return []
 def start_mavensmate_app(printer):
     try:
         settings = sublime.load_settings('mavensmate.sublime-settings')
@@ -45,9 +53,13 @@ def start_mavensmate_app(printer):
             debug(mavensmate_app_location)
             if os.path.exists(mavensmate_app_location):
                 if friendly_platform_key == 'windows':
-                    # subprocess.Popen('"{0}"'.format(mavensmate_app_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-                    # TODO: this causes multiple mavensmate-app instances to open
-                    pass
+                    r = getTasks('MavensMate.exe')
+                    if not r:
+                        subprocess.Popen('"{0}"'.format(mavensmate_app_location), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                    elif 'Not Responding' in r:
+                        pass
+                    else:
+                        pass
                 elif friendly_platform_key == 'linux':
                     pass #TODO
                 elif friendly_platform_key == 'osx':
