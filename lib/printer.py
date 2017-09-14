@@ -31,8 +31,7 @@ class PanelPrinter(object):
     def __init__(self):
         self.name = 'MavensMate-OutputPanel'
         self.visible = False
-        self.hide_panel = settings.get('mm_hide_panel_on_success', 1)
-        self.hide_time = settings.get('mm_hide_panel_time', 1)
+        self.hide_time = None
         self.queue = []
         self.strings = {}
         self.just_error = False
@@ -66,10 +65,10 @@ class PanelPrinter(object):
     def hide(self, thread = None):
         settings = sublime.load_settings('mavensmate.sublime-settings')
         hide = settings.get('mm_hide_panel_on_success', True)
+        hide_delay = settings.get('mm_hide_panel_time', 1)
         if hide == True:
-            hide_time = time.time() + float(hide)
-            self.hide_time = hide_time
-            sublime.set_timeout(lambda : self.hide_callback(hide_time, thread), int(hide * 300))
+            self.hide_time = time.time()
+            sublime.set_timeout(lambda : self.hide_callback(self.hide_time, thread), int(hide_delay * 1000))
 
     def hide_callback(self, hide_time, thread):
         if thread:
